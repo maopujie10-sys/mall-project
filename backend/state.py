@@ -1,5 +1,6 @@
 ﻿"""In-memory state with JSON persistence for Agent operational data."""
 import json, os
+import sqlite3  # fallback when MySQL unavailable
 from datetime import datetime
 from typing import Optional
 
@@ -16,12 +17,69 @@ class _AgentState:
         }
         self._load()
 
+
+    def _save_db(self):
+        """持久化到 MySQL（如果可用），否则用 SQLite"""
+        try:
+            from config import DB_CONFIG
+            import pymysql
+            conn = pymysql.connect(
+                host=DB_CONFIG["host"], port=DB_CONFIG["port"],
+                user=DB_CONFIG["user"], password=DB_CONFIG["password"],
+                database=DB_CONFIG["name"], charset="utf8mb4",
+                connect_timeout=3
+            )
+            cur = conn.cursor()
+            # 写入 agent_tasks
+            for t in self._data.get("tasks", [])[-50:]:
+                cur.execute(
+                    """INSERT INTO agent_tasks (task_id, user_message, intent, mode, risk_level, status)
+                       VALUES (%s, %s, %s, %s, %s, %s)
+                       ON DUPLICATE KEY UPDATE status=VALUES(status)""",
+                    (t.get("id",""), t.get("name",""), t.get("name",""),
+                     self._data.get("mode","ai_control"), t.get("risk","L1"), t.get("status","完成"))
+                )
+            # 写入 agent_confirmations
+            for a in self._data.get("pending_approvals", []):
+                cur.execute(
+                    """INSERT INTO agent_confirmations (task_id, action_name, risk_level, status)
+                       VALUES (%s, %s, %s, 'pending')
+                       ON DUPLICATE KEY UPDATE status='pending'""",
+                    (a.get("id",""), a.get("name",""), a.get("risk","L3"))
+                )
+            conn.commit()
+            cur.close()
+            conn.close()
+            return True
+        except Exception:
+            pass
+        # Fallback: SQLite
+        try:
+            db_path = os.path.join(os.path.dirname(__file__), "agent_state.db")
+            conn = sqlite3.connect(db_path)
+            conn.execute("""CREATE TABLE IF NOT EXISTS agent_state (
+                key TEXT PRIMARY KEY, value TEXT, updated_at TEXT)""")
+            for k, v in self._data.items():
+                if isinstance(v, (dict, list)):
+                    v = json.dumps(v, ensure_ascii=False, default=str)
+                conn.execute(
+                    "INSERT OR REPLACE INTO agent_state VALUES (?, ?, ?)",
+                    (k, str(v), datetime.now().isoformat())
+                )
+            conn.commit()
+            conn.close()
+            return True
+        except Exception:
+            return False
+
     def _load(self):
         try:
             if os.path.exists(STATE_FILE):
                 with open(STATE_FILE, encoding="utf-8") as f:
                     saved = json.load(f)
                     self._data.update(saved)
+            # 尝试从数据库恢复
+            self._load_db()
         except Exception:
             pass
 
@@ -31,6 +89,8 @@ class _AgentState:
                 json.dump(self._data, f, ensure_ascii=False, default=str, indent=2)
         except Exception:
             pass
+        # 并行持久化到数据库
+        self._save_db()
 
     @property
     def mode(self) -> str:
