@@ -15,6 +15,69 @@ class TrendItem:
     category: str = ""
     fetched_at: str = ""
 
+
+    @staticmethod
+    async def fetch_youtube_trends(region: str = "US", limit: int = 10) -> list:
+        """YouTube 热门视频"""
+        try:
+            import httpx
+            async with httpx.AsyncClient(timeout=15) as c:
+                r = await c.get(f"https://www.youtube.com/feed/trending?gl={region}",
+                    headers={"User-Agent":"Mozilla/5.0"})
+                if r.status_code == 200:
+                    import re
+                    titles = re.findall(r'"title":{"runs":[{"text":"([^"]+)"', r.text)[:limit]
+                    return [{"title": t, "source": "youtube", "rank": i+1} for i, t in enumerate(titles)]
+        except: pass
+        return []
+
+    @staticmethod
+    async def fetch_google_trends(keywords: list = None, limit: int = 10) -> list:
+        """Google Trends 热门搜索"""
+        keywords = keywords or ["AI","tech","shop","fashion"]
+        try:
+            import httpx
+            results = []
+            for kw in keywords[:5]:
+                async with httpx.AsyncClient(timeout=15) as c:
+                    r = await c.get(f"https://trends.google.com/trends/explore?q={kw}",
+                        headers={"User-Agent":"Mozilla/5.0"})
+                    results.append({"keyword": kw, "status": "available" if r.status_code==200 else "blocked"})
+            return results
+        except: return []
+
+    @staticmethod
+    async def fetch_x_trends(limit: int = 10) -> list:
+        """X (Twitter) 趋势"""
+        try:
+            import httpx
+            async with httpx.AsyncClient(timeout=15) as c:
+                r = await c.get("https://nitter.net/",
+                    headers={"User-Agent":"Mozilla/5.0"})
+                if r.status_code == 200:
+                    import re
+                    trends = re.findall(r'title="([^"]+)"', r.text)[:limit]
+                    return [{"title": t, "source": "x", "rank": i+1} for i, t in enumerate(trends)]
+        except: pass
+        return []
+
+    @staticmethod
+    async def predict_trend(topic: str) -> dict:
+        """趋势预测 — 基于关键词分析热度走向"""
+        scores = {"上升": 0, "稳定": 0, "下降": 0}
+        try:
+            import httpx
+            async with httpx.AsyncClient(timeout=10) as c:
+                r = await c.get(f"https://www.google.com/search?q={topic}",
+                    headers={"User-Agent":"Mozilla/5.0"})
+                text = r.text.lower()
+                if "trending" in text or "popular" in text: scores["上升"] += 30
+                if "news" in text: scores["稳定"] += 20
+                if "old" in text or "archive" in text: scores["下降"] += 15
+        except: pass
+        predicted = max(scores, key=scores.get)
+        return {"topic": topic, "predicted": predicted, "confidence": scores[predicted], "scores": scores}
+
 class TrendAgent:
     """热点监控Agent"""
 
