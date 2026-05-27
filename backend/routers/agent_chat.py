@@ -91,6 +91,19 @@ async def execute_tool(tool_name, params=None):
             async with httpx.AsyncClient(timeout=10) as c:
                 r=await c.get(f"{MALL_BASE_URL}/agent/health")
                 res["data"]={"mall":"ok" if r.status_code==200 else "down"};res["success"]=True
+        elif "playwright" in tool_name:
+            from agents.playwright_agent import PlaywrightAgent
+            if tool_name == "playwright.screenshot":
+                er=await PlaywrightAgent.screenshot(params.get("url",MALL_BASE_URL))
+                res["data"]=er;res["success"]=er.get("ok",False)
+            elif tool_name == "playwright.scrape":
+                er=await PlaywrightAgent.scrape_page(params.get("url",MALL_BASE_URL))
+                res["data"]=er;res["success"]=er.get("ok",False)
+            elif tool_name == "playwright.search":
+                er=await PlaywrightAgent.search_and_scrape(params.get("keyword",""),params.get("site","ebay"))
+                res["data"]=er;res["success"]=er.get("ok",False)
+            elif tool_name == "playwright.form":
+                res["data"]={"status":"pending_approval"};res["success"]=True
         else:
             res["data"]={"mode":state.mode,"tasks":len(state.tasks)};res["success"]=True
     except Exception as e:

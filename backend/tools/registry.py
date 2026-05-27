@@ -133,6 +133,12 @@ def register_builtin_tools():
 
         # ===== 巡检 =====
         ToolDef("inspector.run", "执行巡检", "手动触发全量系统巡检", "L2", "inspector"),
+
+        # ===== Playwright 浏览器自动化 =====
+        ToolDef("playwright.screenshot", "网页截图", "对指定URL全页截图", "L1", "playwright", params_schema={"url": {"type": "string"}}),
+        ToolDef("playwright.scrape", "抓取网页", "抓取网页内容(标题/链接/图片/价格)", "L1", "playwright", params_schema={"url": {"type": "string"}}),
+        ToolDef("playwright.search", "搜索商品", "在eBay/Amazon搜索并抓取商品", "L2", "playwright", params_schema={"keyword": {"type": "string"}, "site": {"type": "string"}}),
+        ToolDef("playwright.form", "填写表单", "自动填表并截图", "L2", "playwright", need_confirm=True),
         ToolDef("inspector.history", "巡检历史", "查看巡检历史记录", "L1", "inspector"),
 
         # ===== 企业级采集 =====
