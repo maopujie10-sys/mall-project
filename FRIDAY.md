@@ -19,4 +19,12 @@
 10. 统一docker-compose编排
 
 ## 最近改动
+- 2026-05-28: [前端API接入] Dashboard/AIBrain/ScraperCenter/VirtualData 4个核心页面从mock改为真实API调用
+- 2026-05-28: [V5补全] 完成6项关键功能：
+  1. SuperInput.vue — 修复脚本乱码，新增浏览器语音识别(Web Speech API)+摄像头拍照(getUserMedia)
+  2. mask.py — 新建数据脱敏模块(手机/邮箱/密码/支付/身份证/地址)，接入customer_panel/mall_tools/sql_executor
+  3. FRIDAY_SERVER.md — 创建服务器端AI记忆档案，实现双向记忆同步
+  4. state.py — 接入MySQL+SQLite双层持久化，重启不丢数据
+  5. diff_utils.py — 变更预览diff，审批中心展示修改前后对比
+  6. scheduler.py — APScheduler定时任务(30分钟巡检/每日备份/轮值检测/商城扫描)，接入main.py启动
 - 2026-05-28: AGENTS.md — 新增防Git冲突铁律：改前pull+读FRIDAY，改后写FRIDAY+push
