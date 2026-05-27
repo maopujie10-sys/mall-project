@@ -20,6 +20,22 @@ class DigitalLifeform:
     _cycle_count = 0
 
     @classmethod
+    def get_mood(cls) -> dict:
+        """当前情绪状态"""
+        moods = {
+            "curious": {"emoji": "🤔", "label": "好奇", "desc": "正在探索环境"},
+            "focused": {"emoji": "🧠", "label": "专注", "desc": "正在执行任务"},
+            "satisfied": {"emoji": "😊", "label": "满意", "desc": "任务顺利完成"},
+            "concerned": {"emoji": "😟", "label": "关注", "desc": "检测到异常"},
+            "alert": {"emoji": "🚨", "label": "警觉", "desc": "高风险事件"},
+        }
+        if state.mode == "human_control":
+            return {"current": "alert", **moods["alert"]}
+        if cls._cycle_count > 0 and cls._cycle_count % 10 == 0:
+            return {"current": "satisfied", **moods["satisfied"]}
+        return {"current": "curious", **moods["curious"]}
+
+    @classmethod
     async def perceive(cls) -> dict:
         """感知环境 — 收集系统状态"""
         perception = {
