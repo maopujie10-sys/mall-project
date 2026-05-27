@@ -9,6 +9,12 @@ from auth import verify_token
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     print(f"[Agent] 启动中, 商城: {MALL_BASE_URL}")
+    # 启动定时任务
+    try:
+        from scheduler import start_scheduler
+        start_scheduler()
+    except Exception as e:
+        print(f"[Agent] 定时任务启动失败(非致命): {e}")
     # 注册内置工具
     from tools.registry import register_builtin_tools
     register_builtin_tools()
@@ -20,7 +26,13 @@ async def lifespan(app: FastAPI):
         print(f"[Agent] 自检结果: {check_result['summary']}")
         await startup_warmup()
     except Exception as e:
-        print(f"[Agent] 自检失败(非致命): {e}")    print("[Agent] 关闭前同步记忆...")
+        print(f"[Agent] 自检失败(非致命): {e}")    # 停止定时任务
+    try:
+        from scheduler import stop_scheduler
+        stop_scheduler()
+    except Exception:
+        pass
+    print("[Agent] 关闭前同步记忆...")
     try:
         from tools.memory_sync import MemorySync
         push_result = MemorySync.sync_push()
@@ -44,13 +56,16 @@ from routers.virtual_data_router import router as virtual_data_router
 from routers.mall_brain_router import router as mall_brain_router
 from routers.evolution_router import router as evolution_router
 from routers.friday_router import router as friday_router
+from routers.devops_agent_router import router as devops_router
+from routers.memory_router import router as memory_router
+from routers.heal_router import router as heal_router
 from routers import (
     health, status, restart, virtual, security, scraper, notify,
     agent_chat, system_mode, server_panel, rotation_panel, rollback_center,
     customer_panel, mall_tools,
     nginx_panel, site_check, alert, inspector, task_queue, safety_api,
     mall_scanner, autopilot, ai_factory_router, batch_ops, sql_executor,
-    daily_report, self_service, docker_panel,
+    daily_report, self_service, docker_panel, devops_agent_router, memory_router, heal_router,
 )
 
 app.include_router(health.router)
@@ -85,6 +100,9 @@ app.include_router(virtual_data_router)
 app.include_router(mall_brain_router)
 app.include_router(evolution_router)
 app.include_router(friday_router)
+app.include_router(devops_router)
+app.include_router(memory_router)
+app.include_router(heal_router)
 
 # 内嵌HTML仪表盘
 @app.get("/agent", include_in_schema=False)
