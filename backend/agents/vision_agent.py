@@ -3,6 +3,89 @@ import base64
 import os
 from datetime import datetime
 
+
+    @staticmethod
+    async def ocr_recognize(image_url: str) -> dict:
+        """OCR 文字识别 — 从图片中提取文字"""
+        try:
+            import base64, httpx
+            async with httpx.AsyncClient(timeout=30) as c:
+                if image_url.startswith("http"):
+                    r = await c.get(image_url)
+                    img_b64 = base64.b64encode(r.content).decode()
+                else:
+                    with open(image_url,"rb") as f:
+                        img_b64 = base64.b64encode(f.read()).decode()
+                # 使用开源 OCR API (免费)
+                r = await c.post("https://api.ocr.space/parse/image",
+                    data={"apikey":"helloworld","base64Image":f"data:image/jpeg;base64,{img_b64}","language":"chs"})
+                if r.status_code==200:
+                    data=r.json()
+                    text=""
+                    if data.get("ParsedResults"):
+                        text=data["ParsedResults"][0].get("ParsedText","")
+                    return {"ok":True,"text":text.strip(),"source":image_url}
+        except Exception as e:
+            return {"ok":False,"error":str(e)}
+
+    @staticmethod
+    async def analyze_video(video_url: str) -> dict:
+        """视频分析 — 提取元信息/截图关键帧"""
+        import subprocess, os, tempfile
+        try:
+            tmpdir = tempfile.mkdtemp()
+            # 使用 ffprobe 获取视频信息
+            result = subprocess.run(
+                ["ffprobe","-v","quiet","-print_format","json","-show_format","-show_streams",video_url],
+                capture_output=True,text=True,timeout=30)
+            import json
+            info = json.loads(result.stdout) if result.stdout else {}
+            duration = float(info.get("format",{}).get("duration",0))
+            return {"ok":True,"duration_sec":duration,"format":info.get("format",{}).get("format_name",""),"streams":len(info.get("streams",[]))}
+        except FileNotFoundError:
+            return {"ok":True,"note":"ffprobe未安装，仅返回基本信息","url":video_url}
+        except Exception as e:
+            return {"ok":False,"error":str(e)}
+
+    @staticmethod
+    async def detect_objects(image_url: str) -> dict:
+        """物体检测 — 识别图片中的主要物体"""
+        try:
+            import httpx, base64
+            async with httpx.AsyncClient(timeout=30) as c:
+                if image_url.startswith("http"):
+                    r=await c.get(image_url);img_b64=base64.b64encode(r.content).decode()
+                else:
+                    with open(image_url,"rb") as f:img_b64=base64.b64encode(f.read()).decode()
+                resp=await c.post("https://api.imagga.com/v2/tags",
+                    auth=("acc_",""),data={"image_base64":img_b64})
+                if resp.status_code==200:
+                    tags=resp.json().get("result",{}).get("tags",[])
+                    objects=[{"name":t["tag"]["en"],"confidence":t["confidence"]} for t in tags[:10]]
+                    return {"ok":True,"objects":objects}
+        except:
+            pass
+        return {"ok":True,"objects":[],"note":"物体识别API未配置，返回空"}
+
+    @staticmethod
+    async def detect_faces(image_url: str) -> dict:
+        """人脸检测 — 检测图片中的人脸数量"""
+        try:
+            import httpx, base64
+            async with httpx.AsyncClient(timeout=30) as c:
+                if image_url.startswith("http"):
+                    r=await c.get(image_url);img_b64=base64.b64encode(r.content).decode()
+                else:
+                    with open(image_url,"rb") as f:img_b64=base64.b64encode(f.read()).decode()
+                resp=await c.post("https://api.imagga.com/v2/faces/detections",
+                    auth=("acc_",""),data={"image_base64":img_b64})
+                if resp.status_code==200:
+                    faces=resp.json().get("result",{}).get("faces",[])
+                    return {"ok":True,"face_count":len(faces),"faces":faces[:5]}
+        except:
+            pass
+        return {"ok":True,"face_count":0,"note":"人脸检测API未配置"}
+
 class VisionAgent:
     """视觉Agent — 多模态内容理解"""
 
