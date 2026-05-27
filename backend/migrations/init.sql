@@ -52,6 +52,40 @@ CREATE TABLE IF NOT EXISTS agent_command_logs (
     INDEX idx_task_id (task_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+
+
+-- 商城结构地图表
+CREATE TABLE IF NOT EXISTS mall_structure_maps (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    map_id VARCHAR(64) NOT NULL UNIQUE,
+    project_path TEXT,
+    frontend_structure JSON,
+    backend_structure JSON,
+    database_schema JSON,
+    api_routes JSON,
+    permission_map JSON,
+    risk_fields JSON,
+    scanned_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_map_id (map_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 客服AI日志表
+CREATE TABLE IF NOT EXISTS customer_ai_logs (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    message_id VARCHAR(64),
+    user_id VARCHAR(64),
+    question TEXT,
+    ai_reply TEXT,
+    question_type VARCHAR(64),
+    risk_level VARCHAR(4) DEFAULT 'L1',
+    is_complaint TINYINT(1) DEFAULT 0,
+    need_human TINYINT(1) DEFAULT 0,
+    handled_by VARCHAR(32) DEFAULT 'ai',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_message_id (message_id),
+    INDEX idx_user_id (user_id),
+    INDEX idx_created (created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 -- 审批记录表
 CREATE TABLE IF NOT EXISTS agent_confirmations (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
