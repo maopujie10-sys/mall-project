@@ -7,6 +7,7 @@ from config import MALL_BASE_URL
 from auth import verify_token
 from state import state
 from risk import handle_risk
+from mask import mask_sensitive
 
 router = APIRouter(prefix="/tools/mall", tags=["MallTools"])
 
@@ -26,7 +27,8 @@ async def proxy_to_mall(path: str, method: str = "GET", json_data: dict = None, 
                 return None
             if r.status_code < 500:
                 try:
-                    return r.json()
+                    data = r.json()
+                    return mask_sensitive(data, level="user")
                 except Exception:
                     return {"raw": r.text[:1000]}
             return {"error": f"mall-app returned {r.status_code}", "detail": r.text[:500]}
