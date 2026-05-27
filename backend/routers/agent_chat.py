@@ -6,6 +6,7 @@ from auth import verify_token
 from state import state
 from risk import handle_risk
 from tools.registry import registry
+from digital_lifeform import DigitalLifeform
 from config import MALL_BASE_URL, CLAUDE_API_KEY, CLAUDE_MODEL
 
 router = APIRouter(prefix="/agent", tags=["Agent"])
@@ -166,6 +167,10 @@ async def agent_chat(req: ChatRequest, _=Depends(verify_token)):
         steps.append({"step":5,"name":"Failed","status":"failed"})
         resp=f"**{disp}** Failed\n\n{er.get('error','unknown')}"
     state.add_task(name=disp,risk=risk,status="done" if er["success"] else "failed")
+    # save dialogue memory to digital lifeform
+    try:
+        DigitalLifeform.remember_conversation(req.message, resp[:300])
+    except: pass
     return {"task_id":f"t{len(state.tasks)}","response":resp,"steps":steps,"risk_level":risk,"mode":state.mode}
 
 @router.get("/tools")

@@ -10,13 +10,13 @@ from auth import verify_token
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     print(f"[Agent] 启动中, 商城: {MALL_BASE_URL}")
-    # 启动定时任务
+    # 启动定时任务 + 数字生命体(含进化)
     try:
         from scheduler import start_scheduler
-    from digital_lifeform import DigitalLifeform
+        from digital_lifeform import DigitalLifeform
         start_scheduler()
-    # 启动数字生命体自主循环(每5分钟)
-    asyncio.create_task(DigitalLifeform.start_loop(300))
+        # 启动数字生命体自主循环(每5分钟, 含进化)
+        asyncio.create_task(DigitalLifeform.start_loop(300))
     except Exception as e:
         print(f"[Agent] 定时任务启动失败(非致命): {e}")
     # 注册内置工具
@@ -30,22 +30,23 @@ async def lifespan(app: FastAPI):
         print(f"[Agent] 自检结果: {check_result['summary']}")
         await startup_warmup()
     except Exception as e:
-        print(f"[Agent] 自检失败(非致命): {e}")    # 停止定时任务
-    try:
-        from scheduler import stop_scheduler
-    from digital_lifeform import DigitalLifeform
-        stop_scheduler()
-    asyncio.create_task(DigitalLifeform.stop_loop())
-    except Exception:
-        pass
+        print(f"[Agent] 自检失败(非致命): {e}")
+    yield
+    # 停止定时任务 + 数字生命体
     print("[Agent] 关闭前同步记忆...")
     try:
         from tools.memory_sync import MemorySync
         push_result = MemorySync.sync_push()
-        print(f"[Agent] 记忆同步: {'✅' if push_result['success'] else '⚠️'}")
+        print(f"[Agent] 记忆同步: {'OK' if push_result['success'] else 'WARN'}")
     except Exception as e:
         print(f"[Agent] 记忆同步失败: {e}")
-    yield print("[Agent] 关闭")
+    try:
+        from scheduler import stop_scheduler
+        from digital_lifeform import DigitalLifeform
+        stop_scheduler()
+        asyncio.create_task(DigitalLifeform.stop_loop())
+    except Exception:
+        pass
 
 app = FastAPI(title="TikTokMall Agent", version="1.0.0", lifespan=lifespan)
 
