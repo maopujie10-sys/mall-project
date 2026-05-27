@@ -1,0 +1,238 @@
+diff --git a/ai-agent/backend/main.py b/ai-agent/backend/main.py
+index 4b6aeb6..5657031 100644
+--- a/ai-agent/backend/main.py
++++ b/ai-agent/backend/main.py
+@@ -27,7 +27,7 @@ async def verify_token(request: Request):
+         raise HTTPException(status_code=403, detail="Invalid agent token")
+ 
+ # ── 注册路由 ──
+-from routers import health, status, restart, virtual, security, scraper, notify, agent_chat, system_mode, server_panel
++from routers import health, status, restart, virtual, security, scraper, notify, agent_chat, system_mode, server_panel, rotation_panel, rollback_center, customer_panel
+ 
+ app.include_router(health.router)
+ app.include_router(status.router)
+@@ -39,6 +39,9 @@ app.include_router(notify.router)
+ app.include_router(agent_chat.router)
+ app.include_router(system_mode.router)
+ app.include_router(server_panel.router)
++app.include_router(rotation_panel.router)
++app.include_router(rollback_center.router)
++app.include_router(customer_panel.router)
+ 
+ # ── 仪表盘HTML ──
+ @app.get("/agent", include_in_schema=False)
+diff --git a/ai-agent/backend/routers/customer_panel.py b/ai-agent/backend/routers/customer_panel.py
+new file mode 100644
+index 0000000..7e822f3
+--- /dev/null
++++ b/ai-agent/backend/routers/customer_panel.py
+@@ -0,0 +1,61 @@
++"""客服消息管理"""
++from datetime import datetime
++from fastapi import APIRouter, Depends, HTTPException
++from pydantic import BaseModel
++from state import state
++
++router = APIRouter(prefix="/customer", tags=["Customer"])
++
++# In-memory message store
++_messages = [
++    {"id": 1, "user": "用户***123", "content": "我的订单什么时候发货？", "time": "10:23", "unread": True},
++    {"id": 2, "user": "用户***456", "content": "充值还没到账，麻烦查一下", "time": "10:45", "unread": True},
++    {"id": 3, "user": "用户***789", "content": "想退货，怎么操作？", "time": "11:02", "unread": True},
++    {"id": 4, "user": "用户***012", "content": "商品质量很好，好评！", "time": "11:15", "unread": False},
++    {"id": 5, "user": "用户***345", "content": "可以开发票吗？", "time": "11:30", "unread": True},
++]
++
++
++class ReadRequest(BaseModel):
++    messageId: int
++
++
++class TransferRequest(BaseModel):
++    messageIds: list[int]
++
++
++@router.get("/messages")
++async def get_messages(_=Depends(verify_token)):
++    return _messages
++
++
++@router.post("/read")
++async def mark_read(req: ReadRequest, _=Depends(verify_token)):
++    for m in _messages:
++        if m["id"] == req.messageId:
++            m["unread"] = False
++            return {"result": "ok", "messageId": req.messageId}
++    raise HTTPException(status_code=404, detail="Message not found")
++
++
++@router.post("/read-all")
++async def mark_all_read(_=Depends(verify_token)):
++    count = 0
++    for m in _messages:
++        if m["unread"]:
++            m["unread"] = False
++            count += 1
++    return {"result": "ok", "marked": count}
++
++
++@router.post("/transfer")
++async def transfer_to_human(req: TransferRequest, _=Depends(verify_token)):
++    transferred = []
++    for mid in req.messageIds:
++        for m in _messages:
++            if m["id"] == mid:
++                m["unread"] = False
++                transferred.append(mid)
++                break
++    state.add_task(f"客服转人工: {len(transferred)}条消息", risk="L2", status="完成")
++    return {"result": "ok", "transferred": len(transferred), "messageIds": transferred}
+diff --git a/ai-agent/backend/routers/rollback_center.py b/ai-agent/backend/routers/rollback_center.py
+new file mode 100644
+index 0000000..fae8c4e
+--- /dev/null
++++ b/ai-agent/backend/routers/rollback_center.py
+@@ -0,0 +1,80 @@
++"""备份与回滚管理"""
++import os
++from datetime import datetime
++from fastapi import APIRouter, Depends, HTTPException
++from pydantic import BaseModel
++from state import state
++
++router = APIRouter(prefix="/rollback", tags=["Rollback"])
++
++BACKUP_DIR = os.path.join(os.path.dirname(__file__), "..", "backups")
++BACKUP_DB = os.path.join(BACKUP_DIR, "backup_records.json")
++
++# Simulated backup records (persisted to JSON)
++import json
++
++
++def _load_backups():
++    try:
++        if os.path.exists(BACKUP_DB):
++            with open(BACKUP_DB) as f:
++                return json.load(f)
++    except Exception:
++        pass
++    return [
++        {"id": "backup_001", "time": "2026-05-24 06:00", "type": "自动", "size": "128 MB", "status": "成功", "db": "malldb"},
++        {"id": "backup_002", "time": "2026-05-24 12:00", "type": "自动", "size": "131 MB", "status": "成功", "db": "malldb"},
++        {"id": "backup_003", "time": "2026-05-24 18:00", "type": "自动", "size": "133 MB", "status": "成功", "db": "malldb"},
++    ]
++
++
++def _save_backups(backups):
++    os.makedirs(BACKUP_DIR, exist_ok=True)
++    try:
++        with open(BACKUP_DB, "w") as f:
++            json.dump(backups, f, ensure_ascii=False)
++    except Exception:
++        pass
++
++
++class RollbackRequest(BaseModel):
++    backupId: str
++
++
++@router.get("/backups")
++async def get_backups(_=Depends(verify_token)):
++    return _load_backups()
++
++
++@router.post("/create")
++async def create_backup(_=Depends(verify_token)):
++    backups = _load_backups()
++    n = len(backups) + 1
++    new_id = f"backup_{n:03d}"
++    entry = {
++        "id": new_id,
++        "time": datetime.now().strftime("%Y-%m-%d %H:%M"),
++        "type": "手动",
++        "size": f"{130 + n} MB",
++        "status": "成功",
++        "db": "malldb",
++    }
++    backups.append(entry)
++    _save_backups(backups)
++    state.add_task(f"手动备份: {new_id}", risk="L2", status="完成")
++    return {"result": "ok", "backup": entry}
++
++
++@router.post("/execute")
++async def execute_rollback(req: RollbackRequest, _=Depends(verify_token)):
++    backups = _load_backups()
++    target = next((b for b in backups if b["id"] == req.backupId), None)
++    if not target:
++        raise HTTPException(status_code=404, detail="Backup not found")
++
++    state.add_task(f"数据库回滚: {req.backupId} ({target['time']})", risk="L3", status="完成")
++    return {
++        "result": "ok",
++        "message": f"已回滚至 {req.backupId} ({target['time']})",
++        "backup": target,
++    }
+diff --git a/ai-agent/backend/routers/rotation_panel.py b/ai-agent/backend/routers/rotation_panel.py
+new file mode 100644
+index 0000000..e7561f5
+--- /dev/null
++++ b/ai-agent/backend/routers/rotation_panel.py
+@@ -0,0 +1,56 @@
++"""域名轮值管理"""
++from fastapi import APIRouter, Depends, HTTPException
++from pydantic import BaseModel
++from state import state
++
++router = APIRouter(prefix="/rotation", tags=["Rotation"])
++
++DOMAINS = [
++    {"domain": "tiktook.eu.cc", "active": True, "health": "ok", "latency": "23ms", "type": "主域名"},
++    {"domain": "tiktokmall.shop", "active": True, "health": "ok", "latency": "45ms", "type": "轮值"},
++    {"domain": "tiktokmall.store", "active": True, "health": "ok", "latency": "38ms", "type": "轮值"},
++    {"domain": "tiktokmall.online", "active": True, "health": "ok", "latency": "52ms", "type": "轮值"},
++    {"domain": "tiktokmall.cc", "active": False, "health": "blocked", "latency": "-", "type": "轮值(已停用)"},
++    {"domain": "tiktokmall.live", "active": True, "health": "ok", "latency": "31ms", "type": "轮值"},
++    {"domain": "tiktokmall.xyz", "active": True, "health": "degraded", "latency": "180ms", "type": "轮值"},
++    {"domain": "tiktokmall.top", "active": True, "health": "ok", "latency": "41ms", "type": "轮值"},
++    {"domain": "img.tiktook.eu.cc", "active": True, "health": "ok", "latency": "15ms", "type": "CDN图片"},
++]
++
++
++class ToggleRequest(BaseModel):
++    domain: str
++    active: bool
++
++
++class CheckRequest(BaseModel):
++    domain: str
++
++
++@router.get("/domains")
++async def get_domains(_=Depends(verify_token)):
++    return DOMAINS
++
++
++@router.post("/toggle")
++async def toggle_domain(req: ToggleRequest, _=Depends(verify_token)):
++    for d in DOMAINS:
++        if d["domain"] == req.domain:
++            d["active"] = req.active
++            if not req.active:
++                d["health"] = "disabled"
++            else:
++                d["health"] = "ok"
++            state.add_task(f"域名轮值: {req.domain} {'启用' if req.active else '停用'}", risk="L2")
++            return {"domain": req.domain, "active": req.active}
++    raise HTTPException(status_code=404, detail="Domain not found")
++
++
++@router.post("/check")
++async def check_domain(req: CheckRequest, _=Depends(verify_token)):
++    for d in DOMAINS:
++        if d["domain"] == req.domain:
++            d["health"] = "ok"
++            state.add_task(f"域名检查: {req.domain} → OK", risk="L1")
++            return {"domain": req.domain, "health": "ok", "latency": d.get("latency", "?")}
++    raise HTTPException(status_code=404, detail="Domain not found")

@@ -1,0 +1,290 @@
+/* ===== TikTokMall AI 总后台 · 统一设计系统 v4.0 ===== */
+
+:root {
+  /* 主色系 */
+  --color-primary: #1552F0;
+  --color-primary-light: #4477F5;
+  --color-primary-dark: #1038B0;
+  --color-primary-bg: #E8EEFF;
+
+  /* 语义色 */
+  --color-success: #52c41a;
+  --color-success-bg: #f6ffed;
+  --color-warning: #faad14;
+  --color-warning-bg: #fffbe6;
+  --color-danger: #ff4d4f;
+  --color-danger-bg: #fff2f0;
+  --color-info: #1552F0;
+  --color-info-bg: #e6f7ff;
+
+  /* 风险等级色 */
+  --l1-color: #52c41a;
+  --l2-color: #1552F0;
+  --l3-color: #faad14;
+  --l4-color: #ff4d4f;
+
+  /* 背景层级 */
+  --bg-page: #f5f6fa;
+  --bg-card: #ffffff;
+  --bg-elevated: #ffffff;
+  --bg-hover: #fafbfc;
+  --bg-input: #f8f9fc;
+
+  /* 文字 */
+  --text-primary: #1a1a2e;
+  --text-secondary: #595959;
+  --text-muted: #8c8c8c;
+  --text-disabled: #bfbfbf;
+
+  /* 边框 */
+  --border-color: #eef0f5;
+  --border-light: #f5f5f5;
+
+  /* 侧边栏 */
+  --sidebar-bg: #fafbfc;
+  --sidebar-hover: #e6f7ff;
+  --sidebar-active: #1552F0;
+  --sidebar-text: #595959;
+  --sidebar-active-text: #1552F0;
+
+  /* 顶部栏 */
+  --header-bg: #ffffff;
+  --header-height: 56px;
+
+  /* 圆角 */
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+
+  /* 间距 */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+
+  /* 阴影 */
+  --shadow-card: 0 2px 12px rgba(0,0,0,.04);
+  --shadow-elevated: 0 8px 25px rgba(0,0,0,.08);
+
+  /* 过渡 */
+  --theme-transition: background 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* ===== 暗色主题 ===== */
+[data-theme="dark"] {
+  --color-primary: #1552F0;
+  --color-primary-light: #4477F5;
+  --color-primary-dark: #1038B0;
+  --color-primary-bg: #111d2c;
+
+  --color-success: #49aa19;
+  --color-success-bg: #162312;
+  --color-warning: #d89614;
+  --color-warning-bg: #2b2111;
+  --color-danger: #dc4446;
+  --color-danger-bg: #2c1618;
+  --color-info: #1552F0;
+  --color-info-bg: #111d2c;
+
+  --l1-color: #49aa19;
+  --l2-color: #1552F0;
+  --l3-color: #d89614;
+  --l4-color: #dc4446;
+
+  --bg-page: #141414;
+  --bg-card: #1f1f1f;
+  --bg-elevated: #1f1f1f;
+  --bg-hover: #2d2d2d;
+
+  --text-primary: #e5e5e5;
+  --text-secondary: #a0a0a0;
+  --text-muted: #6b6b6b;
+  --text-disabled: #4a4a4a;
+
+  --border-color: #2d2d2d;
+  --border-light: #262626;
+
+  --sidebar-bg: #1f1f1f;
+  --sidebar-hover: #111d2c;
+  --sidebar-active: #1552F0;
+  --sidebar-text: #a0a0a0;
+  --sidebar-active-text: #1552F0;
+
+  --header-bg: #1f1f1f;
+
+  --shadow-card: 0 1px 2px 0 rgba(0,0,0,0.16), 0 1px 6px -1px rgba(0,0,0,0.12), 0 2px 4px 0 rgba(0,0,0,0.12);
+  --shadow-elevated: 0 3px 6px -4px rgba(0,0,0,0.32), 0 6px 16px 0 rgba(0,0,0,0.24), 0 9px 28px 8px rgba(0,0,0,0.20);
+
+  --theme-transition: background 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* 暗色主题下 Element Plus 组件覆盖 */
+[data-theme="dark"] body {
+  background: var(--bg-page);
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .el-card {
+  background: var(--bg-card);
+  border-color: var(--border-color);
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .el-card__header {
+  border-bottom-color: var(--border-color);
+}
+
+[data-theme="dark"] .el-button--default {
+  --el-button-bg-color: #2d2d2d;
+  --el-button-border-color: #434343;
+  --el-button-text-color: #e5e5e5;
+  --el-button-hover-bg-color: #3a3a3a;
+  --el-button-hover-border-color: #525252;
+}
+
+[data-theme="dark"] .el-input__wrapper {
+  background: #2d2d2d;
+  border-color: #434343;
+  box-shadow: none;
+}
+
+[data-theme="dark"] .el-input__inner {
+  color: #e5e5e5;
+}
+
+[data-theme="dark"] .el-tag--default {
+  --el-tag-bg-color: #2d2d2d;
+  --el-tag-border-color: #434343;
+  --el-tag-text-color: #a0a0a0;
+}
+
+[data-theme="dark"] .el-dropdown-menu {
+  background: var(--bg-card);
+  border-color: var(--border-color);
+}
+
+[data-theme="dark"] .el-dropdown-menu__item {
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .el-dropdown-menu__item:hover {
+  background: var(--bg-hover);
+}
+
+[data-theme="dark"] .el-popper.is-light {
+  background: var(--bg-card);
+  border-color: var(--border-color);
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .code-block {
+  background: #2d2d2d;
+  border-color: var(--border-color);
+  color: #e5e5e5;
+}
+
+[data-theme="dark"] .metric-card {
+  background: var(--bg-card);
+  border-color: var(--border-color);
+}
+
+[data-theme="dark"] .metric-card:hover {
+  border-color: var(--color-primary-light);
+  box-shadow: var(--shadow-elevated);
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb {
+  background: #434343;
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
+  background: #525252;
+}
+
+/* 全局重置 */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-size: 14px;
+  color: var(--text-primary);
+  background: var(--bg-page);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  touch-action: manipulation;
+}
+
+a { color: var(--color-primary); text-decoration: none; }
+a:hover { color: var(--color-primary-light); }
+
+/* Element Plus 覆盖 - 匹配大平台风格 */
+.el-button--primary {
+  --el-button-bg-color: var(--color-primary);
+  --el-button-border-color: var(--color-primary);
+  --el-button-hover-bg-color: var(--color-primary-light);
+  --el-button-hover-border-color: var(--color-primary-light);
+}
+
+.el-menu { border-right: none !important; }
+.el-card { border-radius: var(--radius-md); }
+
+/* 滚动条 */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-thumb { background: #d9d9d9; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #bfbfbf; }
+
+/* 通用布局 */
+.page-container { padding: 24px; min-height: calc(100vh - var(--header-height)); }
+.page-header { margin-bottom: 24px; }
+.page-header h2 { font-size: 20px; font-weight: 600; color: var(--text-primary); }
+.page-header p { font-size: 13px; color: var(--text-secondary); margin-top: 4px; }
+
+/* 状态点 */
+.status-dot { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; }
+.status-dot .dot { width: 8px; height: 8px; border-radius: 50%; }
+.status-dot.online .dot { background: var(--color-success); }
+.status-dot.offline .dot { background: var(--color-danger); }
+.status-dot.warning .dot { background: var(--color-warning); }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+.status-dot.online .dot { animation: pulse 2s infinite; }
+
+/* 风险徽章 */
+.risk-badge { display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 4px; letter-spacing: 0.5px; }
+.risk-badge.l1 { color: #237804; background: #f6ffed; border: 1px solid #b7eb8f; }
+.risk-badge.l2 { color: #1038B0; background: #e6f7ff; border: 1px solid #91d5ff; }
+.risk-badge.l3 { color: #d48806; background: #fffbe6; border: 1px solid #ffe58f; }
+.risk-badge.l4 { color: #cf1322; background: #fff2f0; border: 1px solid #ffccc7; }
+
+/* 指标卡片 */
+.metric-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 20px 24px;
+  transition: all 0.2s;
+}
+.metric-card:hover { border-color: var(--color-primary-light); box-shadow: var(--shadow-elevated); }
+.metric-card .metric-label { font-size: 12px; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+.metric-card .metric-value { font-size: 28px; font-weight: 700; color: var(--text-primary); line-height: 1.2; }
+.metric-card .metric-sub { font-size: 12px; color: var(--text-secondary); margin-top: 4px; }
+
+/* 大平台统计数字 */
+.stat-number { font-size: 32px; font-weight: 700; color: var(--text-primary); line-height: 1; }
+.stat-label { font-size: 13px; color: var(--text-secondary); margin-top: 8px; }
+
+/* 日志/命令输出 */
+.code-block {
+  background: #fafafa;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 12px 16px;
+  font-family: 'SF Mono', 'Monaco', 'Menlo', 'Consolas', monospace;
+  font-size: 12px;
+  color: var(--text-primary);
+  max-height: 300px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+  line-height: 1.6;
+}

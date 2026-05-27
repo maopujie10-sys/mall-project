@@ -1,0 +1,1067 @@
+diff --git a/mall-app/src/main/java/com/mall/controller/merchant/MerchantDashboardController.java b/mall-app/src/main/java/com/mall/controller/merchant/MerchantDashboardController.java
+new file mode 100644
+index 0000000..28f6707
+--- /dev/null
++++ b/mall-app/src/main/java/com/mall/controller/merchant/MerchantDashboardController.java
+@@ -0,0 +1,230 @@
++package com.mall.controller.merchant;
++
++import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
++import com.mall.common.Result;
++import com.mall.entity.*;
++import com.mall.mapper.*;
++import lombok.RequiredArgsConstructor;
++import org.springframework.web.bind.annotation.*;
++
++import java.math.BigDecimal;
++import java.time.LocalDate;
++import java.time.format.DateTimeFormatter;
++import java.util.*;
++import java.util.stream.Collectors;
++
++/**
++ * 商家端-仪表盘（迁移自旧商城 SellerInstrumentPanelController）
++ * 增强版仪表盘：头部/趋势折线/热销商品/订单状态分布
++ */
++@RestController
++@RequestMapping("/merchant")
++@RequiredArgsConstructor
++public class MerchantDashboardController {
++
++    private final MallOrdersPrizeMapper ordersPrizeMapper;
++    private final MallOrdersGoodsMapper ordersGoodsMapper;
++    private final MallSellerMapper sellerMapper;
++    private final MallEvaluationMapper evaluationMapper;
++    private final MallFocusSellerMapper focusSellerMapper;
++    private final ProductMapper productMapper;
++    private final MerchantMapper merchantMapper;
++    private final KycMapper kycMapper;
++
++    /**
++     * 仪表盘头部（含商品数/销售额/订单数/利润/信誉分/关注数/评分/认证状态）
++     */
++    @GetMapping("/instrument-panel/head")
++    public Result<?> dashboardHead(@RequestAttribute Long userId) {
++        Merchant merchant = merchantMapper.selectById(userId);
++        if (merchant == null) return Result.fail("商家不存在");
++
++        String sellerId = String.valueOf(merchant.getUserId());
++        Map<String, Object> head = new HashMap<>();
++
++        // 商品数量
++        QueryWrapper<Product> productQw = new QueryWrapper<>();
++        productQw.eq("merchant_id", userId).eq("deleted", 0);
++        head.put("goodsNum", productMapper.selectCount(productQw));
++
++        // 总销售额 & 订单数（从mall_orders_prize统计）
++        QueryWrapper<MallOrdersPrize> totalQw = new QueryWrapper<>();
++        totalQw.eq("seller_id", sellerId);
++        List<MallOrdersPrize> allOrders = ordersPrizeMapper.selectList(totalQw);
++
++        double totalSales = allOrders.stream()
++                .mapToDouble(o -> o.getPrizeReal() != null ? o.getPrizeReal() : 0).sum();
++        head.put("totalSales", totalSales);
++        head.put("orderNum", allOrders.size());
++
++        // 总利润
++        double totalProfit = allOrders.stream()
++                .mapToDouble(o -> o.getProfit() != null ? o.getProfit() : 0).sum();
++        head.put("totalProfit", totalProfit);
++
++        // 店铺信誉分 from mall_seller
++        MallSeller seller = sellerMapper.selectById(sellerId);
++        head.put("creditScore", seller != null ? seller.getCreditScore() : 0);
++
++        // 关注数
++        QueryWrapper<MallFocusSeller> focusQw = new QueryWrapper<>();
++        focusQw.eq("seller_id", sellerId);
++        head.put("focusCount", focusSellerMapper.selectCount(focusQw));
++
++        // 评分
++        QueryWrapper<MallEvaluation> evalQw = new QueryWrapper<>();
++        evalQw.eq("seller_id", sellerId);
++        List<MallEvaluation> evals = evaluationMapper.selectList(evalQw);
++        double avgRating = evals.stream()
++                .mapToInt(e -> e.getRating() != null ? e.getRating() : 0).average().orElse(0);
++        head.put("rating", Math.round(avgRating * 10.0) / 10.0);
++
++        // 今日新增订单
++        String today = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
++        QueryWrapper<MallOrdersPrize> todayOrderQw = new QueryWrapper<>();
++        todayOrderQw.eq("seller_id", sellerId);
++        todayOrderQw.apply("DATE(create_time) = {0}", today);
++        List<MallOrdersPrize> todayOrders = ordersPrizeMapper.selectList(todayOrderQw);
++        head.put("todayOrder", todayOrders.size());
++
++        // 今日销售额
++        double todaySales = todayOrders.stream()
++                .mapToDouble(o -> o.getPrizeReal() != null ? o.getPrizeReal() : 0).sum();
++        head.put("todaySales", todaySales);
++
++        // 今日利润
++        double todayProfit = todayOrders.stream()
++                .mapToDouble(o -> o.getProfit() != null ? o.getProfit() : 0).sum();
++        head.put("todayProfit", todayProfit);
++
++        // 店铺认证状态: 0-未认证 1-完成基础设置 2-KYC已通过 3-已上架商品
++        head.put("freeze", seller != null ? seller.getStatus() : 0);
++
++        QueryWrapper<Kyc> kycQw = new QueryWrapper<>();
++        kycQw.eq("user_id", merchant.getUserId());
++        Kyc kyc = kycMapper.selectOne(kycQw);
++
++        if (kyc == null || kyc.getRealName() == null || kyc.getRealName().isBlank()) {
++            head.put("storeCheckState", 0);
++        } else if (kyc.getStatus() != null && kyc.getStatus() == 1) {
++            QueryWrapper<Product> activeQw = new QueryWrapper<Product>()
++                    .eq("merchant_id", userId).eq("deleted", 0).eq("status", 1);
++            Long goodsCount = productMapper.selectCount(activeQw);
++            head.put("storeCheckState", goodsCount > 0 ? 3 : 2);
++        } else {
++            head.put("storeCheckState", 1);
++        }
++
++        return Result.ok(Map.of("head", head));
++    }
++
++    /**
++     * 趋势折线图数据（天/周/月）
++     * type: 0=today, 1=last7days, 2=thisMonth
++     */
++    @GetMapping("/instrument-panel/line")
++    public Result<?> trendLine(@RequestAttribute Long userId,
++                               @RequestParam(defaultValue = "2") Integer type) {
++        Merchant merchant = merchantMapper.selectById(userId);
++        if (merchant == null) return Result.fail("商家不存在");
++
++        String sellerId = String.valueOf(merchant.getUserId());
++        String startTime;
++        String endTime = LocalDate.now().plusDays(1).format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
++
++        startTime = switch (type) {
++            case 0 -> LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
++            case 1 -> LocalDate.now().minusDays(7).format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
++            default -> LocalDate.now().withDayOfMonth(1).format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
++        };
++
++        QueryWrapper<MallOrdersPrize> qw = new QueryWrapper<>();
++        qw.eq("seller_id", sellerId);
++        qw.between("create_time", startTime + " 00:00:00", endTime + " 00:00:00");
++        qw.orderByAsc("create_time");
++        List<MallOrdersPrize> orders = ordersPrizeMapper.selectList(qw);
++
++        // Group by day
++        Map<String, List<MallOrdersPrize>> grouped = orders.stream()
++                .filter(o -> o.getCreateTime() != null)
++                .collect(Collectors.groupingBy(
++                        o -> o.getCreateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")),
++                        LinkedHashMap::new, Collectors.toList()));
++
++        List<Map<String, Object>> line = new ArrayList<>();
++        for (Map.Entry<String, List<MallOrdersPrize>> entry : grouped.entrySet()) {
++            Map<String, Object> point = new HashMap<>();
++            point.put("dayString", entry.getKey());
++            point.put("countSales", entry.getValue().stream()
++                    .mapToDouble(o -> o.getPrizeReal() != null ? o.getPrizeReal() : 0).sum());
++            point.put("countOrders", entry.getValue().size());
++            line.add(point);
++        }
++
++        return Result.ok(Map.of("line", line));
++    }
++
++    /**
++     * 热销商品排行（Top10 by sales）
++     */
++    @GetMapping("/instrument-panel/top-goods")
++    public Result<?> topGoods(@RequestAttribute Long userId) {
++        QueryWrapper<Product> qw = new QueryWrapper<>();
++        qw.eq("merchant_id", userId);
++        qw.eq("deleted", 0);
++        qw.orderByDesc("sales");
++        qw.last("LIMIT 10");
++
++        List<Product> products = productMapper.selectList(qw);
++        List<Map<String, Object>> list = products.stream().map(p -> {
++            Map<String, Object> m = new HashMap<>();
++            m.put("id", p.getId());
++            m.put("name", p.getName());
++            m.put("mainImage", p.getMainImage());
++            m.put("price", p.getPrice());
++            m.put("sales", p.getSales());
++            m.put("status", p.getStatus());
++            return m;
++        }).collect(Collectors.toList());
++
++        return Result.ok(Map.of("goods", list));
++    }
++
++    /**
++     * 订单状态分布统计
++     */
++    @GetMapping("/instrument-panel/stats")
++    public Result<?> orderStats(@RequestAttribute Long userId) {
++        Merchant merchant = merchantMapper.selectById(userId);
++        if (merchant == null) return Result.fail("商家不存在");
++
++        String sellerId = String.valueOf(merchant.getUserId());
++
++        QueryWrapper<MallOrdersPrize> allQw = new QueryWrapper<>();
++        allQw.eq("seller_id", sellerId);
++        Long totalOrders = ordersPrizeMapper.selectCount(allQw);
++
++        QueryWrapper<MallOrdersPrize> ingQw = new QueryWrapper<>();
++        ingQw.eq("seller_id", sellerId);
++        ingQw.in("status", Arrays.asList(0, 2));
++        Long orderIng = ordersPrizeMapper.selectCount(ingQw);
++
++        QueryWrapper<MallOrdersPrize> finishQw = new QueryWrapper<>();
++        finishQw.eq("seller_id", sellerId);
++        finishQw.eq("status", 4);
++        Long orderFinish = ordersPrizeMapper.selectCount(finishQw);
++
++        QueryWrapper<MallOrdersPrize> cancelQw = new QueryWrapper<>();
++        cancelQw.eq("seller_id", sellerId);
++        cancelQw.eq("status", 7);
++        Long orderCancel = ordersPrizeMapper.selectCount(cancelQw);
++
++        Map<String, Object> stats = new HashMap<>();
++        stats.put("orderNum", totalOrders);
++        stats.put("orderIng", orderIng);
++        stats.put("orderFinish", orderFinish);
++        stats.put("orderCancel", orderCancel);
++
++        return Result.ok(Map.of("stats", stats));
++    }
++}
+diff --git a/mall-app/src/main/java/com/mall/controller/merchant/MerchantEvaluationController.java b/mall-app/src/main/java/com/mall/controller/merchant/MerchantEvaluationController.java
+new file mode 100644
+index 0000000..2a28b9b
+--- /dev/null
++++ b/mall-app/src/main/java/com/mall/controller/merchant/MerchantEvaluationController.java
+@@ -0,0 +1,179 @@
++package com.mall.controller.merchant;
++
++import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
++import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
++import com.mall.common.Result;
++import com.mall.entity.*;
++import com.mall.mapper.*;
++import lombok.RequiredArgsConstructor;
++import org.springframework.web.bind.annotation.*;
++
++import java.util.*;
++import java.util.stream.Collectors;
++
++/**
++ * 商家端-评价管理（迁移自旧商城 SellerEvaluationController）
++ * 评价列表含商品信息/用户头像脱敏/评价统计/评分分布
++ */
++@RestController
++@RequestMapping("/merchant")
++@RequiredArgsConstructor
++public class MerchantEvaluationController {
++
++    private final MallEvaluationMapper evaluationMapper;
++    private final SellerGoodsMapper sellerGoodsMapper;
++    private final SystemGoodsMapper systemGoodsMapper;
++    private final UserMapper userMapper;
++    private final MerchantMapper merchantMapper;
++
++    /**
++     * 评价详细列表（含商品信息、用户头像、脱敏用户名、评分筛选）
++     */
++    @GetMapping("/evaluation/list")
++    public Result<?> evaluationList(@RequestAttribute Long userId,
++                                    @RequestParam(defaultValue = "1") Integer pageNum,
++                                    @RequestParam(defaultValue = "10") Integer pageSize,
++                                    @RequestParam(required = false) String userName,
++                                    @RequestParam(required = false) Integer evaluationType) {
++
++        Merchant merchant = merchantMapper.selectById(userId);
++        if (merchant == null) return Result.fail("商家不存在");
++
++        String sellerId = String.valueOf(merchant.getUserId());
++
++        QueryWrapper<MallEvaluation> qw = new QueryWrapper<>();
++        qw.eq("seller_id", sellerId);
++        qw.eq("status", 0);
++        if (userName != null && !userName.isBlank()) {
++            qw.like("user_name", userName);
++        }
++        if (evaluationType != null) {
++            qw.eq("evaluation_type", evaluationType);
++        }
++        qw.orderByDesc("create_time");
++
++        Page<MallEvaluation> page = new Page<>(pageNum, pageSize);
++        Page<MallEvaluation> result = evaluationMapper.selectPage(page, qw);
++
++        List<Map<String, Object>> list = result.getRecords().stream().map(eval -> {
++            Map<String, Object> m = new HashMap<>();
++            m.put("uuid", eval.getUuid());
++            m.put("userName", desensitize(eval.getUserName()));
++            m.put("rating", eval.getRating());
++            m.put("content", eval.getContent());
++            m.put("evaluationType", eval.getEvaluationType());
++            m.put("evaluationTime", eval.getEvaluationTime() != null ?
++                    eval.getEvaluationTime().toString() : "");
++            m.put("commentTime", eval.getEvaluationTime() != null ?
++                    eval.getEvaluationTime().toString() : eval.getCreateTime().toString());
++            m.put("avatar", eval.getPartyAvatar());
++            m.put("partyName", eval.getPartyName());
++            m.put("orderId", eval.getOrderId());
++            m.put("skuId", eval.getSkuId());
++
++            // 评价图片
++            List<String> images = new ArrayList<>();
++            if (eval.getImgUrl1() != null) images.add(eval.getImgUrl1());
++            if (eval.getImgUrl2() != null) images.add(eval.getImgUrl2());
++            if (eval.getImgUrl3() != null) images.add(eval.getImgUrl3());
++            m.put("images", images);
++
++            // 关联商品信息
++            if (eval.getSellerGoodsId() != null) {
++                SellerGoods sellerGoods = sellerGoodsMapper.selectById(eval.getSellerGoodsId());
++                if (sellerGoods != null) {
++                    Map<String, Object> goodsInfo = new HashMap<>();
++                    goodsInfo.put("id", sellerGoods.getUuid());
++                    goodsInfo.put("sellerId", sellerGoods.getSellerId());
++                    goodsInfo.put("goodsName", sellerGoods.getGoodsName());
++                    goodsInfo.put("coverImg", sellerGoods.getCoverImg());
++                    goodsInfo.put("price", sellerGoods.getPrice());
++
++                    if (sellerGoods.getSystemGoodsId() != null) {
++                        SystemGoods sysGoods = systemGoodsMapper.selectById(sellerGoods.getSystemGoodsId());
++                        if (sysGoods != null) {
++                            goodsInfo.put("imgUrl1", sysGoods.getMainImage());
++                        }
++                    }
++                    m.put("goodsVo", goodsInfo);
++                }
++            }
++
++            // 用户头像fallback
++            if (eval.getPartyId() != null && (eval.getPartyAvatar() == null || eval.getPartyAvatar().isBlank())) {
++                try {
++                    User user = userMapper.selectById(Long.valueOf(eval.getPartyId()));
++                    if (user != null) {
++                        m.put("avatar", user.getAvatar());
++                        m.put("partyName", user.getNickname());
++                    }
++                } catch (NumberFormatException ignored) {}
++            }
++
++            return m;
++        }).collect(Collectors.toList());
++
++        Map<String, Object> data = new HashMap<>();
++        data.put("pageInfo", Map.of("pageNum", pageNum, "pageSize", pageSize, "totalElements", result.getTotal()));
++        data.put("pageList", list);
++        return Result.ok(data);
++    }
++
++    /**
++     * 评价统计概览（好评率/各星级分布）
++     */
++    @GetMapping("/evaluation/stats")
++    public Result<?> evaluationStats(@RequestAttribute Long userId) {
++        Merchant merchant = merchantMapper.selectById(userId);
++        if (merchant == null) return Result.fail("商家不存在");
++
++        String sellerId = String.valueOf(merchant.getUserId());
++
++        QueryWrapper<MallEvaluation> qw = new QueryWrapper<>();
++        qw.eq("seller_id", sellerId);
++        qw.eq("status", 0);
++        Long totalCount = evaluationMapper.selectCount(qw);
++
++        Map<Integer, Long> distribution = new LinkedHashMap<>();
++        distribution.put(5, 0L);
++        distribution.put(4, 0L);
++        distribution.put(3, 0L);
++        distribution.put(2, 0L);
++        distribution.put(1, 0L);
++        double avgRating = 0;
++
++        if (totalCount > 0) {
++            List<MallEvaluation> all = evaluationMapper.selectList(qw);
++            avgRating = all.stream().mapToInt(e -> e.getRating() != null ? e.getRating() : 0)
++                    .average().orElse(0);
++            for (MallEvaluation e : all) {
++                int r = e.getRating() != null ? e.getRating() : 0;
++                if (r >= 1 && r <= 5) {
++                    distribution.merge(r, 1L, Long::sum);
++                }
++            }
++        }
++
++        Map<String, Object> data = new HashMap<>();
++        data.put("totalCount", totalCount);
++        data.put("avgRating", Math.round(avgRating * 10.0) / 10.0);
++        data.put("distribution", distribution);
++        return Result.ok(data);
++    }
++
++    private String desensitize(String userName) {
++        if (userName == null || userName.isBlank()) return "";
++        if (userName.contains("@")) {
++            int atIdx = userName.indexOf('@');
++            if (atIdx <= 2) return userName.substring(0, 1) + "***" + userName.substring(atIdx);
++            return userName.substring(0, 2) + "***" + userName.substring(atIdx);
++        }
++        if (userName.matches("\\d+") && userName.length() >= 7) {
++            return userName.substring(0, 3) + "****" + userName.substring(userName.length() - 4);
++        }
++        if (userName.length() > 2) {
++            return userName.substring(0, 1) + "***" + userName.substring(userName.length() - 1);
++        }
++        return userName;
++    }
++}
+diff --git a/mall-app/src/main/java/com/mall/controller/merchant/MerchantFinanceController.java b/mall-app/src/main/java/com/mall/controller/merchant/MerchantFinanceController.java
+new file mode 100644
+index 0000000..4af0bf3
+--- /dev/null
++++ b/mall-app/src/main/java/com/mall/controller/merchant/MerchantFinanceController.java
+@@ -0,0 +1,169 @@
++package com.mall.controller.merchant;
++
++import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
++import com.mall.common.Result;
++import com.mall.entity.*;
++import com.mall.mapper.*;
++import lombok.RequiredArgsConstructor;
++import org.springframework.web.bind.annotation.*;
++
++import java.math.BigDecimal;
++import java.time.LocalDate;
++import java.time.format.DateTimeFormatter;
++import java.util.*;
++import java.util.stream.Collectors;
++
++/**
++ * 商家端-财务报表（迁移自旧商城 SellerReportController）
++ * 提供收入/利润/订单统计头部摘要 和 按日期的报表明细列表
++ */
++@RestController
++@RequestMapping("/merchant")
++@RequiredArgsConstructor
++public class MerchantFinanceController {
++
++    private final MallOrdersPrizeMapper ordersPrizeMapper;
++    private final MerchantMapper merchantMapper;
++
++    /**
++     * 财务报表头部摘要
++     * contentType: 0=today, 1=last7days, 2=thisMonth, 3=all
++     */
++    @GetMapping("/finance-report/head")
++    public Result<?> financeHead(@RequestAttribute Long userId,
++                                 @RequestParam(defaultValue = "0") Integer contentType) {
++
++        Merchant merchant = merchantMapper.selectById(userId);
++        if (merchant == null) return Result.fail("商家不存在");
++
++        String sellerId = String.valueOf(merchant.getUserId());
++        String startTime = getStartTime(contentType);
++        String endTime = LocalDate.now().plusDays(1).format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
++
++        // Base query with time filter
++        QueryWrapper<MallOrdersPrize> baseQw = new QueryWrapper<>();
++        baseQw.eq("seller_id", sellerId);
++        if (startTime != null) baseQw.ge("create_time", startTime + " 00:00:00");
++        baseQw.le("create_time", endTime + " 00:00:00");
++
++        List<MallOrdersPrize> filteredOrders = ordersPrizeMapper.selectList(baseQw);
++
++        // TotalSales
++        BigDecimal totalSales = filteredOrders.stream()
++                .map(o -> o.getPrizeReal() != null ? BigDecimal.valueOf(o.getPrizeReal()) : BigDecimal.ZERO)
++                .reduce(BigDecimal.ZERO, BigDecimal::add);
++
++        // TotalProfit
++        BigDecimal totalProfit = filteredOrders.stream()
++                .map(o -> o.getProfit() != null ? BigDecimal.valueOf(o.getProfit()) : BigDecimal.ZERO)
++                .reduce(BigDecimal.ZERO, BigDecimal::add);
++
++        // OrderNum
++        long orderNum = filteredOrders.size();
++
++        // OrderReturns
++        long orderReturns = filteredOrders.stream()
++                .filter(o -> o.getReturnStatus() != null && o.getReturnStatus() > 0).count();
++
++        // OrderCancel
++        long orderCancel = filteredOrders.stream()
++                .filter(o -> o.getStatus() != null && o.getStatus() == 7).count();
++
++        // WillIncome (unsettled profit)
++        QueryWrapper<MallOrdersPrize> willIncomeQw = new QueryWrapper<>();
++        willIncomeQw.eq("seller_id", sellerId);
++        willIncomeQw.eq("profit_status", 0);
++        willIncomeQw.in("status", Arrays.asList(2, 4));
++        List<MallOrdersPrize> unsettledOrders = ordersPrizeMapper.selectList(willIncomeQw);
++        BigDecimal willIncome = unsettledOrders.stream()
++                .map(o -> o.getProfit() != null ? BigDecimal.valueOf(o.getProfit()) : BigDecimal.ZERO)
++                .reduce(BigDecimal.ZERO, BigDecimal::add);
++
++        Map<String, Object> head = new HashMap<>();
++        head.put("willIncome", willIncome);
++        head.put("totalSales", totalSales);
++        head.put("totalProfit", totalProfit);
++        head.put("orderNum", orderNum);
++        head.put("orderReturns", orderReturns);
++        head.put("orderCancel", orderCancel);
++
++        return Result.ok(Map.of("head", head));
++    }
++
++    /**
++     * 财务报表列表（按日期分组）
++     * contentType: 0=today, 1=last7days, 2=thisMonth
++     */
++    @GetMapping("/finance-report/list")
++    public Result<?> financeList(@RequestAttribute Long userId,
++                                  @RequestParam(defaultValue = "2") Integer contentType,
++                                  @RequestParam(defaultValue = "1") Integer pageNum,
++                                  @RequestParam(defaultValue = "31") Integer pageSize) {
++
++        Merchant merchant = merchantMapper.selectById(userId);
++        if (merchant == null) return Result.fail("商家不存在");
++
++        String sellerId = String.valueOf(merchant.getUserId());
++        String startTime = getStartTime(contentType);
++        String endTime = LocalDate.now().plusDays(1).format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
++
++        QueryWrapper<MallOrdersPrize> qw = new QueryWrapper<>();
++        qw.eq("seller_id", sellerId);
++        if (startTime != null) qw.ge("create_time", startTime + " 00:00:00");
++        qw.le("create_time", endTime + " 00:00:00");
++        qw.orderByDesc("create_time");
++
++        List<MallOrdersPrize> allOrders = ordersPrizeMapper.selectList(qw);
++
++        // Group by day (yyyy-MM-dd)
++        Map<String, List<MallOrdersPrize>> grouped = allOrders.stream()
++                .filter(o -> o.getCreateTime() != null)
++                .collect(Collectors.groupingBy(
++                        o -> o.getCreateTime().toLocalDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")),
++                        LinkedHashMap::new, Collectors.toList()));
++
++        List<Map<String, Object>> reportList = new ArrayList<>();
++        for (Map.Entry<String, List<MallOrdersPrize>> entry : grouped.entrySet()) {
++            String day = entry.getKey();
++            List<MallOrdersPrize> dayOrders = entry.getValue();
++
++            Map<String, Object> row = new HashMap<>();
++            row.put("dayString", day);
++            row.put("orderNum", (long) dayOrders.size());
++            row.put("totalSales", dayOrders.stream()
++                    .map(o -> o.getPrizeReal() != null ? BigDecimal.valueOf(o.getPrizeReal()) : BigDecimal.ZERO)
++                    .reduce(BigDecimal.ZERO, BigDecimal::add));
++            row.put("totalProfit", dayOrders.stream()
++                    .map(o -> o.getProfit() != null ? BigDecimal.valueOf(o.getProfit()) : BigDecimal.ZERO)
++                    .reduce(BigDecimal.ZERO, BigDecimal::add));
++            row.put("orderReturns", dayOrders.stream()
++                    .filter(o -> o.getReturnStatus() != null && o.getReturnStatus() > 0).count());
++            row.put("orderCancel", dayOrders.stream()
++                    .filter(o -> o.getStatus() != null && o.getStatus() == 7).count());
++
++            reportList.add(row);
++        }
++
++        // Manual pagination of grouped results
++        int start = (pageNum - 1) * pageSize;
++        int end = Math.min(start + pageSize, reportList.size());
++        List<Map<String, Object>> pagedList = start < reportList.size() ?
++                reportList.subList(start, end) : Collections.emptyList();
++
++        Map<String, Object> data = new HashMap<>();
++        data.put("pageInfo", Map.of("pageNum", pageNum, "pageSize", pageSize,
++                "totalElements", (long) reportList.size()));
++        data.put("pageList", pagedList);
++        return Result.ok(data);
++    }
++
++    private String getStartTime(int contentType) {
++        LocalDate now = LocalDate.now();
++        return switch (contentType) {
++            case 0 -> now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
++            case 1 -> now.minusDays(7).format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
++            case 2 -> now.withDayOfMonth(1).format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
++            default -> null;
++        };
++    }
++}
+diff --git a/mall-app/src/main/java/com/mall/controller/merchant/MerchantGoodsController.java b/mall-app/src/main/java/com/mall/controller/merchant/MerchantGoodsController.java
+new file mode 100644
+index 0000000..649658e
+--- /dev/null
++++ b/mall-app/src/main/java/com/mall/controller/merchant/MerchantGoodsController.java
+@@ -0,0 +1,174 @@
++package com.mall.controller.merchant;
++
++import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
++import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
++import com.mall.common.Result;
++import com.mall.entity.Category;
++import com.mall.entity.Product;
++import com.mall.entity.ProductSku;
++import com.mall.mapper.*;
++import lombok.RequiredArgsConstructor;
++import org.springframework.web.bind.annotation.*;
++
++import java.math.BigDecimal;
++import java.util.*;
++import java.util.stream.Collectors;
++
++/**
++ * 商家端-商品管理（迁移自旧商城 SellerGoodsController 商家自有功能）
++ * 高级搜索/分类统计/SKU详情/批量排序
++ */
++@RestController
++@RequestMapping("/merchant")
++@RequiredArgsConstructor
++public class MerchantGoodsController {
++
++    private final ProductMapper productMapper;
++    private final ProductSkuMapper skuMapper;
++    private final ProductImageMapper productImageMapper;
++    private final CategoryMapper categoryMapper;
++
++    /**
++     * 商家自有商品高级搜索（含价格区间、分类筛选、新品/热销筛选）
++     */
++    @GetMapping("/my-goods/search")
++    public Result<?> searchMyGoods(@RequestAttribute Long userId,
++                                   @RequestParam(defaultValue = "1") Integer pageNum,
++                                   @RequestParam(defaultValue = "10") Integer pageSize,
++                                   @RequestParam(required = false) String keyword,
++                                   @RequestParam(required = false) Long categoryId,
++                                   @RequestParam(required = false) Integer isNew,
++                                   @RequestParam(required = false) Integer isHot,
++                                   @RequestParam(required = false) Integer status,
++                                   @RequestParam(required = false) BigDecimal priceMin,
++                                   @RequestParam(required = false) BigDecimal priceMax) {
++
++        QueryWrapper<Product> qw = new QueryWrapper<>();
++        qw.eq("merchant_id", userId);
++        qw.eq("deleted", 0);
++
++        if (status != null) qw.eq("status", status);
++        if (categoryId != null) qw.eq("category_id", categoryId);
++        if (isNew != null) qw.eq("is_new", isNew);
++        if (isHot != null) qw.eq("is_hot", isHot);
++        if (keyword != null && !keyword.isBlank()) {
++            qw.and(w -> w.like("name", keyword).or().like("subtitle", keyword));
++        }
++        if (priceMin != null) qw.ge("price", priceMin);
++        if (priceMax != null) qw.le("price", priceMax);
++        qw.orderByDesc("sort", "create_time");
++
++        Page<Product> page = new Page<>(pageNum, pageSize);
++        Page<Product> result = productMapper.selectPage(page, qw);
++
++        List<Map<String, Object>> list = result.getRecords().stream().map(p -> {
++            Map<String, Object> m = new HashMap<>();
++            m.put("id", p.getId());
++            m.put("name", p.getName());
++            m.put("subtitle", p.getSubtitle());
++            m.put("mainImage", p.getMainImage());
++            m.put("price", p.getPrice());
++            m.put("originalPrice", p.getOriginalPrice());
++            m.put("costPrice", p.getCostPrice());
++            m.put("totalStock", p.getTotalStock());
++            m.put("sales", p.getSales());
++            m.put("virtualSales", p.getVirtualSales());
++            m.put("status", p.getStatus());
++            m.put("isHot", p.getIsHot());
++            m.put("isNew", p.getIsNew());
++            m.put("sort", p.getSort());
++            m.put("categoryId", p.getCategoryId());
++            m.put("createTime", p.getCreateTime());
++            return m;
++        }).collect(Collectors.toList());
++
++        Map<String, Object> data = new HashMap<>();
++        data.put("pageInfo", Map.of("pageNum", pageNum, "pageSize", pageSize, "totalElements", result.getTotal()));
++        data.put("pageList", list);
++        return Result.ok(data);
++    }
++
++    /**
++     * 按分类统计商家商品数量
++     */
++    @GetMapping("/my-goods/category-count")
++    public Result<?> categoryGoodsCount(@RequestAttribute Long userId) {
++        QueryWrapper<Product> qw = new QueryWrapper<>();
++        qw.select("category_id, count(*) as cnt");
++        qw.eq("merchant_id", userId);
++        qw.eq("deleted", 0);
++        qw.eq("status", 1);
++        qw.groupBy("category_id");
++
++        List<Map<String, Object>> rawList = productMapper.selectMaps(qw);
++        List<Map<String, Object>> result = new ArrayList<>();
++
++        for (Map<String, Object> row : rawList) {
++            Map<String, Object> item = new HashMap<>();
++            Long catId = (Long) row.get("category_id");
++            item.put("categoryId", catId);
++            item.put("count", row.get("cnt"));
++
++            if (catId != null) {
++                Category cat = categoryMapper.selectById(String.valueOf(catId));
++                item.put("categoryName", cat != null ? cat.getName() : "");
++                item.put("parentId", cat != null ? cat.getParentId() : "0");
++            }
++            result.add(item);
++        }
++
++        return Result.ok(result);
++    }
++
++    /**
++     * 商品SKU列表（增强版，含规格属性）
++     */
++    @GetMapping("/my-goods/{productId}/skus-detail")
++    public Result<?> skusDetail(@RequestAttribute Long userId, @PathVariable Long productId) {
++        Product product = productMapper.selectById(productId);
++        if (product == null || !product.getMerchantId().equals(userId)) {
++            return Result.fail("商品不存在或不属于当前商家");
++        }
++
++        QueryWrapper<ProductSku> qw = new QueryWrapper<>();
++        qw.eq("good_id", String.valueOf(productId));
++        qw.orderByAsc("sale");
++        List<ProductSku> skus = skuMapper.selectList(qw);
++
++        List<Map<String, Object>> list = skus.stream().map(sku -> {
++            Map<String, Object> m = new HashMap<>();
++            m.put("id", sku.getId());
++            m.put("price", sku.getPrice());
++            m.put("promotionPrice", sku.getPromotionPrice());
++            m.put("pic", sku.getPic());
++            m.put("coverImg", sku.getCoverImg());
++            m.put("sale", sku.getSale());
++            m.put("spData", sku.getSpData());
++            return m;
++        }).collect(Collectors.toList());
++
++        Map<String, Object> data = new HashMap<>();
++        data.put("productId", productId);
++        data.put("productName", product.getName());
++        data.put("skus", list);
++        return Result.ok(data);
++    }
++
++    /**
++     * 批量更新商品排序
++     */
++    @PutMapping("/my-goods/batch-sort")
++    public Result<?> batchSort(@RequestAttribute Long userId, @RequestBody List<Map<String, Object>> items) {
++        for (Map<String, Object> item : items) {
++            Long productId = Long.valueOf(item.get("productId").toString());
++            Integer sort = Integer.valueOf(item.get("sort").toString());
++
++            Product product = productMapper.selectById(productId);
++            if (product != null && product.getMerchantId().equals(userId)) {
++                product.setSort(sort);
++                productMapper.updateById(product);
++            }
++        }
++        return Result.ok();
++    }
++}
+diff --git a/mall-app/src/main/java/com/mall/controller/merchant/MerchantOrderController.java b/mall-app/src/main/java/com/mall/controller/merchant/MerchantOrderController.java
+new file mode 100644
+index 0000000..6faaed8
+--- /dev/null
++++ b/mall-app/src/main/java/com/mall/controller/merchant/MerchantOrderController.java
+@@ -0,0 +1,285 @@
++package com.mall.controller.merchant;
++
++import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
++import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
++import com.mall.common.Result;
++import com.mall.entity.*;
++import com.mall.mapper.*;
++import com.mall.service.MerchantService;
++import lombok.RequiredArgsConstructor;
++import org.springframework.web.bind.annotation.*;
++
++import java.math.BigDecimal;
++import java.time.LocalDate;
++import java.time.format.DateTimeFormatter;
++import java.util.*;
++import java.util.stream.Collectors;
++
++/**
++ * 商家端-订单管理（迁移自旧商城 SellerOrdersController）
++ * 含高级筛选/退货退款详情/退货列表/未采购统计等原 MerchantController 未覆盖功能
++ */
++@RestController
++@RequestMapping("/merchant")
++@RequiredArgsConstructor
++public class MerchantOrderController {
++
++    private final MallOrdersPrizeMapper ordersPrizeMapper;
++    private final MallOrdersGoodsMapper ordersGoodsMapper;
++    private final MallOrderMapper orderMapper;
++    private final MallOrderLogMapper orderLogMapper;
++    private final UserMapper userMapper;
++    private final MerchantMapper merchantMapper;
++    private final MerchantService merchantService;
++
++    /**
++     * 商家订单高级列表（含日期范围、采购状态、支付状态筛选）
++     */
++    @GetMapping("/my-orders/advanced")
++    public Result<?> advancedOrderList(@RequestAttribute Long userId,
++                                       @RequestParam(defaultValue = "1") Integer pageNum,
++                                       @RequestParam(defaultValue = "10") Integer pageSize,
++                                       @RequestParam(required = false) String status,
++                                       @RequestParam(required = false) String orderId,
++                                       @RequestParam(required = false) Integer payStatus,
++                                       @RequestParam(required = false) Integer purchStatus,
++                                       @RequestParam(required = false) String begin,
++                                       @RequestParam(required = false) String end) {
++
++        Merchant merchant = merchantMapper.selectById(userId);
++        if (merchant == null) return Result.fail("商家不存在");
++
++        QueryWrapper<MallOrdersPrize> qw = new QueryWrapper<>();
++        qw.eq("seller_id", String.valueOf(merchant.getUserId()));
++        if (orderId != null && !orderId.isBlank()) qw.eq("id", orderId);
++        if (payStatus != null && payStatus != -1) qw.eq("pay_status", payStatus);
++        if (purchStatus != null) qw.eq("purch_status", purchStatus);
++        if (status != null && !status.isBlank()) qw.eq("status", Integer.valueOf(status));
++        if (begin != null && !begin.isBlank()) qw.ge("create_time", begin + " 00:00:00");
++        if (end != null && !end.isBlank()) qw.le("create_time", end + " 23:59:59");
++        qw.orderByDesc("create_time");
++
++        Page<MallOrdersPrize> page = new Page<>(pageNum, pageSize);
++        Page<MallOrdersPrize> result = ordersPrizeMapper.selectPage(page, qw);
++
++        List<Map<String, Object>> list = result.getRecords().stream().map(order -> {
++            Map<String, Object> m = new HashMap<>();
++            m.put("id", order.getUuid());
++            m.put("contacts", order.getContacts());
++            m.put("prizeReal", order.getPrizeReal());
++            m.put("profit", order.getProfit());
++            m.put("purchStatus", order.getPurchStatus());
++            m.put("payStatus", payStatus != null && payStatus == -1 ? order.getStatus() : order.getPayStatus());
++            m.put("status", order.getStatus());
++            m.put("createTime", order.getCreateTime());
++            m.put("purchTime", order.getPurchTime() != null ? order.getPurchTime().toString() : "");
++            m.put("partyId", order.getPartyId());
++
++            // totalCost = sum(goodsNum * systemPrice)
++            QueryWrapper<MallOrdersGoods> goodsQw = new QueryWrapper<>();
++            goodsQw.eq("order_id", order.getUuid());
++            List<MallOrdersGoods> goodsList = ordersGoodsMapper.selectList(goodsQw);
++            double totalCost = goodsList.stream()
++                    .mapToDouble(g -> g.getGoodsNum() * g.getSystemPrice().doubleValue()).sum();
++            m.put("totalCost", totalCost);
++
++            if (order.getPartyId() != null) {
++                try {
++                    User user = userMapper.selectById(Long.valueOf(order.getPartyId()));
++                    m.put("username", user != null ? user.getPhone() : "");
++                } catch (NumberFormatException e) {
++                    m.put("username", "");
++                }
++            } else {
++                m.put("username", "");
++            }
++
++            return m;
++        }).collect(Collectors.toList());
++
++        Map<String, Object> data = new HashMap<>();
++        data.put("pageInfo", Map.of("pageNum", pageNum, "pageSize", pageSize, "totalElements", result.getTotal()));
++        data.put("pageList", list);
++        return Result.ok(data);
++    }
++
++    /**
++     * 订单详情（商家视角，含采购金额/物流/地址等完整信息）
++     */
++    @GetMapping("/my-orders/{id}")
++    public Result<?> orderDetail(@RequestAttribute Long userId, @PathVariable String id) {
++        Merchant merchant = merchantMapper.selectById(userId);
++        if (merchant == null) return Result.fail("商家不存在");
++
++        MallOrdersPrize order = ordersPrizeMapper.selectById(id);
++        if (order == null) return Result.fail("订单不存在");
++        if (!String.valueOf(merchant.getUserId()).equals(order.getSellerId())) {
++            return Result.fail("商家只允许查看自己的订单");
++        }
++
++        Map<String, Object> detail = new HashMap<>();
++        detail.put("id", order.getUuid());
++        detail.put("createTime", order.getCreateTime());
++        detail.put("purchTime", order.getPurchTime());
++        detail.put("status", order.getPayStatus());
++        detail.put("systemPrice", order.getSystemPrice());
++        detail.put("prizeReal", order.getPrizeReal());
++        detail.put("address", order.getAddress());
++        detail.put("contacts", order.getContacts());
++        detail.put("email", order.getEmail());
++        detail.put("phone", order.getPhone());
++        detail.put("country", order.getCountry());
++        detail.put("province", order.getProvince());
++        detail.put("city", order.getCity());
++        detail.put("postcode", order.getPostcode());
++        detail.put("partyId", order.getPartyId());
++        detail.put("returnStatus", order.getReturnStatus());
++        detail.put("returnReason", order.getReturnReason());
++        detail.put("returnDetail", order.getReturnDetail());
++        detail.put("profit", order.getProfit());
++        detail.put("fees", order.getFees());
++        detail.put("tax", order.getTax());
++
++        double returnPrice = (order.getFees() != null ? order.getFees() : 0)
++                + (order.getTax() != null ? order.getTax() : 0)
++                + (order.getPrizeReal() != null ? order.getPrizeReal() : 0);
++        detail.put("returnPrice", returnPrice);
++
++        if (order.getPartyId() != null) {
++            try {
++                User user = userMapper.selectById(Long.valueOf(order.getPartyId()));
++                detail.put("username", user != null ? user.getPhone() : "");
++            } catch (NumberFormatException e) {
++                detail.put("username", "");
++            }
++        } else {
++            detail.put("username", "");
++        }
++
++        // Order goods items
++        QueryWrapper<MallOrdersGoods> goodsQw = new QueryWrapper<>();
++        goodsQw.eq("order_id", order.getUuid());
++        List<MallOrdersGoods> goodsList = ordersGoodsMapper.selectList(goodsQw);
++        List<Map<String, Object>> items = goodsList.stream().map(g -> {
++            Map<String, Object> gm = new HashMap<>();
++            gm.put("goodsId", g.getGoodsId());
++            gm.put("goodsNum", g.getGoodsNum());
++            gm.put("systemPrice", g.getSystemPrice());
++            gm.put("goodsPrize", g.getGoodsPrize());
++            gm.put("goodsReal", g.getGoodsReal());
++            gm.put("skuId", g.getSkuId());
++            return gm;
++        }).collect(Collectors.toList());
++        detail.put("goods", items);
++
++        return Result.ok(detail);
++    }
++
++    /**
++     * 退货退款列表
++     */
++    @GetMapping("/my-orders/returns")
++    public Result<?> returnList(@RequestAttribute Long userId,
++                                @RequestParam(defaultValue = "1") Integer pageNum,
++                                @RequestParam(defaultValue = "10") Integer pageSize,
++                                @RequestParam(required = false) Integer returnStatus,
++                                @RequestParam(required = false) String begin,
++                                @RequestParam(required = false) String end) {
++
++        Merchant merchant = merchantMapper.selectById(userId);
++        if (merchant == null) return Result.fail("商家不存在");
++
++        QueryWrapper<MallOrdersPrize> qw = new QueryWrapper<>();
++        qw.eq("seller_id", String.valueOf(merchant.getUserId()));
++        qw.gt("return_status", 0);
++        if (returnStatus != null) qw.eq("return_status", returnStatus);
++        if (begin != null && !begin.isBlank()) qw.ge("create_time", begin + " 00:00:00");
++        if (end != null && !end.isBlank()) qw.le("create_time", end + " 23:59:59");
++        qw.orderByDesc("create_time");
++
++        Page<MallOrdersPrize> page = new Page<>(pageNum, pageSize);
++        Page<MallOrdersPrize> result = ordersPrizeMapper.selectPage(page, qw);
++
++        List<Map<String, Object>> list = result.getRecords().stream().map(order -> {
++            Map<String, Object> m = new HashMap<>();
++            m.put("refundTime", order.getRefundTime());
++            m.put("id", order.getUuid());
++            m.put("createTime", order.getCreateTime());
++            double retPrice = (order.getFees() != null ? order.getFees() : 0)
++                    + (order.getTax() != null ? order.getTax() : 0)
++                    + (order.getPrizeReal() != null ? order.getPrizeReal() : 0);
++            m.put("returnPrice", retPrice);
++            m.put("returnStatus", order.getReturnStatus());
++            m.put("returnReason", order.getReturnReason());
++            m.put("returnDetail", order.getReturnDetail());
++            m.put("partyId", order.getPartyId());
++            if (order.getPartyId() != null) {
++                try {
++                    User user = userMapper.selectById(Long.valueOf(order.getPartyId()));
++                    m.put("username", user != null ? user.getPhone() : "");
++                } catch (NumberFormatException e) {
++                    m.put("username", "");
++                }
++            } else {
++                m.put("username", "");
++            }
++            return m;
++        }).collect(Collectors.toList());
++
++        Map<String, Object> data = new HashMap<>();
++        data.put("pageInfo", Map.of("pageNum", pageNum, "pageSize", pageSize, "totalElements", result.getTotal()));
++        data.put("pageList", list);
++        return Result.ok(data);
++    }
++
++    /**
++     * 退货退款详情
++     */
++    @GetMapping("/my-orders/{id}/return-detail")
++    public Result<?> returnDetail(@RequestAttribute Long userId, @PathVariable String id) {
++        MallOrdersPrize order = ordersPrizeMapper.selectById(id);
++        if (order == null) return Result.fail("订单不存在");
++
++        Map<String, Object> detail = new HashMap<>();
++        detail.put("refundTime", order.getRefundTime());
++        detail.put("id", order.getUuid());
++        double retPrice = (order.getFees() != null ? order.getFees() : 0)
++                + (order.getTax() != null ? order.getTax() : 0)
++                + (order.getPrizeReal() != null ? order.getPrizeReal() : 0);
++        detail.put("returnPrice", retPrice);
++        detail.put("returnStatus", order.getReturnStatus());
++        detail.put("returnReason", order.getReturnReason());
++        detail.put("returnDetail", order.getReturnDetail());
++        detail.put("partyId", order.getPartyId());
++
++        if (order.getPartyId() != null) {
++            try {
++                User user = userMapper.selectById(Long.valueOf(order.getPartyId()));
++                detail.put("username", user != null ? user.getPhone() : "");
++            } catch (NumberFormatException e) {
++                detail.put("username", "");
++            }
++        } else {
++            detail.put("username", "");
++        }
++
++        return Result.ok(detail);
++    }
++
++    /**
++     * 统计未采购订单数量
++     */
++    @GetMapping("/my-orders/unpushed-count")
++    public Result<?> unpushedCount(@RequestAttribute Long userId) {
++        Merchant merchant = merchantMapper.selectById(userId);
++        if (merchant == null) return Result.fail("商家不存在");
++
++        QueryWrapper<MallOrdersPrize> qw = new QueryWrapper<>();
++        qw.eq("seller_id", String.valueOf(merchant.getUserId()));
++        qw.eq("purch_status", 0);
++        qw.eq("status", 2);
++        Long count = ordersPrizeMapper.selectCount(qw);
++
++        return Result.ok(Map.of("noPushNum", count));
++    }
++}

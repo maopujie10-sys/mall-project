@@ -1,0 +1,48 @@
+# 环境变量（含密钥，绝对不能提交）
+.env
+
+# 编译产物
+mall-app/target/
+*.jar
+*.class
+
+# 数据库二进制文件
+mysql/data/
+*.ibd
+*.dblwr
+ibdata*
+ib_buffer_pool
+ibtmp*
+undo_*
+binlog.*
+
+# Redis
+redis/data/
+
+# 日志
+nginx/logs/
+logs/
+*.log
+
+# 上传文件
+uploads/
+
+# 备份文件
+*.bak
+*.bak.*
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# 前端依赖
+node_modules/
+dist/
+
+# OS
+.DS_Store
+Thumbs.db
+**/__pycache__/
+agent_state.json
+mysql
