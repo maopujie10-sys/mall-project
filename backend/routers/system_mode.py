@@ -1,9 +1,10 @@
-"""ÏµÍ³Ä£Ê½¹ÜÀí + ½ô¼±ÇĞ»» + ÉóÅúÖĞĞÄ"""
+"""ç³»ç»Ÿæ¨¡å¼ç®¡ç† + ç´§æ€¥åˆ‡æ¢ + å®¡æ‰¹ä¸­å¿ƒ"""
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from auth import verify_token
 from state import state
 from risk import handle_risk
+from diff_utils import generate_diff_preview
 
 router = APIRouter(prefix="/system", tags=["System"])
 
@@ -18,7 +19,7 @@ class ApprovalDecideRequest(BaseModel):
 
 @router.get("/mode")
 async def get_mode(_=Depends(verify_token)):
-    await handle_risk("L1", "²é¿´ÏµÍ³Ä£Ê½")
+    await handle_risk("L1", "æŸ¥çœ‹ç³»ç»Ÿæ¨¡å¼")
     return {
         "mode": state.mode,
         "pendingCount": len(state.pending_approvals),
@@ -29,32 +30,40 @@ async def get_mode(_=Depends(verify_token)):
 @router.post("/mode")
 async def set_mode(req: SetModeRequest, _=Depends(verify_token)):
     if req.mode not in VALID_MODES:
-        raise HTTPException(400, f"ÎŞĞ§Ä£Ê½: {req.mode}¡£¿ÉÑ¡: {VALID_MODES}")
+        raise HTTPException(400, f"æ— æ•ˆæ¨¡å¼: {req.mode}ã€‚å¯é€‰: {VALID_MODES}")
     old = state.mode
     state.mode = req.mode
-    state.add_emergency(req.mode, f"ÓÃ»§ÇĞ»»Ä£Ê½: {old} -> {req.mode}")
+    state.add_emergency(req.mode, f"ç”¨æˆ·åˆ‡æ¢æ¨¡å¼: {old} -> {req.mode}")
     return {"mode": state.mode, "previous": old}
 
 @router.post("/emergency")
 async def emergency_stop(_=Depends(verify_token)):
     state.mode = "human_control"
-    state.add_emergency("human_control", "½ô¼±Í£Ö¹ - ÓÃ»§´¥·¢")
-    return {"mode": "human_control", "message": "AIÒÑÔİÍ££¬ËùÓĞ×Ô¶¯²Ù×÷ÒÑÍ£Ö¹"}
+    state.add_emergency("human_control", "ç´§æ€¥åœæ­¢ - ç”¨æˆ·è§¦å‘")
+    return {"mode": "human_control", "message": "AIå·²æš‚åœï¼Œæ‰€æœ‰è‡ªåŠ¨æ“ä½œå·²åœæ­¢"}
 
 @router.get("/approvals")
 async def list_approvals(_=Depends(verify_token)):
-    await handle_risk("L1", "²é¿´ÉóÅúÁĞ±í")
+    await handle_risk("L1", "æŸ¥çœ‹å®¡æ‰¹åˆ—è¡¨")
     return {"pending": state.pending_approvals, "history": state.approval_history[-20:]}
 
 @router.post("/approvals/decide")
 async def decide_approval(req: ApprovalDecideRequest, _=Depends(verify_token)):
     result = state.decide_approval(req.taskId, req.approved)
     if not result:
-        raise HTTPException(404, "ÉóÅúÏî²»´æÔÚ")
+        raise HTTPException(404, "å®¡æ‰¹é¡¹ä¸å­˜åœ¨")
     return {"result": result["result"], "taskId": req.taskId}
+
+@router.post("/approvals/diff")
+async def preview_diff(task_id: str, before: dict, after: dict, action: str = "", _=Depends(verify_token)):
+    """ç”Ÿæˆå˜æ›´é¢„è§ˆ diff"""
+    await handle_risk("L1", "ç”Ÿæˆå˜æ›´é¢„è§ˆ", action or task_id)
+    result = generate_diff_preview(action or task_id, before, after)
+    return result
+
 
 @router.get("/emergency-history")
 async def emergency_history(_=Depends(verify_token)):
-    await handle_risk("L1", "²é¿´½ô¼±ÊÂ¼şÀúÊ·")
+    await handle_risk("L1", "æŸ¥çœ‹ç´§æ€¥äº‹ä»¶å†å²")
     return {"history": state.emergency_history}
 
