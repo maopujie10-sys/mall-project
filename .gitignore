@@ -46,3 +46,7 @@ Thumbs.db
 **/__pycache__/
 agent_state.json
 mysql
+
+# SSL ˽Կ
+*.pem
+
