@@ -1,4 +1,4 @@
-﻿import { agentApi } from './index'
+import { agentApi } from './index'
 
 export function getSystemMode() { return agentApi.get('/system/mode') }
 export function setSystemMode(mode) { return agentApi.post('/system/mode', { mode }) }

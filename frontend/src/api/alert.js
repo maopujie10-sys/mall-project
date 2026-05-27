@@ -1,4 +1,4 @@
-﻿import { agentApi } from './index'
+import { agentApi } from './index'
 
 export function getAlertList(params) { return agentApi.get('/alert/list', { params }) }
 export function createAlert(data) { return agentApi.post('/alert/create', data) }

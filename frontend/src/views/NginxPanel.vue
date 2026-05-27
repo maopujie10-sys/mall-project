@@ -1,42 +1,42 @@
-﻿<template>
+<template>
   <div class="nginx-panel">
-    <h2>Nginx 管理</h2>
+    <h2>Nginx 绠＄悊</h2>
     <el-row :gutter="16">
       <el-col :span="8">
         <el-card shadow="never">
-          <template #header>进程状态</template>
+          <template #header>杩涚▼鐘舵€?/template>
           <div v-if="status !== null">
             <el-tag :type="status.running ? 'success' : 'danger'" size="large">
-              {{ status.running ? '运行中' : '已停止' }}
+              {{ status.running ? '杩愯涓? : '宸插仠姝? }}
             </el-tag>
             <pre class="log-box">{{ status.detail }}</pre>
           </div>
-          <el-button @click="fetchStatus" :loading="loading">刷新</el-button>
+          <el-button @click="fetchStatus" :loading="loading">鍒锋柊</el-button>
         </el-card>
       </el-col>
       <el-col :span="8">
         <el-card shadow="never">
-          <template #header>配置测试</template>
+          <template #header>閰嶇疆娴嬭瘯</template>
           <el-button @click="testConfig" :loading="configLoading">nginx -t</el-button>
           <pre v-if="configResult" class="log-box" :style="{color: configResult.ok ? 'green' : 'red'}">{{ configResult.output }}</pre>
         </el-card>
       </el-col>
       <el-col :span="8">
         <el-card shadow="never">
-          <template #header>重载</template>
-          <el-button type="warning" @click="doReload" :loading="reloadLoading">重载 Nginx</el-button>
+          <template #header>閲嶈浇</template>
+          <el-button type="warning" @click="doReload" :loading="reloadLoading">閲嶈浇 Nginx</el-button>
           <pre v-if="reloadResult" class="log-box">{{ reloadResult.output }}</pre>
         </el-card>
       </el-col>
     </el-row>
     <el-card shadow="never" style="margin-top:16px">
       <template #header>
-        <span>错误日志</span>
+        <span>閿欒鏃ュ織</span>
         <el-select v-model="logType" size="small" style="width:120px;margin-left:12px">
-          <el-option label="错误日志" value="error" />
-          <el-option label="访问日志" value="access" />
+          <el-option label="閿欒鏃ュ織" value="error" />
+          <el-option label="璁块棶鏃ュ織" value="access" />
         </el-select>
-        <el-button size="small" @click="fetchLogs" style="margin-left:8px">刷新</el-button>
+        <el-button size="small" @click="fetchLogs" style="margin-left:8px">鍒锋柊</el-button>
       </template>
       <pre class="log-box" style="max-height:400px">{{ logs }}</pre>
     </el-card>
@@ -59,21 +59,21 @@ const logType = ref('error')
 
 async function fetchStatus() {
   loading.value = true
-  try { status.value = await getNginxStatus() } catch { ElMessage.error('获取状态失败') }
+  try { status.value = await getNginxStatus() } catch { ElMessage.error('鑾峰彇鐘舵€佸け璐?) }
   loading.value = false
 }
 async function testConfig() {
   configLoading.value = true
-  try { configResult.value = await testNginxConfig() } catch { ElMessage.error('测试失败') }
+  try { configResult.value = await testNginxConfig() } catch { ElMessage.error('娴嬭瘯澶辫触') }
   configLoading.value = false
 }
 async function doReload() {
   reloadLoading.value = true
-  try { reloadResult.value = await reloadNginx(); ElMessage.success('重载成功') } catch { ElMessage.error('重载失败') }
+  try { reloadResult.value = await reloadNginx(); ElMessage.success('閲嶈浇鎴愬姛') } catch { ElMessage.error('閲嶈浇澶辫触') }
   reloadLoading.value = false
 }
 async function fetchLogs() {
-  try { const r = await getNginxLogs({ lines: 50, type: logType.value }); logs.value = r.content } catch { ElMessage.error('获取日志失败') }
+  try { const r = await getNginxLogs({ lines: 50, type: logType.value }); logs.value = r.content } catch { ElMessage.error('鑾峰彇鏃ュ織澶辫触') }
 }
 fetchStatus()
 fetchLogs()

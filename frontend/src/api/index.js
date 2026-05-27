@@ -6,8 +6,8 @@ function unwrapResponse(response) {
   const data = response.data
   if (data && typeof data === 'object' && 'code' in data) {
     if (data.code !== 0 && data.code !== 200) {
-      ElMessage.error(data.message || '请求失败')
-      return Promise.reject(new Error(data.message || '请求失败'))
+      ElMessage.error(data.message || '璇锋眰澶辫触')
+      return Promise.reject(new Error(data.message || '璇锋眰澶辫触'))
     }
     return data.data !== undefined ? data.data : data
   }
@@ -15,12 +15,12 @@ function unwrapResponse(response) {
 }
 
 function handleError(error) {
-  const message = error.response?.data?.message || error.message || '网络错误'
+  const message = error.response?.data?.message || error.message || '缃戠粶閿欒'
   ElMessage.error(message)
   return Promise.reject(error)
 }
 
-// Java backend (mall-app:8080) — Nginx routes /api/* → Java
+// Java backend (mall-app:8080) 鈥?Nginx routes /api/* 鈫?Java
 const api = axios.create({
   baseURL: '/api',
   timeout: 30000,
@@ -29,7 +29,7 @@ const api = axios.create({
 api.interceptors.request.use((c) => c, (e) => Promise.reject(e))
 api.interceptors.response.use(unwrapResponse, handleError)
 
-// Agent backend (mall-agent:9000) — Nginx routes /ai/api/* → Agent
+// Agent backend (mall-agent:9000) 鈥?Nginx routes /ai/api/* 鈫?Agent
 const agentApi = axios.create({
   baseURL: '/ai/api',
   timeout: 30000,

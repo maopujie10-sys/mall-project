@@ -1,4 +1,4 @@
-﻿import { agentApi } from './index'
+import { agentApi } from './index'
 
 export function getBackups() { return agentApi.get('/rollback/backups') }
 export function createBackup(data) { return agentApi.post('/rollback/backups', data) }

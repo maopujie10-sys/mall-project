@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="friday-brain" ref="container">
     <canvas ref="canvas" class="brain-canvas"></canvas>
     
@@ -37,6 +37,7 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted, computed, nextTick } from 'vue'
+import * as THREE from 'three'
 
 const container = ref(null)
 const canvas = ref(null)
@@ -45,7 +46,7 @@ const detailStyle = ref({})
 const totalAgents = 7
 const activeAgents = ref(7)
 
-let THREE, scene, camera, renderer, clock
+let scene, camera, renderer, clock
 let brainSphere, agentNodes = [], connections = [], particles
 let animFrameId
 let mouseX = 0, mouseY = 0
@@ -62,75 +63,58 @@ const agentDefs = [
   { id: 'heal', name: 'Self-Healing', icon: '🛡️', color: 0x13c2c2, radius: 2.4, status: 'idle', statusText: '待命中', tasks: 23, successRate: 100 },
 ]
 
-async function loadThreeJS() {
-  return new Promise((resolve, reject) => {
-    if (window.THREE) { resolve(window.THREE); return }
-    const script = document.createElement('script')
-    script.src = 'https://unpkg.com/three@0.170.0/build/three.min.js'
-    script.onload = () => resolve(window.THREE)
-    script.onerror = () => reject(new Error('Three.js 加载失败'))
-    document.head.appendChild(script)
-  })
-}
-
 async function initScene() {
-  try { THREE = await loadThreeJS() } catch (e) { console.error(e); return }
-  if (!container.value) return
+  const dbg = document.getElementById("debug3d");
+  try {
+    if (!container.value) { if(dbg) dbg.textContent="3D: no container"; return; }
 
-  const w = container.value.clientWidth
-  const h = container.value.clientHeight
+    const w = container.value.clientWidth;
+    const h = container.value.clientHeight;
+    if(dbg) dbg.textContent = "3D: " + w + "x" + h;
 
-  // 场景
-  scene = new THREE.Scene()
-  
-  // 相机
-  camera = new THREE.PerspectiveCamera(60, w / h, 0.1, 100)
-  camera.position.set(0, 3, 14)
-  camera.lookAt(0, 0, 0)
+    scene = new THREE.Scene();
+    if(dbg) dbg.textContent = "3D: scene ok";
 
-  // 渲染器
-  renderer = new THREE.WebGLRenderer({ canvas: canvas.value, antialias: true, alpha: true })
-  renderer.setSize(w, h)
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
-  renderer.toneMapping = THREE.ACESFilmicToneMapping
-  renderer.toneMappingExposure = 1.2
+    camera = new THREE.PerspectiveCamera(60, w / h, 0.1, 100);
+    camera.position.set(0, 3, 14);
+    camera.lookAt(0, 0, 0);
 
-  // 时钟
-  clock = new THREE.Clock()
+    renderer = new THREE.WebGLRenderer({ canvas: canvas.value, antialias: true, alpha: true });
+    renderer.setSize(w, h);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.2;
+    if(dbg) dbg.textContent = "3D: renderer ok";
 
-  // 射线检测
-  raycaster = new THREE.Raycaster()
-  mouse = new THREE.Vector2()
+    clock = new THREE.Clock();
+    raycaster = new THREE.Raycaster();
+    mouse = new THREE.Vector2();
 
-  // 灯光
-  const ambientLight = new THREE.AmbientLight(0x334466, 1.5)
-  scene.add(ambientLight)
-  const pointLight = new THREE.PointLight(0x667eea, 30, 30)
-  pointLight.position.set(0, 5, 10)
-  scene.add(pointLight)
+    const ambientLight = new THREE.AmbientLight(0x334466, 1.5);
+    scene.add(ambientLight);
+    const pointLight = new THREE.PointLight(0x667eea, 30, 30);
+    pointLight.position.set(0, 5, 10);
+    scene.add(pointLight);
+    if(dbg) dbg.textContent = "3D: lights ok";
 
-  // 粒子星场背景
-  createStarfield()
-  
-  // 圆环网格
-  createGridRing()
-  
-  // 中央大脑球体
-  createBrainCore()
-  
-  // 7个Agent节点
-  createAgentNodes()
-  
-  // 连接线
-  createConnections()
+    createStarfield();
+    createGridRing();
+    createBrainCore();
+    if(dbg) dbg.textContent = "3D: brain ok";
+    createAgentNodes();
+    if(dbg) dbg.textContent = "3D: agents ok";
+    createConnections();
 
-  // 事件
-  canvas.value.addEventListener('mousemove', onMouseMove)
-  canvas.value.addEventListener('click', onClick)
-  window.addEventListener('resize', onResize)
+    canvas.value.addEventListener("mousemove", onMouseMove);
+    canvas.value.addEventListener("click", onClick);
+    window.addEventListener("resize", onResize);
 
-  // 开始渲染循环
-  animate()
+    animate();
+    if(dbg) dbg.textContent = "3D: running ✅";
+  } catch (e) {
+    if(dbg) dbg.textContent = "3D ERROR: " + (e.message || e);
+    console.error("FridayBrain:", e);
+  }
 }
 
 function createStarfield() {

@@ -38,7 +38,9 @@
         </div>
         <div class="ch-right">
           <el-button text size="small" @click="clearChat">清空</el-button>
-          <el-button type="danger" text size="small" @click="$router.push('/emergency')">
+          <el-button :type="continuousMode?'success':'info'" text size="small" @click="toggleContinuousMode">{{continuousMode?'连续':'单次'}}</el-button>
+        <el-button text size="small" @click="speakLastResponse">播放</el-button>
+        <el-button type="danger" text size="small" @click="$router.push('/emergency')">
             <el-icon><WarningFilled /></el-icon> 急救
           </el-button>
         </div>
@@ -101,207 +103,240 @@
         </div>
       </div>
 
-      <div class="chat-input-bar">
-        <div class="input-wrap">
-          <el-input
-            v-model="inputText"
-            placeholder="告诉AI你想做什么... 比如：扫描商城健康度 / 采集手机配件 / 查看进化报告"
-            @keyup.enter="sendMessage(inputText)"
-            :disabled="isRunning"
-            size="large"
-            class="chat-input"
-          >
-            <template #prefix>
-              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#667eea" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
-            </template>
-            <template #append>
-              <el-button type="primary" @click="sendMessage(inputText)" :loading="isRunning" :disabled="!inputText.trim()">
-                <el-icon><Promotion /></el-icon> 发送
-              </el-button>
-            </template>
-          </el-input>
-        </div>
-      </div>
+      <SuperInput :disabled="isRunning" @send="onSuperSend" />
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, nextTick, onMounted } from 'vue'
-import { useAgentStore } from '@/stores/agent'
-import { useSystemStore } from '@/stores/system'
-import { storeToRefs } from 'pinia'
+﻿import { ref, nextTick, onMounted, watch } from "vue"
+import { useAgentStore } from "@/stores/agent"
+import { useSystemStore } from "@/stores/system"
+import SuperInput from "@/components/SuperInput.vue"
+import { storeToRefs } from "pinia"
+import { sendChat } from "@/api/agent"
+import { analyzeImage } from "@/api/vision"
+import { ElMessage } from "element-plus"
 
 const agentStore = useAgentStore()
 const systemStore = useSystemStore()
 const { currentMode, modeLabel } = storeToRefs(systemStore)
 
-const inputText = ref('')
+const inputText = ref("")
 const msgContainer = ref(null)
 const isRunning = ref(false)
-
 const messages = ref([])
+const continuousMode = ref(false)
+const superInputRef = ref(null)
 const steps = ref([])
 
 const quickCommands = [
-  '扫描商城健康度',
-  '生成进化报告',
-  '从eBay采集手机配件',
-  '生成虚拟用户数据',
-  '创建完整备份',
+  "Check server status",
+  "Scan mall health", 
+  "Generate evolution report",
+  "Check Docker containers",
+  "Inspect Nginx logs",
+  "Create backup",
+  "Check rotation domains",
+  "View recent alerts",
 ]
 
-function formatMsg(text) {
-  if (!text) return ''
-  return text
-    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-    .replace(/\n/g, '<br/>')
+// ===== Toggle continuous conversation =====
+function toggleContinuousMode() {
+  continuousMode.value = !continuousMode.value
+  if (continuousMode.value) {
+    ElMessage.success("Continuous mode ON")
+  } else {
+    ElMessage.info("Continuous mode OFF")
+  }
 }
 
+// ===== TTS: speak text aloud =====
+function speakText(text) {
+  if (!window.speechSynthesis) return
+  window.speechSynthesis.cancel()
+  const clean = text.replace(/<[^>]+>/g, "").replace(/\*\*/g, "").replace(/`/g, "").replace(/```/g, "")
+  const u = new SpeechSynthesisUtterance(clean)
+  u.lang = "zh-CN"
+  u.rate = 1.1
+  window.speechSynthesis.speak(u)
+}
+
+function speakLastResponse() {
+  const last = messages.value.slice().reverse().find(function(m) { return m.role === "ai" })
+  if (last) speakText(last.text)
+}
+
+// ===== Format message =====
+function formatMsg(text) {
+  if (!text) return ""
+  return text
+    .replace(/\*\*(.+?)\*\*/g, "<b>$1</b>")
+    .replace(/`([^`]+)`/g, "<code>$1</code>")
+    .replace(/\n/g, "<br>")
+}
+
+// ===== Auto scroll =====
 function scrollBottom() {
-  nextTick(() => {
-    if (msgContainer.value) msgContainer.value.scrollTop = msgContainer.value.scrollHeight
+  nextTick(function() {
+    if (msgContainer.value) {
+      msgContainer.value.scrollTop = msgContainer.value.scrollHeight
+    }
   })
 }
 
+// ===== REAL API: send to AI backend =====
 async function sendMessage(text) {
-  const msg = typeof text === 'string' ? text : inputText.value
+  const msg = typeof text === "string" ? text : inputText.value
   if (!msg || !msg.trim() || isRunning.value) return
-  inputText.value = ''
+  inputText.value = ""
 
-  // 添加用户消息
   messages.value.push({
-    role: 'user',
+    role: "user",
     text: msg,
     time: new Date().toLocaleTimeString(),
   })
   scrollBottom()
-
   isRunning.value = true
 
-  // 模拟AI响应
-  await new Promise(r => setTimeout(r, 800))
+  try {
+    const res = await sendChat(msg)
+    const data = res.data || res
 
-  const response = generateAIResponse(msg)
-  messages.value.push({
-    role: 'ai',
-    text: response.text,
-    risk: response.risk,
-    time: new Date().toLocaleTimeString(),
-    needConfirm: response.needConfirm,
-    steps: response.steps,
-  })
+    const aiMsg = {
+      role: "ai",
+      text: data.response || "AI thinking...",
+      risk: data.risk_level || "L1",
+      time: new Date().toLocaleTimeString(),
+      needConfirm: data.need_confirm || false,
+      steps: data.steps || [],
+      taskId: data.task_id || "",
+    }
+    messages.value.push(aiMsg)
+    scrollBottom()
 
-  if (response.steps) {
-    steps.value = response.steps.map((s, i) => ({
-      id: i + 1,
-      ...s,
-      status: 'done',
-      tool: response.tool || '',
-    }))
+    if (data.steps && data.steps.length) {
+      steps.value = data.steps.map(function(s, i) {
+        return {
+          id: i + 1,
+          name: s.name || ("Step " + (i + 1)),
+          status: s.status || "done",
+          tool: s.tool || "",
+          evidence: s.evidence || "",
+        }
+      })
+    }
+
+    // Auto-speak in continuous mode
+    if (continuousMode.value) {
+      speakText(aiMsg.text)
+    }
+  } catch (err) {
+    messages.value.push({
+      role: "ai",
+      text: "Connection error - backend not available",
+      risk: "L4",
+      time: new Date().toLocaleTimeString(),
+    })
   }
 
   isRunning.value = false
   scrollBottom()
 }
 
-function generateAIResponse(msg) {
-  const lower = msg.toLowerCase()
+// ===== Handle SuperInput events (text/voice/camera/files) =====
+async function onSuperSend(payload) {
+  if (isRunning.value) return
 
-  if (lower.includes('扫描') || lower.includes('健康')) {
-    return {
-      text: '**意图**: AI扫描商品\n**类别**: AI大脑\n**风险等级**: L1\n\n🔍 正在扫描全站68件商品...\n\n📊 扫描结果：\n- 🔥 热销: 12件\n- ✅ 正常: 45件\n- ❄️ 冷门: 8件\n- 💀 死品: 3件\n\n⚠ 发现品类缺口: 母婴玩具、美妆护肤\n💡 建议从eBay采集补充',
-      risk: 'L1',
-      tool: 'mallbrain.scan',
-      steps: [
-        { step: 1, name: '识别意图: AI扫描商品', status: 'done' },
-        { step: 2, name: '风险评估: L1', status: 'done' },
-        { step: 3, name: '调用 AI大脑 工具', status: 'done', detail: '扫描完成' },
-      ]
+  // Process camera photos - analyze with VisionAgent
+  if (payload.files && payload.files.length > 0) {
+    for (var i = 0; i < payload.files.length; i++) {
+      var f = payload.files[i]
+      if (f.type === "image" && f.file) {
+        try {
+          var dataUrl = await fileToDataUrl(f.file)
+          messages.value.push({
+            role: "user",
+            text: "[Photo: " + (f.name || "camera") + "]",
+            time: new Date().toLocaleTimeString(),
+            image: dataUrl,
+          })
+          scrollBottom()
+
+          try {
+            var visionRes = await analyzeImage(dataUrl)
+            if (visionRes && visionRes.data) {
+              var desc = visionRes.data.description || visionRes.data.result || "Image analyzed"
+              messages.value.push({
+                role: "ai",
+                text: "[Vision] " + (typeof desc === "string" ? desc : JSON.stringify(desc)),
+                risk: "L1",
+                time: new Date().toLocaleTimeString(),
+              })
+              if (continuousMode.value) {
+                speakText("I see " + (typeof desc === "string" ? desc.substring(0, 200) : "an image"))
+              }
+            }
+          } catch (e2) {
+            messages.value.push({
+              role: "ai",
+              text: "[Vision] Photo received but analysis unavailable",
+              risk: "L1",
+              time: new Date().toLocaleTimeString(),
+            })
+          }
+          scrollBottom()
+        } catch (e3) {
+          console.error("Photo error:", e3)
+        }
+      }
     }
   }
 
-  if (lower.includes('进化') || lower.includes('报告') || lower.includes('学得怎么样')) {
-    return {
-      text: '**意图**: 进化报告\n**类别**: AI进化\n**风险等级**: L1\n\n🧬 AI进化报告：\n- 30天成功率: 87.5% ↗\n- 已学知识: 156条\n- 用户纠正: 23次\n- 进化趋势: 持续上升\n\n💡 建议: 价格优化成功率达70%，建议学习更多定价策略',
-      risk: 'L1',
-      tool: 'evolution.report',
-      steps: [
-        { step: 1, name: '生成进化报告', status: 'done', detail: '87.5%成功率' },
-      ]
-    }
-  }
-
-  if (lower.includes('采集')) {
-    return {
-      text: '**意图**: 启动商品采集\n**类别**: 采集\n**风险等级**: L2\n\n🛒 正在从多平台采集商品...\n\n已创建采集任务：\n- eBay > ' + msg.replace(/采集|从|商品|的/g, '').trim() + '\n- 预计采集: 50件\n- 自动上传COS: ✅\n- 保留原始规格和价格: ✅\n\n任务已加入队列，完成后自动通知。',
-      risk: 'L2',
-      tool: 'scraper.start',
-      steps: [
-        { step: 1, name: '创建采集任务', status: 'done', detail: 'eBay' },
-        { step: 2, name: '开始采集...', status: 'done', detail: '进行中' },
-      ]
-    }
-  }
-
-  if (lower.includes('虚拟') || lower.includes('生成数据') || lower.includes('造数据')) {
-    return {
-      text: '**意图**: 生成虚拟数据\n**类别**: 虚拟数据\n**风险等级**: L3\n\n⚠ **需要确认**：即将生成虚拟数据\n\n规模: 中型商城\n- 👤 虚拟用户: 5,000人\n- 📦 虚拟商品: 200件\n- 📋 虚拟订单: 2,000单\n- ⭐ 商品评价: 800条\n\n此操作会修改数据库，请确认执行。',
-      risk: 'L3',
-      needConfirm: true,
-      tool: 'virtual.generate',
-    }
-  }
-
-  if (lower.includes('备份')) {
-    return {
-      text: '**意图**: 创建备份\n**类别**: 备份\n**风险等级**: L2\n\n💾 正在创建完整备份...\n\n✅ 数据库备份完成\n✅ 配置文件备份完成\n📁 备份位置: /backups/2024-05-28/\n\n备份已安全存储。',
-      risk: 'L2',
-      tool: 'backup.create',
-    }
-  }
-
-  if (lower.includes('运维') || lower.includes('自动管理')) {
-    return {
-      text: '**意图**: AI自动运维\n**类别**: AI大脑\n**风险等级**: L3\n\n⚠ **需要确认**：AI将自动执行以下运维操作\n\n- 💀 下架3件死品\n- 🛒 采集8件新品填补缺口\n- 📦 为12件商品补充库存\n\n此操作会自动备份，可回滚。',
-      risk: 'L3',
-      needConfirm: true,
-      tool: 'mallbrain.auto',
-    }
-  }
-
-  if (lower.includes('help') || lower.includes('帮助')) {
-    return {
-      text: '**可用功能**:\n\n🛒 **采集商品** — 从eBay/AliExpress/Amazon采集\n👥 **生成数据** — 一键生成虚拟用户/商品/订单\n🧠 **AI运维** — 自动管理商城健康\n📈 **进化报告** — 查看AI学习进度\n💾 **创建备份** — 安全备份数据库\n🔍 **扫描商城** — 分析商品健康度\n\n试试对我说：扫描商城健康度',
-      risk: 'L1',
-    }
-  }
-
-  return {
-    text: '🤔 收到: ' + msg + '\n\n我已理解您的意图，正在处理中...\n\n💡 提示: 试试说 "扫描商城" / "进化报告" / "采集商品" / "生成数据"',
-    risk: 'L1',
+  // Send text message
+  if (payload.text && payload.text.trim()) {
+    await sendMessage(payload.text)
   }
 }
 
+// Helper: File to data URL
+function fileToDataUrl(file) {
+  return new Promise(function(resolve, reject) {
+    var reader = new FileReader()
+    reader.onload = function() { resolve(reader.result) }
+    reader.onerror = reject
+    reader.readAsDataURL(file)
+  })
+}
+
+// ===== Confirm/approve =====
 function confirmAction(msg, approved) {
+  msg.needConfirm = false
   if (approved) {
-    msg.text += '\n\n✅ 已确认执行！操作进行中...'
-    msg.needConfirm = false
+    sendMessage("confirm task " + (msg.taskId || ""))
   } else {
-    msg.text += '\n\n❌ 已取消执行。'
-    msg.needConfirm = false
+    messages.value.push({
+      role: "ai",
+      text: "Task cancelled",
+      risk: "L1",
+      time: new Date().toLocaleTimeString(),
+    })
   }
-  scrollBottom()
 }
 
+// ===== Clear =====
 function clearChat() {
   messages.value = []
   steps.value = []
 }
 
-onMounted(() => {
-  systemStore.fetchMode()
+// ===== Watch continuous mode =====
+watch(continuousMode, function(val) {
+  if (val) {
+    ElMessage.success("AI will auto-speak responses")
+  }
 })
+
 </script>
 
 <style scoped>

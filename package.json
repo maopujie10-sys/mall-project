@@ -1,0 +1,24 @@
+{
+  "name": "mall-project",
+  "version": "1.0.0",
+  "description": "``` mall-project/ ├── backend/              # AI Agent 后台 (Python FastAPI :9000) │   ├── routers/          # 30+ API路由模块 │   ├── tools/            # 核心引擎：采集/虚拟数据/AI大脑/进化 │   ├── main.py           # 入口，启动自检+记忆预热 │   └── startup.py        # 启动自检模块 ├── frontend/             # AI 控制台前端 (Vue3 + Element Plus) │   └── src/views/        # 总控台/AI大脑/进化报告/采集中心/虚拟数据 ├── mall-source/          # 🔗 整合的商城源码 (Java Spring + Vue) │   ├── 源码/后端/         # Java Spring MVC 商城API │   └── 源码/前端/         # Vue 商城前端 (PC/H5/商家/招商) ├── docker-compose.unified.yml  # 🚀 统一编排：AI + 商城 + MySQL + Redis + Nginx ├── nginx.conf            # 统一入口 Nginx 配置 ├── backups/              # 备份目录 └── logs/                 # 日志目录 ```",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/maopujie10-sys/mall-project.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/maopujie10-sys/mall-project/issues"
+  },
+  "homepage": "https://github.com/maopujie10-sys/mall-project#readme",
+  "dependencies": {
+    "@electron/asar": "^4.2.0"
+  }
+}

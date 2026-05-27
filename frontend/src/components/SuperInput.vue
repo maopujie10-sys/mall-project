@@ -211,6 +211,8 @@ function addFiles(fileList) {
   }
 }
 
+function speakText(t){if(!window.speechSynthesis)return;window.speechSynthesis.cancel();var u=new SpeechSynthesisUtterance(t);u.lang="zh-CN";u.rate=1.1;window.speechSynthesis.speak(u)}defineExpose({speakText})
+
 onBeforeUnmount(() => {
   stopListening()
   stopCamera()

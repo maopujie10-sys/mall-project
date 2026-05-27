@@ -1,4 +1,4 @@
-"""·şÎñÆ÷¼à¿Ø ¡ª CPU/ÄÚ´æ/´ÅÅÌ/¶Ë¿Ú/½ø³Ì"""
+"""æœåŠ¡å™¨ç›‘æ§ â€” CPU/å†…å­˜/ç£ç›˜/ç«¯å£/è¿›ç¨‹"""
 import os, psutil
 import shutil
 from fastapi import APIRouter, Depends
@@ -9,7 +9,7 @@ router = APIRouter(prefix="/server", tags=["Server"])
 
 @router.get("/status")
 async def server_status(_=Depends(verify_token)):
-    await handle_risk("L1", "²é¿´·şÎñÆ÷×´Ì¬")
+    await handle_risk("L1", "æŸ¥çœ‹æœåŠ¡å™¨çŠ¶æ€")
     cpu = psutil.cpu_percent(interval=0.3)
     mem = psutil.virtual_memory()
     disk = psutil.disk_usage("/")
@@ -36,7 +36,7 @@ async def server_status(_=Depends(verify_token)):
 
 @router.get("/ports")
 async def server_ports(_=Depends(verify_token)):
-    await handle_risk("L1", "²é¿´·şÎñÆ÷¶Ë¿Ú")
+    await handle_risk("L1", "æŸ¥çœ‹æœåŠ¡å™¨ç«¯å£")
     ports = []
     for conn in psutil.net_connections():
         if conn.status == "LISTEN":
@@ -45,7 +45,7 @@ async def server_ports(_=Depends(verify_token)):
 
 @router.get("/processes")
 async def server_processes(_=Depends(verify_token)):
-    await handle_risk("L1", "²é¿´·şÎñÆ÷½ø³Ì")
+    await handle_risk("L1", "æŸ¥çœ‹æœåŠ¡å™¨è¿›ç¨‹")
     procs = []
     for p in psutil.process_iter(["pid", "name", "cpu_percent", "memory_percent"]):
         try:
@@ -57,8 +57,8 @@ async def server_processes(_=Depends(verify_token)):
 
 @router.get("/disk")
 async def server_disk(_=Depends(verify_token)):
-    """²é¿´´ÅÅÌÊ¹ÓÃÏêÇé"""
-    await handle_risk("L1", "²é¿´´ÅÅÌÏêÇé")
+    """æŸ¥çœ‹ç£ç›˜ä½¿ç”¨è¯¦æƒ…"""
+    await handle_risk("L1", "æŸ¥çœ‹ç£ç›˜è¯¦æƒ…")
     disks = []
     for part in psutil.disk_partitions():
         try:

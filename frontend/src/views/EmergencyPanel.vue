@@ -1,11 +1,11 @@
 <template>
   <div class="emergency-page">
     <div class="emergency-container">
-      <!-- 头部 -->
+      <!-- 澶撮儴 -->
       <div class="em-header">
         <div class="em-logo">
           <el-icon :size="28" color="#ff4d4f"><WarningFilled /></el-icon>
-          <span>急救面板</span>
+          <span>鎬ユ晳闈㈡澘</span>
         </div>
         <div class="em-mode" :class="currentMode">
           <span class="mode-dot"></span>
@@ -16,8 +16,8 @@
       <!-- Kill Switch -->
       <div class="kill-section">
         <div class="kill-description">
-          点击下方按钮将<strong>立即切断 AI 的所有写权限</strong>，系统进入人工接管模式。<br/>
-          此操作不影响商城、客服、轮值系统的正常运行。
+          鐐瑰嚮涓嬫柟鎸夐挳灏?strong>绔嬪嵆鍒囨柇 AI 鐨勬墍鏈夊啓鏉冮檺</strong>锛岀郴缁熻繘鍏ヤ汉宸ユ帴绠℃ā寮忋€?br/>
+          姝ゆ搷浣滀笉褰卞搷鍟嗗煄銆佸鏈嶃€佽疆鍊肩郴缁熺殑姝ｅ父杩愯銆?
         </div>
         <el-button
           class="kill-button"
@@ -27,34 +27,34 @@
           size="large"
         >
           <el-icon :size="24"><WarningFilled /></el-icon>
-          <span>{{ isKilled ? '已切断 - 所有写操作已停止' : '立即切断 AI 写权限' }}</span>
+          <span>{{ isKilled ? '宸插垏鏂?- 鎵€鏈夊啓鎿嶄綔宸插仠姝? : '绔嬪嵆鍒囨柇 AI 鍐欐潈闄? }}</span>
         </el-button>
         <div v-if="isKilled" class="kill-confirm">
           <el-icon :size="18" color="#52c41a"><CircleCheckFilled /></el-icon>
-          AI 写权限已于 {{ killTime }} 切断，所有危险操作已被阻止
+          AI 鍐欐潈闄愬凡浜?{{ killTime }} 鍒囨柇锛屾墍鏈夊嵄闄╂搷浣滃凡琚樆姝?
         </div>
       </div>
 
-      <!-- 模式恢复 -->
+      <!-- 妯″紡鎭㈠ -->
       <div class="recovery-section">
-        <h3>模式恢复</h3>
+        <h3>妯″紡鎭㈠</h3>
         <div class="recovery-buttons">
           <el-button type="primary" size="large" @click="restoreMode('ai_control')" :disabled="!isKilled">
-            <el-icon><RefreshRight /></el-icon> 恢复 AI 接管
+            <el-icon><RefreshRight /></el-icon> 鎭㈠ AI 鎺ョ
           </el-button>
           <el-button size="large" @click="restoreMode('readonly')" :disabled="!isKilled">
-            <el-icon><View /></el-icon> 切换到只读模式
+            <el-icon><View /></el-icon> 鍒囨崲鍒板彧璇绘ā寮?
           </el-button>
           <el-button size="large" @click="restoreMode('assist')" :disabled="!isKilled">
-            切换到辅助模式
+            鍒囨崲鍒拌緟鍔╂ā寮?
           </el-button>
         </div>
-        <div v-if="!isKilled" class="recovery-hint">当前 AI 接管正常运行，无需切换模式</div>
+        <div v-if="!isKilled" class="recovery-hint">褰撳墠 AI 鎺ョ姝ｅ父杩愯锛屾棤闇€鍒囨崲妯″紡</div>
       </div>
 
-      <!-- 操作记录 -->
+      <!-- 鎿嶄綔璁板綍 -->
       <div class="history-section">
-        <h3>最近操作记录</h3>
+        <h3>鏈€杩戞搷浣滆褰?/h3>
         <div class="history-list">
           <div v-for="(record, i) in history" :key="i" class="history-item">
             <span class="status-dot" :class="record.mode === 'human_control' ? 'offline' : 'online'">
@@ -62,7 +62,7 @@
             </span>
             <span class="history-time">{{ record.time }}</span>
             <el-tag :type="record.mode === 'human_control' ? 'danger' : 'success'" size="small">
-              {{ record.mode === 'human_control' ? '人工接管' : record.mode === 'ai_control' ? 'AI 接管' : record.mode }}
+              {{ record.mode === 'human_control' ? '浜哄伐鎺ョ' : record.mode === 'ai_control' ? 'AI 鎺ョ' : record.mode }}
             </el-tag>
             <span class="history-reason">{{ record.reason }}</span>
           </div>
@@ -84,7 +84,7 @@ const { currentMode, isKilled, killTime, emergencyModeLabel } = storeToRefs(syst
 const loading = ref(true)
 
 const modeLabel = computed(() => {
-  const map = { 'ai-control': 'AI 接管中', 'ai_control': 'AI 接管中', 'human-control': '人工接管', 'human_control': '人工接管', 'readonly': '只读模式', 'assist': '辅助模式' }
+  const map = { 'ai-control': 'AI 鎺ョ涓?, 'ai_control': 'AI 鎺ョ涓?, 'human-control': '浜哄伐鎺ョ', 'human_control': '浜哄伐鎺ョ', 'readonly': '鍙妯″紡', 'assist': '杈呭姪妯″紡' }
   return map[currentMode.value] || currentMode.value
 })
 
@@ -110,16 +110,16 @@ async function fetchHistory() {
 const triggerKill = async () => {
   try {
     await ElMessageBox.confirm(
-      '此操作将立即切断 AI 的所有写权限，包括：重启服务、修改配置、数据库写操作等。确认继续？',
-      '警告 确认 Kill Switch',
-      { confirmButtonText: '确认切断', cancelButtonText: '取消', type: 'error', confirmButtonClass: 'el-button--danger' }
+      '姝ゆ搷浣滃皢绔嬪嵆鍒囨柇 AI 鐨勬墍鏈夊啓鏉冮檺锛屽寘鎷細閲嶅惎鏈嶅姟銆佷慨鏀归厤缃€佹暟鎹簱鍐欐搷浣滅瓑銆傜‘璁ょ户缁紵',
+      '璀﹀憡 纭 Kill Switch',
+      { confirmButtonText: '纭鍒囨柇', cancelButtonText: '鍙栨秷', type: 'error', confirmButtonClass: 'el-button--danger' }
     )
     const success = await systemStore.triggerEmergencyKill()
     if (success) {
-      history.value.unshift({ time: killTime.value, mode: 'human_control', reason: 'Kill Switch 触发' })
-      ElMessage.error('AI 写权限已切断！系统进入人工接管模式')
+      history.value.unshift({ time: killTime.value, mode: 'human_control', reason: 'Kill Switch 瑙﹀彂' })
+      ElMessage.error('AI 鍐欐潈闄愬凡鍒囨柇锛佺郴缁熻繘鍏ヤ汉宸ユ帴绠℃ā寮?)
     } else {
-      ElMessage.error('Kill Switch 触发失败')
+      ElMessage.error('Kill Switch 瑙﹀彂澶辫触')
     }
   } catch {
     // User cancelled
@@ -127,18 +127,18 @@ const triggerKill = async () => {
 }
 
 const restoreMode = async (mode) => {
-  const labels = { ai_control: 'AI 接管', readonly: '只读', assist: '辅助' }
+  const labels = { ai_control: 'AI 鎺ョ', readonly: '鍙', assist: '杈呭姪' }
   const success = await systemStore.switchMode(mode)
   if (success) {
     const now = new Date().toLocaleTimeString('zh-CN', { hour12: false })
-    history.value.unshift({ time: now, mode, reason: `手动切换到${labels[mode]}模式` })
+    history.value.unshift({ time: now, mode, reason: `鎵嬪姩鍒囨崲鍒?{labels[mode]}妯″紡` })
     if (mode === 'ai_control') {
-      ElMessage.success('已恢复 AI 接管模式，写操作权限已恢复')
+      ElMessage.success('宸叉仮澶?AI 鎺ョ妯″紡锛屽啓鎿嶄綔鏉冮檺宸叉仮澶?)
     } else {
-      ElMessage.warning(`已切换到${labels[mode]}模式`)
+      ElMessage.warning(`宸插垏鎹㈠埌${labels[mode]}妯″紡`)
     }
   } else {
-    ElMessage.error('模式切换失败')
+    ElMessage.error('妯″紡鍒囨崲澶辫触')
   }
 }
 

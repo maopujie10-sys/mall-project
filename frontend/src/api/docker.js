@@ -1,4 +1,4 @@
-﻿import { agentApi } from "./index"
+import { agentApi } from "./index"
 
 export function getDockerContainers() {
   return agentApi.get("/docker/ps")

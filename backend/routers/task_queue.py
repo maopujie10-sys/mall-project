@@ -1,4 +1,4 @@
-"""ÈÎÎñ¶ÓÁĞ + ÈÎÎñËø API"""
+"""ä»»åŠ¡é˜Ÿåˆ— + ä»»åŠ¡é” API"""
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from auth import verify_token
@@ -15,20 +15,20 @@ class EnqueueRequest(BaseModel):
 
 @router.post("/enqueue")
 async def enqueue_task(req: EnqueueRequest, _=Depends(verify_token)):
-    await handle_risk("L1", "Ìí¼ÓÈÎÎñµ½¶ÓÁĞ", req.name)
+    await handle_risk("L1", "æ·»åŠ ä»»åŠ¡åˆ°é˜Ÿåˆ—", req.name)
     task_id = task_queue.enqueue(req.name, req.risk, req.priority, req.timeout_s)
     return {"task_id": task_id, "status": "queued"}
 
 @router.get("/queue")
 async def list_queue(_=Depends(verify_token)):
-    await handle_risk("L1", "²é¿´ÈÎÎñ¶ÓÁĞ")
+    await handle_risk("L1", "æŸ¥çœ‹ä»»åŠ¡é˜Ÿåˆ—")
     return {"tasks": task_queue.list(), "pending": task_queue.pending_count()}
 
 @router.get("/queue/{task_id}")
 async def get_task(task_id: str, _=Depends(verify_token)):
     t = task_queue.get(task_id)
     if not t:
-        return {"error": "ÈÎÎñ²»´æÔÚ"}
+        return {"error": "ä»»åŠ¡ä¸å­˜åœ¨"}
     return t
 
 @router.post("/queue/{task_id}/pause")
@@ -55,7 +55,7 @@ async def dequeue_task(_=Depends(verify_token)):
 
 @router.get("/locks")
 async def list_locks(_=Depends(verify_token)):
-    await handle_risk("L1", "²é¿´ÈÎÎñËø")
+    await handle_risk("L1", "æŸ¥çœ‹ä»»åŠ¡é”")
     return task_lock.status()
 
 @router.post("/locks/acquire")

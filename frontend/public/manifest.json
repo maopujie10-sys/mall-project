@@ -1,29 +1,10 @@
-ï»¿{
-  "name": "Friday AI OS - è¶…çº§AIæ•°å­—ç”Ÿå‘½ä½“",
-  "short_name": "Friday AI",
-  "description": "AIæ“ä½œç³»ç»Ÿ - 3Dç¥ç»ç½‘ç»œæ€»æ§ä¸­å¿ƒ",
+{
+  "name": "Friday AI OS",
+  "short_name": "Friday",
   "start_url": "/ai/",
   "display": "standalone",
   "background_color": "#080b1a",
-  "theme_color": "#667eea",
-  "orientation": "any",
-  "icons": [
-    {
-      "src": "/ai/icons/icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "/ai/icons/icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
-    }
-  ],
-  "categories": ["productivity", "developer tools", "utilities"],
-  "lang": "zh-CN",
-  "display_override": ["window-controls-overlay"],
-  "scope": "/ai/",
-  "edge_side_panel": {}
+  "theme_color": "#080b1a",
+  "description": "Friday AI OS - ³¬¼¶AIÊı×ÖÉúÃüÌå",
+  "icons": []
 }

@@ -1,50 +1,50 @@
 <template>
   <div class="page-container customer-panel">
     <div class="page-header">
-      <h2>客服管理面板</h2>
-      <p>消息处理 · 客户服务 · 投诉监控</p>
+      <h2>瀹㈡湇绠＄悊闈㈡澘</h2>
+      <p>娑堟伅澶勭悊 路 瀹㈡埛鏈嶅姟 路 鎶曡瘔鐩戞帶</p>
     </div>
 
-    <!-- 统计卡片 -->
+    <!-- 缁熻鍗＄墖 -->
     <el-row :gutter="16" style="margin-bottom: 20px;">
       <el-col :span="6">
         <div class="metric-card">
-          <div class="metric-label">今日消息总量</div>
+          <div class="metric-label">浠婃棩娑堟伅鎬婚噺</div>
           <div class="metric-value">{{ stats.totalMessages }}</div>
-          <div class="metric-sub">较昨日 {{ stats.messageTrend }}</div>
+          <div class="metric-sub">杈冩槰鏃?{{ stats.messageTrend }}</div>
         </div>
       </el-col>
       <el-col :span="6">
         <div class="metric-card">
-          <div class="metric-label">活跃会话</div>
+          <div class="metric-label">娲昏穬浼氳瘽</div>
           <div class="metric-value" style="color: var(--color-primary);">{{ stats.activeConversations }}</div>
-          <div class="metric-sub">其中 {{ stats.unreadCount }} 条未读</div>
+          <div class="metric-sub">鍏朵腑 {{ stats.unreadCount }} 鏉℃湭璇?/div>
         </div>
       </el-col>
       <el-col :span="6">
         <div class="metric-card">
-          <div class="metric-label">平均响应时间</div>
+          <div class="metric-label">骞冲潎鍝嶅簲鏃堕棿</div>
           <div class="metric-value" style="color: var(--color-success);">{{ stats.avgResponseTime }}</div>
-          <div class="metric-sub">目标: &lt; 3 分钟</div>
+          <div class="metric-sub">鐩爣: &lt; 3 鍒嗛挓</div>
         </div>
       </el-col>
       <el-col :span="6">
         <div class="metric-card">
-          <div class="metric-label">满意度</div>
+          <div class="metric-label">婊℃剰搴?/div>
           <div class="metric-value" style="color: var(--color-warning);">{{ stats.satisfaction }}%</div>
-          <div class="metric-sub">基于 {{ stats.satisfactionCount }} 条评价</div>
+          <div class="metric-sub">鍩轰簬 {{ stats.satisfactionCount }} 鏉¤瘎浠?/div>
         </div>
       </el-col>
     </el-row>
 
-    <!-- 主体：左列表 + 右对话 -->
+    <!-- 涓讳綋锛氬乏鍒楄〃 + 鍙冲璇?-->
     <div class="panel-body">
-      <!-- 左侧客户列表 -->
+      <!-- 宸︿晶瀹㈡埛鍒楄〃 -->
       <div class="customer-list-panel">
         <div class="list-header">
           <el-input
             v-model="searchKeyword"
-            placeholder="搜索客户或消息..."
+            placeholder="鎼滅储瀹㈡埛鎴栨秷鎭?.."
             :prefix-icon="Search"
             size="default"
             clearable
@@ -52,19 +52,19 @@
         </div>
         <div class="list-filters">
           <el-radio-group v-model="filterType" size="small">
-            <el-radio-button value="all">全部</el-radio-button>
-            <el-radio-button value="unread">未读</el-radio-button>
-            <el-radio-button value="urgent">紧急</el-radio-button>
-            <el-radio-button value="complaint">投诉</el-radio-button>
+            <el-radio-button value="all">鍏ㄩ儴</el-radio-button>
+            <el-radio-button value="unread">鏈</el-radio-button>
+            <el-radio-button value="urgent">绱ф€?/el-radio-button>
+            <el-radio-button value="complaint">鎶曡瘔</el-radio-button>
           </el-radio-group>
           <div class="list-actions-top">
-            <el-button size="small" text @click="markAllReadHandler">全部已读</el-button>
+            <el-button size="small" text @click="markAllReadHandler">鍏ㄩ儴宸茶</el-button>
             <el-button
               size="small" text type="warning"
               :disabled="selectedIds.length === 0"
               @click="transferHuman"
             >
-              转人工 ({{ selectedIds.length }})
+              杞汉宸?({{ selectedIds.length }})
             </el-button>
           </div>
         </div>
@@ -72,7 +72,7 @@
           <div v-if="error" class="error-banner">
             <el-icon color="#ff4d4f"><WarningFilled /></el-icon>
             <span>{{ error }}</span>
-            <el-button size="small" text type="primary" @click="fetchMessages">重试</el-button>
+            <el-button size="small" text type="primary" @click="fetchMessages">閲嶈瘯</el-button>
           </div>
           <div
             v-for="customer in filteredCustomers"
@@ -102,23 +102,23 @@
               </div>
               <div class="customer-preview">{{ customer.content }}</div>
               <div class="customer-tags">
-                <span v-if="customer.type === 'complaint'" class="complaint-tag">投诉</span>
-                <span v-if="customer.type === 'urgent'" class="urgent-tag">紧急</span>
-                <span v-if="customer.type === 'inquiry'" class="inquiry-tag">咨询</span>
-                <span v-if="customer.escalated" class="escalated-tag">已升级</span>
+                <span v-if="customer.type === 'complaint'" class="complaint-tag">鎶曡瘔</span>
+                <span v-if="customer.type === 'urgent'" class="urgent-tag">绱ф€?/span>
+                <span v-if="customer.type === 'inquiry'" class="inquiry-tag">鍜ㄨ</span>
+                <span v-if="customer.escalated" class="escalated-tag">宸插崌绾?/span>
               </div>
             </div>
           </div>
           <div v-if="filteredCustomers.length === 0 && !loading" class="empty-list">
-            <p>暂无匹配的客户消息</p>
+            <p>鏆傛棤鍖归厤鐨勫鎴锋秷鎭?/p>
           </div>
         </div>
       </div>
 
-      <!-- 右侧对话窗口 -->
+      <!-- 鍙充晶瀵硅瘽绐楀彛 -->
       <div class="conversation-panel" :class="{ 'no-selection': !activeCustomer }">
         <template v-if="activeCustomer">
-          <!-- 对话头部 -->
+          <!-- 瀵硅瘽澶撮儴 -->
           <div class="conversation-header">
             <div class="conv-user-info">
               <el-avatar :size="38" :style="{ background: activeCustomer.avatarColor }">
@@ -127,11 +127,11 @@
               <div class="conv-user-detail">
                 <span class="conv-user-name">{{ activeCustomer.sender }}</span>
                 <span class="conv-user-status">
-                  <span class="status-dot online"><span class="dot"></span>在线</span>
+                  <span class="status-dot online"><span class="dot"></span>鍦ㄧ嚎</span>
                   <span v-if="activeCustomer.type === 'complaint'" class="complaint-flag">
-                    <el-icon color="#ff4d4f" :size="14"><WarningFilled /></el-icon> 投诉
+                    <el-icon color="#ff4d4f" :size="14"><WarningFilled /></el-icon> 鎶曡瘔
                   </span>
-                  <span v-if="activeCustomer.type === 'urgent'" class="urgent-flag">紧急</span>
+                  <span v-if="activeCustomer.type === 'urgent'" class="urgent-flag">绱ф€?/span>
                 </span>
               </div>
             </div>
@@ -141,20 +141,20 @@
                 type="danger" size="small" plain
                 @click="flagComplaint(activeCustomer)"
               >
-                <el-icon><WarningFilled /></el-icon> 标记投诉
+                <el-icon><WarningFilled /></el-icon> 鏍囪鎶曡瘔
               </el-button>
               <el-button type="warning" size="small" plain @click="escalateToHuman(activeCustomer)">
-                <el-icon><Switch /></el-icon> 转人工
+                <el-icon><Switch /></el-icon> 杞汉宸?
               </el-button>
               <el-button size="small" @click="handleMarkRead(activeCustomer)">
-                <el-icon><Check /></el-icon> 标记已读
+                <el-icon><Check /></el-icon> 鏍囪宸茶
               </el-button>
             </div>
           </div>
 
-          <!-- 消息列表 -->
+          <!-- 娑堟伅鍒楄〃 -->
           <div class="messages-area" ref="messagesArea">
-            <!-- 客户原始消息 -->
+            <!-- 瀹㈡埛鍘熷娑堟伅 -->
             <div class="message-row msg-left">
               <el-avatar :size="32" :style="{ background: activeCustomer.avatarColor }" class="msg-avatar">
                 {{ activeCustomer.avatar }}
@@ -165,7 +165,7 @@
               </div>
             </div>
 
-            <!-- 回复消息列表 -->
+            <!-- 鍥炲娑堟伅鍒楄〃 -->
             <template v-for="msg in conversationMessages[activeCustomer.id]" :key="msg.id">
               <div v-if="msg.from === 'system'" class="system-message">{{ msg.text }}</div>
               <div v-else class="message-row" :class="msg.from === 'customer' ? 'msg-left' : 'msg-right'">
@@ -183,14 +183,14 @@
                     <div class="msg-text">{{ msg.text }}</div>
                     <div class="msg-time">{{ msg.time }}</div>
                   </div>
-                  <el-avatar :size="32" style="background: #1552F0;" class="msg-avatar">客</el-avatar>
+                  <el-avatar :size="32" style="background: #1552F0;" class="msg-avatar">瀹?/el-avatar>
                 </template>
               </div>
             </template>
 
-            <!-- AI 智能回复建议 -->
+            <!-- AI 鏅鸿兘鍥炲寤鸿 -->
             <div v-if="showSmartReplies" class="smart-replies-row">
-              <span class="smart-label">AI 建议回复：</span>
+              <span class="smart-label">AI 寤鸿鍥炲锛?/span>
               <span
                 v-for="(reply, idx) in smartReplies"
                 :key="idx"
@@ -202,11 +202,11 @@
             </div>
           </div>
 
-          <!-- 输入区域 -->
+          <!-- 杈撳叆鍖哄煙 -->
           <div class="input-area">
-            <!-- 快捷回复模板 -->
+            <!-- 蹇嵎鍥炲妯℃澘 -->
             <div class="quick-templates">
-              <span class="template-label">快捷回复：</span>
+              <span class="template-label">蹇嵎鍥炲锛?/span>
               <template v-for="tpl in quickReplies" :key="tpl.title">
                 <el-popover placement="top" :width="280" trigger="hover" :content="tpl.content">
                   <template #reference>
@@ -221,13 +221,13 @@
               <el-input
                 v-model="replyText"
                 type="textarea" :rows="2"
-                placeholder="输入回复内容，按 Enter 发送..."
+                placeholder="杈撳叆鍥炲鍐呭锛屾寜 Enter 鍙戦€?.."
                 resize="none"
                 @keydown.enter.exact.prevent="sendReply"
               />
               <div class="input-actions">
                 <el-button type="primary" @click="sendReply" :disabled="!replyText.trim()">
-                  <el-icon><Promotion /></el-icon> 发送
+                  <el-icon><Promotion /></el-icon> 鍙戦€?
                 </el-button>
               </div>
             </div>
@@ -241,8 +241,8 @@
               <circle cx="85" cy="45" r="18" fill="#1552F0" opacity="0.1"/>
               <path d="M78 45 L85 52 L92 38" stroke="#1552F0" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
-            <h3>选择一位客户开始对话</h3>
-            <p>左侧面板显示待处理的客户消息</p>
+            <h3>閫夋嫨涓€浣嶅鎴峰紑濮嬪璇?/h3>
+            <p>宸︿晶闈㈡澘鏄剧ず寰呭鐞嗙殑瀹㈡埛娑堟伅</p>
           </div>
         </template>
       </div>
@@ -256,18 +256,18 @@ import { ElMessage, ElMessageBox, ElNotification } from 'element-plus'
 import { Search, Check, Switch, Promotion, WarningFilled } from '@element-plus/icons-vue'
 import { getMessages, markRead, markAllRead, transferToHuman } from '@/api/customer'
 
-// ===== 统计数据 =====
+// ===== 缁熻鏁版嵁 =====
 const stats = reactive({
   totalMessages: 294,
   messageTrend: '+12%',
   activeConversations: 18,
   unreadCount: 7,
-  avgResponseTime: '2.3分',
+  avgResponseTime: '2.3鍒?,
   satisfaction: 94.2,
   satisfactionCount: 156,
 })
 
-// ===== API 数据 =====
+// ===== API 鏁版嵁 =====
 const selectedIds = ref([])
 const loading = ref(true)
 const error = ref(null)
@@ -282,8 +282,8 @@ async function fetchMessages() {
     if (Array.isArray(data)) {
       messages.splice(0, messages.length, ...data.map((m, i) => ({
         id: m.id || i + 1,
-        sender: m.sender || m.customerName || '用户',
-        avatar: m.avatar || (m.sender || '用').charAt(0),
+        sender: m.sender || m.customerName || '鐢ㄦ埛',
+        avatar: m.avatar || (m.sender || '鐢?).charAt(0),
         avatarColor: m.avatarColor || avatarColors[i % avatarColors.length],
         content: m.content || m.message || '',
         time: m.time || '-',
@@ -302,7 +302,7 @@ async function fetchMessages() {
   }
 }
 
-// ===== 筛选 =====
+// ===== 绛涢€?=====
 const searchKeyword = ref('')
 const filterType = ref('all')
 
@@ -325,7 +325,7 @@ const filteredCustomers = computed(() => {
   return result
 })
 
-// ===== 选择 =====
+// ===== 閫夋嫨 =====
 const toggleSelect = (msg) => {
   const idx = selectedIds.value.indexOf(msg.id)
   if (idx > -1) {
@@ -335,13 +335,13 @@ const toggleSelect = (msg) => {
   }
 }
 
-// ===== 标记已读 =====
+// ===== 鏍囪宸茶 =====
 const handleMarkRead = async (msg) => {
   try {
     await markRead(msg.id)
     msg.unread = false
     stats.unreadCount = messages.filter(m => m.unread).length
-    ElMessage.success(`已标记「${msg.sender}」的消息为已读`)
+    ElMessage.success(`宸叉爣璁般€?{msg.sender}銆嶇殑娑堟伅涓哄凡璇籤)
   } catch {
     msg.unread = false
     stats.unreadCount = messages.filter(m => m.unread).length
@@ -353,24 +353,24 @@ const markAllReadHandler = async () => {
     await markAllRead()
     messages.forEach((m) => (m.unread = false))
     stats.unreadCount = 0
-    ElMessage.success('已全部标记为已读')
+    ElMessage.success('宸插叏閮ㄦ爣璁颁负宸茶')
   } catch {
     messages.forEach((m) => (m.unread = false))
     stats.unreadCount = 0
   }
 }
 
-// ===== 转人工 =====
+// ===== 杞汉宸?=====
 const transferHuman = async () => {
   try {
     await transferToHuman(selectedIds.value)
     messages.forEach(m => {
       if (selectedIds.value.includes(m.id)) m.escalated = true
     })
-    ElMessage.success(`已将 ${selectedIds.value.length} 条消息转人工处理`)
+    ElMessage.success(`宸插皢 ${selectedIds.value.length} 鏉℃秷鎭浆浜哄伐澶勭悊`)
     selectedIds.value = []
   } catch {
-    ElMessage.warning('转人工请求已提交')
+    ElMessage.warning('杞汉宸ヨ姹傚凡鎻愪氦')
     messages.forEach(m => {
       if (selectedIds.value.includes(m.id)) m.escalated = true
     })
@@ -378,7 +378,7 @@ const transferHuman = async () => {
   }
 }
 
-// ===== 对话管理 =====
+// ===== 瀵硅瘽绠＄悊 =====
 const activeCustomer = ref(null)
 const replyText = ref('')
 const messagesArea = ref(null)
@@ -386,16 +386,16 @@ const showSmartReplies = ref(false)
 const smartReplies = ref([])
 const conversationMessages = reactive({})
 
-// ===== 快捷回复模板 =====
+// ===== 蹇嵎鍥炲妯℃澘 =====
 const quickReplies = [
-  { title: '问候语', content: '您好！很高兴为您服务，请问有什么可以帮助您的？' },
-  { title: '请稍等', content: '好的，我正在为您查询相关信息，请稍等片刻。' },
-  { title: '确认问题', content: '感谢您的反馈，我已经记录了您的问题，会尽快为您处理。' },
-  { title: '致歉', content: '非常抱歉给您带来不便，我们会立即核实并给您一个满意的答复。' },
-  { title: '退款说明', content: '您的退款将在3-5个工作日内原路返回，请注意查收。如有问题可随时联系我们。' },
-  { title: '发货进度', content: '您的订单已在处理中，预计在48小时内发货，发货后会短信通知您物流单号。' },
-  { title: '投诉升级', content: '您的投诉已记录并升级至主管处理，24小时内会有专人电话联系您，请保持电话畅通。' },
-  { title: '结束对话', content: '感谢您的耐心等待！如果还有其他问题，随时联系我们。祝您生活愉快！' },
+  { title: '闂€欒', content: '鎮ㄥソ锛佸緢楂樺叴涓烘偍鏈嶅姟锛岃闂湁浠€涔堝彲浠ュ府鍔╂偍鐨勶紵' },
+  { title: '璇风◢绛?, content: '濂界殑锛屾垜姝ｅ湪涓烘偍鏌ヨ鐩稿叧淇℃伅锛岃绋嶇瓑鐗囧埢銆? },
+  { title: '纭闂', content: '鎰熻阿鎮ㄧ殑鍙嶉锛屾垜宸茬粡璁板綍浜嗘偍鐨勯棶棰橈紝浼氬敖蹇负鎮ㄥ鐞嗐€? },
+  { title: '鑷存瓑', content: '闈炲父鎶辨瓑缁欐偍甯︽潵涓嶄究锛屾垜浠細绔嬪嵆鏍稿疄骞剁粰鎮ㄤ竴涓弧鎰忕殑绛斿銆? },
+  { title: '閫€娆捐鏄?, content: '鎮ㄧ殑閫€娆惧皢鍦?-5涓伐浣滄棩鍐呭師璺繑鍥烇紝璇锋敞鎰忔煡鏀躲€傚鏈夐棶棰樺彲闅忔椂鑱旂郴鎴戜滑銆? },
+  { title: '鍙戣揣杩涘害', content: '鎮ㄧ殑璁㈠崟宸插湪澶勭悊涓紝棰勮鍦?8灏忔椂鍐呭彂璐э紝鍙戣揣鍚庝細鐭俊閫氱煡鎮ㄧ墿娴佸崟鍙枫€? },
+  { title: '鎶曡瘔鍗囩骇', content: '鎮ㄧ殑鎶曡瘔宸茶褰曞苟鍗囩骇鑷充富绠″鐞嗭紝24灏忔椂鍐呬細鏈変笓浜虹數璇濊仈绯绘偍锛岃淇濇寔鐢佃瘽鐣呴€氥€? },
+  { title: '缁撴潫瀵硅瘽', content: '鎰熻阿鎮ㄧ殑鑰愬績绛夊緟锛佸鏋滆繕鏈夊叾浠栭棶棰橈紝闅忔椂鑱旂郴鎴戜滑銆傜鎮ㄧ敓娲绘剦蹇紒' },
 ]
 
 const openConversation = (customer) => {
@@ -438,7 +438,7 @@ const sendReply = () => {
   replyText.value = ''
   showSmartReplies.value = false
   nextTick(() => scrollToBottom())
-  ElMessage.success('回复已发送')
+  ElMessage.success('鍥炲宸插彂閫?)
   generateSmartReplies()
 }
 
@@ -452,18 +452,18 @@ const generateSmartReplies = () => {
   if (!c) return
   if (c.type === 'complaint') {
     smartReplies.value = [
-      '感谢您的反馈，我们会认真对待您提出的问题。',
-      '非常抱歉，我已记录您的情况，会有专人跟进处理。',
+      '鎰熻阿鎮ㄧ殑鍙嶉锛屾垜浠細璁ょ湡瀵瑰緟鎮ㄦ彁鍑虹殑闂銆?,
+      '闈炲父鎶辨瓑锛屾垜宸茶褰曟偍鐨勬儏鍐碉紝浼氭湁涓撲汉璺熻繘澶勭悊銆?,
     ]
   } else if (c.type === 'urgent') {
     smartReplies.value = [
-      '好的，我马上为您查询，请稍等！',
-      '正在为您加急处理中，预计5分钟内给您答复。',
+      '濂界殑锛屾垜椹笂涓烘偍鏌ヨ锛岃绋嶇瓑锛?,
+      '姝ｅ湪涓烘偍鍔犳€ュ鐞嗕腑锛岄璁?鍒嗛挓鍐呯粰鎮ㄧ瓟澶嶃€?,
     ]
   } else {
     smartReplies.value = [
-      '好的，已为您记录。还有其他可以帮助您的吗？',
-      '感谢您的咨询，如有任何疑问随时联系我们！',
+      '濂界殑锛屽凡涓烘偍璁板綍銆傝繕鏈夊叾浠栧彲浠ュ府鍔╂偍鐨勫悧锛?,
+      '鎰熻阿鎮ㄧ殑鍜ㄨ锛屽鏈変换浣曠枒闂殢鏃惰仈绯绘垜浠紒',
     ]
   }
   showSmartReplies.value = true
@@ -471,9 +471,9 @@ const generateSmartReplies = () => {
 
 const escalateToHuman = (customer) => {
   ElMessageBox.confirm(
-    `确认将「${customer.sender}」的会话转接至人工客服？`,
-    '转人工确认',
-    { confirmButtonText: '确认转接', cancelButtonText: '取消', type: 'warning' }
+    `纭灏嗐€?{customer.sender}銆嶇殑浼氳瘽杞帴鑷充汉宸ュ鏈嶏紵`,
+    '杞汉宸ョ‘璁?,
+    { confirmButtonText: '纭杞帴', cancelButtonText: '鍙栨秷', type: 'warning' }
   ).then(() => {
     customer.escalated = true
     if (!conversationMessages[customer.id]) {
@@ -482,12 +482,12 @@ const escalateToHuman = (customer) => {
     conversationMessages[customer.id].push({
       id: Date.now(),
       from: 'system',
-      text: '--- 会话已转接至人工客服，请稍候 ---',
+      text: '--- 浼氳瘽宸茶浆鎺ヨ嚦浜哄伐瀹㈡湇锛岃绋嶅€?---',
       time: new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }),
     })
     ElNotification({
-      title: '已转接人工',
-      message: `客户「${customer.sender}」的会话已转接至人工客服队列`,
+      title: '宸茶浆鎺ヤ汉宸?,
+      message: `瀹㈡埛銆?{customer.sender}銆嶇殑浼氳瘽宸茶浆鎺ヨ嚦浜哄伐瀹㈡湇闃熷垪`,
       type: 'warning',
       duration: 4000,
     })
@@ -497,20 +497,20 @@ const escalateToHuman = (customer) => {
 
 const flagComplaint = (customer) => {
   ElMessageBox.confirm(
-    `确认将「${customer.sender}」标记为投诉客户？此操作将通知主管。`,
-    '投诉标记确认',
-    { confirmButtonText: '确认标记', cancelButtonText: '取消', type: 'danger' }
+    `纭灏嗐€?{customer.sender}銆嶆爣璁颁负鎶曡瘔瀹㈡埛锛熸鎿嶄綔灏嗛€氱煡涓荤銆俙,
+    '鎶曡瘔鏍囪纭',
+    { confirmButtonText: '纭鏍囪', cancelButtonText: '鍙栨秷', type: 'danger' }
   ).then(() => {
     ElNotification({
-      title: '投诉已标记',
-      message: `客户「${customer.sender}」已被标记为投诉，级别: L3，已通知主管处理`,
+      title: '鎶曡瘔宸叉爣璁?,
+      message: `瀹㈡埛銆?{customer.sender}銆嶅凡琚爣璁颁负鎶曡瘔锛岀骇鍒? L3锛屽凡閫氱煡涓荤澶勭悊`,
       type: 'error',
       duration: 5000,
     })
   }).catch(() => {})
 }
 
-// ===== 生命周期 =====
+// ===== 鐢熷懡鍛ㄦ湡 =====
 onMounted(() => {
   fetchMessages()
   pollTimer = setInterval(fetchMessages, 15000)
@@ -526,7 +526,7 @@ onUnmounted(() => {
   padding: 20px 24px;
 }
 
-/* ===== 主体布局 ===== */
+/* ===== 涓讳綋甯冨眬 ===== */
 .panel-body {
   display: flex;
   gap: 0;
@@ -540,7 +540,7 @@ onUnmounted(() => {
   transition: var(--theme-transition);
 }
 
-/* ===== 左侧客户列表 ===== */
+/* ===== 宸︿晶瀹㈡埛鍒楄〃 ===== */
 .customer-list-panel {
   width: 380px;
   min-width: 340px;
@@ -706,7 +706,7 @@ onUnmounted(() => {
   font-size: 13px;
 }
 
-/* ===== 右侧对话窗口 ===== */
+/* ===== 鍙充晶瀵硅瘽绐楀彛 ===== */
 .conversation-panel {
   flex: 1;
   display: flex;
@@ -719,7 +719,7 @@ onUnmounted(() => {
   background: var(--bg-page);
 }
 
-/* 对话头部 */
+/* 瀵硅瘽澶撮儴 */
 .conversation-header {
   display: flex;
   align-items: center;
@@ -779,7 +779,7 @@ onUnmounted(() => {
   flex-shrink: 0;
 }
 
-/* 消息区域 */
+/* 娑堟伅鍖哄煙 */
 .messages-area {
   flex: 1;
   overflow-y: auto;
@@ -840,7 +840,7 @@ onUnmounted(() => {
   padding: 4px 0;
 }
 
-/* 智能回复建议 */
+/* 鏅鸿兘鍥炲寤鸿 */
 .smart-replies-row {
   display: flex;
   flex-wrap: wrap;
@@ -878,7 +878,7 @@ onUnmounted(() => {
   color: #fff;
 }
 
-/* 输入区域 */
+/* 杈撳叆鍖哄煙 */
 .input-area {
   border-top: 1px solid var(--border-color);
   padding: 12px 20px;
@@ -929,7 +929,7 @@ onUnmounted(() => {
   gap: 6px;
 }
 
-/* 空状态 */
+/* 绌虹姸鎬?*/
 .no-conversation {
   flex: 1;
   display: flex;

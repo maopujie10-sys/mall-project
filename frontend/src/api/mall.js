@@ -1,4 +1,4 @@
-﻿import { agentApi } from './index'
+import { agentApi } from './index'
 
 // ===== FastAPI Agent 商城工具 =====
 

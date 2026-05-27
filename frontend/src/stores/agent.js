@@ -59,7 +59,7 @@ export const useAgentStore = defineStore('agent', () => {
         for (const step of response.steps) {
           addStep({
             id: step.id || Date.now() + Math.random(),
-            name: step.name || step.tool || '步骤',
+            name: step.name || step.tool || '姝ラ',
             tool: step.tool || '',
             status: step.status || 'pending',
             evidence: step.evidence || '',
@@ -70,7 +70,7 @@ export const useAgentStore = defineStore('agent', () => {
       // Process response message
       const risk = response.risk || 'l1'
       const needConfirm = response.needConfirm || false
-      const reply = response.reply || response.message || response.text || '任务处理完成'
+      const reply = response.reply || response.message || response.text || '浠诲姟澶勭悊瀹屾垚'
       const stepsOut = response.steps?.map((s, i) => ({
         step: i + 1,
         name: s.name || s.tool || '',
@@ -85,7 +85,7 @@ export const useAgentStore = defineStore('agent', () => {
       addAIMessage(reply, risk, needConfirm, stepsOut)
     } catch (error) {
       addAIMessage(
-        `请求失败: ${error.message || '网络错误，请检查后端服务是否正常'}`,
+        `璇锋眰澶辫触: ${error.message || '缃戠粶閿欒锛岃妫€鏌ュ悗绔湇鍔℃槸鍚︽甯?}`,
         'l3',
         false,
         null
@@ -104,14 +104,14 @@ export const useAgentStore = defineStore('agent', () => {
       if (approved) {
         messages.value.push({
           role: 'ai',
-          text: '任务已确认执行。正在进行操作...',
+          text: '浠诲姟宸茬‘璁ゆ墽琛屻€傛鍦ㄨ繘琛屾搷浣?..',
           risk: 'l2',
           time: new Date().toLocaleTimeString(),
         })
       } else {
         messages.value.push({
           role: 'ai',
-          text: '操作已被拒绝，任务取消。',
+          text: '鎿嶄綔宸茶鎷掔粷锛屼换鍔″彇娑堛€?,
           risk: 'l3',
           time: new Date().toLocaleTimeString(),
         })
@@ -121,7 +121,7 @@ export const useAgentStore = defineStore('agent', () => {
     } catch (error) {
       messages.value.push({
         role: 'ai',
-        text: `操作失败: ${error.message}`,
+        text: `鎿嶄綔澶辫触: ${error.message}`,
         risk: 'l3',
         time: new Date().toLocaleTimeString(),
       })

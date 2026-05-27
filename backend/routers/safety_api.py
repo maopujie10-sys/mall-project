@@ -1,4 +1,4 @@
-"""ÈÛ¶Ï»úÖÆ + ·ÀÑ­»· API"""
+"""ç†”æ–­æœºåˆ¶ + é˜²å¾ªç¯ API"""
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from auth import verify_token
@@ -9,13 +9,13 @@ router = APIRouter(prefix="/safety", tags=["Safety"])
 
 @router.get("/circuit")
 async def circuit_status(_=Depends(verify_token)):
-    await handle_risk("L1", "²é¿´ÈÛ¶Ï×´Ì¬")
+    await handle_risk("L1", "æŸ¥çœ‹ç†”æ–­çŠ¶æ€")
     return circuit_breaker.status()
 
 @router.post("/circuit/reset")
 async def circuit_reset(action: str = "", _=Depends(verify_token)):
-    """ÖØÖÃÖ¸¶¨²Ù×÷µÄÈÛ¶ÏÆ÷£¬Áô¿ÕÔòÖØÖÃÈ«²¿"""
-    await handle_risk("L1", "ÖØÖÃÈÛ¶ÏÆ÷", action or "È«²¿")
+    """é‡ç½®æŒ‡å®šæ“ä½œçš„ç†”æ–­å™¨ï¼Œç•™ç©ºåˆ™é‡ç½®å…¨éƒ¨"""
+    await handle_risk("L1", "é‡ç½®ç†”æ–­å™¨", action or "å…¨éƒ¨")
     from safety import CircuitBreaker
     if action:
         circuit_breaker._failures[action].clear()
@@ -27,7 +27,7 @@ async def circuit_reset(action: str = "", _=Depends(verify_token)):
 
 @router.get("/anti-loop")
 async def antiloop_status(_=Depends(verify_token)):
-    await handle_risk("L1", "²é¿´·ÀÑ­»·×´Ì¬")
+    await handle_risk("L1", "æŸ¥çœ‹é˜²å¾ªç¯çŠ¶æ€")
     return {"records": dict(anti_loop._records)}
 
 @router.post("/anti-loop/check")

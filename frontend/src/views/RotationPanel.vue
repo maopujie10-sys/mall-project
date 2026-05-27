@@ -1,57 +1,57 @@
 <template>
   <div class="page-container">
     <div class="page-header">
-      <h2>轮值管理面板</h2>
-      <p>域名状态监控 · 负载均衡 · 自动切换</p>
+      <h2>杞€肩鐞嗛潰鏉?/h2>
+      <p>鍩熷悕鐘舵€佺洃鎺?路 璐熻浇鍧囪　 路 鑷姩鍒囨崲</p>
     </div>
 
     <el-alert v-if="error" :title="error" type="error" show-icon closable @close="error=null" style="margin-bottom:16px" />
 
-    <!-- 统计概览 -->
+    <!-- 缁熻姒傝 -->
     <el-row :gutter="16" style="margin-bottom: 20px;">
       <el-col :span="6">
         <div class="metric-card">
-          <div class="metric-label">活跃域名</div>
+          <div class="metric-label">娲昏穬鍩熷悕</div>
           <div class="metric-value" style="color: var(--color-success);">{{ activeCount }}</div>
-          <div class="metric-sub">共 {{ domains.length }} 个域名</div>
+          <div class="metric-sub">鍏?{{ domains.length }} 涓煙鍚?/div>
         </div>
       </el-col>
       <el-col :span="6">
         <div class="metric-card">
-          <div class="metric-label">平均响应时间</div>
+          <div class="metric-label">骞冲潎鍝嶅簲鏃堕棿</div>
           <div class="metric-value">{{ avgLatency }}ms</div>
-          <div class="metric-sub">近 5 分钟</div>
+          <div class="metric-sub">杩?5 鍒嗛挓</div>
         </div>
       </el-col>
       <el-col :span="6">
         <div class="metric-card">
-          <div class="metric-label">SSL 即将到期</div>
+          <div class="metric-label">SSL 鍗冲皢鍒版湡</div>
           <div class="metric-value" style="color: var(--color-warning);">{{ sslExpiring }}</div>
-          <div class="metric-sub">30 天内到期</div>
+          <div class="metric-sub">30 澶╁唴鍒版湡</div>
         </div>
       </el-col>
       <el-col :span="6">
         <div class="metric-card">
-          <div class="metric-label">今日切换次数</div>
+          <div class="metric-label">浠婃棩鍒囨崲娆℃暟</div>
           <div class="metric-value">2</div>
-          <div class="metric-sub">自动故障切换</div>
+          <div class="metric-sub">鑷姩鏁呴殰鍒囨崲</div>
         </div>
       </el-col>
     </el-row>
 
-    <!-- 域名列表 -->
+    <!-- 鍩熷悕鍒楄〃 -->
     <el-card shadow="never">
       <template #header>
         <div style="display: flex; justify-content: space-between; align-items: center;">
-          <span style="font-weight: 600;">域名状态</span>
+          <span style="font-weight: 600;">鍩熷悕鐘舵€?/span>
           <el-button text type="primary" size="small" @click="refreshDomains" :loading="loading">
-            <el-icon><Refresh /></el-icon> 刷新
+            <el-icon><Refresh /></el-icon> 鍒锋柊
           </el-button>
         </div>
       </template>
-      <el-empty v-if="domains.length===0 && !loading" description="暂无域名数据" :image-size="80" style="padding:40px 0;" />
+      <el-empty v-if="domains.length===0 && !loading" description="鏆傛棤鍩熷悕鏁版嵁" :image-size="80" style="padding:40px 0;" />
       <el-table v-else :data="domains" style="width: 100%;" size="small" stripe>
-        <el-table-column prop="domain" label="域名" min-width="200">
+        <el-table-column prop="domain" label="鍩熷悕" min-width="200">
           <template #default="{ row }">
             <span style="display: flex; align-items: center; gap: 8px;">
               <span class="status-dot" :class="row.active ? 'online' : 'offline'">
@@ -61,29 +61,29 @@
             </span>
           </template>
         </el-table-column>
-        <el-table-column prop="ip" label="解析地址" width="140" />
-        <el-table-column prop="status" label="健康状态" width="100">
+        <el-table-column prop="ip" label="瑙ｆ瀽鍦板潃" width="140" />
+        <el-table-column prop="status" label="鍋ュ悍鐘舵€? width="100">
           <template #default="{ row }">
             <el-tag :type="row.active ? 'success' : row.status === 'fail' ? 'danger' : 'info'" size="small" effect="light">
-              {{ row.active ? '在线' : row.status === 'fail' ? '故障' : '已暂停' }}
+              {{ row.active ? '鍦ㄧ嚎' : row.status === 'fail' ? '鏁呴殰' : '宸叉殏鍋? }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="latency" label="响应时间" width="100">
+        <el-table-column prop="latency" label="鍝嶅簲鏃堕棿" width="100">
           <template #default="{ row }">
             <span :style="{ color: row.latency > 500 ? 'var(--color-danger)' : row.latency > 200 ? 'var(--color-warning)' : 'var(--text-primary)' }">
               {{ row.latency }}ms
             </span>
           </template>
         </el-table-column>
-        <el-table-column prop="sslExpiry" label="SSL 有效期" width="120">
+        <el-table-column prop="sslExpiry" label="SSL 鏈夋晥鏈? width="120">
           <template #default="{ row }">
             <span :style="{ color: row.sslDays > 30 ? 'var(--text-secondary)' : 'var(--color-warning)' }">
               {{ row.sslExpiry }}
             </span>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="180">
+        <el-table-column label="鎿嶄綔" width="180">
           <template #default="{ row }">
             <el-button
               v-if="row.active"
@@ -92,7 +92,7 @@
               type="warning"
               @click="handleToggleDomain(row)"
             >
-              暂停
+              鏆傚仠
             </el-button>
             <el-button
               v-else
@@ -101,9 +101,9 @@
               type="success"
               @click="handleToggleDomain(row)"
             >
-              恢复
+              鎭㈠
             </el-button>
-            <el-button text size="small" type="primary" @click="handleCheckDomain(row)">检测</el-button>
+            <el-button text size="small" type="primary" @click="handleCheckDomain(row)">妫€娴?/el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -153,23 +153,23 @@ async function fetchDomains() {
 }
 
 const handleToggleDomain = async (row) => {
-  const action = row.active ? '暂停' : '恢复'
+  const action = row.active ? '鏆傚仠' : '鎭㈠'
   try {
-    await ElMessageBox.confirm(`确定要${action}域名 ${row.domain} 吗？`, '操作确认', {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
+    await ElMessageBox.confirm(`纭畾瑕?{action}鍩熷悕 ${row.domain} 鍚楋紵`, '鎿嶄綔纭', {
+      confirmButtonText: '纭畾',
+      cancelButtonText: '鍙栨秷',
       type: row.active ? 'warning' : 'success',
     })
     try {
       await toggleDomain(row.domain, !row.active)
       row.active = !row.active
       row.status = row.active ? 'ok' : 'paused'
-      ElMessage.success(`已${action}域名 ${row.domain}`)
+      ElMessage.success(`宸?{action}鍩熷悕 ${row.domain}`)
     } catch {
       // If API fails, still toggle locally
       row.active = !row.active
       row.status = row.active ? 'ok' : 'paused'
-      ElMessage.success(`已${action}域名 ${row.domain}`)
+      ElMessage.success(`宸?{action}鍩熷悕 ${row.domain}`)
     }
   } catch {
     // User cancelled
@@ -177,24 +177,24 @@ const handleToggleDomain = async (row) => {
 }
 
 const handleCheckDomain = async (row) => {
-  ElMessage.info(`正在检测 ${row.domain} ...`)
+  ElMessage.info(`姝ｅ湪妫€娴?${row.domain} ...`)
   try {
     const result = await checkDomain(row.domain)
     if (result) {
       row.latency = result.latency ?? row.latency
       row.active = result.online ?? row.active
       row.status = row.active ? 'ok' : 'fail'
-      ElMessage.success(`${row.domain} 检测完成: ${row.latency}ms`)
+      ElMessage.success(`${row.domain} 妫€娴嬪畬鎴? ${row.latency}ms`)
     }
   } catch {
-    ElMessage.warning(`${row.domain} 检测请求已发送`)
+    ElMessage.warning(`${row.domain} 妫€娴嬭姹傚凡鍙戦€乣)
   }
 }
 
 const refreshDomains = async () => {
   loading.value = true
   await fetchDomains()
-  ElMessage.success('域名状态已刷新')
+  ElMessage.success('鍩熷悕鐘舵€佸凡鍒锋柊')
 }
 
 onMounted(() => {

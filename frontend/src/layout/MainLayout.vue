@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="app-shell" :class="{ collapsed: sidebarCollapsed, dark: theme.isDark.value }">
     <aside class="sidebar">
       <div class="sidebar-brand" @click="$router.push('/friday')">
@@ -63,6 +63,14 @@
           <router-link to="/trends" class="nav-item" :class="{ active: isActive('/trends') }">
             <span class="nav-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></span>
             <span class="nav-label" v-show="!sidebarCollapsed">热点监控</span>
+          </router-link>
+          <router-link to="/memory" class="nav-item" :class="{ active: isActive('/memory') }">
+            <span class="nav-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></span>
+            <span class="nav-label" v-show="!sidebarCollapsed">记忆中心</span>
+          </router-link>
+          <router-link to="/models" class="nav-item" :class="{ active: isActive('/models') }">
+            <span class="nav-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></span>
+            <span class="nav-label" v-show="!sidebarCollapsed">模型中心</span>
           </router-link>
           <router-link to="/evolution" class="nav-item" :class="{ active: isActive('/evolution') }">
             <span class="nav-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></span>
@@ -148,6 +156,7 @@
         </router-view>
       </main>
     </div>
+    <LiveTaskPanel />
   </div>
 </template>
 
@@ -156,6 +165,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useSystemStore } from '@/stores/system'
 import { useThemeStore } from '@/stores/theme'
+import LiveTaskPanel from '@/components/LiveTaskPanel.vue'
 import { storeToRefs } from 'pinia'
 
 const route = useRoute()
