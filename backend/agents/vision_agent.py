@@ -68,6 +68,50 @@ from datetime import datetime
         return {"ok":True,"objects":[],"note":"物体识别API未配置，返回空"}
 
     @staticmethod
+    async def analyze_video_frames(video_url, frame_interval=5):
+        import subprocess,os,tempfile,base64,httpx,json,shutil
+        tmpdir=tempfile.mkdtemp()
+        frames_dir=os.path.join(tmpdir,"frames")
+        os.makedirs(frames_dir,exist_ok=True)
+        try:
+            probe=subprocess.run(["ffprobe","-v","quiet","-print_format","json","-show_format",video_url],capture_output=True,text=True,timeout=30)
+            info=json.loads(probe.stdout) if probe.stdout else {}
+            duration=float(info.get("format",{}).get("duration",0))
+            frame_count=max(1,int(duration/frame_interval))
+            for i in range(frame_count):
+                t=i*frame_interval
+                out=os.path.join(frames_dir,"frame_%03d.jpg" % i)
+                subprocess.run(["ffmpeg","-ss",str(t),"-i",video_url,"-vframes","1","-q:v","2",out,"-y"],capture_output=True,timeout=30)
+            frames_result=[]
+            for i in range(frame_count):
+                fp=os.path.join(frames_dir,"frame_%03d.jpg" % i)
+                if os.path.exists(fp):
+                    with open(fp,"rb") as f:
+                        img_b64=base64.b64encode(f.read()).decode()
+                    try:
+                        async with httpx.AsyncClient(timeout=10) as c:
+                            resp=await c.post("https://api.imagga.com/v2/tags",auth=("acc_",""),data={"image_base64":img_b64})
+                            tags=resp.json().get("result",{}).get("tags",[])[:5] if resp.status_code==200 else []
+                    except:
+                        tags=[]
+                    frames_result.append({"time_sec":i*frame_interval,"objects":[{"name":t["tag"]["en"],"conf":t["confidence"]} for t in tags]})
+            all_objs={}
+            for fr in frames_result:
+                for obj in fr["objects"]:
+                    n=obj["name"]
+                    if n not in all_objs:
+                        all_objs[n]={"count":0,"total_conf":0,"first_seen":fr["time_sec"]}
+                    all_objs[n]["count"]+=1
+                    all_objs[n]["total_conf"]+=obj["conf"]
+            top=sorted(all_objs.items(),key=lambda x:x[1]["count"]*x[1]["total_conf"],reverse=True)
+            return {"ok":True,"duration_sec":duration,"frames":frame_count,"top_objects":[{"name":n,**d} for n,d in top[:10]],"summary":"%ds video, %d frames" % (int(duration),frame_count)}
+        except FileNotFoundError:
+            return {"ok":False,"error":"ffmpeg not installed"}
+        except Exception as e:
+            return {"ok":False,"error":str(e)}
+        finally:
+            shutil.rmtree(tmpdir,ignore_errors=True)
+    @staticmethod
     async def detect_faces(image_url: str) -> dict:
         """人脸检测 — 检测图片中的人脸数量"""
         try:
