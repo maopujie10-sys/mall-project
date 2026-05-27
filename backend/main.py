@@ -1,4 +1,5 @@
 ﻿"""TikTokMall AI Agent 总控 - FastAPI :9000"""
+import asyncio
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -12,7 +13,10 @@ async def lifespan(app: FastAPI):
     # 启动定时任务
     try:
         from scheduler import start_scheduler
+    from digital_lifeform import DigitalLifeform
         start_scheduler()
+    # 启动数字生命体自主循环(每5分钟)
+    asyncio.create_task(DigitalLifeform.start_loop(300))
     except Exception as e:
         print(f"[Agent] 定时任务启动失败(非致命): {e}")
     # 注册内置工具
@@ -29,7 +33,9 @@ async def lifespan(app: FastAPI):
         print(f"[Agent] 自检失败(非致命): {e}")    # 停止定时任务
     try:
         from scheduler import stop_scheduler
+    from digital_lifeform import DigitalLifeform
         stop_scheduler()
+    asyncio.create_task(DigitalLifeform.stop_loop())
     except Exception:
         pass
     print("[Agent] 关闭前同步记忆...")
