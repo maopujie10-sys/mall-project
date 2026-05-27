@@ -5,6 +5,8 @@
   "display": "standalone",
   "background_color": "#080b1a",
   "theme_color": "#080b1a",
-  "description": "Friday AI OS - 超级AI数字生命体",
-  "icons": []
+  "description": "Friday AI OS - AI Digital Lifeform",
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" }
+  ]
 }

@@ -1,4 +1,4 @@
-﻿"""TikTokMall AI Agent 总控 - FastAPI :9000"""
+"""TikTokMall AI Agent 总控 - FastAPI :9000"""
 import asyncio
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request, HTTPException
@@ -19,6 +19,14 @@ async def lifespan(app: FastAPI):
         asyncio.create_task(DigitalLifeform.start_loop(300))
     except Exception as e:
         print(f"[Agent] 定时任务启动失败(非致命): {e}")
+    # 加载持久记忆 + 注册内置工具
+    try:
+        from tools.memory_store import memory_store
+        from digital_lifeform import DigitalLifeform
+        stats = memory_store.get_stats()
+        print(f"[Agent] 持久记忆已加载: {stats[\"total_conversations\"]}段对话, {len(memory_store.get_knowledge_categories())}个知识分类")
+    except Exception as e:
+        print(f"[Agent] 记忆加载失败(非致命): {e}")
     # 注册内置工具
     from tools.registry import register_builtin_tools
     register_builtin_tools()

@@ -1,5 +1,4 @@
-"""Agent Chat API — 多模型智能路由
-v2: Claude + DeepSeek + Ollama 三引擎"""
+"""Agent Chat API 閳?婢舵碍膩閸ㄥ娅ら懗鍊熺熅閻?v2: Claude + DeepSeek + Ollama 娑撳绱╅幙?""
 import httpx, json, re, os
 from datetime import datetime
 from fastapi import APIRouter, Depends
@@ -26,22 +25,21 @@ class HandoverRequest(BaseModel):
 SYSTEM_PROMPT = """Friday AI OS: server/Docker/Nginx/site/DB/mall/customer/rotation/scraper/virtual/alert/approval/evolution.
 Rule: 1)Understand intent 2)Select tool 3)Judge risk 4)L1 auto L3 confirm L4 block. Reply in Chinese."""
 
-# ===== 模型路由 =====
+# ===== 濡€崇€风捄顖滄暠 =====
 OLLAMA_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
 OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "qwen2.5:7b")
 DEEPSEEK_KEY = os.getenv("DEEPSEEK_API_KEY", "")
 OPENAI_KEY = os.getenv("OPENAI_API_KEY", "")
 
 async def call_ai(messages, model=None):
-    """多模型智能路由: Ollama > DeepSeek > Claude > OpenAI"""
+    """婢舵碍膩閸ㄥ娅ら懗鍊熺熅閻? Ollama > DeepSeek > Claude > OpenAI"""
     model = model or CLAUDE_MODEL
     results = []
 
-    # 1. Ollama 本地模型 (优先，免费)
+    # 1. Ollama 閺堫剙婀村Ο鈥崇€?(娴兼ê鍘涢敍灞藉帳鐠?
     try:
         async with httpx.AsyncClient(timeout=60) as c:
-            # 构建 Ollama 格式的消息
-            ollama_messages = []
+            # 閺嬪嫬缂?Ollama 閺嶇厧绱￠惃鍕Х閹?            ollama_messages = []
             for m in messages:
                 if m["role"] == "system":
                     ollama_messages.append({"role": "system", "content": m["content"]})
@@ -53,7 +51,7 @@ async def call_ai(messages, model=None):
                 data = r.json()
                 text = data.get("message", {}).get("content", "")
                 if text:
-                    print(f"[AI] Ollama ({OLLAMA_MODEL}) 响应成功")
+                    print(f"[AI] Ollama ({OLLAMA_MODEL}) 閸濆秴绨查幋鎰")
                     return text
     except Exception as e:
         results.append(f"Ollama: {str(e)[:50]}")
@@ -66,7 +64,7 @@ async def call_ai(messages, model=None):
                     headers={"Authorization": f"Bearer {DEEPSEEK_KEY}", "Content-Type": "application/json"},
                     json={"model": "deepseek-chat", "messages": messages, "max_tokens": 1024})
                 if r.status_code == 200:
-                    print("[AI] DeepSeek 响应成功")
+                    print("[AI] DeepSeek 閸濆秴绨查幋鎰")
                     return r.json()["choices"][0]["message"]["content"]
         except Exception as e:
             results.append(f"DeepSeek: {str(e)[:50]}")
@@ -80,7 +78,7 @@ async def call_ai(messages, model=None):
                     json={"model": model, "max_tokens": 1024, "system": messages[0]["content"],
                           "messages": [m for m in messages if m["role"] != "system"]})
                 if r.status_code == 200:
-                    print("[AI] Claude 响应成功")
+                    print("[AI] Claude 閸濆秴绨查幋鎰")
                     return r.json()["content"][0]["text"]
         except Exception as e:
             results.append(f"Claude: {str(e)[:50]}")
@@ -93,13 +91,13 @@ async def call_ai(messages, model=None):
                     headers={"Authorization": f"Bearer {OPENAI_KEY}", "Content-Type": "application/json"},
                     json={"model": "gpt-4o-mini", "messages": messages, "max_tokens": 1024})
                 if r.status_code == 200:
-                    print("[AI] OpenAI 响应成功")
+                    print("[AI] OpenAI 閸濆秴绨查幋鎰")
                     return r.json()["choices"][0]["message"]["content"]
         except Exception as e:
             results.append(f"OpenAI: {str(e)[:50]}")
 
     if results:
-        print(f"[AI] 所有模型失败: {'; '.join(results)}")
+        print(f"[AI] 閹碘偓閺堝膩閸ㄥ銇戠拹? {'; '.join(results)}")
     return None
 
 async def execute_tool(tool_name, params=None):
@@ -161,13 +159,13 @@ async def execute_tool(tool_name, params=None):
                 res["data"] = er; res["success"] = er.get("ok", False)
             elif tool_name == "playwright.form":
                 res["data"] = {"status": "pending_approval"}; res["success"] = True
-        # ===== 新增: 记忆搜索 =====
+        # ===== 閺傛澘顤? 鐠佹澘绻傞幖婊呭偍 =====
         elif tool_name == "memory.search":
             query = params.get("query", params.get("message", ""))
             memories = DigitalLifeform.search_memory(query, 10)
             res["data"] = {"memories": [{"role": m["role"], "content": m["content"][:100], "time": m["time"]} for m in memories]}; res["success"] = True
         elif tool_name == "memory.topics":
-            topics = DigitalLifeform.recall_by_topic(params.get("topic", "服务器"), 10)
+            topics = DigitalLifeform.recall_by_topic(params.get("topic", "閺堝秴濮熼崳?), 10)
             res["data"] = {"topics": [{"content": t["content"][:100]} for t in topics]}; res["success"] = True
         elif tool_name == "memory.stats":
             from tools.memory_store import memory_store
@@ -179,7 +177,7 @@ async def execute_tool(tool_name, params=None):
         elif tool_name == "knowledge.learn":
             from tools.memory_store import memory_store
             memory_store.set_knowledge(
-                params.get("category", "通用"), params.get("key", ""),
+                params.get("category", "闁氨鏁?), params.get("key", ""),
                 params.get("value", ""), params.get("confidence", 0.7))
             res["data"] = {"learned": True}; res["success"] = True
         else:
@@ -200,8 +198,8 @@ INTENT_RULES = [
     (["evolution", "success"], "evolution.report", "L1"),
     (["scan", "health", "hot", "dead"], "mallbrain.scan", "L1"),
     (["inspect", "patrol"], "inspector.run", "L1"),
-    (["记忆", "回忆", "记住"], "memory.search", "L1"),
-    (["知识", "学习", "学会"], "knowledge.recall", "L1"),
+    (["鐠佹澘绻?, "閸ョ偛绻?, "鐠侀缍?], "memory.search", "L1"),
+    (["閻儴鐦?, "鐎涳缚绡?, "鐎涳缚绱?], "knowledge.recall", "L1"),
 ]
 
 def _match(msg):
@@ -213,7 +211,7 @@ def _match(msg):
 
 @router.get("/models/status")
 async def model_status():
-    """检查各模型可用状态"""
+    """濡偓閺屻儱鎮囧Ο鈥崇€烽崣顖滄暏閻樿埖鈧?""
     status = {"ollama": False, "deepseek": bool(DEEPSEEK_KEY), "claude": bool(CLAUDE_API_KEY), "openai": bool(OPENAI_KEY)}
     try:
         async with httpx.AsyncClient(timeout=3) as c:
@@ -272,9 +270,13 @@ async def agent_chat(req: ChatRequest, _=Depends(verify_token)):
         steps.append({"step": 5, "name": "Failed", "status": "failed"})
         resp = f"**{disp}** Failed\n\n{er.get('error', 'unknown')}"
     state.add_task(name=disp, risk=risk, status="done" if er["success"] else "failed")
-    # 持久化对话记忆
-    try:
+    # 閹镐椒绠欓崠鏍ь嚠鐠囨繆顔囪箛?    try:
         DigitalLifeform.remember_conversation(req.message, resp[:300])
+    try:
+        from tools.vector_memory import vector_memory
+        vector_memory.remember("用户: " + req.message[:300], {"role": "user", "tool": tn})
+        vector_memory.remember("AI: " + resp[:300], {"role": "ai", "tool": tn})
+    except: pass
     except:
         pass
     return {"task_id": f"t{len(state.tasks)}", "response": resp, "steps": steps, "risk_level": risk, "mode": state.mode}

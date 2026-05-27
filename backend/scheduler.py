@@ -1,11 +1,8 @@
-"""APScheduler 定时任务 — 自动巡检/备份/报告
-
-定时任务列表:
-  - 每30分钟: 自动巡检 (服务器/Docker/Nginx/网站)
-  - 每天凌晨2点: 数据库备份
-  - 每天上午9点: 轮值域名检测
-  - 每天下午6点: 客服日报
-  - 每天凌晨3点: 商城健康度扫描"""
+"""APScheduler 鐎规碍妞傛禒璇插 閳?閼奉亜濮╁鈩冾梾/婢跺洣鍞?閹躲儱鎲?
+鐎规碍妞傛禒璇插閸掓銆?
+  - 濮?0閸掑棝鎸? 閼奉亜濮╁鈩冾梾 (閺堝秴濮熼崳?Docker/Nginx/缂冩垹鐝?
+  - 濮ｅ繐銇夐崙灞炬珤2閻? 閺佺増宓佹惔鎾愁槵娴?  - 濮ｅ繐銇夋稉濠傚磵9閻? 鏉烆喖鈧厧鐓欓崥宥嗩梾濞?  - 濮ｅ繐銇夋稉瀣磵6閻? 鐎广垺婀囬弮銉﹀Г
+  - 濮ｅ繐銇夐崙灞炬珤3閻? 閸熷棗鐓勯崑銉ユ倣鎼达附澹傞幓?""
 import asyncio
 from datetime import datetime
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
@@ -16,18 +13,18 @@ scheduler = AsyncIOScheduler()
 
 
 async def patrol_task():
-    """定时巡检：服务器/Docker/Nginx/网站连通性"""
-    print(f"[Scheduler] 自动巡检 {datetime.now().strftime('%H:%M:%S')}")
+    """鐎规碍妞傚鈩冾梾閿涙碍婀囬崝鈥虫珤/Docker/Nginx/缂冩垹鐝潻鐐衡偓姘偓?""
+    print(f"[Scheduler] 閼奉亜濮╁鈩冾梾 {datetime.now().strftime('%H:%M:%S')}")
     try:
         from routers.inspector import run_inspection
         await run_inspection()
     except Exception as e:
-        print(f"[Scheduler] 巡检失败: {e}")
+        print(f"[Scheduler] 瀹糕剝顥呮径杈Е: {e}")
 
 
 async def backup_task():
-    """每日数据库备份"""
-    print(f"[Scheduler] 每日备份 {datetime.now().strftime('%H:%M:%S')}")
+    """濮ｅ繑妫╅弫鐗堝祦鎼存挸顦禒?""
+    print(f"[Scheduler] 濮ｅ繑妫╂径鍥﹀敜 {datetime.now().strftime('%H:%M:%S')}")
     try:
         from routers.rollback_center import _load_backups, _save_backups
         import subprocess, os
@@ -42,60 +39,73 @@ async def backup_task():
                 f.write(result.stdout)
             records = _load_backups()
             records.append({
-                "id": ts, "name": f"自动备份_{ts}", "type": "auto",
+                "id": ts, "name": f"閼奉亜濮╂径鍥﹀敜_{ts}", "type": "auto",
                 "target": "database", "path": backup_path,
                 "size": len(result.stdout), "created_at": datetime.now().isoformat(),
             })
             _save_backups(records)
-            print(f"[Scheduler] 备份完成: {backup_path}")
+            print(f"[Scheduler] 婢跺洣鍞ょ€瑰本鍨? {backup_path}")
         else:
-            print(f"[Scheduler] 备份失败: {result.stderr[:200]}")
+            print(f"[Scheduler] 婢跺洣鍞ゆ径杈Е: {result.stderr[:200]}")
     except Exception as e:
-        print(f"[Scheduler] 备份异常: {e}")
+        print(f"[Scheduler] 婢跺洣鍞ゅ鍌氱埗: {e}")
 
 
 async def rotation_check_task():
-    """轮值域名检测"""
-    print(f"[Scheduler] 轮值检测 {datetime.now().strftime('%H:%M:%S')}")
+    """鏉烆喖鈧厧鐓欓崥宥嗩梾濞?""
+    print(f"[Scheduler] 鏉烆喖鈧吋顥呭ù?{datetime.now().strftime('%H:%M:%S')}")
     try:
         from routers.rotation_panel import _check_all
         await _check_all()
     except Exception as e:
-        print(f"[Scheduler] 轮值检测失败: {e}")
+        print(f"[Scheduler] 鏉烆喖鈧吋顥呭ù瀣亼鐠? {e}")
 
 
 async def customer_report_task():
-    """客服日报"""
-    print(f"[Scheduler] 客服日报 {datetime.now().strftime('%H:%M:%S')}")
+    """鐎广垺婀囬弮銉﹀Г"""
+    print(f"[Scheduler] 鐎广垺婀囬弮銉﹀Г {datetime.now().strftime('%H:%M:%S')}")
     try:
         from routers.customer_panel import _generate_report
         await _generate_report()
     except Exception as e:
-        print(f"[Scheduler] 客服日报失败: {e}")
+        print(f"[Scheduler] 鐎广垺婀囬弮銉﹀Г婢惰精瑙? {e}")
+
+
+async def diary_task():
+    """姣忔棩鏃ヨ鑷姩鐢熸垚"""
+    print(f"[Scheduler] 鏃ヨ鐢熸垚 {datetime.now().strftime("%H:%M:%S")}")
+    try:
+        from services import DiaryService
+        journal = DiaryService.generate_daily()
+        path = DiaryService.save_journal(journal)
+        print(f"[Scheduler] 鏃ヨ宸蹭繚瀛? {path}")
+    except Exception as e:
+        print(f"[Scheduler] 鏃ヨ鐢熸垚澶辫触: {e}")
 
 
 async def mall_scan_task():
-    """商城健康度扫描"""
-    print(f"[Scheduler] 商城扫描 {datetime.now().strftime('%H:%M:%S')}")
+    """閸熷棗鐓勯崑銉ユ倣鎼达附澹傞幓?""
+    print(f"[Scheduler] 閸熷棗鐓勯幍顐ｅ伎 {datetime.now().strftime('%H:%M:%S')}")
     try:
         from routers.mall_scanner import run_scan
         await run_scan()
     except Exception as e:
-        print(f"[Scheduler] 商城扫描失败: {e}")
+        print(f"[Scheduler] 閸熷棗鐓勯幍顐ｅ伎婢惰精瑙? {e}")
 
 
 def start_scheduler():
-    """启动定时任务"""
+    """閸氼垰濮╃€规碍妞傛禒璇插"""
     scheduler.add_job(patrol_task, IntervalTrigger(minutes=30), id="patrol", replace_existing=True)
     scheduler.add_job(backup_task, CronTrigger(hour=2, minute=0), id="backup", replace_existing=True)
     scheduler.add_job(rotation_check_task, CronTrigger(hour=9, minute=0), id="rotation", replace_existing=True)
     scheduler.add_job(customer_report_task, CronTrigger(hour=18, minute=0), id="customer_report", replace_existing=True)
     scheduler.add_job(mall_scan_task, CronTrigger(hour=3, minute=0), id="mall_scan", replace_existing=True)
+    scheduler.add_job(diary_task, CronTrigger(hour=23, minute=55), id="diary", replace_existing=True)
     scheduler.start()
-    print("[Scheduler] 定时任务已启动: 巡检/备份/轮值/日报/扫描")
+    print("[Scheduler] 鐎规碍妞傛禒璇插瀹告彃鎯庨崝? 瀹糕剝顥?婢跺洣鍞?鏉烆喖鈧?閺冦儲濮?閹殿偅寮?)
 
 
 def stop_scheduler():
-    """停止定时任务"""
+    """閸嬫粍顒涚€规碍妞傛禒璇插"""
     scheduler.shutdown(wait=False)
-    print("[Scheduler] 定时任务已停止")
+    print("[Scheduler] 鐎规碍妞傛禒璇插瀹告彃浠犲?)
