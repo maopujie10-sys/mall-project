@@ -1,8 +1,8 @@
-"""IP黑名单与安全 — 封禁/解封IP"""
+"""IP黑名单与安全 — 封禁/解封IP + 审计日志"""
 from datetime import datetime, timedelta
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 from pydantic import BaseModel
-from auth import verify_token
+from auth import verify_token, get_audit_logs, get_rate_limit_stats, create_jwt
 from state import state
 from risk import handle_risk
 
@@ -24,34 +24,52 @@ class BlockRequest(BaseModel):
     reason: str = "manual"
     hours: int = 24
 
+class JWTRequest(BaseModel):
+    subject: str = "agent"
+    expire_hours: int = 24
+
 @router.get("/blacklist")
 async def list_blocked(_=Depends(verify_token)):
     await handle_risk("L1", "查看IP黑名单")
     _clean_expired()
-    return {"blocked_ips": _get_blacklist(), "count": len(_get_blacklist())}
+    return {"blacklist": _get_blacklist(), "count": len(_get_blacklist())}
 
-@router.post("/block")
+@router.post("/blacklist/block")
 async def block_ip(req: BlockRequest, _=Depends(verify_token)):
+    await handle_risk("L3", f"封禁IP: {req.ip}", need_confirm=True)
     _clean_expired()
-    for e in _get_blacklist():
-        if e["ip"] == req.ip:
-            e["reason"] = req.reason
-            e["hours"] = req.hours
-            e["expires_at"] = (datetime.now() + timedelta(hours=req.hours)).isoformat()
-            state._save()
-            return {"action": "updated", "ip": req.ip}
-    _get_blacklist().append({
-        "ip": req.ip, "reason": req.reason, "hours": req.hours,
-        "blocked_at": datetime.now().isoformat(),
-        "expires_at": (datetime.now() + timedelta(hours=req.hours)).isoformat(),
-    })
+    expires = (datetime.now() + timedelta(hours=req.hours)).isoformat()
+    _get_blacklist().append({"ip": req.ip, "reason": req.reason, "blocked_at": datetime.now().isoformat(), "expires_at": expires})
     state._save()
-    return {"action": "block", "ip": req.ip}
+    return {"ok": True, "ip": req.ip, "expires_at": expires}
 
-@router.delete("/block/{ip}")
-async def unblock_ip(ip: str, _=Depends(verify_token)):
-    before = len(_get_blacklist())
-    state._data["ip_blacklist"] = [e for e in _get_blacklist() if e["ip"] != ip]
+@router.post("/blacklist/unblock")
+async def unblock_ip(req: BlockRequest, _=Depends(verify_token)):
+    await handle_risk("L3", f"解封IP: {req.ip}", need_confirm=True)
+    _clean_expired()
+    state._data["ip_blacklist"] = [e for e in _get_blacklist() if e["ip"] != req.ip]
     state._save()
-    return {"action": "unblock", "ip": ip, "removed": before > len(_get_blacklist())}
+    return {"ok": True, "ip": req.ip}
 
+# ===== JWT Token 管理 =====
+@router.post("/token")
+async def generate_token(req: JWTRequest, _=Depends(verify_token)):
+    """生成 JWT Token"""
+    await handle_risk("L2", f"生成JWT: {req.subject}")
+    token = create_jwt({"sub": req.subject}, req.expire_hours)
+    return {"ok": True, "token": token, "expires_in_hours": req.expire_hours}
+
+# ===== 审计日志 =====
+@router.get("/audit")
+async def audit_logs(limit: int = 100, _=Depends(verify_token)):
+    """查看审计日志"""
+    await handle_risk("L1", "查看审计日志")
+    logs = get_audit_logs(limit)
+    return {"ok": True, "logs": logs, "count": len(logs)}
+
+# ===== 速率限制状态 =====
+@router.get("/rate-limit")
+async def rate_limit_status(_=Depends(verify_token)):
+    """查看速率限制状态"""
+    stats = get_rate_limit_stats()
+    return {"ok": True, **stats}

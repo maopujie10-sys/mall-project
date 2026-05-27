@@ -30,7 +30,7 @@ async def get_mode(_=Depends(verify_token)):
 @router.post("/mode")
 async def set_mode(req: SetModeRequest, _=Depends(verify_token)):
     if req.mode not in VALID_MODES:
-        raise HTTPException(400, f"无效模式: {req.mode}。可选: {VALID_MODES}")
+        raise HTTPException(400, f"无效模式: {req.mode}. 可选: {VALID_MODES}")
     old = state.mode
     state.mode = req.mode
     state.add_emergency(req.mode, f"用户切换模式: {old} -> {req.mode}")
@@ -61,9 +61,7 @@ async def preview_diff(task_id: str, before: dict, after: dict, action: str = ""
     result = generate_diff_preview(action or task_id, before, after)
     return result
 
-
 @router.get("/emergency-history")
 async def emergency_history(_=Depends(verify_token)):
     await handle_risk("L1", "查看紧急事件历史")
     return {"history": state.emergency_history}
-
