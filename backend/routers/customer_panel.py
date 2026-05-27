@@ -100,18 +100,38 @@ async def transfer_to_human(req: TransferRequest, _=Depends(verify_token)):
 
 @router.post("/auto-reply")
 async def auto_reply(req: AutoReplyRequest, _=Depends(verify_token)):
-    """自动回复 — 识别问题类型并回复"""
+    """自动回复 — AI推理 + 话术库fallback"""
     await handle_risk("L1", "客服自动回复", req.message[:50])
-    msg = req.message.lower()
+    msg = req.message
+
+    # 投诉检测
     is_complaint = any(kw in msg for kw in COMPLAINT_KEYWORDS)
+
+    # 尝试AI推理
     reply = ""
-    for keyword, answer in FAQ.items():
-        if keyword in msg:
-            reply = answer
-            break
+    try:
+        from routers.agent_chat import call_ai
+        faq_text = "\n".join([f"Q:{k} A:{v}" for k,v in FAQ.items()])
+        ai_msg = [
+            {"role":"system","content":"你是商城客服。参考话术库回复用户。"+faq_text+"\n请简洁回复，不超过100字。"},
+            {"role":"user","content": msg}
+        ]
+        ai_reply = await call_ai(ai_msg)
+        if ai_reply:
+            reply = ai_reply[:300]
+    except:
+        pass
+
+    # Fallback: 关键词匹配
+    if not reply:
+        for keyword, answer in FAQ.items():
+            if keyword in msg:
+                reply = answer
+                break
     if not reply:
         reply = "您好，您的问题已收到，正在为您查询，请稍候。"
-    return {"reply": reply, "matched": bool(reply), "is_complaint": is_complaint, "need_human": is_complaint or not reply}
+
+    return {"reply": reply, "matched": bool(reply), "is_complaint": is_complaint, "need_human": is_complaint}
 
 @router.get("/faq")
 async def list_faq(_=Depends(verify_token)):
