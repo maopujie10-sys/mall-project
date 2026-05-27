@@ -71,3 +71,14 @@ class ModelRouter:
             }
             for name, cfg in ModelRouter.MODELS.items()
         ]
+
+
+class FridayModes:
+    MODES={"quality":{"desc":"high quality","model":"claude-3-5-sonnet-latest","max_tokens":4096},"speed":{"desc":"fast","model":"deepseek-chat","max_tokens":512},"cheap":{"desc":"cheap","model":"deepseek-chat","max_tokens":256},"dev":{"desc":"dev","model":"deepseek-chat","max_tokens":2048},"ops":{"desc":"ops","model":"claude-3-5-sonnet-latest","max_tokens":1024},"deep":{"desc":"deep","model":"claude-3-5-sonnet-latest","max_tokens":8192}}
+    @classmethod
+    def select(cls,task_type="chat"):
+        m={"chat":"quality","quick":"speed","code":"dev","deploy":"ops","analyze":"deep"}.get(task_type,"quality")
+        return {"mode":m,**cls.MODES[m]}
+    @classmethod
+    def list_modes(cls):
+        return [{"id":k,**v} for k,v in cls.MODES.items()]
