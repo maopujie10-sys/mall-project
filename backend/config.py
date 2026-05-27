@@ -84,3 +84,15 @@ def is_production():
 def is_development():
     return ENV == "development"
 
+def is_staging():
+    return ENV == "staging"
+
+# 环境安全策略
+def get_security_policy():
+    if is_production():
+        return {"auto_execute": "L1_only", "confirm_required": "L3+", "max_batch_size": 10}
+    elif is_staging():
+        return {"auto_execute": "L1-L2", "confirm_required": "L3+", "max_batch_size": 50}
+    else:
+        return {"auto_execute": "all", "confirm_required": "L4_only", "max_batch_size": 100}
+
