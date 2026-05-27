@@ -1,18 +1,18 @@
-﻿<template>
+<template>
   <div class="page-container">
     <div class="page-header">
       <div>
-        <h1>🧬 AI 进化报告</h1>
-        <p>AI 自我评估 · 成功率趋势 · 知识积累 · 持续进化</p>
+        <h1>馃К AI 杩涘寲鎶ュ憡</h1>
+        <p>AI 鑷垜璇勪及 路 鎴愬姛鐜囪秼鍔?路 鐭ヨ瘑绉疮 路 鎸佺画杩涘寲</p>
       </div>
       <div class="header-actions">
         <el-button type="primary" @click="refreshReport" :loading="loading">
-          <el-icon><Refresh /></el-icon> 生成报告
+          <el-icon><Refresh /></el-icon> 鐢熸垚鎶ュ憡
         </el-button>
       </div>
     </div>
 
-    <!-- 进化指标 -->
+    <!-- 杩涘寲鎸囨爣 -->
     <el-row :gutter="16" style="margin-bottom: 20px;">
       <el-col :span="6" v-for="card in evoCards" :key="card.label">
         <el-card shadow="never" class="evo-card">
@@ -27,11 +27,11 @@
       </el-col>
     </el-row>
 
-    <!-- 趋势 + 知识库 -->
+    <!-- 瓒嬪娍 + 鐭ヨ瘑搴?-->
     <el-row :gutter="16" style="margin-bottom: 20px;">
       <el-col :span="12">
         <el-card shadow="never">
-          <template #header><span>📈 成功率趋势</span></template>
+          <template #header><span>馃搱 鎴愬姛鐜囪秼鍔?/span></template>
           <div class="trend-chart">
             <div class="trend-row" v-for="item in trends" :key="item.label">
               <div class="trend-label">{{ item.label }}</div>
@@ -46,7 +46,7 @@
       </el-col>
       <el-col :span="12">
         <el-card shadow="never">
-          <template #header><span>📚 知识库</span></template>
+          <template #header><span>馃摎 鐭ヨ瘑搴?/span></template>
           <div class="knowledge-list">
             <div v-for="k in knowledge" :key="k.key" class="kn-item">
               <div class="kn-cat">
@@ -65,37 +65,37 @@
       </el-col>
     </el-row>
 
-    <!-- 行动历史 + 纠正 -->
+    <!-- 琛屽姩鍘嗗彶 + 绾犳 -->
     <el-row :gutter="16">
       <el-col :span="14">
         <el-card shadow="never">
-          <template #header><span>📋 行动历史</span></template>
+          <template #header><span>馃搵 琛屽姩鍘嗗彶</span></template>
           <el-table :data="actionHistory" size="small" max-height="320">
-            <el-table-column prop="type" label="类型" width="90">
+            <el-table-column prop="type" label="绫诲瀷" width="90">
               <template #default="{ row }">
                 <el-tag size="small" :type="row.typeTag">{{ row.type }}</el-tag>
               </template>
             </el-table-column>
-            <el-table-column prop="name" label="行动" min-width="150"/>
-            <el-table-column prop="result" label="结果" width="80">
+            <el-table-column prop="name" label="琛屽姩" min-width="150"/>
+            <el-table-column prop="result" label="缁撴灉" width="80">
               <template #default="{ row }">
-                <span :style="{ color: row.ok ? '#52c41a' : '#ff4d4f' }">{{ row.ok ? '✓ 成功' : '✗ 失败' }}</span>
+                <span :style="{ color: row.ok ? '#52c41a' : '#ff4d4f' }">{{ row.ok ? '鉁?鎴愬姛' : '鉁?澶辫触' }}</span>
               </template>
             </el-table-column>
-            <el-table-column prop="time" label="时间" width="140"/>
+            <el-table-column prop="time" label="鏃堕棿" width="140"/>
           </el-table>
         </el-card>
       </el-col>
       <el-col :span="10">
         <el-card shadow="never">
-          <template #header><span>💡 进化建议</span></template>
+          <template #header><span>馃挕 杩涘寲寤鸿</span></template>
           <div class="evo-suggestions">
             <div v-for="(s, i) in suggestions" :key="i" class="sug-card" :class="s.level">
               <div class="sug-icon">{{ s.icon }}</div>
               <div class="sug-text">{{ s.text }}</div>
               <el-button v-if="s.action" text size="small" type="primary" @click="handleSuggestion(s)">{{ s.action }}</el-button>
             </div>
-            <div v-if="suggestions.length === 0" class="empty-hint">暂无进化建议，AI表现良好！</div>
+            <div v-if="suggestions.length === 0" class="empty-hint">鏆傛棤杩涘寲寤鸿锛孉I琛ㄧ幇鑹ソ锛?/div>
           </div>
         </el-card>
       </el-col>
@@ -104,65 +104,86 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
+import { agentApi } from '@/api/index'
 
 const loading = ref(false)
 
-const evoCards = [
-  { icon:'🎯', label:'30天成功率', value:'87.5%', color:'#52c41a', bg:'rgba(82,196,26,0.1)' },
-  { icon:'📚', label:'已学知识', value:'156条', color:'#667eea', bg:'rgba(102,126,234,0.1)' },
-  { icon:'✏️', label:'用户纠正', value:'23次', color:'#faad14', bg:'rgba(250,173,20,0.1)' },
-  { icon:'📈', label:'进化趋势', value:'↗ 上升', color:'#764ba2', bg:'rgba(118,75,162,0.1)' },
-]
+const evoCards = reactive([
+  { icon:'🧬', label:'30天成功率', value:'0%', color:'#52c41a', bg:'rgba(82,196,26,0.1)' },
+  { icon:'📎', label:'已学知识', value:'0', color:'#667eea', bg:'rgba(102,126,234,0.1)' },
+  { icon:'✏️', label:'用户纠正', value:'0', color:'#faad14', bg:'rgba(250,173,20,0.1)' },
+  { icon:'📱', label:'进化趋势', value:'加载中...', color:'#764ba2', bg:'rgba(118,75,162,0.1)' },
+])
 
-const trends = [
-  { label:'商品采集', rate:92, color:'#52c41a', trend:'↗ +3%', trendType:'success' },
-  { label:'健康扫描', rate:100, color:'#667eea', trend:'→ 持平', trendType:'info' },
-  { label:'商品替换', rate:78, color:'#faad14', trend:'↗ +5%', trendType:'success' },
-  { label:'自动运维', rate:85, color:'#764ba2', trend:'↗ +2%', trendType:'success' },
-  { label:'价格优化', rate:70, color:'#ff4d4f', trend:'↘ -3%', trendType:'danger' },
-]
+const trends = ref([])
+const knowledge = ref([])
+const actionHistory = ref([])
+const suggestions = ref([])
 
-const knowledge = [
-  { category:'采集源', key:'eBay > 电子产品', score:0.92, catType:'success' },
-  { category:'采集源', key:'AliExpress > 服装', score:0.85, catType:'success' },
-  { category:'品类偏好', key:'手机数码 > 热门', score:0.88, catType:'' },
-  { category:'品类偏好', key:'运动鞋服 > 增长中', score:0.76, catType:'' },
-  { category:'用户偏好', key:'价格区间 ¥500-2000', score:0.82, catType:'warning' },
-  { category:'纠正学习', key:'采集时保留原始规格', score:0.95, catType:'danger' },
-  { category:'纠正学习', key:'图片上传COS前压缩', score:0.90, catType:'danger' },
-]
-
-const actionHistory = [
-  { type:'采集', typeTag:'', name:'采集:eBay:iPhone配件', ok:true, time:'2024-05-28 14:32' },
-  { type:'健康', typeTag:'success', name:'商品健康度扫描', ok:true, time:'2024-05-28 14:15' },
-  { type:'替换', typeTag:'warning', name:'替换商品:旧数据线', ok:true, time:'2024-05-28 13:08' },
-  { type:'采集', typeTag:'', name:'采集:AliExpress:夏季T恤', ok:false, time:'2024-05-28 12:45' },
-  { type:'运维', typeTag:'danger', name:'AI自动运维执行', ok:true, time:'2024-05-28 11:20' },
-  { type:'采集', typeTag:'', name:'采集:eBay:数码相机', ok:true, time:'2024-05-28 10:05' },
-  { type:'健康', typeTag:'success', name:'每日健康扫描', ok:true, time:'2024-05-28 08:00' },
-]
-
-const suggestions = [
-  { icon:'⚠️', level:'warn', text:'价格优化成功率仅70%，建议学习更多定价策略', action:'开始学习' },
-  { icon:'💡', level:'tip', text:'采集源 AliExpress 时装类成功率下降，建议降低优先级', action:'调整' },
-  { icon:'✅', level:'good', text:'eBay电子产品采集表现优异，建议保持当前策略' },
-  { icon:'📝', level:'tip', text:'还有2条用户纠正未学习，说"AI学习纠正"来消化' },
-]
-
-function refreshReport() {
+async function fetchReport() {
   loading.value = true
-  setTimeout(() => { loading.value = false; ElMessage.success('进化报告已更新') }, 1200)
-}
+  try {
+    // 获取进化统计
+    const { data: st } = await agentApi.get('/agent/evolution/stats')
+    evoCards[0].value = (st.success_rate_7d || 0) + '%'
+    evoCards[3].value = (st.success_rate_7d || 0) > 70 ? '↗ 上升' : '→ 稳定'
+    if (st.motto) evoCards[3].value = st.motto
 
-function handleSuggestion(sug) {
-  if (sug.action === '开始学习') {
-    ElMessage.success('已开始学习定价策略，下次会更准确')
-  } else if (sug.action === '调整') {
-    ElMessage.success('已降低 AliExpress 时装类优先级')
+    // 获取知识库
+    const { data: kb } = await agentApi.get('/agent/evolution/knowledge')
+    if (Array.isArray(kb.knowledge)) {
+      knowledge.value = kb.knowledge.map(function(k) { return { category:k.category||'知识', key:k.key||k.value||'', score:k.score||k.avg_score||0, catType:k.score>0.8?'success':k.score>0.5?'':'warning' } })
+      evoCards[1].value = kb.knowledge.length + ''
+    }
+
+    // 获取纠正
+    const { data: corr } = await agentApi.get('/agent/evolution/corrections')
+    if (Array.isArray(corr.corrections)) {
+      evoCards[2].value = corr.corrections.length + ''
+    }
+
+    // 获取行动历史
+    const { data: mem } = await agentApi.get('/agent/evolution/memory', { params: { limit: 20 } })
+    if (Array.isArray(mem.actions)) {
+      actionHistory.value = mem.actions.map(function(a) {
+        return { type:a.action_type||'行动', typeTag:'', name:a.description||a.action||'', ok:a.success!==false, time:a.created_at||'' }
+      })
+    }
+
+    // 获取进化报告
+    const { data: report } = await agentApi.get('/agent/evolution/report')
+    if (Array.isArray(report.report?.suggestions)) {
+      suggestions.value = report.report.suggestions.map(function(s) {
+        return { icon:'💡', level:'tip', text:s, action:'' }
+      })
+    }
+
+    // 获取趋势
+    if (Array.isArray(report.report?.success_trends)) {
+      trends.value = report.report.success_trends.map(function(t) {
+        return { label:t.name||t.category, rate:t.rate||t.value||0, color:t.rate>80?'#52c41a':t.rate>60?'#faad14':'#ff4d4f', trend:t.trend||'', trendType:t.rate>80?'success':t.rate>60?'':'danger' }
+      })
+    }
+
+    ElMessage.success('进化报告已更新')
+  } catch {
+    ElMessage.error('获取进化数据失败')
+  } finally {
+    loading.value = false
   }
 }
+
+function refreshReport() { fetchReport() }
+
+function handleSuggestion(sug) {
+  if (sug.action) {
+    ElMessage.success('已执行: ' + sug.text.slice(0,30))
+  }
+}
+
+onMounted(function() { fetchReport() })
 </script>
 
 <style scoped>
