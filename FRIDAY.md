@@ -19,6 +19,7 @@
 10. 统一docker-compose编排
 
 ## 最近改动
+- 2026-05-28: [验收完成] VisionAgent OCR/视频/物体/人脸, AI Factory作图/文案, 模拟用户测试, init.sql补2表
 - 2026-05-28: [前端API接入] Dashboard/AIBrain/ScraperCenter/VirtualData 4个核心页面从mock改为真实API调用
 - 2026-05-28: [V5补全] 完成6项关键功能：
   1. SuperInput.vue — 修复脚本乱码，新增浏览器语音识别(Web Speech API)+摄像头拍照(getUserMedia)
