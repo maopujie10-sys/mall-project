@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="dashboard">
     <div class="page-header">
       <div>
@@ -79,7 +79,7 @@
               <div class="health-tag">🔥 热销</div>
             </div>
             <div class="health-item normal">
-              <div class="health-count">{{ health.normal }}</div>
+              <div class="health-count">{{ health.warm }}</div>
               <div class="health-tag">✅ 正常</div>
             </div>
             <div class="health-item cold">
@@ -93,7 +93,7 @@
           </div>
           <div class="health-bar">
             <div class="bar-seg hot" :style="{ width: healthPercent('hot') }"></div>
-            <div class="bar-seg normal" :style="{ width: healthPercent('normal') }"></div>
+            <div class="bar-seg normal" :style="{ width: healthPercent('warm') }"></div>
             <div class="bar-seg cold" :style="{ width: healthPercent('cold') }"></div>
             <div class="bar-seg dead" :style="{ width: healthPercent('dead') }"></div>
           </div>
@@ -211,57 +211,106 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, onUnmounted, computed } from 'vue'
+import { ref, reactive, onMounted, onUnmounted } from 'vue'
 import { ElMessage } from 'element-plus'
-import { useRouter } from 'vue-router'
+import { agentApi } from '@/api/index'
 
-const router = useRouter()
 const loading = ref(false)
 let pollTimer = null
 
 const stats = reactive({
-  aiStatus: '在线',
-  mallHealth: 94,
+  aiStatus: '检测中...',
+  mallHealth: 0,
   todayActions: 0,
   memoryItems: 0,
 })
 
 const health = reactive({
-  hot: 12,
-  normal: 45,
-  cold: 8,
-  dead: 3,
+  hot: 0,
+  warm: 0,
+  cold: 0,
+  dead: 0,
+  total: 0,
 })
 
 const evolution = reactive({
-  successRate: 87.5,
-  learnedItems: 156,
-  corrections: 23,
-  trend: '↗ 提升中',
-  learnedPercent: 78,
+  successRate: 0,
+  learnedItems: 0,
+  corrections: 0,
+  trend: '加载中...',
 })
 
-const activities = reactive([
-  { id: 1, icon: '🛒', type: 'scraper', title: '商品采集完成', detail: '从 eBay 采集了 25 件商品', time: '2分钟前', status: '成功', statusType: 'success' },
-  { id: 2, icon: '🧠', type: 'brain', title: '健康扫描完成', detail: '发现 3 件死品，2 个品类缺口', time: '15分钟前', status: '完成', statusType: 'success' },
-  { id: 3, icon: '👥', type: 'virtual', title: '虚拟数据刷新', detail: '生成了 50 条浏览记录', time: '30分钟前', status: '完成', statusType: 'success' },
-  { id: 4, icon: '📈', type: 'evo', title: '进化报告生成', detail: '成功率 87.5%，趋势上升', time: '1小时前', status: '完成', statusType: 'success' },
-  { id: 5, icon: '💾', type: 'backup', title: '自动备份', detail: '数据库备份已完成', time: '2小时前', status: '成功', statusType: 'success' },
-])
+const activities = ref([])
 
 function healthPercent(type) {
-  const total = health.hot + health.normal + health.cold + health.dead || 1
+  const total = health.total || 1
   return (health[type] / total * 100) + '%'
 }
 
+async function fetchStatus() {
+  try {
+    const { data } = await agentApi.get('/status')
+    stats.aiStatus = data.mall_app === 'healthy' ? '在线' : '异常'
+  } catch { stats.aiStatus = '未知' }
+}
+
+async function fetchMallHealth() {
+  try {
+    const { data } = await agentApi.post('/agent/mall-brain/scan')
+    const d = data.distribution || {}
+    health.hot = d.hot || 0
+    health.warm = d.warm || 0
+    health.cold = d.cold || 0
+    health.dead = d.dead || 0
+    health.total = data.total || (health.hot + health.warm + health.cold + health.dead)
+    const ok = health.hot + health.warm
+    stats.mallHealth = health.total ? Math.round(ok / health.total * 100) : 0
+  } catch { /* 后端可能未就绪 */ }
+}
+
+async function fetchEvolution() {
+  try {
+    const { data } = await agentApi.get('/agent/evolution/stats')
+    evolution.successRate = data.success_rate_7d || 0
+    evolution.trend = evolution.successRate > 70 ? '↗ 提升中' : '→ 稳定'
+    const kb = await agentApi.get('/agent/evolution/knowledge')
+    evolution.learnedItems = (kb.data?.knowledge || []).length
+    const corr = await agentApi.get('/agent/evolution/corrections')
+    evolution.corrections = (corr.data?.corrections || []).length
+  } catch { /* 后端可能未就绪 */ }
+}
+
+async function fetchActivities() {
+  try {
+    const acts = []
+    // 获取最近备份
+    try {
+      const { data: bu } = await agentApi.get('/rollback/backups')
+      if (bu?.length) acts.push({ icon: '💾', type: 'backup', title: '最近备份', detail: bu[0].name || '备份', time: bu[0].created_at?.slice(11,16) || '', status: '成功' })
+    } catch {}
+    // 获取最近巡检
+    try {
+      const { data: ins } = await agentApi.get('/inspector/history')
+      if (ins?.length) acts.push({ icon: '🔍', type: 'evo', title: '最近巡检', detail: '多端点巡检完成', time: ins[0].time || '', status: '完成' })
+    } catch {}
+    // 获取系统模式
+    try {
+      const { data: mode } = await agentApi.get('/system/mode')
+      acts.push({ icon: '⚙️', type: 'brain', title: '系统模式', detail: '当前: ' + (mode?.mode || 'ai_control'), time: '', status: '正常' })
+    } catch {}
+    if (acts.length === 0) {
+      acts.push({ icon: '✅', type: 'evo', title: '系统就绪', detail: 'AI Agent 正常运行中', time: new Date().toTimeString().slice(0,5), status: '正常' })
+    }
+    activities.value = acts
+  } catch {}
+}
+
 async function refreshAll() {
+  if (loading.value) return
   loading.value = true
   try {
-    // 模拟API调用
-    await new Promise(r => setTimeout(r, 600))
+    await Promise.all([fetchStatus(), fetchMallHealth(), fetchEvolution(), fetchActivities()])
     stats.todayActions += 1
-  } catch (e) {
-    // ignore
   } finally {
     loading.value = false
   }
@@ -269,14 +318,16 @@ async function refreshAll() {
 
 async function quickBackup() {
   try {
+    await agentApi.post('/rollback/backups', { name: '手动备份_' + new Date().toISOString().slice(0,10), type: 'manual', target: 'database' })
     ElMessage.success('备份任务已提交')
-  } catch (e) {
-    ElMessage.error('备份失败')
+  } catch {
+    ElMessage.error('备份失败，请检查后端服务')
   }
 }
 
 onMounted(() => {
-  pollTimer = setInterval(refreshAll, 30000)
+  refreshAll()
+  pollTimer = setInterval(refreshAll, 60000)
 })
 
 onUnmounted(() => {
