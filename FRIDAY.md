@@ -36,12 +36,16 @@
 
 - 2026-05-28: [大修] 3个假页面(OCR/视频/插件)接真实API + 紧急/审批清乱码 + MasterAgent接入Claude双引擎 + 工具注册中心绑定handler + config/scheduler清乱码
 
+- 2026-05-28: [AI觉醒] 对话记忆SQLite持久化(重启不丢) + Ollama本地模型接入(免费离线) + ChromaDB向量记忆(语义检索) + .env.example模板
+
 - 2026-05-28: [归档] AIChat.vue真实API接入(替换假数据)+SuperInput语音拍照完善+3个新Agent(devops/memory/self_healing)+前端API模块补充
 - 2026-05-28: [无限进化] main.py语法修复+agent_chat对话记忆+digital_lifeform无限进化(seed→infinite无上限)
 
 - 2026-05-28: [API补全] 9个前端API空壳填实(database/memory/model/plugin/scraper/task/trend/vision/index) + ModelCenter去假数据 + agent.js清乱码 + requirements.txt拆行 + FRIDAY_SERVER.md重写
 
 - 2026-05-28: [大修] 3个假页面(OCR/视频/插件)接真实API + 紧急/审批清乱码 + MasterAgent接入Claude双引擎 + 工具注册中心绑定handler + config/scheduler清乱码
+
+- 2026-05-28: [AI觉醒] 对话记忆SQLite持久化(重启不丢) + Ollama本地模型接入(免费离线) + ChromaDB向量记忆(语义检索) + .env.example模板
 
 
 ## ⚠ 永久规则：asar 文件禁止提交
