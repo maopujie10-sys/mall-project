@@ -15,8 +15,8 @@
           <el-input v-model="search" placeholder="搜索插件..." prefix-icon="Search" style="width:280px" clearable />
           <el-button type="primary" @click="activeTab='market'">浏览市场</el-button>
         </div>
-        <el-table :data="filteredInstalled" stripe>
-          <el-table-column prop="name" label="插件" min-width="180"><template #default="{row}"><span class="plug-name">{{ row.icon }} {{ row.name }}</span><el-tag v-if="row.updateAvailable" type="warning" size="small" style="margin-left:8px">更新</el-tag></template></el-table-column>
+        <el-table :data="filteredInstalled" stripe v-loading="loading">
+          <el-table-column prop="name" label="插件" min-width="180"><template #default="{row}"><span class="plug-name">{{ row.icon || '🔌' }} {{ row.name }}</span><el-tag v-if="row.updateAvailable" type="warning" size="small" style="margin-left:8px">更新</el-tag></template></el-table-column>
           <el-table-column prop="version" label="版本" width="90" />
           <el-table-column prop="desc" label="描述" min-width="240" show-overflow-tooltip />
           <el-table-column prop="author" label="作者" width="120" />
@@ -29,7 +29,7 @@
             </template>
           </el-table-column>
         </el-table>
-        <el-empty v-if="!filteredInstalled.length" description="暂无已安装插件" />
+        <el-empty v-if="!loading && !filteredInstalled.length" description="暂无已安装插件，去市场看看吧" />
       </el-tab-pane>
 
       <el-tab-pane label="插件市场" name="market">
@@ -37,19 +37,19 @@
         <el-row :gutter="16">
           <el-col :span="8" v-for="p in filteredMarket" :key="p.id">
             <el-card shadow="hover" class="market-card">
-              <div class="market-icon">{{ p.icon }}</div>
+              <div class="market-icon">{{ p.icon || '📦' }}</div>
               <h3>{{ p.name }}</h3>
-              <el-tag size="small">{{ p.category }}</el-tag>
+              <el-tag size="small">{{ p.category || '工具' }}</el-tag>
               <p>{{ p.desc }}</p>
-              <div class="market-meta"><span>⭐ {{ p.stars }}</span><span>📥 {{ p.downloads }}</span><span>{{ p.version }}</span></div>
+              <div class="market-meta"><span>⭐ {{ p.stars || 0 }}</span><span>📥 {{ p.downloads || 0 }}</span><span>{{ p.version }}</span></div>
               <el-button :type="p.installed?'success':'primary'" size="small" style="width:100%;margin-top:12px" @click="p.installed?null:installMarket(p)" :disabled="p.installed || installing===p.id" :loading="installing===p.id">{{ p.installed?'已安装':'安装' }}</el-button>
             </el-card>
           </el-col>
         </el-row>
+        <el-empty v-if="!filteredMarket.length" description="暂无可用插件" />
       </el-tab-pane>
     </el-tabs>
 
-    <!-- 配置对话框 -->
     <el-dialog v-model="showConfig" title="插件配置" width="520px">
       <el-form v-if="configPluginData" label-width="100px">
         <el-form-item v-for="(v,k) in configPluginData.config" :key="k" :label="k">
@@ -63,11 +63,106 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import { ElMessage } from 'element-plus'
-const plugins = ref([{name:'趋势监控',version:'1.0',status:'active'},{name:'商品采集',version:'1.2',status:'active'},{name:'自动备份',version:'0.9',status:'active'},{name:'AI作图',version:'0.5',status:'idle'}])
-function togglePlugin(p) { p.status = p.status === 'active' ? 'idle' : 'active'; ElMessage.success(p.name + ' 已' + (p.status==='active'?'启用':'停用')) }
-onMounted(function() {})
+import { ref, computed, onMounted } from 'vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { listPlugins, togglePlugin, installPlugin, uninstallPlugin, getPluginConfig, updatePluginConfig } from '@/api/plugin'
+
+const activeTab = ref('installed')
+const search = ref('')
+const marketSearch = ref('')
+const marketCategory = ref('')
+const installing = ref('')
+const loading = ref(false)
+const saving = ref(false)
+const showConfig = ref(false)
+const configPluginData = ref(null)
+
+const plugins = ref([])
+const marketplace = ref([])
+const marketCats = ['采集', '监控', 'AI', '安全', '运维', '数据']
+
+const installedCount = computed(() => plugins.value.length)
+const enabledCount = computed(() => plugins.value.filter(p => p.enabled).length)
+const availableCount = computed(() => marketplace.value.length)
+const updateCount = computed(() => plugins.value.filter(p => p.updateAvailable).length)
+
+const filteredInstalled = computed(() => {
+  if (!search.value) return plugins.value
+  const q = search.value.toLowerCase()
+  return plugins.value.filter(p => p.name.toLowerCase().includes(q) || (p.desc||'').toLowerCase().includes(q))
+})
+
+const filteredMarket = computed(() => {
+  let list = marketplace.value
+  if (marketSearch.value) {
+    const q = marketSearch.value.toLowerCase()
+    list = list.filter(p => p.name.toLowerCase().includes(q) || (p.desc||'').toLowerCase().includes(q))
+  }
+  if (marketCategory.value) list = list.filter(p => p.category === marketCategory.value)
+  return list
+})
+
+async function fetchPlugins() {
+  loading.value = true
+  try {
+    const resp = await listPlugins()
+    if (resp?.plugins) plugins.value = resp.plugins
+    if (resp?.marketplace) marketplace.value = resp.marketplace
+  } catch {}
+  loading.value = false
+}
+
+async function toggle(row) {
+  try {
+    await togglePlugin(row.id, row.enabled)
+    ElMessage.success(row.enabled ? `${row.name} 已启用` : `${row.name} 已禁用`)
+  } catch { ElMessage.error('操作失败') }
+}
+
+async function installMarket(p) {
+  installing.value = p.id
+  try {
+    await installPlugin(p.id)
+    p.installed = true
+    plugins.value.push({ ...p, enabled: true })
+    ElMessage.success(`${p.name} 安装成功`)
+  } catch { ElMessage.error('安装失败') }
+  installing.value = ''
+}
+
+async function removePlugin(p) {
+  try {
+    await ElMessageBox.confirm(`确定卸载 "${p.name}"？`, '确认卸载', { type: 'warning' })
+    await uninstallPlugin(p.id)
+    plugins.value = plugins.value.filter(x => x.id !== p.id)
+    ElMessage.success('已卸载')
+  } catch {}
+}
+
+async function configPlugin(p) {
+  try {
+    const resp = await getPluginConfig(p.id)
+    configPluginData.value = { id: p.id, name: p.name, config: resp?.config || {} }
+    showConfig.value = true
+  } catch { ElMessage.error('获取配置失败') }
+}
+
+async function saveConfig() {
+  if (!configPluginData.value) return
+  saving.value = true
+  try {
+    await updatePluginConfig(configPluginData.value.id, configPluginData.value.config)
+    showConfig.value = false
+    ElMessage.success('配置已保存')
+  } catch { ElMessage.error('保存失败') }
+  saving.value = false
+}
+
+function updatePlugin(p) {
+  ElMessage.info('更新功能开发中')
+}
+
+onMounted(fetchPlugins)
 </script>
 
 <style scoped>

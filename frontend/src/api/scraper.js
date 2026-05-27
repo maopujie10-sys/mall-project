@@ -1,21 +1,36 @@
 ﻿import { agentApi } from './index'
 
-export async function getScraperJobs() {
-  try { return await agentApi.get('/scraper/jobs') } catch { return [] }
+// 启动采集任务
+export function startScrapeJob(platform, keyword, maxItems = 20, downloadImages = true) {
+  return agentApi.post('/agent/scraper/jobs', { platform, keyword, max_items: maxItems, download_images: downloadImages })
 }
 
-export async function createScraperJob(data) {
-  return agentApi.post('/scraper/jobs', data)
+// 获取采集任务列表
+export function listScrapeJobs() {
+  return agentApi.get('/agent/scraper/jobs')
 }
 
-export async function deleteScraperJob(id) {
-  return agentApi.delete(`/scraper/jobs/${id}`)
+// 获取采集任务详情
+export function getScrapeJob(jobId) {
+  return agentApi.get(`/agent/scraper/jobs/${jobId}`)
 }
 
-export async function runScraperJob(id) {
-  return agentApi.post(`/scraper/jobs/${id}/run`)
+// 删除采集任务
+export function deleteScrapeJob(jobId) {
+  return agentApi.delete(`/agent/scraper/jobs/${jobId}`)
 }
 
-export async function getScraperResults(jobId) {
-  try { return await agentApi.get(`/scraper/jobs/${jobId}/results`) } catch { return [] }
+// 获取采集到的商品列表
+export function listScrapedProducts(platform = null, limit = 50) {
+  return agentApi.get('/agent/scraper/products', { params: { platform, limit } })
+}
+
+// 导入商品到商城
+export function importProducts(productIds) {
+  return agentApi.post('/agent/scraper/import', { product_ids: productIds })
+}
+
+// COS 上传状态
+export function getCOSStatus() {
+  return agentApi.get('/agent/scraper/cos-status')
 }

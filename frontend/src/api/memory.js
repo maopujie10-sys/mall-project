@@ -1,33 +1,31 @@
 ﻿import { agentApi } from './index'
 
-export async function getMemories() {
-  try { return await agentApi.get('/memory') } catch { return [] }
+// 保存记忆
+export function rememberMemory(content, category = 'general', importance = 1, tags = []) {
+  return agentApi.post('/agent/memory/remember', { content, category, importance, tags })
 }
 
-export async function getMemory(id) {
-  try { return await agentApi.get(`/memory/${id}`) } catch { return null }
+// 检索记忆
+export function recallMemory(query = '', category = null, limit = 20) {
+  return agentApi.get('/agent/memory/recall', { params: { query, category, limit } })
 }
 
-export async function saveMemory(data) {
-  return agentApi.post('/memory', data)
+// 从对话中学习
+export function learnFromConversation(userMessage, aiResponse, topic = '') {
+  return agentApi.post('/agent/memory/learn', { user_message: userMessage, ai_response: aiResponse, topic })
 }
 
-export async function deleteMemory(id) {
-  return agentApi.delete(`/memory/${id}`)
+// 记忆摘要
+export function getMemorySummary() {
+  return agentApi.get('/agent/memory/summary')
 }
 
-export async function searchMemories(query) {
-  try { return await agentApi.get(`/memory/search?q=${encodeURIComponent(query)}`) } catch { return [] }
+// 记忆统计
+export function getMemoryStats() {
+  return agentApi.get('/agent/memory/stats')
 }
 
-export async function getHandoffDoc() {
-  try { return await agentApi.get('/memory/handoff') } catch { return null }
-}
-
-export async function getOperationLog() {
-  try { return await agentApi.get('/memory/operation-log') } catch { return [] }
-}
-
-export async function getCodeChanges() {
-  try { return await agentApi.get('/memory/code-changes') } catch { return [] }
+// 清除旧记忆
+export function cleanupMemory(daysOld = 30) {
+  return agentApi.post('/agent/memory/cleanup', { days_old: daysOld })
 }

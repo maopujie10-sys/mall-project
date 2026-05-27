@@ -1,4 +1,4 @@
-import { defineStore } from 'pinia'
+﻿import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { sendChat, confirmTask, getAgentTasks, handover } from '@/api/agent'
 
@@ -54,12 +54,11 @@ export const useAgentStore = defineStore('agent', () => {
     try {
       const response = await sendChat(text)
 
-      // Process steps from backend response
       if (response.steps && Array.isArray(response.steps)) {
         for (const step of response.steps) {
           addStep({
             id: step.id || Date.now() + Math.random(),
-            name: step.name || step.tool || '姝ラ',
+            name: step.name || step.tool || '执行中',
             tool: step.tool || '',
             status: step.status || 'pending',
             evidence: step.evidence || '',
@@ -67,10 +66,9 @@ export const useAgentStore = defineStore('agent', () => {
         }
       }
 
-      // Process response message
       const risk = response.risk || 'l1'
       const needConfirm = response.needConfirm || false
-      const reply = response.reply || response.message || response.text || '浠诲姟澶勭悊瀹屾垚'
+      const reply = response.reply || response.message || response.text || 'AI 正在思考...'
       const stepsOut = response.steps?.map((s, i) => ({
         step: i + 1,
         name: s.name || s.tool || '',
@@ -85,7 +83,7 @@ export const useAgentStore = defineStore('agent', () => {
       addAIMessage(reply, risk, needConfirm, stepsOut)
     } catch (error) {
       addAIMessage(
-        `璇锋眰澶辫触: ${error.message || '缃戠粶閿欒锛岃妫€鏌ュ悗绔湇鍔℃槸鍚︽甯?}`,
+        `抱歉，出现错误: ${error.message || '请稍后重试'}`,
         'l3',
         false,
         null
@@ -104,14 +102,14 @@ export const useAgentStore = defineStore('agent', () => {
       if (approved) {
         messages.value.push({
           role: 'ai',
-          text: '浠诲姟宸茬‘璁ゆ墽琛屻€傛鍦ㄨ繘琛屾搷浣?..',
+          text: '已确认执行，正在处理...',
           risk: 'l2',
           time: new Date().toLocaleTimeString(),
         })
       } else {
         messages.value.push({
           role: 'ai',
-          text: '鎿嶄綔宸茶鎷掔粷锛屼换鍔″彇娑堛€?,
+          text: '已取消该操作。',
           risk: 'l3',
           time: new Date().toLocaleTimeString(),
         })
@@ -121,7 +119,7 @@ export const useAgentStore = defineStore('agent', () => {
     } catch (error) {
       messages.value.push({
         role: 'ai',
-        text: `鎿嶄綔澶辫触: ${error.message}`,
+        text: `操作失败: ${error.message}`,
         risk: 'l3',
         time: new Date().toLocaleTimeString(),
       })

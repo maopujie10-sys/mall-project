@@ -1,13 +1,21 @@
 ﻿import { agentApi } from './index'
 
-export async function getDatabases() {
-  try { return await agentApi.get('/database') } catch { return [] }
+// 安全SQL执行
+export function executeSQL(sql, dbName = 'mall_db') {
+  return agentApi.post('/agent/sql/execute', { sql, db_name: dbName })
 }
 
-export async function queryDatabase(id, sql) {
-  return agentApi.post(`/database/${id}/query`, { sql })
+// 获取数据库表列表
+export function getTables(dbName = 'mall_db') {
+  return agentApi.get('/agent/sql/tables', { params: { db_name: dbName } })
 }
 
-export async function getDatabaseTables(id) {
-  try { return await agentApi.get(`/database/${id}/tables`) } catch { return [] }
+// 获取表结构
+export function getTableSchema(tableName, dbName = 'mall_db') {
+  return agentApi.get('/agent/sql/schema', { params: { table: tableName, db_name: dbName } })
+}
+
+// 数据库状态
+export function getDBStatus() {
+  return agentApi.get('/agent/sql/status')
 }

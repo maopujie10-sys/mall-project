@@ -47,6 +47,10 @@
           </div>
         </el-card>
 
+        <el-card shadow="never" style="margin-top:16px" v-if="!ocrText">
+          <el-empty description="上传图片或输入URL开始识别" />
+        </el-card>
+
         <el-card shadow="never" style="margin-top:16px">
           <template #header><span>识别历史</span></template>
           <el-table :data="ocrHistory" stripe size="small" max-height="300">
@@ -66,8 +70,86 @@
 <script setup>
 import { ref } from 'vue'
 import { ElMessage } from 'element-plus'
-const imageUrl = ref(''); const ocrResult = ref(''); const processing = ref(false)
-function runOCR() { if(!imageUrl.value) return; processing.value = true; setTimeout(function() { processing.value = false; ocrResult.value = 'OCR识别结果将在此显示'; ElMessage.success('OCR完成') }, 1500) }
+import { ocrRecognize } from '@/api/vision'
+
+const imageUrl = ref('')
+const ocrText = ref('')
+const lang = ref('auto')
+const running = ref(false)
+const confidence = ref(0)
+const elapsed = ref(0)
+const batchFiles = ref([])
+const batching = ref(false)
+const ocrHistory = ref([])
+
+function handleFile(file) {
+  if (file?.raw) {
+    const reader = new FileReader()
+    reader.onload = (e) => { imageUrl.value = e.target.result }
+    reader.readAsDataURL(file.raw)
+  }
+}
+
+function handleBatch(file) {
+  if (file?.raw) batchFiles.value.push(file.raw)
+}
+
+async function runOcr() {
+  if (!imageUrl.value) { ElMessage.warning('请先上传图片或输入URL'); return }
+  running.value = true
+  const start = Date.now()
+  try {
+    const resp = await ocrRecognize(imageUrl.value)
+    if (resp?.ok) {
+      ocrText.value = resp.text || ''
+      confidence.value = resp.confidence || 85
+      elapsed.value = Date.now() - start
+      ocrHistory.value.unshift({
+        name: imageUrl.value.substring(0, 40),
+        text: (resp.text || '').substring(0, 60),
+        lang: lang.value,
+        confidence: confidence.value,
+        date: new Date().toLocaleDateString(),
+      })
+      ElMessage.success('识别完成')
+    } else {
+      ElMessage.error(resp?.error || '识别失败')
+    }
+  } catch (e) {
+    ElMessage.error('识别请求失败: ' + (e.message || '未知错误'))
+  }
+  running.value = false
+}
+
+async function runBatch() {
+  if (!batchFiles.value.length) return
+  batching.value = true
+  let success = 0
+  for (const file of batchFiles.value) {
+    try {
+      const reader = new FileReader()
+      const dataUrl = await new Promise((resolve) => { reader.onload = (e) => resolve(e.target.result); reader.readAsDataURL(file) })
+      const resp = await ocrRecognize(dataUrl)
+      if (resp?.ok) success++
+    } catch {}
+  }
+  ElMessage.success(`批量完成: ${success}/${batchFiles.value.length} 成功`)
+  batchFiles.value = []
+  batching.value = false
+}
+
+function copyText() {
+  navigator.clipboard.writeText(ocrText.value)
+  ElMessage.success('已复制')
+}
+
+function exportText() {
+  const blob = new Blob([ocrText.value], { type: 'text/plain' })
+  const a = document.createElement('a')
+  a.href = URL.createObjectURL(blob)
+  a.download = `ocr_${Date.now()}.txt`
+  a.click()
+}
 </script>
 
 <style scoped>

@@ -1,17 +1,21 @@
 ﻿import { agentApi } from './index'
 
-export async function getModels() {
-  try { return await agentApi.get('/models') } catch { return [] }
+// 列出所有可用模型
+export function listModels() {
+  return agentApi.get('/agent/friday/models')
 }
 
-export async function switchModel(modelId) {
-  return agentApi.post('/models/switch', { model: modelId })
+// 智能路由选择模型
+export function routeModel(mode = 'quality') {
+  return agentApi.get('/agent/friday/models/route', { params: { mode } })
 }
 
-export async function getModelStatus() {
-  try { return await agentApi.get('/models/status') } catch { return null }
+// 测试模型速度
+export function testModelSpeed(modelId) {
+  return agentApi.post('/agent/friday/models/test', { model_id: modelId })
 }
 
-export async function testModel(modelId) {
-  return agentApi.post('/models/test', { model: modelId })
+// 模型对比
+export function compareModels(modelIds) {
+  return agentApi.post('/agent/friday/models/compare', { model_ids: modelIds })
 }

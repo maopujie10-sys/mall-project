@@ -1,6 +1,8 @@
-﻿"""Master Agent — Friday AI OS 总控大脑
-职责：任务拆解、Agent调度、上下文管理、长期目标追踪"""
+"""Master Agent — Friday AI OS 总控大脑
+职责：任务拆解、Agent调度、上下文管理、长期目标追踪
+v2: Claude 真实AI推理 + 关键词兜底"""
 import json
+import httpx
 import time
 from datetime import datetime
 from dataclasses import dataclass, field
@@ -12,12 +14,12 @@ class Task:
     goal: str
     steps: list = field(default_factory=list)
     assigned_agent: str = ""
-    status: str = "pending"  # pending/running/done/failed
+    status: str = "pending"
     created_at: str = ""
     completed_at: str = ""
 
 class MasterAgent:
-    """总控Agent — 接收用户意图，拆解为子任务，分配给各Agent"""
+    """总控Agent — AI推理 + 规则兜底双引擎"""
 
     AGENTS = {
         "code": "代码编写/修复/Bug分析",
@@ -26,39 +28,92 @@ class MasterAgent:
         "trend": "热点监控/舆情分析/趋势预测",
         "memory": "长期记忆/知识检索/经验学习",
         "heal": "异常检测/自动修复/服务恢复",
+        "scraper": "商品采集/数据抓取",
+        "mall": "商城管理/客服/轮值",
     }
 
     @staticmethod
-    def analyze_intent(message: str) -> dict:
-        """分析用户意图，决定调用哪些Agent"""
+    async def analyze_intent(message: str, use_ai: bool = True) -> dict:
+        """分析用户意图 — AI推理优先，关键词兜底"""
+        if use_ai:
+            ai_result = await MasterAgent._ai_analyze(message)
+            if ai_result and ai_result.get("agents"):
+                return ai_result
+
+        return MasterAgent._keyword_analyze(message)
+
+    @staticmethod
+    async def _ai_analyze(message: str) -> Optional[dict]:
+        """调用 Claude 进行深层意图分析"""
+        try:
+            from config import CLAUDE_API_KEY, CLAUDE_MODEL
+        except Exception:
+            return None
+        if not CLAUDE_API_KEY:
+            return None
+
+        agent_desc = "\n".join([f"- {k}: {v}" for k, v in MasterAgent.AGENTS.items()])
+        prompt = f"""你是 Friday AI OS 的总控大脑。分析用户消息，返回需要调用的Agent列表。
+
+可用Agent:
+{agent_desc}
+
+用户消息: {message}
+
+返回纯JSON（不要markdown包裹）:
+{{"intent": "简短意图描述", "agents": ["agent1","agent2"], "complexity": "low/medium/high", "reasoning": "推理依据"}}"""
+
+        try:
+            async with httpx.AsyncClient(timeout=20) as c:
+                r = await c.post(
+                    "https://api.anthropic.com/v1/messages",
+                    headers={
+                        "x-api-key": CLAUDE_API_KEY,
+                        "anthropic-version": "2023-06-01",
+                        "content-type": "application/json",
+                    },
+                    json={
+                        "model": CLAUDE_MODEL,
+                        "max_tokens": 300,
+                        "messages": [{"role": "user", "content": prompt}],
+                    },
+                )
+                if r.status_code == 200:
+                    data = r.json()
+                    text = data["content"][0]["text"]
+                    # 提取JSON
+                    start = text.find("{")
+                    end = text.rfind("}") + 1
+                    if start >= 0 and end > start:
+                        result = json.loads(text[start:end])
+                        result["timestamp"] = datetime.now().isoformat()
+                        result["engine"] = "claude"
+                        return result
+        except Exception:
+            pass
+        return None
+
+    @staticmethod
+    def _keyword_analyze(message: str) -> dict:
+        """关键词匹配 — AI不可用时的兜底方案"""
         msg_lower = message.lower()
         agents_needed = []
 
-        # 代码相关
-        if any(kw in msg_lower for kw in ["代码","bug","报错","接口","sql","修复","开发","写一个"]):
-            agents_needed.append("code")
+        rules = [
+            (["代码","bug","报错","接口","sql","修复","开发","写一个","函数","类"], "code"),
+            (["服务器","docker","nginx","部署","重启","端口","cpu","内存","磁盘"], "devops"),
+            (["图片","视频","识别","ocr","看图","分析图片","拍照","人脸"], "vision"),
+            (["热点","抖音","微博","热搜","趋势","舆情","b站"], "trend"),
+            (["记忆","记住","上次","之前","历史","学习","日记"], "memory"),
+            (["异常","挂了","恢复","自动修复","巡检","健康"], "heal"),
+            (["采集","抓取","商品","上架","ebay","shopee"], "scraper"),
+            (["商城","客服","轮值","订单","用户"], "mall"),
+        ]
 
-        # DevOps相关
-        if any(kw in msg_lower for kw in ["服务器","docker","nginx","部署","重启","端口","cpu","内存"]):
-            agents_needed.append("devops")
+        for keywords, agent in rules:
+            if any(kw in msg_lower for kw in keywords):
+                agents_needed.append(agent)
 
-        # 视觉相关
-        if any(kw in msg_lower for kw in ["图片","视频","识别","ocr","看图","分析图片"]):
-            agents_needed.append("vision")
-
-        # 热点相关
-        if any(kw in msg_lower for kw in ["热点","抖音","微博","热搜","趋势","舆情"]):
-            agents_needed.append("trend")
-
-        # 记忆相关
-        if any(kw in msg_lower for kw in ["记忆","记住","上次","之前","历史","学习"]):
-            agents_needed.append("memory")
-
-        # 自愈相关
-        if any(kw in msg_lower for kw in ["异常","挂了","恢复","自动修复","巡检"]):
-            agents_needed.append("heal")
-
-        # 兜底：全能模式
         if not agents_needed:
             agents_needed = ["code", "devops", "memory"]
 
@@ -67,6 +122,7 @@ class MasterAgent:
             "agents": agents_needed,
             "complexity": "high" if len(agents_needed) > 3 else "medium" if len(agents_needed) > 1 else "low",
             "timestamp": datetime.now().isoformat(),
+            "engine": "keyword",
         }
 
     @staticmethod
@@ -83,14 +139,59 @@ class MasterAgent:
         return plan
 
     @staticmethod
+    async def create_ai_plan(goal: str, agents: list) -> list:
+        """使用Claude生成智能执行计划"""
+        try:
+            from config import CLAUDE_API_KEY, CLAUDE_MODEL
+            if not CLAUDE_API_KEY:
+                return MasterAgent.create_task_plan(goal, agents)
+
+            agent_list = ", ".join(agents)
+            prompt = f"""为以下目标生成执行计划:
+目标: {goal}
+可用Agent: {agent_list}
+
+返回JSON数组（不要markdown包裹）:
+[{{"step": 1, "agent": "agent名", "action": "具体操作", "detail": "详细说明"}}]"""
+
+            async with httpx.AsyncClient(timeout=20) as c:
+                r = await c.post(
+                    "https://api.anthropic.com/v1/messages",
+                    headers={
+                        "x-api-key": CLAUDE_API_KEY,
+                        "anthropic-version": "2023-06-01",
+                        "content-type": "application/json",
+                    },
+                    json={
+                        "model": CLAUDE_MODEL,
+                        "max_tokens": 600,
+                        "messages": [{"role": "user", "content": prompt}],
+                    },
+                )
+                if r.status_code == 200:
+                    data = r.json()
+                    text = data["content"][0]["text"]
+                    start = text.find("[")
+                    end = text.rfind("]") + 1
+                    if start >= 0 and end > start:
+                        plan = json.loads(text[start:end])
+                        for step in plan:
+                            step["status"] = "pending"
+                        return plan
+        except Exception:
+            pass
+        return MasterAgent.create_task_plan(goal, agents)
+
+    @staticmethod
     def get_agent_status() -> list:
         """获取所有Agent状态"""
         return [
-            {"id": "master", "name": "Master Agent", "icon": "🧠", "status": "active", "tasks": 0},
+            {"id": "master", "name": "Master Agent", "icon": "🧠", "status": "active", "engine": "claude+keyword", "tasks": 0},
             {"id": "code", "name": "Code Agent", "icon": "💻", "status": "idle", "tasks": 0},
             {"id": "devops", "name": "DevOps Agent", "icon": "⚙️", "status": "active", "tasks": 0},
             {"id": "vision", "name": "Vision Agent", "icon": "👁️", "status": "idle", "tasks": 0},
             {"id": "trend", "name": "Trend Agent", "icon": "📡", "status": "idle", "tasks": 0},
             {"id": "memory", "name": "Memory Agent", "icon": "💾", "status": "active", "tasks": 0},
             {"id": "heal", "name": "Self-Healing Agent", "icon": "🛡️", "status": "idle", "tasks": 0},
+            {"id": "scraper", "name": "Scraper Agent", "icon": "🕷️", "status": "idle", "tasks": 0},
         ]

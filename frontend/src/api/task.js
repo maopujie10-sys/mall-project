@@ -1,21 +1,26 @@
 ﻿import { agentApi } from './index'
 
-export async function getTasks() {
-  try { return await agentApi.get('/tasks') } catch { return [] }
+// 添加任务到队列
+export function enqueueTask(name, risk = 'L1', priority = 5, timeoutS = 60) {
+  return agentApi.post('/agent/tasks/enqueue', { name, risk, priority, timeout_s: timeoutS })
 }
 
-export async function createTask(data) {
-  return agentApi.post('/tasks', data)
+// 查看任务队列
+export function listTasks() {
+  return agentApi.get('/agent/tasks/queue')
 }
 
-export async function deleteTask(id) {
-  return agentApi.delete(`/tasks/${id}`)
+// 获取任务详情
+export function getTask(taskId) {
+  return agentApi.get(`/agent/tasks/queue/${taskId}`)
 }
 
-export async function runTask(id) {
-  return agentApi.post(`/tasks/${id}/run`)
+// 取消任务
+export function cancelTask(taskId) {
+  return agentApi.post(`/agent/tasks/cancel/${taskId}`)
 }
 
-export async function getTaskLogs(id) {
-  try { return await agentApi.get(`/tasks/${id}/logs`) } catch { return [] }
+// 任务统计
+export function getTaskStats() {
+  return agentApi.get('/agent/tasks/stats')
 }

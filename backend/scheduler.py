@@ -5,8 +5,7 @@
   - 每天凌晨2点: 数据库备份
   - 每天上午9点: 轮值域名检测
   - 每天下午6点: 客服日报
-  - 每天凌晨3点: 商城健康度扫描
-"""
+  - 每天凌晨3点: 商城健康度扫描"""
 import asyncio
 from datetime import datetime
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
@@ -21,6 +20,7 @@ async def patrol_task():
     print(f"[Scheduler] 自动巡检 {datetime.now().strftime('%H:%M:%S')}")
     try:
         from routers.inspector import run_inspection
+        await run_inspection()
     except Exception as e:
         print(f"[Scheduler] 巡检失败: {e}")
 
@@ -55,70 +55,47 @@ async def backup_task():
 
 
 async def rotation_check_task():
-    """每日轮值域名检测"""
-    print(f"[Scheduler] 轮值域名检测 {datetime.now().strftime('%H:%M:%S')}")
+    """轮值域名检测"""
+    print(f"[Scheduler] 轮值检测 {datetime.now().strftime('%H:%M:%S')}")
     try:
-        import httpx
-        from state import state
-        domains = state._data.get("rotation_domains", [])
-        async with httpx.AsyncClient(timeout=10, follow_redirects=True) as client:
-            for d in domains:
-                if not d.get("active"):
-                    continue
-                try:
-                    r = await client.get(f"https://{d['domain']}", headers={"User-Agent": "Mozilla/5.0"})
-                    d["health"] = "ok" if r.status_code < 400 else "error"
-                except Exception:
-                    d["health"] = "error"
-        state._save()
-        print(f"[Scheduler] 轮值检测完成: {len(domains)} 个域名")
+        from routers.rotation_panel import _check_all
+        await _check_all()
     except Exception as e:
-        print(f"[Scheduler] 轮值检测异常: {e}")
+        print(f"[Scheduler] 轮值检测失败: {e}")
 
 
-async def mall_health_task():
-    """每日商城健康度扫描"""
-    print(f"[Scheduler] 商城健康度扫描 {datetime.now().strftime('%H:%M:%S')}")
+async def customer_report_task():
+    """客服日报"""
+    print(f"[Scheduler] 客服日报 {datetime.now().strftime('%H:%M:%S')}")
     try:
-        from tools.autopilot_mall import MallBrain
-        products = await MallBrain.scan_products()
-        dead = sum(1 for p in products if p.status == "dead")
-        hot = sum(1 for p in products if p.status == "hot")
-        print(f"[Scheduler] 商城扫描完成: {len(products)}商品, {hot}热销, {dead}死品")
+        from routers.customer_panel import _generate_report
+        await _generate_report()
     except Exception as e:
-        print(f"[Scheduler] 商城扫描异常: {e}")
+        print(f"[Scheduler] 客服日报失败: {e}")
+
+
+async def mall_scan_task():
+    """商城健康度扫描"""
+    print(f"[Scheduler] 商城扫描 {datetime.now().strftime('%H:%M:%S')}")
+    try:
+        from routers.mall_scanner import run_scan
+        await run_scan()
+    except Exception as e:
+        print(f"[Scheduler] 商城扫描失败: {e}")
 
 
 def start_scheduler():
-    """启动所有定时任务"""
-    # 每30分钟自动巡检
-    scheduler.add_job(
-        patrol_task, IntervalTrigger(minutes=30),
-        id="patrol", name="自动巡检", replace_existing=True
-    )
-    # 每天凌晨2点备份
-    scheduler.add_job(
-        backup_task, CronTrigger(hour=2, minute=0),
-        id="backup", name="每日备份", replace_existing=True
-    )
-    # 每天上午9点轮值检测
-    scheduler.add_job(
-        rotation_check_task, CronTrigger(hour=9, minute=0),
-        id="rotation_check", name="轮值域名检测", replace_existing=True
-    )
-    # 每天凌晨3点商城健康度
-    scheduler.add_job(
-        mall_health_task, CronTrigger(hour=3, minute=0),
-        id="mall_health", name="商城健康度扫描", replace_existing=True
-    )
+    """启动定时任务"""
+    scheduler.add_job(patrol_task, IntervalTrigger(minutes=30), id="patrol", replace_existing=True)
+    scheduler.add_job(backup_task, CronTrigger(hour=2, minute=0), id="backup", replace_existing=True)
+    scheduler.add_job(rotation_check_task, CronTrigger(hour=9, minute=0), id="rotation", replace_existing=True)
+    scheduler.add_job(customer_report_task, CronTrigger(hour=18, minute=0), id="customer_report", replace_existing=True)
+    scheduler.add_job(mall_scan_task, CronTrigger(hour=3, minute=0), id="mall_scan", replace_existing=True)
     scheduler.start()
-    print(f"[Scheduler] 定时任务已启动: {len(scheduler.get_jobs())} 个任务")
-    for job in scheduler.get_jobs():
-        print(f"  - {job.name} (id={job.id})")
+    print("[Scheduler] 定时任务已启动: 巡检/备份/轮值/日报/扫描")
 
 
 def stop_scheduler():
-    """停止所有定时任务"""
-    if scheduler.running:
-        scheduler.shutdown(wait=False)
-        print("[Scheduler] 定时任务已停止")
+    """停止定时任务"""
+    scheduler.shutdown(wait=False)
+    print("[Scheduler] 定时任务已停止")

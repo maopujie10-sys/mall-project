@@ -5,7 +5,6 @@
       <p>多模型管理 · 智能切换 · 使用统计</p>
     </div>
 
-    <!-- 统计卡片 -->
     <el-row :gutter="16" style="margin-bottom:20px">
       <el-col :span="6">
         <div class="metric-card"><div class="metric-label">可用模型</div><div class="metric-value">{{ models.length }}</div><div class="metric-sub">跨 {{ providers.length }} 个平台</div></div>
@@ -21,7 +20,6 @@
       </el-col>
     </el-row>
 
-    <!-- 模型列表 -->
     <el-card shadow="never">
       <template #header>
         <div class="card-header-row"><span>模型列表</span><el-button type="primary" size="small" @click="showAdd = true">添加模型</el-button></div>
@@ -53,7 +51,6 @@
       </el-table>
     </el-card>
 
-    <!-- 模式选择 -->
     <el-card shadow="never" style="margin-top:16px">
       <template #header><span>推理模式</span></template>
       <el-radio-group v-model="activeMode" size="large" @change="switchMode">
@@ -63,7 +60,6 @@
       </el-radio-group>
     </el-card>
 
-    <!-- 使用统计 -->
     <el-card shadow="never" style="margin-top:16px">
       <template #header><span>使用统计</span></template>
       <el-table :data="usageStats" stripe>
@@ -76,65 +72,52 @@
       </el-table>
     </el-card>
 
-    <!-- 添加/编辑对话框 -->
-    <el-dialog v-model="showAdd" :title="editingModel?'编辑模型':'添加模型'" width="520px">
-      <el-form :model="modelForm" label-width="90px">
-        <el-form-item label="模型名称"><el-input v-model="modelForm.name" placeholder="如 DeepSeek V4" /></el-form-item>
-        <el-form-item label="供应商"><el-select v-model="modelForm.provider" style="width:100%"><el-option v-for="p in providers" :key="p" :label="p" :value="p" /></el-select></el-form-item>
-        <el-form-item label="API地址"><el-input v-model="modelForm.apiUrl" placeholder="https://api.example.com/v1" /></el-form-item>
-        <el-form-item label="API密钥"><el-input v-model="modelForm.apiKey" type="password" show-password placeholder="sk-..." /></el-form-item>
-        <el-form-item label="类型"><el-radio-group v-model="modelForm.type"><el-radio value="text">纯文本</el-radio><el-radio value="multimodal">多模态</el-radio></el-radio-group></el-form-item>
-        <el-form-item label="输入价格"><el-input-number v-model="modelForm.inputPrice" :min="0" :precision="2" :step="0.01" /> <span style="margin-left:4px">元/1K tokens</span></el-form-item>
-        <el-form-item label="输出价格"><el-input-number v-model="modelForm.outputPrice" :min="0" :precision="2" :step="0.01" /> <span style="margin-left:4px">元/1K tokens</span></el-form-item>
-      </el-form>
-      <template #footer><el-button @click="showAdd=false">取消</el-button><el-button type="primary" @click="saveModel" :loading="saving">{{editingModel?'保存':'添加'}}</el-button></template>
+    <el-dialog v-model="showSpeedResult" title="测速结果" width="420px">
+      <template v-if="speedResult?.ok">
+        <div class="speed-item">⏱ 响应延迟: <b>{{ speedResult.latency }}ms</b></div>
+        <div class="speed-item">🚀 首Token: <b>{{ speedResult.firstToken }}ms</b></div>
+        <div class="speed-item">📊 Token/秒: <b>{{ speedResult.tokensPerSec }}</b></div>
+      </template>
+      <template v-else>
+        <el-empty description="测速失败，请检查模型配置" />
+      </template>
     </el-dialog>
 
-    <!-- 测速结果 -->
-    <el-dialog v-model="showSpeedResult" title="测速结果" width="400px">
-      <el-descriptions :column="1" border v-if="speedResult">
-        <el-descriptions-item label="模型">{{ speedResult.model }}</el-descriptions-item>
-        <el-descriptions-item label="响应时间">{{ speedResult.latency }}ms</el-descriptions-item>
-        <el-descriptions-item label="首Token延迟">{{ speedResult.firstToken }}ms</el-descriptions-item>
-        <el-descriptions-item label="Token/秒">{{ speedResult.tokensPerSec }}</el-descriptions-item>
-        <el-descriptions-item label="成功率">{{ speedResult.ok ? '✅ 通过' : '❌ 失败' }}</el-descriptions-item>
-      </el-descriptions>
-      <template #footer><el-button @click="showSpeedResult=false">关闭</el-button></template>
+    <el-dialog v-model="showAdd" :title="editingModel ? '编辑模型' : '添加模型'" width="500px">
+      <el-form :model="modelForm" label-width="80px">
+        <el-form-item label="名称"><el-input v-model="modelForm.name" /></el-form-item>
+        <el-form-item label="供应商"><el-select v-model="modelForm.provider"><el-option v-for="p in providers" :key="p" :label="p" :value="p" /></el-select></el-form-item>
+        <el-form-item label="API地址"><el-input v-model="modelForm.apiUrl" /></el-form-item>
+        <el-form-item label="API Key"><el-input v-model="modelForm.apiKey" type="password" /></el-form-item>
+        <el-form-item label="类型"><el-select v-model="modelForm.type"><el-option label="文本" value="text" /><el-option label="多模态" value="multimodal" /></el-select></el-form-item>
+        <el-form-item label="输入价格"><el-input-number v-model="modelForm.inputPrice" :min="0" :step="0.01" /></el-form-item>
+        <el-form-item label="输出价格"><el-input-number v-model="modelForm.outputPrice" :min="0" :step="0.01" /></el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="showAdd = false">取消</el-button>
+        <el-button type="primary" :loading="saving" @click="saveModel">保存</el-button>
+      </template>
     </el-dialog>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, reactive, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { getModels, switchModel, getModelStatus, testModel } from '@/api/model'
+import { listModels, routeModel, testModelSpeed } from '@/api/model'
 
-const activeModelId = ref('deepseek')
+const models = ref([])
+const activeModelId = ref('')
 const activeMode = ref('quality')
-const showAdd = ref(false)
-const showSpeedResult = ref(false)
-const editingModel = ref(null)
-const saving = ref(false)
-const speedResult = ref(null)
 const testingModel = ref('')
+const speedResult = ref(null)
+const showSpeedResult = ref(false)
+const showAdd = ref(false)
+const saving = ref(false)
+const editingModel = ref(null)
 
-const providers = ['DeepSeek', 'OpenAI', 'Anthropic', 'Google', 'Ollama', 'OpenRouter', '自定义']
-
-const models = ref([
-  { id:'deepseek', name:'DeepSeek V4 Pro', provider:'DeepSeek', icon:'🐋', type:'text', apiUrl:'', apiKey:'', speed:92, inputPrice:0.14, outputPrice:0.28, calls:12893, avgLatency:'320ms', enabled:true },
-  { id:'claude', name:'Claude 4 Opus', provider:'Anthropic', icon:'🎭', type:'multimodal', apiUrl:'', apiKey:'', speed:65, inputPrice:15, outputPrice:75, calls:3421, avgLatency:'580ms', enabled:true },
-  { id:'gpt4', name:'GPT-4.5', provider:'OpenAI', icon:'🧩', type:'multimodal', apiUrl:'', apiKey:'', speed:55, inputPrice:2.5, outputPrice:10, calls:7654, avgLatency:'720ms', enabled:false },
-  { id:'gemini', name:'Gemini 2.5 Pro', provider:'Google', icon:'💎', type:'multimodal', apiUrl:'', apiKey:'', speed:78, inputPrice:1.25, outputPrice:5, calls:2100, avgLatency:'450ms', enabled:true },
-  { id:'qwen', name:'Qwen3-Max', provider:'OpenRouter', icon:'🔥', type:'text', apiUrl:'', apiKey:'', speed:88, inputPrice:0.5, outputPrice:1.5, calls:890, avgLativity:'280ms', enabled:false },
-  { id:'local', name:'Local LLM', provider:'Ollama', icon:'🏠', type:'text', apiUrl:'http://localhost:11434', apiKey:'', speed:40, inputPrice:0, outputPrice:0, calls:340, avgLatency:'2000ms', enabled:false },
-])
-
-const stats = reactive({
-  todayCalls: 2847,
-  successRate: 98.3,
-  monthlyCost: '¥ 1,247.50',
-  remaining: '¥ 8,752.50',
-})
+const stats = reactive({ todayCalls: 0, successRate: 100, monthlyCost: '¥0', remaining: '¥500' })
+const providers = ['OpenAI', 'Claude', 'DeepSeek', 'Gemini', 'Qwen', 'Groq']
 
 const modes = [
   { id:'quality', name:'高质量', desc:'最深推理，最佳结果，慢但准' },
@@ -143,12 +126,7 @@ const modes = [
   { id:'economy', name:'省钱', desc:'最低消耗，适合非关键任务' },
 ]
 
-const usageStats = ref([
-  { date:'2026-05-28', model:'DeepSeek V4 Pro', calls:482, tokens:'1.2M', cost:'¥168', avgTime:'320ms' },
-  { date:'2026-05-27', model:'DeepSeek V4 Pro', calls:567, tokens:'1.5M', cost:'¥210', avgTime:'315ms' },
-  { date:'2026-05-27', model:'Claude 4 Opus', calls:89, tokens:'0.3M', cost:'¥450', avgTime:'580ms' },
-  { date:'2026-05-26', model:'DeepSeek V4 Pro', calls:623, tokens:'1.8M', cost:'¥252', avgTime:'340ms' },
-])
+const usageStats = ref([])
 
 const modelForm = reactive({ name:'', provider:'', apiUrl:'', apiKey:'', type:'text', inputPrice:0, outputPrice:0 })
 
@@ -173,13 +151,18 @@ async function setActive(row) {
 async function testSpeed(row) {
   testingModel.value = row.id
   try {
-    speedResult.value = await testModel(row.id)
-    if (!speedResult.value) {
-      speedResult.value = { model:row.name, latency: Math.floor(Math.random()*500+100), firstToken: Math.floor(Math.random()*200+50), tokensPerSec: Math.floor(Math.random()*60+20), ok:true }
-      row.avgLatency = speedResult.value.latency + 'ms'
+    const result = await testModelSpeed(row.id)
+    if (result?.ok !== false) {
+      speedResult.value = result
+      row.avgLatency = (result?.latency || '?') + 'ms'
+    } else {
+      speedResult.value = { ok: false }
     }
     showSpeedResult.value = true
-  } catch { speedResult.value = { model:row.name, latency:0, firstToken:0, tokensPerSec:0, ok:false }; showSpeedResult.value = true }
+  } catch {
+    speedResult.value = { ok: false }
+    showSpeedResult.value = true
+  }
   testingModel.value = ''
 }
 
@@ -217,13 +200,33 @@ async function removeModel(row) {
   } catch {}
 }
 
-function switchMode() {
-  ElMessage.success(`已切换至${modes.find(m=>m.id===activeMode.value)?.name}模式`)
+async function switchMode() {
+  try {
+    const result = await routeModel(activeMode.value)
+    if (result?.model) {
+      ElMessage.success(`已切换至 ${result.model} (${activeMode.value} 模式)`)
+    }
+  } catch {
+    ElMessage.success(`已切换至${modes.find(m=>m.id===activeMode.value)?.name}模式`)
+  }
 }
 
 onMounted(async () => {
-  try { const list = await getModels(); if (list?.length) models.value = list } catch {}
-  try { const s = await getModelStatus(); if (s?.active) activeModelId.value = s.active } catch {}
+  try {
+    const resp = await listModels()
+    if (resp?.models) models.value = resp.models
+  } catch {}
+  try {
+    const resp = await routeModel('quality')
+    if (resp?.model) {
+      const found = models.value.find(m => m.name === resp.model)
+      if (found) activeModelId.value = found.id
+    }
+  } catch {}
+  try {
+    const resp = await getModelStats()
+    if (resp?.usage) usageStats.value = resp.usage
+  } catch {}
 })
 </script>
 
@@ -242,4 +245,7 @@ onMounted(async () => {
 .mode-option { text-align: center; padding: 4px 8px; }
 .mode-name { font-weight: 600; font-size: 14px; }
 .mode-desc { font-size: 11px; color: var(--text-muted); }
+.speed-item { padding: 10px 0; font-size: 15px; border-bottom: 1px solid var(--border-color); }
+.speed-item:last-child { border-bottom: none; }
+.speed-item b { color: var(--color-primary); }
 </style>

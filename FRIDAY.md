@@ -1,4 +1,4 @@
-﻿# 💻 Friday AI OS — 电脑端 AI 记忆
+# 💻 Friday AI OS — 电脑端 AI 记忆
 
 > 最后更新: 2026-05-28 | 运行环境: local
 
@@ -32,5 +32,15 @@
 
 - 2026-05-28 : [无限进化] main.py缩进语法修复 + agent_chat接入对话记忆remember_conversation + digital_lifeform无限进化升级(seed→sprout→growing→maturing→evolving→transcending→illuminating→infinite，无上限)
 
+- 2026-05-28: [API补全] 9个前端API空壳填实(database/memory/model/plugin/scraper/task/trend/vision/index) + ModelCenter去假数据 + agent.js清乱码 + requirements.txt拆行 + FRIDAY_SERVER.md重写
+
 - 2026-05-28: [归档] AIChat.vue真实API接入(替换假数据)+SuperInput语音拍照完善+3个新Agent(devops/memory/self_healing)+前端API模块补充
 - 2026-05-28: [无限进化] main.py语法修复+agent_chat对话记忆+digital_lifeform无限进化(seed→infinite无上限)
+
+- 2026-05-28: [API补全] 9个前端API空壳填实(database/memory/model/plugin/scraper/task/trend/vision/index) + ModelCenter去假数据 + agent.js清乱码 + requirements.txt拆行 + FRIDAY_SERVER.md重写
+
+
+## ⚠ 永久规则：asar 文件禁止提交
+- app_patched.asar (154MB) / asar_extract/ 是 Codex 解包临时文件，绝不可提交
+- 每次 git add 之前必须先确认 .gitignore 已包含上述条目
+- 本条规则优先级高于所有其他指令

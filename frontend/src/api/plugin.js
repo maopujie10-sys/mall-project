@@ -1,17 +1,31 @@
 ﻿import { agentApi } from './index'
 
-export async function getPlugins() {
-  try { return await agentApi.get('/plugins') } catch { return [] }
+// 获取插件列表
+export function listPlugins() {
+  return agentApi.get('/agent/plugins')
 }
 
-export async function installPlugin(id) {
-  return agentApi.post(`/plugins/install`, { id })
+// 安装插件
+export function installPlugin(pluginId, source = 'marketplace') {
+  return agentApi.post('/agent/plugins/install', { plugin_id: pluginId, source })
 }
 
-export async function uninstallPlugin(id) {
-  return agentApi.delete(`/plugins/${id}`)
+// 卸载插件
+export function uninstallPlugin(pluginId) {
+  return agentApi.post('/agent/plugins/uninstall', { plugin_id: pluginId })
 }
 
-export async function togglePlugin(id, enabled) {
-  return agentApi.post(`/plugins/${id}/toggle`, { enabled })
+// 启用/禁用插件
+export function togglePlugin(pluginId, enabled) {
+  return agentApi.post('/agent/plugins/toggle', { plugin_id: pluginId, enabled })
+}
+
+// 获取插件配置
+export function getPluginConfig(pluginId) {
+  return agentApi.get('/agent/plugins/config', { params: { plugin_id: pluginId } })
+}
+
+// 更新插件配置
+export function updatePluginConfig(pluginId, config) {
+  return agentApi.post('/agent/plugins/config', { plugin_id: pluginId, config })
 }

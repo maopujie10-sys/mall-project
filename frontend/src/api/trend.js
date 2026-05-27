@@ -1,13 +1,21 @@
 ﻿import { agentApi } from './index'
 
-export async function getTrends(platform = 'all') {
-  try { return await agentApi.get(`/trends?platform=${platform}`) } catch { return [] }
+// 获取热点数据
+export function fetchTrends(platform = null) {
+  return agentApi.get('/agent/friday/trends', { params: { platform } })
 }
 
-export async function analyzeTrend(url) {
-  return agentApi.post('/trends/analyze', { url })
+// 分析趋势
+export function analyzeTrend(keyword) {
+  return agentApi.get('/agent/friday/trends/analyze', { params: { keyword } })
 }
 
-export async function getHotRanking() {
-  try { return await agentApi.get('/trends/hot') } catch { return [] }
+// 预测热门
+export function predictHot(category = '科技') {
+  return agentApi.get('/agent/friday/trends/predict', { params: { category } })
+}
+
+// 搜索热点
+export function searchTrends(query) {
+  return agentApi.get('/agent/friday/trends/search', { params: { query } })
 }
