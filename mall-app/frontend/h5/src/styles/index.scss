@@ -1,0 +1,133 @@
+* {
+    font-family: -apple-system, BlinkMacSystemFont, Helvetica Neue, Helvetica, Segoe UI, Arial, Roboto, PingFang SC, miui, Hiragino Sans GB, Microsoft Yahei, sans-serif;
+}
+
+.van-slide-left-enter-active,
+.van-slide-left-leave-active,
+.van-slide-right-enter-active,
+.van-slide-right-leave-active {
+    position: absolute !important;
+    background-color: #fff !important;
+    left: 0 !important;
+    right: 0 !important;
+    top: 0 !important;
+    bottom: 0 !important;
+    z-index: 1 !important;
+}
+
+.van-toast {
+    min-width: 25% !important;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+    transition: opacity .3s
+}
+
+.fade-enter,
+.fade-leave-to {
+    opacity: 0
+}
+
+.to_top {
+    position: fixed;
+    bottom: 100px;
+    right: 15px;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: all .3s;
+    z-index: 9999;
+    background: #fff;
+    border-radius: 50%;
+    font-size: 35px !important;
+}
+
+// .van-overlay,
+// .van-image-preview {
+//     z-index: 9999 !important;
+// }
+// html,
+// body {
+//     max-width: 375px;
+//     background: #fcfcfc;
+
+//     .navbar {
+//         max-width: 375px !important;
+
+//         .yongqi {
+//             max-width: 375px !important;
+//         }
+//     }
+//     .bottom-wrap,
+//     .nav-content,
+//     .van-address-list__bottom,
+//     .tab-content,
+//     .shop-header,
+//     .van-nav-bar,
+//     .header,
+//     .top-banner-div,
+//     .buy-bottom-fiexd {
+//         max-width: 375px !important;
+//         left: 50% !important;
+//         transform: translateX(-50%);
+//     }
+
+//     // .van-popup {
+//     //     // max-width: 375px !important;
+//     //     // left: 50% !important;
+//     //     // transform: transform .3s,-webkit-transform .3s;
+//     // }
+//     .mall-bottom,
+//     .van-list {
+//         max-width: 375px !important;
+//         margin: 0 auto !important;
+//     }
+
+//     .shop .shop-header .shop-bottom .tab-wrap {
+//         max-width: 375px !important;
+//         margin: 0 auto !important;
+//     }
+// }
+img {
+    object-fit: cover;
+}
+
+html[dir="rtl"] {
+
+    .image_reversed {
+        transform: scaleX(-1);
+    }
+
+    .van-nav-bar__left {
+        transform: scaleX(-1);
+    }
+
+    .rtl_selected {
+        right: -62px;
+    }
+
+    .van-image-preview {
+        direction: ltr;
+    }
+}
+
+.discount_box {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background: url(@/assets/image/disbg.png) no-repeat center / 100% 100%;
+    width: 31px;
+    height: 32px;
+    font-size: 10px;
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    span {
+        transform: scale(0.8) translateY(-2px);
+    }
+}

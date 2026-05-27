@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8" />
@@ -6,9 +6,23 @@
   <title>AI Agent 总控系统</title>
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="manifest" href="/ai/manifest.json">
+  <meta name="theme-color" content="#080b1a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Friday AI">
+  <link rel="apple-touch-icon" href="/ai/icons/icon-192.png">
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/ai/sw.js').then(r => console.log('[Friday PWA] OK:', r.scope));
+      });
+    }
+  </script>
 </head>
 <body>
   <div id="app"></div>
   <script type="module" src="/src/main.js"></script>
 </body>
 </html>
+

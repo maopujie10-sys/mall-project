@@ -1,143 +1,39 @@
-version: '3.8'
+﻿version: "3.8"
 
 services:
-  mall-app:
-    build: ./mall-app
-    container_name: mall-app
-    restart: always
-    ports:
-      - "8080:8080"
-    environment:
-      - SPRING_PROFILES_ACTIVE=prod
-      - DB_HOST=mall-db
-      - DB_USER=${DB_USER}
-      - DB_PASSWORD=${DB_PASSWORD}
-      - REDIS_HOST=mall-redis
-      - REDIS_PASSWORD=${REDIS_PASSWORD}
-      - COS_SECRET_ID=${COS_SECRET_ID}
-      - COS_SECRET_KEY=${COS_SECRET_KEY}
-      - COS_REGION=${COS_REGION}
-      - COS_BUCKET=${COS_BUCKET}
-      - COS_DOMAIN=${COS_DOMAIN}
-      - JWT_SECRET=${JWT_SECRET}
-      - AGENT_TOKEN=${AGENT_TOKEN}
-      - UPLOAD_PATH=/app/uploads
-      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
-      - TELEGRAM_ADMIN_CHAT_ID=${TELEGRAM_ADMIN_CHAT_ID}
-    volumes:
-      - ./logs:/app/logs
-      - ./uploads:/app/uploads
-    depends_on:
-      mall-db:
-        condition: service_healthy
-      mall-redis:
-        condition: service_healthy
-    networks: [mall-net]
-
-  mall-h5:
-    build: ./frontend-h5
-    container_name: mall-h5
-    restart: always
-    networks: [mall-net]
-
-  mall-pc:
-    build: ./frontend-pc
-    container_name: mall-pc
-    restart: always
-    networks: [mall-net]
-
-  mall-merchant:
-    build: ./frontend-merchant
-    container_name: mall-merchant
-    restart: always
-    networks: [mall-net]
-
-  mall-merchant-h5:
-    build: ./frontend-merchant-h5
-    container_name: mall-merchant-h5
-    restart: always
-    networks: [mall-net]
-
-  mall-invite:
-    build: ./frontend-invite
-    container_name: mall-invite
-    restart: always
-    networks: [mall-net]
-
-  nginx:
-    image: nginx:1.25-alpine
-    container_name: mall-nginx
-    restart: always
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./nginx/ssl:/etc/nginx/ssl:ro
-      - ./nginx/logs:/var/log/nginx
-      - ./frontends:/frontends
-    depends_on: [mall-app, mall-agent]
-    networks: [mall-net]
-
-  mall-db:
-    image: mysql:8.0
-    container_name: mall-db
-    restart: always
-    ports:
-      - "3306:3306"
-    environment:
-      - MYSQL_ROOT_PASSWORD=${DB_ROOT_PASSWORD}
-      - MYSQL_DATABASE=malldb
-      - MYSQL_USER=${DB_USER}
-      - MYSQL_PASSWORD=${DB_PASSWORD}
-      - TZ=Asia/Shanghai
-    volumes:
-      - ./mysql/data:/var/lib/mysql
-      - ./mysql/init:/docker-entrypoint-initdb.d
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_ROOT_PASSWORD}"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    networks: [mall-net]
-
-  mall-redis:
-    image: redis:6.2-alpine
-    container_name: mall-redis
-    restart: always
-    ports:
-      - "6379:6379"
-    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
-    volumes:
-      - ./redis/data:/data
-    healthcheck:
-      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    networks: [mall-net]
-
-  mall-agent:
-    build: ./ai-agent/backend
+  agent:
+    build: ./backend
     container_name: mall-agent
-    restart: always
     ports:
       - "9000:9000"
+    env_file: .env
     environment:
-      - X_AGENT_TOKEN=${AGENT_TOKEN}
-      - MALL_BASE_URL=http://mall-app:8080
-      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
-      - TELEGRAM_CHAT_ID=${TELEGRAM_ADMIN_CHAT_ID}
-      - REDIS_DSN=redis://mall-redis:6379/0
-      - REDIS_PASSWORD=${REDIS_PASSWORD}
-    depends_on: [mall-app]
-    networks: [mall-net]
-    healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:9000/agent/health')"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+      - APP_ENV=${APP_ENV:-development}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./backups:/app/backups
+      - ./logs:/app/logs
+    restart: unless-stopped
+    depends_on:
+      - redis
 
-networks:
-  mall-net:
-    driver: bridge
+  redis:
+    image: redis:7-alpine
+    container_name: mall-agent-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    container_name: mall-agent-frontend
+    ports:
+      - "5173:80"
+    restart: unless-stopped
+    depends_on:
+      - agent
+
+volumes:
+  redis_data:

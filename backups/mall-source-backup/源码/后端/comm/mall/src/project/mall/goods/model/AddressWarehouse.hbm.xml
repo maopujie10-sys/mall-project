@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+    <class name="project.mall.goods.model.AddressWarehouse" table="T_MALL_ADDRESS_WAREHOUSE">
+
+        <id name="id" type="java.lang.Integer">
+            <column name="id" />
+        </id>
+        <property name="zipcode" type="java.lang.Integer">
+            <column name="zipcode" />
+        </property>
+        <property name="username" type="java.lang.String">
+            <column name="username" />
+        </property>
+        <property name="email" type="java.lang.String">
+            <column name="email" />
+        </property>
+        <property name="country" type="java.lang.String">
+            <column name="country" />
+        </property>
+        <property name="province" type="java.lang.String">
+            <column name="province" />
+        </property>
+        <property name="homeaddress" type="java.lang.String">
+            <column name="homeaddress" />
+        </property>
+        <property name="mobile" type="java.lang.String">
+            <column name="mobile" />
+        </property>
+        <property name="city" type="java.lang.String">
+            <column name="city" />
+        </property>
+        <property name="create_time" type="timestamp">
+            <column name="create_time" />
+        </property>
+
+
+    </class>
+</hibernate-mapping>

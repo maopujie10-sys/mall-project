@@ -1,0 +1,170 @@
+{
+  "id": "4101880",
+  "name": "sssss",
+  "font_family": "iconfont",
+  "css_prefix_text": "icon-",
+  "description": "",
+  "glyphs": [
+    {
+      "icon_id": "10451703",
+      "name": "仪表盘",
+      "font_class": "yibiaopan",
+      "unicode": "e628",
+      "unicode_decimal": 58920
+    },
+    {
+      "icon_id": "11853844",
+      "name": "待评价",
+      "font_class": "daipingjia3",
+      "unicode": "e666",
+      "unicode_decimal": 58982
+    },
+    {
+      "icon_id": "17935615",
+      "name": "97待发货",
+      "font_class": "_daifahuo",
+      "unicode": "e629",
+      "unicode_decimal": 58921
+    },
+    {
+      "icon_id": "201097",
+      "name": "3.1待收货",
+      "font_class": "31daishouhuo",
+      "unicode": "e601",
+      "unicode_decimal": 58881
+    },
+    {
+      "icon_id": "10593819",
+      "name": "网络安全,盾牌_jurassic",
+      "font_class": "jurassic_safe",
+      "unicode": "e6a1",
+      "unicode_decimal": 59041
+    },
+    {
+      "icon_id": "21153921",
+      "name": "待付款",
+      "font_class": "daifukuan",
+      "unicode": "e609",
+      "unicode_decimal": 58889
+    },
+    {
+      "icon_id": "1253",
+      "name": "收藏",
+      "font_class": "shoucang",
+      "unicode": "e600",
+      "unicode_decimal": 58880
+    },
+    {
+      "icon_id": "1337724",
+      "name": "商品收藏",
+      "font_class": "shangpinshoucang",
+      "unicode": "e608",
+      "unicode_decimal": 58888
+    },
+    {
+      "icon_id": "3137960",
+      "name": " 修改订单",
+      "font_class": "xiugaidingdan",
+      "unicode": "e8f2",
+      "unicode_decimal": 59634
+    },
+    {
+      "icon_id": "7009006",
+      "name": "setup",
+      "font_class": "setup",
+      "unicode": "e728",
+      "unicode_decimal": 59176
+    },
+    {
+      "icon_id": "10487565",
+      "name": "钱包",
+      "font_class": "qianbao",
+      "unicode": "e69a",
+      "unicode_decimal": 59034
+    },
+    {
+      "icon_id": "11372639",
+      "name": "爱心",
+      "font_class": "aixin",
+      "unicode": "e8ab",
+      "unicode_decimal": 59563
+    },
+    {
+      "icon_id": "21096593",
+      "name": "control-backward",
+      "font_class": "control-backward",
+      "unicode": "ecac",
+      "unicode_decimal": 60588
+    },
+    {
+      "icon_id": "21295907",
+      "name": "运费",
+      "font_class": "yunfei",
+      "unicode": "e6fd",
+      "unicode_decimal": 59133
+    },
+    {
+      "icon_id": "25370567",
+      "name": "关注店铺",
+      "font_class": "guanzhudianpu",
+      "unicode": "e632",
+      "unicode_decimal": 58930
+    },
+    {
+      "icon_id": "27704660",
+      "name": "回到顶部",
+      "font_class": "huidaodingbu",
+      "unicode": "e692",
+      "unicode_decimal": 59026
+    },
+    {
+      "icon_id": "577329",
+      "name": "标星-fill",
+      "font_class": "biaoxingfill",
+      "unicode": "e732",
+      "unicode_decimal": 59186
+    },
+    {
+      "icon_id": "594382",
+      "name": "右箭头",
+      "font_class": "youjiantou",
+      "unicode": "e63e",
+      "unicode_decimal": 58942
+    },
+    {
+      "icon_id": "733991",
+      "name": "选择角标",
+      "font_class": "xuanzejiaobiao",
+      "unicode": "e717",
+      "unicode_decimal": 59159
+    },
+    {
+      "icon_id": "844645",
+      "name": "美元9",
+      "font_class": "meiyuan9",
+      "unicode": "e73b",
+      "unicode_decimal": 59195
+    },
+    {
+      "icon_id": "4735289",
+      "name": "icon_对号-面",
+      "font_class": "icon_duihao-mian",
+      "unicode": "e63d",
+      "unicode_decimal": 58941
+    },
+    {
+      "icon_id": "15685207",
+      "name": "火箭加速",
+      "font_class": "huojianjiasu",
+      "unicode": "e6d4",
+      "unicode_decimal": 59092
+    },
+    {
+      "icon_id": "19107028",
+      "name": "盾牌",
+      "font_class": "dunpai",
+      "unicode": "e775",
+      "unicode_decimal": 59253
+    }
+  ]
+}

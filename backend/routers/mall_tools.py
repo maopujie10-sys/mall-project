@@ -1,18 +1,16 @@
-"""商城管理工具 — 用户/商品/订单/分类/轮播/评价/属性 CRUD + 代理转发至 mall-app"""
+"""商城管理工具 — 用户/商品/订单/分类 CRUD + 代理转发至 mall-app"""
 import httpx
-from fastapi import APIRouter, Depends, HTTPException, Query, Request
+from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
 from typing import Optional
 from config import MALL_BASE_URL
-from main import verify_token
+from auth import verify_token
 from state import state
+from risk import handle_risk
 
-router = APIRouter(prefix="/api/tools/mall", tags=["MallTools"])
+router = APIRouter(prefix="/tools/mall", tags=["MallTools"])
 
-
-# ── 通用代理 ──
 async def proxy_to_mall(path: str, method: str = "GET", json_data: dict = None, params: dict = None):
-    """转发请求到 mall-app:8080，失败返回 None"""
     url = f"{MALL_BASE_URL}{path}"
     try:
         async with httpx.AsyncClient(timeout=10) as cli:
@@ -30,534 +28,170 @@ async def proxy_to_mall(path: str, method: str = "GET", json_data: dict = None, 
                 try:
                     return r.json()
                 except Exception:
-                    return {"raw": r.text[:500]}
-            return None
-    except Exception:
-        return None
-
-
-# ── 模拟数据 ──
-MOCK_USERS = [
-    {"id": 1, "username": "testuser01", "phone": "138****0001", "balance": 1250.00, "status": 1},
-    {"id": 2, "username": "testuser02", "phone": "138****0002", "balance": 580.50, "status": 1},
-    {"id": 3, "username": "testuser03", "phone": "138****0003", "balance": 0.00, "status": 0},
-    {"id": 4, "username": "vipuser01", "phone": "139****1001", "balance": 8500.00, "status": 1},
-    {"id": 5, "username": "shop001", "phone": "139****2001", "balance": 32000.00, "status": 1},
-]
-
-MOCK_PRODUCTS = [
-    {"id": 1, "uuid": "p-001", "name": "iPhone 15 Pro Max 256GB", "price": 8999.00, "stock": 156, "status": 1, "category": "手机数码", "sellCount": 2340},
-    {"id": 2, "uuid": "p-002", "name": "MacBook Pro 16 M3 Max", "price": 19999.00, "stock": 48, "status": 1, "category": "电脑办公", "sellCount": 890},
-    {"id": 3, "uuid": "p-003", "name": "AirPods Pro 2 USB-C", "price": 1499.00, "stock": 320, "status": 1, "category": "手机数码", "sellCount": 5600},
-    {"id": 4, "uuid": "p-004", "name": "Sony PlayStation 5 Slim", "price": 3299.00, "stock": 0, "status": 0, "category": "游戏设备", "sellCount": 1230},
-    {"id": 5, "uuid": "p-005", "name": "Nike Air Jordan 1 Retro", "price": 1299.00, "stock": 89, "status": 1, "category": "运动鞋服", "sellCount": 4500},
-]
-
-MOCK_ORDERS = [
-    {"id": 1, "orderNo": "TK202605240001", "username": "testuser01", "amount": 8999.00, "status": 0, "time": "2026-05-24 10:23", "items": 2},
-    {"id": 2, "orderNo": "TK202605240002", "username": "testuser02", "amount": 580.50, "status": 1, "time": "2026-05-24 11:05", "items": 1},
-    {"id": 3, "orderNo": "TK202605240003", "username": "vipuser01", "amount": 19999.00, "status": 3, "time": "2026-05-24 08:15", "items": 1},
-    {"id": 4, "orderNo": "TK202605240004", "username": "testuser01", "amount": 1499.00, "status": 4, "time": "2026-05-23 22:30", "items": 1},
-    {"id": 5, "orderNo": "TK202605240005", "username": "shop001", "amount": 3299.00, "status": 6, "time": "2026-05-23 18:45", "items": 3},
-]
-
-MOCK_BANNERS = [
-    {"uuid": "b-001", "title": "618大促", "imageUrl": "/banners/618.jpg", "linkUrl": "/products/hot", "sortOrder": 1, "status": 1},
-    {"uuid": "b-002", "title": "新品首发", "imageUrl": "/banners/new.jpg", "linkUrl": "/products/new", "sortOrder": 2, "status": 1},
-    {"uuid": "b-003", "title": "限时秒杀", "imageUrl": "/banners/flash.jpg", "linkUrl": "/products/flash", "sortOrder": 3, "status": 1},
-]
-
-MOCK_CATEGORIES = [
-    {"uuid": "c-001", "name": "手机数码", "parentId": 0, "level": 1, "sortOrder": 1, "status": 1},
-    {"uuid": "c-002", "name": "电脑办公", "parentId": 0, "level": 1, "sortOrder": 2, "status": 1},
-    {"uuid": "c-003", "name": "运动鞋服", "parentId": 0, "level": 1, "sortOrder": 3, "status": 1},
-    {"uuid": "c-004", "name": "iPhone", "parentId": 1, "level": 2, "sortOrder": 1, "status": 1},
-    {"uuid": "c-005", "name": "Android", "parentId": 1, "level": 2, "sortOrder": 2, "status": 1},
-]
-
-MOCK_EVALUATIONS = [
-    {"uuid": "e-001", "productName": "iPhone 15 Pro Max", "username": "testuser01", "rating": 5, "content": "非常好用，物流快！", "status": 1, "time": "2026-05-24"},
-    {"uuid": "e-002", "productName": "AirPods Pro 2", "username": "testuser02", "rating": 4, "content": "音质不错，降噪效果好", "status": 1, "time": "2026-05-23"},
-    {"uuid": "e-003", "productName": "MacBook Pro 16", "username": "vipuser01", "rating": 5, "content": "性能强大，屏幕惊艳", "status": 1, "time": "2026-05-22"},
-]
-
-MOCK_MERCHANTS = [
-    {"id": 1, "uuid": "m-001", "shopName": "数码旗舰店", "username": "shop001", "phone": "139****2001", "status": 1, "balance": 32000.00},
-    {"id": 2, "uuid": "m-002", "shopName": "运动装备店", "username": "sport01", "phone": "139****2002", "status": 1, "balance": 18000.00},
-]
-
-MOCK_ATTR_CATEGORIES = [
-    {"uuid": "ac-001", "name": "手机属性", "sortOrder": 1},
-    {"uuid": "ac-002", "name": "电脑属性", "sortOrder": 2},
-]
-
-MOCK_ATTRS = [
-    {"uuid": "a-001", "name": "颜色", "attrCategoryId": "ac-001", "sortOrder": 1},
-    {"uuid": "a-002", "name": "存储容量", "attrCategoryId": "ac-001", "sortOrder": 2},
-]
-
-MOCK_ATTR_VALUES = [
-    {"id": 1, "value": "暗夜黑", "attrId": "a-001", "sortOrder": 1},
-    {"id": 2, "value": "星光白", "attrId": "a-001", "sortOrder": 2},
-    {"id": 3, "value": "256GB", "attrId": "a-002", "sortOrder": 1},
-    {"id": 4, "value": "512GB", "attrId": "a-002", "sortOrder": 2},
-]
-
-
-# ===================== 仪表盘 =====================
-
-@router.get("/stats")
-async def dashboard_stats(_=Depends(verify_token)):
-    data = await proxy_to_mall("/admin/dashboard")
-    if data:
-        return data
-    return {
-        "totalUsers": 12847, "totalMerchants": 856, "totalProducts": 12847,
-        "totalOrders": 156893, "todayRevenue": 28560.50, "todayOrders": 127,
-        "pendingRecharges": 3, "pendingWithdraws": 2, "pendingProducts": 5,
-    }
-
-
-# ===================== 用户管理 =====================
-
-@router.get("/users")
-async def get_users(keyword: str = "", page: int = 1, _=Depends(verify_token)):
-    data = await proxy_to_mall("/admin/users", params={"keyword": keyword, "page": page})
-    if data:
-        return data
-    users = MOCK_USERS
-    if keyword:
-        users = [u for u in users if keyword.lower() in u.get("username", "").lower() or keyword in u.get("phone", "")]
-    return {"list": users, "total": len(users), "page": page}
-
-
-class StatusRequest(BaseModel):
-    id: int
-    status: int
-
-
-@router.post("/user/status")
-async def update_user_status(req: StatusRequest, _=Depends(verify_token)):
-    data = await proxy_to_mall("/admin/user/status", "POST", {"id": req.id, "status": req.status})
-    state.add_task(f"用户状态: id={req.id} → {'启用' if req.status == 1 else '禁用'}", risk="L2")
-    return data or {"result": "ok"}
-
-
-class AdjustBalanceRequest(BaseModel):
-    id: int
-    amount: float
-
-
-@router.post("/user/balance/adjust")
-async def adjust_balance(req: AdjustBalanceRequest, _=Depends(verify_token)):
-    data = await proxy_to_mall("/admin/user/balance/adjust", "POST", {"id": req.id, "amount": req.amount})
-    state.add_task(f"余额调整: uid={req.id} amount={req.amount:+}", risk="L2")
-    return data or {"result": "ok", "message": f"余额已调整 {req.amount:+}"}
-
-
-# ===================== 商品管理 =====================
+                    return {"raw": r.text[:1000]}
+            return {"error": f"mall-app returned {r.status_code}", "detail": r.text[:500]}
+    except Exception as e:
+        return {"error": str(e)}
 
 @router.get("/products")
-async def get_products(keyword: str = "", status: Optional[int] = None, page: int = 1, _=Depends(verify_token)):
-    data = await proxy_to_mall("/admin/products", params={"keyword": keyword, "status": status, "page": page})
-    if data:
-        return data
-    products = MOCK_PRODUCTS
-    if keyword:
-        products = [p for p in products if keyword.lower() in p["name"].lower()]
-    if status is not None:
-        products = [p for p in products if p["status"] == status]
-    return {"list": products, "total": len(products), "page": page}
-
-
-class AuditProductRequest(BaseModel):
-    uuid: str
-    status: int
-    reason: str = ""
-
-
-@router.post("/product/audit")
-async def audit_product(req: AuditProductRequest, _=Depends(verify_token)):
-    data = await proxy_to_mall("/admin/product/audit", "POST", {"uuid": req.uuid, "status": req.status, "reason": req.reason})
-    state.add_task(f"商品审核: {req.uuid} → {'上架' if req.status == 1 else '下架'}", risk="L2")
-    return data or {"result": "ok"}
-
-
-# ===================== 订单管理 =====================
+async def list_products(_=Depends(verify_token), page: int = 1, size: int = 20):
+    await handle_risk("L1", "查看商品列表")
+    return await proxy_to_mall("/api/products", params={"page": page, "size": size})
 
 @router.get("/orders")
-async def get_orders(keyword: str = "", status: Optional[int] = None, page: int = 1, _=Depends(verify_token)):
-    data = await proxy_to_mall("/admin/orders", params={"keyword": keyword, "status": status, "page": page})
-    if data:
-        return data
-    orders = MOCK_ORDERS
-    if keyword:
-        orders = [o for o in orders if keyword.lower() in o.get("orderNo", "").lower() or keyword.lower() in o.get("username", "").lower()]
-    if status is not None:
-        orders = [o for o in orders if o["status"] == status]
-    return {"list": orders, "total": len(orders), "page": page}
-
+async def list_orders(_=Depends(verify_token), page: int = 1, size: int = 20):
+    await handle_risk("L1", "查看订单列表")
+    return await proxy_to_mall("/api/orders", params={"page": page, "size": size})
 
 @router.post("/order/refund/{order_id}")
-async def force_refund(order_id: str, _=Depends(verify_token)):
-    data = await proxy_to_mall(f"/admin/order/refund/{order_id}", "POST")
-    state.add_task(f"强制退款: 订单 {order_id}", risk="L3")
-    return data or {"result": "ok", "message": f"订单 {order_id} 已退款"}
+async def force_refund_order(order_id: str, _=Depends(verify_token)):
+    """强制退款"""
+    await handle_risk("L3", "强制退款", f"订单ID: {order_id}")
+    return await proxy_to_mall(f"/api/order/refund/{order_id}", method="POST")
 
+@router.get("/users")
+async def list_users(_=Depends(verify_token), page: int = 1, size: int = 20):
+    await handle_risk("L1", "查看用户列表")
+    return await proxy_to_mall("/api/users", params={"page": page, "size": size})
 
-# ===================== 充值审核 =====================
+@router.get("/categories")
+async def list_categories(_=Depends(verify_token)):
+    await handle_risk("L1", "查看分类列表")
+    return await proxy_to_mall("/api/categories")
+
+@router.get("/stats")
+async def mall_stats(_=Depends(verify_token)):
+    """商城统计数据"""
+    await handle_risk("L1", "查看商城统计")
+    return await proxy_to_mall("/api/dashboard/stats")
+
+@router.post("/user/status")
+async def update_user_status(data: dict, _=Depends(verify_token)):
+    await handle_risk("L2", "更新用户状态")
+    return await proxy_to_mall("/api/user/status", method="POST", json_data=data)
+
+@router.post("/user/balance/adjust")
+async def adjust_balance(data: dict, _=Depends(verify_token)):
+    risk = await handle_risk("L3", "调整用户余额")
+    if not risk["allowed"]: return risk
+    return await proxy_to_mall("/api/user/balance", method="POST", json_data=data)
+
+@router.post("/product/audit")
+async def audit_product(data: dict, _=Depends(verify_token)):
+    await handle_risk("L3", "审核商品")
+    return await proxy_to_mall("/api/product/audit", method="POST", json_data=data)
 
 @router.get("/recharge/pending")
-async def recharge_pending(page: int = 1, _=Depends(verify_token)):
-    data = await proxy_to_mall("/admin/recharge/pending", params={"page": page})
-    if data:
-        return data
-    return {
-        "list": [
-            {"id": 1, "username": "testuser01", "amount": 500.00, "txHash": "0xabc123...def", "time": "2026-05-24 10:00", "status": 0},
-            {"id": 2, "username": "vipuser01", "amount": 2000.00, "txHash": "0x789xyz...456", "time": "2026-05-24 11:30", "status": 0},
-        ],
-        "total": 2, "page": page,
-    }
-
-
-class AuditRechargeRequest(BaseModel):
-    id: int
-    status: int
-    reason: str = ""
-
+async def recharge_pending(_=Depends(verify_token), page: int = 1, size: int = 20):
+    await handle_risk("L1", "查看充值审核列表")
+    return await proxy_to_mall("/api/recharge/pending", params={"page": page, "size": size})
 
 @router.post("/recharge/audit")
-async def audit_recharge(req: AuditRechargeRequest, _=Depends(verify_token)):
-    data = await proxy_to_mall("/admin/recharge/audit", "POST", {"id": req.id, "status": req.status, "reason": req.reason})
-    state.add_task(f"充值审核: id={req.id} → {'通过' if req.status == 1 else '拒绝'}", risk="L2")
-    return data or {"result": "ok"}
-
-
-# ===================== 提现审核 =====================
+async def audit_recharge(data: dict, _=Depends(verify_token)):
+    await handle_risk("L3", "审核充值")
+    return await proxy_to_mall("/api/recharge/audit", method="POST", json_data=data)
 
 @router.get("/withdraw/pending")
-async def withdraw_pending(page: int = 1, _=Depends(verify_token)):
-    data = await proxy_to_mall("/admin/withdraw/pending", params={"page": page})
-    if data:
-        return data
-    return {
-        "list": [
-            {"id": 1, "username": "shop001", "amount": 5000.00, "address": "0xDEF789...ABC", "time": "2026-05-24 09:00", "status": 0},
-            {"id": 2, "username": "testuser01", "amount": 200.00, "address": "0x123DEF...456", "time": "2026-05-24 12:00", "status": 0},
-        ],
-        "total": 2, "page": page,
-    }
-
-
-class AuditWithdrawRequest(BaseModel):
-    id: int
-    status: int
-    reason: str = ""
-
+async def withdraw_pending(_=Depends(verify_token), page: int = 1, size: int = 20):
+    await handle_risk("L1", "查看提现审核列表")
+    return await proxy_to_mall("/api/withdraw/pending", params={"page": page, "size": size})
 
 @router.post("/withdraw/audit")
-async def audit_withdraw(req: AuditWithdrawRequest, _=Depends(verify_token)):
-    data = await proxy_to_mall("/admin/withdraw/audit", "POST", {"id": req.id, "status": req.status, "reason": req.reason})
-    state.add_task(f"提现审核: id={req.id} → {'通过' if req.status == 1 else '拒绝'}", risk="L3")
-    return data or {"result": "ok"}
-
-
-# ===================== 商家管理 =====================
+async def audit_withdraw(data: dict, _=Depends(verify_token)):
+    await handle_risk("L3", "审核提现")
+    return await proxy_to_mall("/api/withdraw/audit", method="POST", json_data=data)
 
 @router.get("/merchant/list")
-async def merchant_list(keyword: str = "", page: int = 1, _=Depends(verify_token)):
-    data = await proxy_to_mall("/admin/merchants", params={"keyword": keyword, "page": page})
-    if data:
-        return data
-    merchants = MOCK_MERCHANTS
-    if keyword:
-        merchants = [m for m in merchants if keyword.lower() in m.get("shopName", "").lower() or keyword.lower() in m.get("username", "").lower()]
-    return {"list": merchants, "total": len(merchants), "page": page}
-
-
-class MerchantStatusRequest(BaseModel):
-    uuid: str
-    status: int
-
+async def merchant_list(_=Depends(verify_token), page: int = 1, size: int = 20):
+    await handle_risk("L1", "查看商家列表")
+    return await proxy_to_mall("/api/merchant/list", params={"page": page, "size": size})
 
 @router.post("/merchant/status")
-async def update_merchant_status(req: MerchantStatusRequest, _=Depends(verify_token)):
-    data = await proxy_to_mall("/admin/merchant/status", "POST", {"uuid": req.uuid, "status": req.status})
-    state.add_task(f"商家状态: {req.uuid} → {'启用' if req.status == 1 else '禁用'}", risk="L2")
-    return data or {"result": "ok"}
-
+async def merchant_status(data: dict, _=Depends(verify_token)):
+    await handle_risk("L2", "更新商家状态")
+    return await proxy_to_mall("/api/merchant/status", method="POST", json_data=data)
 
 @router.get("/merchant/apply/list")
-async def merchant_apply_list(page: int = 1, _=Depends(verify_token)):
-    data = await proxy_to_mall("/admin/merchant/apply/list", params={"page": page})
-    if data:
-        return data
-    return {
-        "list": [
-            {"id": 1, "shopName": "新店申请001", "username": "newshop01", "phone": "138****9001", "time": "2026-05-24", "status": 0},
-        ],
-        "total": 1, "page": page,
-    }
-
-
-class AuditMerchantRequest(BaseModel):
-    id: int
-    status: int
-    reason: str = ""
-
+async def merchant_apply_list(_=Depends(verify_token), page: int = 1, size: int = 20):
+    await handle_risk("L1", "查看商家入驻申请")
+    return await proxy_to_mall("/api/merchant/apply/list", params={"page": page, "size": size})
 
 @router.post("/merchant/apply/audit")
-async def audit_merchant(req: AuditMerchantRequest, _=Depends(verify_token)):
-    data = await proxy_to_mall("/admin/merchant/apply/audit", "POST", {"id": req.id, "status": req.status, "reason": req.reason})
-    state.add_task(f"商家入驻审核: id={req.id} → {'通过' if req.status == 1 else '拒绝'}", risk="L2")
-    return data or {"result": "ok"}
-
-
-# ===================== 轮播管理 =====================
+async def audit_merchant(data: dict, _=Depends(verify_token)):
+    await handle_risk("L3", "审核商家入驻")
+    return await proxy_to_mall("/api/merchant/apply/audit", method="POST", json_data=data)
 
 @router.get("/banners")
-async def get_banners(_=Depends(verify_token)):
-    data = await proxy_to_mall("/api/banners")
-    if data:
-        return data
-    return MOCK_BANNERS
-
+async def banner_list(_=Depends(verify_token)):
+    await handle_risk("L1", "查看轮播列表")
+    return await proxy_to_mall("/api/banners")
 
 @router.get("/banner/{uuid}")
-async def get_banner(uuid: str, _=Depends(verify_token)):
-    data = await proxy_to_mall(f"/admin/banner/{uuid}")
-    if data:
-        return data
-    for b in MOCK_BANNERS:
-        if b["uuid"] == uuid:
-            return b
-    raise HTTPException(status_code=404, detail="Banner not found")
-
-
-class BannerSaveRequest(BaseModel):
-    title: str
-    imageUrl: str
-    linkUrl: str = ""
-    sortOrder: int = 1
-    status: int = 1
-
+async def banner_detail(uuid: str, _=Depends(verify_token)):
+    await handle_risk("L1", "查看轮播详情")
+    return await proxy_to_mall(f"/api/banner/{uuid}")
 
 @router.post("/banner")
-async def save_banner(req: BannerSaveRequest, _=Depends(verify_token)):
-    data = await proxy_to_mall("/admin/banner", "POST", req.model_dump())
-    state.add_task(f"新增轮播: {req.title}", risk="L1")
-    return data or {"result": "ok", "uuid": f"b-new-{len(MOCK_BANNERS)+1}"}
-
+async def banner_create(data: dict, _=Depends(verify_token)):
+    await handle_risk("L2", "创建轮播")
+    return await proxy_to_mall("/api/banner", method="POST", json_data=data)
 
 @router.put("/banner/{uuid}")
-async def update_banner(uuid: str, req: BannerSaveRequest, _=Depends(verify_token)):
-    data = await proxy_to_mall(f"/admin/banner/{uuid}", "PUT", req.model_dump())
-    state.add_task(f"更新轮播: {uuid}", risk="L1")
-    return data or {"result": "ok"}
-
+async def banner_update(uuid: str, data: dict, _=Depends(verify_token)):
+    await handle_risk("L2", "更新轮播")
+    return await proxy_to_mall(f"/api/banner/{uuid}", method="PUT", json_data=data)
 
 @router.delete("/banner/{uuid}")
-async def delete_banner(uuid: str, _=Depends(verify_token)):
-    data = await proxy_to_mall(f"/admin/banner/{uuid}", "DELETE")
-    state.add_task(f"删除轮播: {uuid}", risk="L2")
-    return data or {"result": "ok"}
-
-
-# ===================== 分类管理 =====================
+async def banner_delete(uuid: str, _=Depends(verify_token)):
+    await handle_risk("L3", "删除轮播")
+    return await proxy_to_mall(f"/api/banner/{uuid}", method="DELETE")
 
 @router.get("/category/list")
-async def get_category_list(keyword: str = "", page: int = 1, _=Depends(verify_token)):
-    data = await proxy_to_mall("/api/categories")
-    if data:
-        return data
-    cats = MOCK_CATEGORIES
-    if keyword:
-        cats = [c for c in cats if keyword.lower() in c["name"].lower()]
-    return {"list": cats, "total": len(cats), "page": page}
-
+async def category_list(_=Depends(verify_token), page: int = 1, size: int = 20):
+    await handle_risk("L1", "查看分类列表")
+    return await proxy_to_mall("/api/category/list", params={"page": page, "size": size})
 
 @router.get("/category/all")
-async def get_category_all(_=Depends(verify_token)):
-    data = await proxy_to_mall("/api/categories")
-    if data:
-        return data
-    return MOCK_CATEGORIES
-
+async def category_all(_=Depends(verify_token)):
+    await handle_risk("L1", "查看全部分类")
+    return await proxy_to_mall("/api/category/all")
 
 @router.get("/category/{uuid}")
-async def get_category(uuid: str, _=Depends(verify_token)):
-    for c in MOCK_CATEGORIES:
-        if c["uuid"] == uuid:
-            return c
-    raise HTTPException(status_code=404)
-
-
-class CategorySaveRequest(BaseModel):
-    name: str
-    parentId: int = 0
-    level: int = 1
-    sortOrder: int = 1
-    status: int = 1
-
+async def category_detail(uuid: str, _=Depends(verify_token)):
+    await handle_risk("L1", "查看分类详情")
+    return await proxy_to_mall(f"/api/category/{uuid}")
 
 @router.post("/category")
-async def save_category(req: CategorySaveRequest, _=Depends(verify_token)):
-    data = await proxy_to_mall("/admin/category", "POST", req.model_dump())
-    state.add_task(f"新增分类: {req.name}", risk="L1")
-    return data or {"result": "ok", "uuid": f"c-new-{len(MOCK_CATEGORIES)+1}"}
-
+async def category_create(data: dict, _=Depends(verify_token)):
+    await handle_risk("L2", "创建分类")
+    return await proxy_to_mall("/api/category", method="POST", json_data=data)
 
 @router.put("/category/{uuid}")
-async def update_category(uuid: str, req: CategorySaveRequest, _=Depends(verify_token)):
-    data = await proxy_to_mall(f"/admin/category/{uuid}", "PUT", req.model_dump())
-    return data or {"result": "ok"}
-
+async def category_update(uuid: str, data: dict, _=Depends(verify_token)):
+    await handle_risk("L2", "更新分类")
+    return await proxy_to_mall(f"/api/category/{uuid}", method="PUT", json_data=data)
 
 @router.put("/category/{uuid}/status")
-async def update_category_status(uuid: str, req: StatusRequest, _=Depends(verify_token)):
-    data = await proxy_to_mall(f"/admin/category/{uuid}/status", "PUT", {"status": req.status})
-    return data or {"result": "ok"}
-
+async def category_status(uuid: str, data: dict, _=Depends(verify_token)):
+    await handle_risk("L2", "更新分类状态")
+    return await proxy_to_mall(f"/api/category/{uuid}/status", method="PUT", json_data=data)
 
 @router.delete("/category/{uuid}")
-async def delete_category(uuid: str, _=Depends(verify_token)):
-    data = await proxy_to_mall(f"/admin/category/{uuid}", "DELETE")
-    state.add_task(f"删除分类: {uuid}", risk="L2")
-    return data or {"result": "ok"}
-
-
-# ===================== 评价管理 =====================
+async def category_delete(uuid: str, _=Depends(verify_token)):
+    await handle_risk("L3", "删除分类")
+    return await proxy_to_mall(f"/api/category/{uuid}", method="DELETE")
 
 @router.get("/evaluations")
-async def get_evaluations(keyword: str = "", page: int = 1, _=Depends(verify_token)):
-    data = await proxy_to_mall("/admin/evaluations", params={"keyword": keyword, "page": page})
-    if data:
-        return data
-    evals = MOCK_EVALUATIONS
-    if keyword:
-        evals = [e for e in evals if keyword.lower() in e.get("content", "").lower() or keyword.lower() in e.get("productName", "").lower()]
-    return {"list": evals, "total": len(evals), "page": page}
-
+async def evaluation_list(_=Depends(verify_token), page: int = 1, size: int = 20):
+    await handle_risk("L1", "查看评价列表")
+    return await proxy_to_mall("/api/evaluations", params={"page": page, "size": size})
 
 @router.put("/evaluation/{uuid}/status")
-async def update_evaluation_status(uuid: str, req: StatusRequest, _=Depends(verify_token)):
-    data = await proxy_to_mall(f"/admin/evaluation/{uuid}/status", "PUT", {"status": req.status})
-    return data or {"result": "ok"}
-
+async def evaluation_status(uuid: str, data: dict, _=Depends(verify_token)):
+    await handle_risk("L2", "更新评价状态")
+    return await proxy_to_mall(f"/api/evaluation/{uuid}/status", method="PUT", json_data=data)
 
 @router.delete("/evaluation/{uuid}")
-async def delete_evaluation(uuid: str, _=Depends(verify_token)):
-    data = await proxy_to_mall(f"/admin/evaluation/{uuid}", "DELETE")
-    state.add_task(f"删除评价: {uuid}", risk="L2")
-    return data or {"result": "ok"}
-
-
-# ===================== 属性分类管理 =====================
-
-@router.get("/attr-categories")
-async def get_attr_categories(_=Depends(verify_token)):
-    data = await proxy_to_mall("/admin/attr-categories")
-    return data or MOCK_ATTR_CATEGORIES
-
-
-@router.get("/attr-category/{uuid}")
-async def get_attr_category(uuid: str, _=Depends(verify_token)):
-    for a in MOCK_ATTR_CATEGORIES:
-        if a["uuid"] == uuid:
-            return a
-    raise HTTPException(status_code=404)
-
-
-class AttrCategorySaveRequest(BaseModel):
-    name: str
-    sortOrder: int = 1
-
-
-@router.post("/attr-category")
-async def save_attr_category(req: AttrCategorySaveRequest, _=Depends(verify_token)):
-    return {"result": "ok", "uuid": f"ac-new-{len(MOCK_ATTR_CATEGORIES)+1}"}
-
-
-@router.put("/attr-category/{uuid}")
-async def update_attr_category(uuid: str, req: AttrCategorySaveRequest, _=Depends(verify_token)):
-    return {"result": "ok"}
-
-
-@router.delete("/attr-category/{uuid}")
-async def delete_attr_category(uuid: str, _=Depends(verify_token)):
-    return {"result": "ok"}
-
-
-# ===================== 属性管理 =====================
-
-@router.get("/attrs")
-async def get_attrs(_=Depends(verify_token)):
-    data = await proxy_to_mall("/admin/attrs")
-    return data or MOCK_ATTRS
-
-
-@router.get("/attr/{uuid}")
-async def get_attr(uuid: str, _=Depends(verify_token)):
-    for a in MOCK_ATTRS:
-        if a["uuid"] == uuid:
-            return a
-    raise HTTPException(status_code=404)
-
-
-class AttrSaveRequest(BaseModel):
-    name: str
-    attrCategoryId: str = ""
-    sortOrder: int = 1
-
-
-@router.post("/attr")
-async def save_attr(req: AttrSaveRequest, _=Depends(verify_token)):
-    return {"result": "ok", "uuid": f"a-new-{len(MOCK_ATTRS)+1}"}
-
-
-@router.put("/attr/{uuid}")
-async def update_attr(uuid: str, req: AttrSaveRequest, _=Depends(verify_token)):
-    return {"result": "ok"}
-
-
-@router.delete("/attr/{uuid}")
-async def delete_attr(uuid: str, _=Depends(verify_token)):
-    return {"result": "ok"}
-
-
-# ===================== 属性值管理 =====================
-
-@router.get("/attr-values")
-async def get_attr_values(_=Depends(verify_token)):
-    data = await proxy_to_mall("/admin/attr-values")
-    return data or MOCK_ATTR_VALUES
-
-
-@router.get("/attr-value/{id}")
-async def get_attr_value(id: int, _=Depends(verify_token)):
-    for v in MOCK_ATTR_VALUES:
-        if v["id"] == id:
-            return v
-    raise HTTPException(status_code=404)
-
-
-class AttrValueSaveRequest(BaseModel):
-    value: str
-    attrId: str
-    sortOrder: int = 1
-
-
-@router.post("/attr-value")
-async def save_attr_value(req: AttrValueSaveRequest, _=Depends(verify_token)):
-    return {"result": "ok", "id": len(MOCK_ATTR_VALUES) + 1}
-
-
-@router.put("/attr-value/{id}")
-async def update_attr_value(id: int, req: AttrValueSaveRequest, _=Depends(verify_token)):
-    return {"result": "ok"}
-
-
-@router.delete("/attr-value/{id}")
-async def delete_attr_value(id: int, _=Depends(verify_token)):
-    return {"result": "ok"}
+async def evaluation_delete(uuid: str, _=Depends(verify_token)):
+    await handle_risk("L3", "删除评价")
+    return await proxy_to_mall(f"/api/evaluation/{uuid}", method="DELETE")

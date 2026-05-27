@@ -50,3 +50,15 @@ mysql
 # SSL 私钥
 *.pem
 
+
+# 商城源码整合（排除数据库dump和node_modules）
+mall-source/数据库/
+mall-source/**/node_modules/
+mall-source/**/dist/
+mall-source/**/build/
+mall-source/**/target/
+
+# 记忆同步文件（需跟踪）
+!memory/
+!FRIDAY.md
+!FRIDAY_SERVER.md

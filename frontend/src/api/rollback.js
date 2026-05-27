@@ -1,23 +1,6 @@
-import { agentApi } from './index'
+﻿import { agentApi } from './index'
 
-/**
- * Get all backup records
- */
-export function getBackups() {
-  return agentApi.get('/rollback/backups')
-}
-
-/**
- * Create a new manual backup
- */
-export function createBackup() {
-  return agentApi.post('/rollback/create')
-}
-
-/**
- * Execute a rollback to a specific backup
- * @param {string} backupId
- */
-export function executeRollback(backupId) {
-  return agentApi.post('/rollback/execute', { backupId })
-}
+export function getBackups() { return agentApi.get('/rollback/backups') }
+export function createBackup(data) { return agentApi.post('/rollback/backups', data) }
+export function verifyBackup(backupId) { return agentApi.post(`/rollback/backups/${backupId}/verify`) }
+export function executeRollback(backupId) { return agentApi.post(`/rollback/backups/${backupId}/rollback`) }

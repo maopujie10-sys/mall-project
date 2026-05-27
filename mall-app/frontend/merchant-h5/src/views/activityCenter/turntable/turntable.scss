@@ -1,0 +1,1216 @@
+@font-face {
+  font-family: 'HYYakuHei 85W';
+  src: url('./../../../assets/fonts/HYYakuHei-HEW.woff');
+}
+
+.language-content {
+  position: absolute;
+  z-index: 999;
+  top: 20px;
+  right: 100px;
+}
+
+.audio-container {
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}
+
+.play-content {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: 1px solid #FCE3A2;
+  position: fixed;
+  top: 50%;
+  transform: translateY(-50%);
+  right: 50px;
+  z-index: 90;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  user-select: none;
+  > .play {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    border: 1px solid #FCE3A2;
+    background-image: linear-gradient(#8B7EFA, #6355CB);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+.turntable-page {
+  background-color: #2e1d6a;
+  min-height: 100vh;
+  overflow-x: hidden;
+  .turntable-warp {
+    position: relative;
+    margin: 0 auto;
+    min-width: 1400px;
+    max-width: 1920px;
+    > .page-header {
+      width: 100%;
+      min-width: 1400px;
+      height: 946px;
+      background-position: center top;
+      background-repeat: no-repeat;
+      background-size: cover;
+      position: relative;
+      > h1 {
+        text-align: center;
+        font-weight: 900;
+        font-size: 120px;
+        line-height: 1.5;
+        font-family: 'HYYakuHei 85W';
+        padding-top: 80px;
+        -webkit-background-clip: text;
+        background-image: linear-gradient(to right, rgba(248, 216, 159, 1), rgba(250, 242, 229, 1));
+        color: transparent;
+        z-index: 2;
+        position: relative;
+        &.shadow-txt {
+          text-shadow: 0 5px 10px rgba(0, 0, 0, .4);
+          position: absolute;
+          width: 100%;
+          top: 0;
+          left: 0;
+          z-index: 1;
+          background-image: none;
+          -webkit-background-clip: none;
+        }
+      }
+      > .title-info {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        > div {
+          padding: 20px 200px;
+          font-size: 50px;
+          line-height: 1;
+          color: rgba(251, 246, 217, 1);
+          text-shadow: 0 2px 6px rgba(0, 0, 0, .4);
+          background-image: linear-gradient(to right, rgba(0, 0, 0, 0) 5%, rgba(68, 73, 242, 1) 50%, rgba(0, 0, 0, 0) 95%);
+          position: relative;
+          &::after,
+          &::before {
+            content: '';
+            display: block;
+            width: 40px;
+            height: 6px;
+            position: absolute;
+            background-color: rgba(251, 246, 217, 1);
+            top: 50%;
+            margin-top: -3px;
+          }
+          &::before {
+            left: 0;
+            margin-left: 120px;
+          }
+          &::after {
+            right: 0;
+            margin-right: 120px;
+          }
+        }
+      }
+      > .light-left {
+        width: 642px;
+        height: 642px;
+        position: absolute;
+        z-index: 5;
+        top: -80px;
+        left: 50%;
+        margin-left: -800px;
+        animation: rotateInDownLeft 6s reverse infinite;
+        transform-origin: left top;
+      }
+      > .light-right {
+        width: 642px;
+        height: 642px;
+        position: absolute;
+        z-index: 5;
+        top: -80px;
+        right: 50%;
+        margin-right: -800px;
+        animation: rotateInDownRight 6s reverse infinite;
+        transform-origin: right top;
+      }
+      > .cart {
+        width: 319px;
+        height: 273px;
+        position: absolute;
+        left: 50%;
+        margin-left: -880px;
+        top: 285px;
+        animation: shakeY 20s infinite;
+        z-index: 1;
+      }
+      > .target {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 132px;
+        height: 132px;
+        position: absolute;
+        left: 50%;
+        margin-left: -480px;
+        top: 180px;
+        animation: rotateIn 2s steps(48) infinite;
+        z-index: 1;
+      }
+      > .trumpet1 {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 143px;
+        height: 167px;
+        position: absolute;
+        right: 50%;
+        margin-right: -825px;
+        top: 250px;
+        z-index: 2;
+        animation: heartBeat 1s ease-in-out infinite reverse;
+      }
+      > .trumpet2 {
+        width: 291px;
+        height: 287px;
+        position: absolute;
+        right: 50%;
+        margin-right: -820px;
+        top: 190px;
+        z-index: 1;
+      }
+    }
+    > .page-content {
+      width: 100%;
+      min-width: 1400px;
+      min-height: 100vh;
+      background-position: center top;
+      background-repeat: no-repeat;
+      background-size: 100% 100%;
+    }
+  }
+  .turntable-container {
+    width: 1400px;
+    height: auto;
+    margin: auto;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    top: -550px;
+    > .machine-content {
+      width: 1043px;
+      height: 1361px;
+      background-position: center top;
+      background-repeat: no-repeat;
+      background-size: cover;
+      position: relative;
+      > .notice-content {
+        width: 540px;
+        height: 46px;
+        position: absolute;
+        top: 245px;
+        left: 50%;
+        transform: translateX(-53%);
+        > .swiper {
+          width: 100%;
+          height: 46px;
+          .notice-item {
+            height: 46px;
+            line-height: 46px;
+            text-align: center;
+            padding: 0 10px;
+            color: #fff;
+            font-size: 16px;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            white-space: nowrap;
+          }
+        }
+      }
+      > .light-content {
+        position: absolute;
+        &.top {
+          top: 370px;
+          > .item {
+            &:nth-child(1) {
+              animation-delay: 0.25s;
+            }
+            &:nth-child(2) {
+              animation-delay: 0.2s;
+            }
+            &:nth-child(3) {
+              animation-delay: 0.15s;
+            }
+          }
+        }
+        &.right {
+          right: 100px;
+        }
+        &.bottom {
+          bottom: 400px;
+          > .item {
+            &:nth-child(1) {
+              animation-delay: 0.1s;
+            }
+            &:nth-child(2) {
+              animation-delay: 0.05s;
+            }
+          }
+        }
+        &.left {
+          left: 73px;
+        }
+        > .item {
+          width: 45px;
+          height: 64px;
+          background-image: url('./../../../assets/activity/turntable/icon3.png');
+          background-repeat: no-repeat;
+          background-position: center top;
+          background-size: 100%;
+          position: relative;
+          &:nth-child(2) {
+            top: -25px;
+          }
+          &:nth-child(3) {
+            top: -50px;
+          }
+        }
+        &.active {
+          > .item {
+            animation: lightFlash 0.5s ease-in-out infinite;
+          }
+        }
+      }
+      > .rod {
+        width: 98px;
+        height: 511px;
+        position: absolute;
+        right: 0;
+        bottom: 325px;
+        transform-origin: 0 430px;
+        &.active {
+          animation: rodY 0.6s ease-in-out reverse;
+        }
+      }
+      > .lottery-content {
+        position: absolute;
+        width: 690px;
+        height: 630px;
+        top: 320px;
+        left: 160px;
+      }
+      > .btn-content {
+        position: absolute;
+        width: 720px;
+        height: 145px;
+        left: 50%;
+        transform: translateX(-50%);
+        bottom: 190px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        > .btn {
+          background-position: center top;
+          background-repeat: no-repeat;
+          background-size: 100% 100%;
+          cursor: pointer;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          padding-top: 10px;
+          line-height: 1;
+          transform-origin: center bottom;
+          user-select: none;
+          &.active,
+          &:active {
+            transform: rotateX(30deg);
+          }
+          &.disabled {
+            pointer-events: none;
+          }
+          > h3 {
+            font-weight: 700;
+            color: #fff;
+            font-size: 40px;
+          }
+          > p {
+            font-size: 18px;
+            padding-top: 12px;
+            color: #0A4B81;
+            &.color {
+              color: #9B4700;
+            }
+          }
+          &.one {
+            width: 321px;
+            height: 175px;
+          }
+          &.two {
+            width: 319px;
+            height: 173px;
+            margin-right: 30px;
+          }
+        }
+      }
+      > .user-content {
+        width: 670px;
+        height: 50px;
+        position: absolute;
+        bottom: 70px;
+        left: 170px;
+        line-height: 1;
+        color: #fff;
+        display: flex;
+        align-items: center;
+        font-size: 16px;
+        &.login {
+          justify-content: center;
+          cursor: pointer;
+        }
+        &.is-ar {
+          > .item {
+            &:last-child {
+              text-align: left;
+              &::after {
+                left: calc(100% - 1px);
+              }
+            }
+          }
+        }
+        > .item {
+          width: 50%;
+          height: 100%;
+          line-height: 50px;
+          padding: 0 10px;
+          position: relative;
+          text-overflow: ellipsis;
+          overflow: hidden;
+          white-space: nowrap;
+          text-align: center;
+          > div {
+            width: 100%;
+            text-align: center;
+          }
+          &:last-child {
+            &::after {
+              content: '';
+              display: block;
+              width: 1px;
+              height: 20px;
+              background-color: #fff;
+              left: 0;
+              top: 50%;
+              margin-top: -10px;
+              position: absolute;
+            }
+          }
+          :deep(.van-notice-bar) {
+            height: 100%;
+            padding: 0;
+          }
+          :deep(.van-notice-bar__wrap) {
+            justify-content: center;
+          }
+        }
+      }
+    }
+    > .block-content {
+      width: 882px;
+      min-height: 320px;
+      margin-top: 40px;
+      position: relative;
+      overflow: hidden;
+      &::after {
+        content: '';
+        display: block;
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        z-index: 1;
+        background-image: url('./../../../assets/activity/turntable/block-top-bg1.png');
+        background-repeat: no-repeat;
+        background-position: center top;
+        top: 0;
+        left: 0;
+        background-size: 100% auto;
+      }
+      &::before {
+        content: '';
+        display: block;
+        width: calc(100% - 40px);
+        height: calc(100% - 30px);
+        position: absolute;
+        z-index: 0;
+        background-color: #573ac2;
+        bottom: 2px;
+        left: 20px;
+      }
+      &.bg2 {
+        height: auto;
+        min-height: 500px;
+        &::after {
+          background-image: url('./../../../assets/activity/turntable/block-top-bg2.png');
+        }
+        > .block-bottom {
+          background-image: url('./../../../assets/activity/turntable/block-bottom2.png');
+        }
+        > .block-line {
+          width: 25px;
+          &.left {
+            background-image: url('./../../../assets/activity/turntable/block-left-line2.png');
+          }
+          &.right {
+            background-image: url('./../../../assets/activity/turntable/block-right-line2.png');
+          }
+        }
+      }
+      > .block-bottom {
+        width: 100%;
+        height: 30px;
+        background-image: url('./../../../assets/activity/turntable/block-bottom1.png');
+        background-repeat: no-repeat;
+        background-position: center top;
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        z-index: 2;
+        background-size: 100% auto;
+      }
+      > .block-line {
+        width: 20px;
+        height: calc(100% - 50px);
+        position: absolute;
+        bottom: 5px;
+        z-index: 0;
+        background-repeat: repeat-y;
+        &.left {
+          left: 0;
+          background-image: url('./../../../assets/activity/turntable/block-left-line1.png');
+        }
+        &.right {
+          background-image: url('./../../../assets/activity/turntable/block-right-line1.png');
+          right: 0;
+        }
+      }
+      > .title {
+        width: 258px;
+        height: 61px;
+        background-image: url('./../../../assets/activity/turntable/block-title.png');
+        background-repeat: no-repeat;
+        background-position: center top;
+        background-size: 100% 100%;
+        position: absolute;
+        top: 30px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        line-height: 1;
+        color: #745A00;
+        font-size: 28px;
+        font-weight: bold;
+        z-index: 3;
+      }
+      > .content {
+        width: 100%;
+        margin-top: 110px;
+        position: relative;
+        z-index: 4;
+        &.my-prize {
+          display: flex;
+          align-items: center;
+          margin-top: 140px;
+          position: relative;
+          &::after {
+            content: '';
+            display: block;
+            height: 50%;
+            width: 3px;
+            background-color: rgba(255, 255, 255, .3);
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+          }
+          > .item {
+            width: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            > h2 {
+              color: #fff;
+              font-weight: bold;
+              font-size: 38px;
+            }
+            > p {
+              color: #fff;
+              font-size: 16px;
+              margin-top: 20px;
+            }
+            > div {
+              background-color: #EFEFEF;
+              color: #A8A8A8;
+              font-size: 14px;
+              cursor: pointer;
+              user-select: none;
+              padding: 2px 24px;
+              border-radius: 60px;
+              margin-top: 20px;
+              &.active {
+                background-image: linear-gradient(to right, #FF2626, #FFA620);
+                color: #fff;
+                &:hover {
+                  background-image: linear-gradient(to right, #FFA620, #FF2626);
+                }
+              }
+            }
+          }
+        }
+        &.invite {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          padding: 0 40px;
+          > .link-content {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            border: 1px solid #FFEEC2;
+            background-image: linear-gradient(#629EFF, #5729A3);
+            padding: 15px;
+            border-radius: 16px;
+            margin-bottom: 20px;
+            > .txt {
+              flex: 1;
+              padding-right: 20px;
+              color: #fff;
+              font-size: 18px;
+              word-break: break-all;
+            }
+            > .btn {
+              min-width: 236px;
+              height: 76px;
+              background-image: url('./../../../assets/activity/turntable/invite-btn.png');
+              background-repeat: no-repeat;
+              background-position: center top;
+              background-size: 100% 100%;
+              cursor: pointer;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              color: #fff;
+              font-size: 22px;
+              padding: 0 20px;
+            }
+          }
+          > p {
+            color: #fff;
+            font-size: 14px;
+            text-align: center;
+            span,
+            :deep(span) {
+              color: #FFC792;
+            }
+          }
+        }
+        &.record {
+          width: 850px;
+          height: 230px;
+          margin-left: auto;
+          margin-right: auto;
+          overflow-x: scroll;
+          > .record-content {
+            display: flex;
+            white-space: nowrap;
+            float: left;
+            padding-top: 20px;
+            > .item {
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              margin-right: 30px;
+              &:first-child {
+                margin-left: 30px;
+              }
+              > .prize {
+                width: 134px;
+                height: 134px;
+                background-image: url('./../../../assets/activity/turntable/prize-bg.png');
+                background-repeat: no-repeat;
+                background-position: center top;
+                background-size: 100% 100%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                > img {
+                  width: 50px;
+                  height: 50px;
+                }
+              }
+              > p {
+                font-size: 14px;
+                color: #fff;
+                margin-top: 10px;
+                width: 134px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                text-align: center;
+              }
+            }
+            > .loading {
+              width: 60px;
+              height: 134px;
+              display: flex;
+              align-items: center;
+            }
+          }
+          > .no-data {
+            width: 100%;
+            height: 70%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 14px;
+          }
+        }
+        &.intro {
+          padding: 10px 40px 40px 40px;
+          font-size: 16px;
+          * {
+            color: #fff;
+          }
+        }
+      }
+    }
+  }
+}
+
+.img-width {
+  width: 100%;
+  height: auto;
+}
+
+.img-height {
+  height: 100%;
+  width: auto;
+}
+
+
+@media (max-width: 1180px) {
+  .language-content {
+    top: 10px;
+    right: 20px;
+    :deep(.language-container) {
+      .nation {
+        width: 20px;
+        height: 20px;
+      }
+      p {
+        font-size: 12px;
+        padding: 0 5px;
+      }
+      .select-content {
+        width: 160px;
+        top: 30px;
+        left: 10%;
+        img {
+          width: 16px;
+          height: 16px;
+        }
+      }
+    }
+  }
+  .turntable-page > .turntable-warp {
+    width: 100%;
+    min-width: 100%;
+    max-width: 100%;
+    > .page-header {
+      min-width: 100%;
+      height: 49.27vw;
+      > h1 {
+        padding-top: 4.2vw;
+        font-size: 7vw;
+        &.shadow-txt {
+          text-shadow: 0 2px 4px rgba(0, 0, 0, .4);
+        }
+      }
+      > .title-info {
+        margin-top: 2vw;
+        > div {
+          padding: 5px 60px;
+          font-size: 3.5vw;
+          &::before,
+          &::after {
+            width: 10px;
+            height: 2px;
+            margin-top: -1px;
+          }
+          &::before {
+            margin-left: 30px;
+          }
+          &::after {
+            margin-right: 30px;
+          }
+        }
+      }
+      > .light-left,
+      > .light-right {
+        width: 35vw;
+        height: 35vw;
+        top: -3vw;
+      }
+      > .light-left {
+        left: 5vw;
+        margin-left: 0;
+      }
+      > .light-right {
+        right: 5vw;
+        margin-right: 0;
+      }
+      > .cart {
+        width: 16.615vw;
+        height: 14.218vw;
+        position: absolute;
+        margin-left: 0;
+        top: 50%;
+        left: 4vw;
+        margin-top: -10vw;
+      }
+      > .target {
+        width: 6.4vw;
+        height: 6.4vw;
+        left: 25vw;
+        margin-left: 0;
+        top: 50%;
+        margin-top: -15.4vw;
+      }
+      > .trumpet1 {
+        width: 7.4vw;
+        height: 8.69vw;
+        margin-right: 0;
+        right: 7vw;
+        top: 50%;
+        margin-top: -12vw;
+      }
+      > .trumpet2 {
+        width: 15.15vw;
+        height: 14.94vw;
+        margin-right: 0;
+        right: 7vw;
+        top: 50%;
+        margin-top: -15vw;
+      }
+    } 
+    > .page-content {
+      min-width: 100%;
+    }
+  }
+  .turntable-page .turntable-container {
+    width: 100%;
+    top: -25vw;
+    > .machine-content {
+      width: 90vw;
+      height: 120vw;
+      > .notice-content {
+        width: 47vw;
+        height: 5vw;
+        top: 20.5vw;
+        > .swiper {
+          height: 5vw;
+          .notice-item {
+            height: 5vw;
+            line-height: 5.5vw;
+            padding: 0 5px;
+            font-size: 11px;
+          }
+        }
+      }
+      > .light-content {
+        &.top {
+          top: 35vw;
+        }
+        &.right {
+          right: 9vw;
+        }
+        &.bottom {
+          bottom: 40vw;
+        }
+        &.left {
+          left: 6vw;
+        }
+        > .item {
+          width: 2.344vw;
+          height: 3.333vw;
+          &:nth-child(2) {
+            top: -1vw;
+          }
+          &:nth-child(3) {
+            top: -2vw;
+          }
+        }
+      }
+      > .rod {
+        width: 7.5vw;
+        height: 35vw;
+        right: 0px;
+        bottom: 34vw;
+        transform-origin: 0 33vw;
+      }
+      > .lottery-content {
+        width: 60vw;
+        height: 56vw;
+        top: 28vw;
+        left: 13.5vw;
+      }
+      > .btn-content {
+        width: 65vw;
+        height: 20vw;
+        bottom: 15vw;
+        > .btn {
+          padding-top: 1.5vw;
+          > h3 {
+            font-size: 3vw;
+          }
+          > p {
+            font-size: 2vw;
+            padding-top: .5vw;
+          }
+          &.one {
+            width: 28vw;
+            height: 17vw;
+          }
+          &.two {
+            width: 27.8vw;
+            height: 17.5vw;
+            margin-right: 2vw;
+          }
+        }
+      }
+      > .user-content {
+        width: 59vw;
+        height: 5vw;
+        bottom: 5.5vw;
+        left: 14vw;
+        font-size: 2.4vw;
+        > .item {
+          line-height: 5vw;
+          padding: 0 5px;
+          &:last-child {
+            &::after {
+              height: 3vw;
+              margin-top: -1.5vw;
+            }
+          }
+        }
+      }
+    }
+    > .block-content {
+      width: 78vw;
+      min-height: 200px;
+      height: auto;
+      margin-top: 30px;
+      padding-top: 0;
+      &::before {
+        width: calc(100% - 2vw);
+        height: calc(100% - 10vw);
+        bottom: 3vw;
+        left: 1vw;
+      }
+      &.bg2 {
+        min-height: 300px;
+        > .block-line {
+          width: 8px;
+        }
+      }
+      > .title {
+        width: auto;
+        height: auto;
+        padding: 10px 30px;
+        white-space: nowrap;
+        font-size: 16px;
+        top: 2.5vw;
+      }
+      > .block-bottom {
+        height: 3vw;
+      }
+      > .block-line {
+        height: calc(100% - 25vw);
+        width: 6px;
+        bottom: 3vw;
+        background-position: top center;
+        background-size: 100% auto;
+        &.left {
+          left: 1px;
+        }
+      }
+      > .content {
+        margin-top: 70px;
+        &.my-prize {
+          margin-top: 80px;
+          padding-bottom: 30px;
+          &::after {
+            height: 40%;
+            top: calc(50% - 20px);
+          }
+          > .item {
+            > h2 {
+              font-size: 22px;
+            }
+            > p {
+              font-size: 12px;
+              margin-top: 5px;
+            }
+            > div {
+              padding: 0 20px;
+              font-size: 10px;
+              margin-top: 10px;
+            }
+          }
+          
+        }
+        &.invite {
+          padding: 0 15px;
+          padding-bottom: 20px;
+          > .link-content {
+            padding: 10px;
+            border-radius: 16px;
+            margin-bottom: 10px;
+            > .txt {
+              padding-right: 10px;
+              font-size: 11px;
+              line-height: 16px;
+            }
+            > .btn {
+              min-width: 80px;
+              height: 30px;
+              font-size: 10px;
+            }
+          }
+          > p {
+            font-size: 12px;
+          }
+        }
+        &.record {
+          width: 74vw;
+          height: 140px;
+          > .record-content {
+            padding-top: 5px;
+            > .item {
+              margin-right: 15px;
+              &:first-child {
+                margin-left: 15px;
+              }
+              > .prize {
+                width: 90px;
+                height: 90px;
+                > img {
+                  width: 36px;
+                  height: 36px;
+                }
+              }
+              > p {
+                font-size: 10px;
+                margin-top: 5px;
+                width: 90px;
+              }
+            }
+            > .loading {
+              width: 60px;
+              height: 90px;
+            }
+          }
+        }
+        &.intro {
+          padding: 10px 20px 20px 20px;
+          font-size: 12px;
+        }
+      }
+    }
+  }
+
+  .play-content {
+    width: 34px;
+    height: 34px;
+    right: calc(100vw - 44px);
+    top: 10px;
+    transform: translateY(0);
+    > .play {
+      width: 26px;
+      height: 26px;
+      > img {
+        width: 80%;
+      }
+    }
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1180px) {
+  .turntable-page .turntable-container {
+    > .block-content {
+      min-height: 240px;
+      min-height: 220px;
+      &::before {
+        width: calc(100% - 2vw);
+        height: calc(100% - 10vw);
+        bottom: 3vw;
+        left: 1vw;
+      }
+      &.bg2 {
+        min-height: 300px;
+        > .block-line {
+          width: 18px;
+        }
+      }
+      > .title {
+        width: auto;
+        height: auto;
+        padding: 10px 30px;
+        white-space: nowrap;
+        font-size: 16px;
+        top: 2.5vw;
+      }
+      > .block-bottom {
+        height: 3vw;
+      }
+      > .block-line {
+        height: calc(100% - 25vw);
+        width: 13px;
+        bottom: 3vw;
+        background-position: top center;
+        background-size: 100% auto;
+        &.right {
+          right: 0;
+        }
+      }
+      > .block-bottom {
+        bottom: 0;
+      }
+      > .content {
+        &.invite {
+          margin-top: 110px;
+          padding: 0 40px;
+        }
+      }
+    }
+  }
+}
+
+@keyframes shakeY {
+  0%,to {
+      -webkit-transform: translateZ(0);
+      transform: translateZ(0)
+  }
+
+  10%,30%,50%,70%,90% {
+      -webkit-transform: translate3d(0,-20px,0);
+      transform: translate3d(0,-20px,0)
+  }
+
+  20%,40%,60%,80% {
+      -webkit-transform: translate3d(0,20px,0);
+      transform: translate3d(0,20px,0)
+  }
+}
+
+
+@keyframes rotateIn {
+  from {
+    transform: rotate(0)
+  }
+  to {
+    transform: rotate(360deg)
+  }
+}
+
+@keyframes heartBeat {
+  0% {
+      -webkit-transform: scale(1);
+      transform: scale(1)
+  }
+
+  14% {
+      -webkit-transform: scale(1.2);
+      transform: scale(1.2)
+  }
+
+  28% {
+      -webkit-transform: scale(1);
+      transform: scale(1)
+  }
+
+  42% {
+      -webkit-transform: scale(1.2);
+      transform: scale(1.2)
+  }
+
+  70% {
+      -webkit-transform: scale(1);
+      transform: scale(1)
+  }
+}
+
+@keyframes rotateInDownLeft {
+  0% {
+      transform: rotate(45deg);
+      opacity: .8;
+  }
+
+  50% {
+    transform: rotate(0);
+    opacity: 1;
+  }
+
+  100% {
+      transform: rotate(45deg);
+      opacity: 0.8;
+  }
+}
+
+@keyframes rotateInDownRight {
+  0% {
+      transform: rotate(-45deg);
+      opacity: .8;
+  }
+
+  50% {
+    transform: rotate(0);
+    opacity: 1;
+  }
+
+  100% {
+      transform: rotate(-45deg);
+      opacity: 0.8;
+  }
+}
+
+@keyframes rodY {
+  0% {
+      transform: rotateX(0);
+  }
+
+  50% {
+    transform: rotateX(135deg);
+  }
+
+  100% {
+      transform: rotateX(0);
+  }
+}
+
+@keyframes lightFlash {
+  0% {
+    background-image: url('./../../../assets/activity/turntable/icon4.png');
+  }
+
+  100% {
+    background-image: url('./../../../assets/activity/turntable/icon3.png');
+  }
+}

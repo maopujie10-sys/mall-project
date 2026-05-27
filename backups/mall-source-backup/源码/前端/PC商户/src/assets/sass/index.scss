@@ -1,0 +1,83 @@
+$bgcolor:#fafafa;
+$fontColoCrBlack:#000000;
+$btnColoyellow:#35b4fc;
+$fontcolorgray: #858e9c;
+$btncolorgray: #eaecef;
+$mainWidth: 1200px;
+
+.el-dialog__wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.el-dialog {
+  border-radius: 4px;
+  max-width: 600px;
+  margin: 0 auto !important;
+  .el-dialog__header {
+    height: 42px;
+    background: #f5f5f5;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    border-radius: 4px 4px 0 0;
+  }
+
+  .el-dialog__title {
+    text-align: center;
+    display: block;
+    width: 100%;
+    font-weight: 700;
+    font-size: 18px;
+    color: #333;
+  }
+
+  .el-dialog__headerbtn {
+    font-size: 20px;
+    top: 10px;
+  }
+
+  .order-item {
+    width: 400px;
+    margin: 0 auto;
+  }
+
+  .el-dialog__body {
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
+  .el-dialog__footer {
+    height: 53px;
+    border-top: 1px solid #eee;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+  }
+
+}
+
+.el-form-item__content {
+  .el-input__suffix {
+    display: flex;
+    align-items: center;
+  }
+  
+  .password-icon {
+    width: 20px;
+    cursor: pointer;
+  }
+}
+
+.es-pagination {
+  .btn-prev,
+  .btn-next {
+    color: var(--color-main) !important;
+    padding: 0 8px !important;
+
+    &:disabled {
+      color: #C0C4CC !important;
+    }
+  }
+}

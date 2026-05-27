@@ -1,0 +1,1 @@
+module.exports={"projectTitle":"TikTokMall","baseUrl":"http://localhost/wap/","showSettings":true,"hideContact":true,"countryCode":"44","tagsView":true,"fixedHeader":false,"sidebarLogo":false,"errorLog":"production","hideCertificationPhoto":false,"hideSellerLevel":false,"hideUpdateLoginPassword":false,"hideUpdatePayPassword":false,"hideLoginProtocol":true}

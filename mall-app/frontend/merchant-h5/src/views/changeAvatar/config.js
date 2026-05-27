@@ -1,0 +1,22 @@
+export const avatarData = [
+  new URL('@/assets/image/userAvatar/1.png', import.meta.url),
+  new URL('@/assets/image/userAvatar/2.png', import.meta.url),
+  new URL('@/assets/image/userAvatar/3.png', import.meta.url),
+  new URL('@/assets/image/userAvatar/4.png', import.meta.url),
+  new URL('@/assets/image/userAvatar/5.png', import.meta.url),
+  new URL('@/assets/image/userAvatar/6.png', import.meta.url),
+  new URL('@/assets/image/userAvatar/7.png', import.meta.url),
+  new URL('@/assets/image/userAvatar/8.png', import.meta.url),
+  new URL('@/assets/image/userAvatar/9.png', import.meta.url),
+  new URL('@/assets/image/userAvatar/10.png', import.meta.url),
+  new URL('@/assets/image/userAvatar/11.png', import.meta.url),
+  new URL('@/assets/image/userAvatar/12.png', import.meta.url),
+  new URL('@/assets/image/userAvatar/13.png', import.meta.url),
+  new URL('@/assets/image/userAvatar/14.png', import.meta.url),
+  new URL('@/assets/image/userAvatar/15.png', import.meta.url),
+  new URL('@/assets/image/userAvatar/16.png', import.meta.url),
+  new URL('@/assets/image/userAvatar/17.png', import.meta.url),
+  new URL('@/assets/image/userAvatar/18.png', import.meta.url),
+  new URL('@/assets/image/userAvatar/19.png', import.meta.url),
+  new URL('@/assets/image/userAvatar/20.png', import.meta.url)
+]

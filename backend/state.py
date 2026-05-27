@@ -1,6 +1,5 @@
-"""In-memory state with JSON persistence for Agent operational data."""
-import json
-import os
+﻿"""In-memory state with JSON persistence for Agent operational data."""
+import json, os
 from datetime import datetime
 from typing import Optional
 
@@ -20,7 +19,7 @@ class _AgentState:
     def _load(self):
         try:
             if os.path.exists(STATE_FILE):
-                with open(STATE_FILE) as f:
+                with open(STATE_FILE, encoding="utf-8") as f:
                     saved = json.load(f)
                     self._data.update(saved)
         except Exception:
@@ -28,12 +27,11 @@ class _AgentState:
 
     def _save(self):
         try:
-            with open(STATE_FILE, "w") as f:
-                json.dump(self._data, f, ensure_ascii=False, default=str)
+            with open(STATE_FILE, "w", encoding="utf-8") as f:
+                json.dump(self._data, f, ensure_ascii=False, default=str, indent=2)
         except Exception:
             pass
 
-    # ── mode ──
     @property
     def mode(self) -> str:
         return self._data.get("mode", "ai_control")
@@ -43,7 +41,6 @@ class _AgentState:
         self._data["mode"] = val
         self._save()
 
-    # ── emergency history ──
     @property
     def emergency_history(self) -> list:
         return self._data.get("emergency_history", [])
@@ -58,16 +55,13 @@ class _AgentState:
             self._data["emergency_history"] = self._data["emergency_history"][:50]
         self._save()
 
-    # ── approvals ──
     @property
     def pending_approvals(self) -> list:
         return self._data.get("pending_approvals", [])
 
     def add_approval(self, task_id: str, risk: str, name: str, description: str = ""):
         entry = {
-            "id": task_id,
-            "risk": risk,
-            "name": name,
+            "id": task_id, "risk": risk, "name": name,
             "description": description,
             "time": datetime.now().strftime("%H:%M:%S"),
         }
@@ -93,17 +87,14 @@ class _AgentState:
     def approval_history(self) -> list:
         return self._data.get("approval_history", [])
 
-    # ── tasks ──
     @property
     def tasks(self) -> list:
         return self._data.get("tasks", [])
 
     def add_task(self, name: str, risk: str = "L1", status: str = "完成"):
         entry = {
-            "id": f"task_{len(self._data.get('tasks', [])) + 1}_{int(datetime.now().timestamp())}",
-            "name": name,
-            "risk": risk,
-            "status": status,
+            "id": f"task_{len(self._data.get('tasks',[]))+1}_{int(datetime.now().timestamp())}",
+            "name": name, "risk": risk, "status": status,
             "time": datetime.now().strftime("%H:%M:%S"),
         }
         self._data.setdefault("tasks", []).insert(0, entry)

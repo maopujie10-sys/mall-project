@@ -1,0 +1,29 @@
+﻿{
+  "name": "Friday AI OS - 超级AI数字生命体",
+  "short_name": "Friday AI",
+  "description": "AI操作系统 - 3D神经网络总控中心",
+  "start_url": "/ai/",
+  "display": "standalone",
+  "background_color": "#080b1a",
+  "theme_color": "#667eea",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "/ai/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/ai/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["productivity", "developer tools", "utilities"],
+  "lang": "zh-CN",
+  "display_override": ["window-controls-overlay"],
+  "scope": "/ai/",
+  "edge_side_panel": {}
+}

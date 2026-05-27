@@ -1,0 +1,465 @@
+.app-wrapper, #app {
+  &.rtl {
+    direction: rtl;
+
+    .fixed-header {
+      right: auto;
+      left: 0;
+    }
+
+    .el-tabs__nav-wrap is-top {
+      direction: ltr;
+    }
+
+    .recharge-main .recharge {
+      .baocunerweima {
+        padding-right: 12px;
+      }
+
+      .qrcode {
+        margin-right: 0;
+      }
+
+      .duoxuan {
+        display: flex;
+
+        .xuan1 {
+          padding-right: 12px;
+          margin: 0 0 0 12px;
+        }
+      }
+
+      .van-uploader__upload {
+        margin-right: 0;
+        margin-left: 12px;
+      }
+    }
+
+    .login {
+      .el-form-item {
+        display: block;
+      }
+    }
+
+    .el-button {
+      margin-left: 12px;
+      margin-right: 0px;
+    }
+
+    .promotion .el-button {
+      margin-left: 0px;
+      margin-right: 0px;
+    }
+
+    .ml-21 {
+      margin-left: 0px;
+      margin-right: 21px;
+    }
+
+    .table-list .btn {
+      text-align: right;
+    }
+
+    .sidebar-container {
+      right: 0;
+      left: auto;
+    }
+
+    .main-container {
+      margin-left: auto;
+      margin-right: 210px;
+    }
+
+    .hideSidebar .main-container {
+      margin-right: 54px;
+    }
+
+    .sidebar-text {
+      text-align: right;
+      padding-right: 6px;
+    }
+
+    .pan-count .el-card {
+      margin-right: 0;
+      margin-left: 12px;
+
+      &:nth-child(3) {
+        margin-left: 0;
+      }
+    }
+
+    .lang-img {
+      position: absolute;
+      display: flex;
+      justify-content: flex-start;
+      width: 100px;
+      right: auto;
+      left: -16px;
+    }
+
+    .mr-12 {
+      margin-left: 12px;
+      margin-right: 0;
+    }
+
+    .el-icon-caret-bottom {
+      transform: translateX(-2px);
+    }
+
+    .globalization {
+      margin-left: 0;
+      margin-right: 12px;
+    }
+
+    .app-breadcrumb {
+      > span {
+        display: flex;
+      }
+    }
+
+    .banner-settings > div {
+      margin-right: auto;
+    }
+
+    .mobile.hideSidebar .sidebar-container {
+      transform: translate3d(210px, 0, 0);
+    }
+
+    .tags-view-container .tags-view-wrapper .tags-view-item:first-of-type {
+      margin-right: 0;
+      margin-left: 4px;
+    }
+
+    .tags-view-container .tags-view-wrapper .tags-view-item:last-of-type {
+      margin-right: 0px;
+      margin-left: 0;
+    }
+
+    .el-form-item {
+      display: flex;
+    }
+
+    .el-form-item__label {
+      text-align: left;
+      margin-right: 0px;
+      margin-left: 6px;
+      padding: 0 0 0 12px;
+      flex-shrink: 0;
+    }
+
+    .hamburger {
+      //翻转180度
+      transform: rotate(180deg);
+
+      &.is-active {
+        transform: rotate(0deg);
+      }
+    }
+
+    .pr-24 {
+      padding-left: 24px;
+      padding-right: 0;
+    }
+
+    .take-over .take-over-content .take-over-content-item {
+      margin-right: 0;
+      margin-left: 12px;
+
+      &:last-of-type {
+        margin-left: 0;
+      }
+    }
+
+    .login-form {
+      .login-input {
+        .input-icon {
+          left: auto;
+          right: 10px;
+        }
+
+        .el-input__suffix {
+          left: 10px;
+          right: auto;
+        }
+
+        .input-dropdown.el-dropdown {
+          left: auto;
+          right: 30px;
+        }
+
+
+      }
+
+    }
+
+    #u8199 {
+      left: 12px;
+      right: auto;
+    }
+
+    #u8181 {
+      left: 120px;
+    }
+
+    .message-icon {
+      left: 12px;
+      right: auto;
+    }
+
+    .message-icon-only-red {
+      left: 20px;
+      right: auto;
+    }
+
+    .tag-read {
+      left: 0px;
+      right: auto;
+      border-radius: 6px 0 0 6px;
+    }
+
+    .seller-level-content {
+      .right {
+        padding-right: 24px;
+      }
+
+      div {
+        text-align: right;
+      }
+    }
+
+    .table-list .merchandise-label .merchandise-label-item .up {
+      padding-left: 10px;
+      text-align: left;
+    }
+
+    .vector {
+      .el-image {
+        transform: rotate(180deg);
+      }
+    }
+
+    .el-radio-group {
+      display: flex;
+
+      .el-radio-button {
+        &:first-of-type .el-radio-button__inner {
+          border-radius: 0 4px 4px 0;
+          border-right: 1px solid #DCDFE6;
+          border-left: none;
+        }
+
+        &:last-of-type .el-radio-button__inner {
+          border-radius: 4px 0 0 4px;
+          border-left: 1px solid #DCDFE6;
+        }
+
+        &.is-active {
+          .el-radio-button__inner {
+            border-color: #409EFF;
+          }
+        }
+
+        &:first-of-type + &:last-of-type .el-radio-button__inner {
+          border-radius: 4px;
+        }
+      }
+    }
+
+    .withdraw-main {
+      .el-input {
+        min-width: 380px;
+      }
+
+      .doc-tag {
+        right: auto;
+        left: 4px;
+      }
+
+      .tip-tag {
+        margin-left: 4px;
+      }
+    }
+
+
+  }
+}
+
+.so-dropdown-item.rtl {
+  direction: rtl;
+
+  .mr-6 {
+    margin-left: 6px;
+    margin-right: 0;
+  }
+}
+
+.message-item.rtl {
+  direction: rtl;
+
+  .message-content {
+    text-align: right;
+  }
+
+  .message-time {
+    direction: rtl;
+    text-align: right;
+  }
+}
+
+body.rtl {
+  direction: rtl;
+  scrollbar-width: thin;
+  scrollbar-color: #888 #f1f1f1;
+
+  .el-message-box__wrapper {
+    direction: ltr;
+
+    .el-message-box {
+      text-align: right;
+    }
+
+    .el-message-box__headerbtn {
+      left: 15px;
+      right: auto;
+    }
+
+    .el-message-box__container {
+      margin-right: 24px;
+      text-align: right;
+    }
+
+    .el-message-box__btns {
+      text-align: left;
+    }
+  }
+
+  .updateIphoneOrEmail {
+    .send-button {
+      left: 4px;
+      right: auto !important;
+    }
+  }
+
+
+  .sidebar-text {
+    padding-right: 6px;
+  }
+
+  .rightPanel-container {
+    .rightPanel {
+      right: auto;
+      left: -520px;
+    }
+
+    &.show {
+      right: 0;
+      left: auto;
+
+      .rightPanel {
+        right: auto;
+        left: 0;
+      }
+    }
+  }
+
+
+  .handle-button {
+    right: -48px;
+    border-radius: 0 6px 6px 0 !important;
+  }
+
+  .drawer-item {
+    > span {
+      margin-right: 12px;
+    }
+  }
+
+  .el-message-box__container {
+    text-align: left;
+  }
+
+  .el-notification__closeBtn.el-icon-close {
+    left: 12px;
+    top: 12px;
+    right: auto;
+  }
+
+  .el-form.el-form--inline, .btnList {
+    display: flex;
+    flex-wrap: wrap;
+    margin-bottom: 0;
+  }
+
+  .el-dialog__headerbtn {
+    left: 12px;
+    top: 12px;
+    right: auto;
+  }
+
+  .bell .tip {
+    right: auto;
+    left: -5px;
+  }
+
+  .el-picker-panel__footer {
+    text-align: left;
+
+    .el-button + .el-button {
+      margin-left: 6px;
+      margin-right: 12px;
+    }
+  }
+
+  .edit-commodity {
+    .el-form-item {
+      flex-direction: column;
+    }
+
+    .el-form-item__label {
+      text-align: right !important;
+      min-width: 120px;
+    }
+
+    .el-form-item__content {
+      width: 100%;
+    }
+
+    .el-input-group--append {
+      .el-input-group__append {
+        border-right: none;
+        border-radius: 4px 0 0 4px;
+        border-left: 1px solid #DCDFE6;
+      }
+
+      .el-input__inner {
+        border-radius: 0 4px 4px 0;
+      }
+    }
+
+    .discountPrice {
+      left: 15px;
+      right: auto;
+      top: -34px;
+    }
+
+    .el-input__suffix {
+      left: 15px;
+      right: auto;
+    }
+  }
+
+}
+
+
+/* 对于WebKit浏览器（Chrome，Safari） */
+/* 修改滚动条拇指（可拖动部分）的宽度和颜色 */
+::-webkit-scrollbar-thumb {
+  width: 4px; /* 根据喜好调整宽度 */
+  background-color: #888; /* 修改拇指的颜色 */
+}
+
+/* 修改滚动条轨道（不可拖动部分）的宽度和颜色 */
+::-webkit-scrollbar-track {
+  width: 4px; /* 和拇指的宽度相匹配 */
+  background-color: #f1f1f1; /* 修改轨道的颜色 */
+}

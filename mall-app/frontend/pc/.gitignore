@@ -1,0 +1,39 @@
+node_modules/
+dist/
+dist.zip
+HotCoin_Pro
+HotCoin_Pro.zip
+HoTcoonpro
+HoTcoonpro.zip
+/dist
+/EShop - 用户商城PC
+/Argos - 用户商城PC
+/Mbuy - 用户商城PC
+/Inchoi - 用户商城PC
+/Meta - 用户商城PC
+/Tongda - 用户商城PC
+/FamilyShop - 用户商城PC
+/FamilyMart - 用户商城PC
+/Hive - 用户商城PC
+.env.Argos
+.env.Mbuy
+.env.Inchoi
+.env.Meta
+.env.Tongda
+.env.FamilyShop
+.env.FamilyMart
+.env.Hive
+# Editor directories and files
+.idea
+.vscode
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.local
+.history
+.DS_Store
+
+package-lock.json
+yarn.lock
+yarn-error.log

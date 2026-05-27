@@ -1,57 +1,147 @@
-"""åŸŸåè½®å€¼ç®¡ç†"""
+"""ÓòÃûÂÖÖµ¹ÜÀí ¡ª Ìø×ª¼ì²â/È¨ÖØ/±¨¸æ"""
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
-from main import verify_token
+from auth import verify_token
 from state import state
+from risk import handle_risk
 
 router = APIRouter(prefix="/rotation", tags=["Rotation"])
 
-DOMAINS = [
-    {"domain": "tiktook.eu.cc", "active": True, "health": "ok", "latency": "23ms", "type": "ä¸»åŸŸå"},
-    {"domain": "tiktokmall.shop", "active": True, "health": "ok", "latency": "45ms", "type": "è½®å€¼"},
-    {"domain": "tiktokmall.store", "active": True, "health": "ok", "latency": "38ms", "type": "è½®å€¼"},
-    {"domain": "tiktokmall.online", "active": True, "health": "ok", "latency": "52ms", "type": "è½®å€¼"},
-    {"domain": "tiktokmall.cc", "active": False, "health": "blocked", "latency": "-", "type": "è½®å€¼(å·²åœç”¨)"},
-    {"domain": "tiktokmall.live", "active": True, "health": "ok", "latency": "31ms", "type": "è½®å€¼"},
-    {"domain": "tiktokmall.xyz", "active": True, "health": "degraded", "latency": "180ms", "type": "è½®å€¼"},
-    {"domain": "tiktokmall.top", "active": True, "health": "ok", "latency": "41ms", "type": "è½®å€¼"},
-    {"domain": "img.tiktook.eu.cc", "active": True, "health": "ok", "latency": "15ms", "type": "CDNå›¾ç‰‡"},
+DEFAULT_DOMAINS = [
+    {"domain": "tiktook.eu.cc", "active": True, "health": "ok", "type": "Ö÷ÓòÃû"},
+    {"domain": "tiktokmall.shop", "active": True, "health": "ok", "type": "ÂÖÖµ"},
+    {"domain": "tiktokmall.store", "active": True, "health": "ok", "type": "ÂÖÖµ"},
+    {"domain": "tiktokmall.online", "active": True, "health": "ok", "type": "ÂÖÖµ"},
+    {"domain": "tiktokmall.live", "active": True, "health": "ok", "type": "ÂÖÖµ"},
+    {"domain": "tiktokmall.xyz", "active": True, "health": "ok", "type": "ÂÖÖµ"},
+    {"domain": "tiktokmall.top", "active": True, "health": "ok", "type": "ÂÖÖµ"},
+    {"domain": "img.tiktook.eu.cc", "active": True, "health": "ok", "type": "CDNÍ¼Æ¬"},
 ]
 
+def _get_domains():
+    if "rotation_domains" not in state._data:
+        state._data["rotation_domains"] = DEFAULT_DOMAINS
+        state._save()
+    return state._data["rotation_domains"]
+
+class AddDomainRequest(BaseModel):
+    domain: str
+    type: str = "ÂÖÖµ"
 
 class ToggleRequest(BaseModel):
     domain: str
     active: bool
 
-
 class CheckRequest(BaseModel):
     domain: str
 
-
 @router.get("/domains")
 async def get_domains(_=Depends(verify_token)):
-    return DOMAINS
+    await handle_risk("L1", "²é¿´ÂÖÖµÓòÃûÁĞ±í")
+    return _get_domains()
 
+@router.post("/domains")
+async def add_domain(req: AddDomainRequest, _=Depends(verify_token)):
+    domains = _get_domains()
+    if any(d["domain"] == req.domain for d in domains):
+        raise HTTPException(400, "ÓòÃûÒÑ´æÔÚ")
+    domains.append({"domain": req.domain, "active": True, "health": "ok", "type": req.type})
+    state._save()
+    return {"domain": req.domain, "added": True}
+
+@router.delete("/domains/{domain}")
+async def remove_domain(domain: str, _=Depends(verify_token)):
+    domains = _get_domains()
+    before = len(domains)
+    state._data["rotation_domains"] = [d for d in domains if d["domain"] != domain]
+    state._save()
+    if len(_get_domains()) == before:
+        raise HTTPException(404, "ÓòÃû²»´æÔÚ")
+    return {"domain": domain, "removed": True}
 
 @router.post("/toggle")
 async def toggle_domain(req: ToggleRequest, _=Depends(verify_token)):
-    for d in DOMAINS:
+    await handle_risk("L2", f"ÓòÃûÂÖÖµ: {req.domain} {'ÆôÓÃ' if req.active else 'Í£ÓÃ'}")
+    for d in _get_domains():
         if d["domain"] == req.domain:
             d["active"] = req.active
-            if not req.active:
-                d["health"] = "disabled"
-            else:
-                d["health"] = "ok"
-            state.add_task(f"åŸŸåè½®å€¼: {req.domain} {'å¯ç”¨' if req.active else 'åœç”¨'}", risk="L2")
+            d["health"] = "ok" if req.active else "disabled"
+            state._save()
             return {"domain": req.domain, "active": req.active}
-    raise HTTPException(status_code=404, detail="Domain not found")
-
+    raise HTTPException(status_code=404, detail="ÓòÃû²»´æÔÚ")
 
 @router.post("/check")
 async def check_domain(req: CheckRequest, _=Depends(verify_token)):
-    for d in DOMAINS:
+    await handle_risk("L1", f"ÓòÃû¼ì²â", req.domain)
+    for d in _get_domains():
         if d["domain"] == req.domain:
             d["health"] = "ok"
-            state.add_task(f"åŸŸåæ£€æŸ¥: {req.domain} â†’ OK", risk="L1")
-            return {"domain": req.domain, "health": "ok", "latency": d.get("latency", "?")}
-    raise HTTPException(status_code=404, detail="Domain not found")
+            state._save()
+            return {"domain": req.domain, "health": "ok"}
+    raise HTTPException(status_code=404, detail="ÓòÃû²»´æÔÚ")
+
+
+
+class WeightRequest(BaseModel):
+    domain: str
+    weight: int = 1
+
+class BatchToggleRequest(BaseModel):
+    active: bool
+
+@router.get("/report")
+async def rotation_report(_=Depends(verify_token)):
+    """Éú³ÉÂÖÖµ±¨¸æ"""
+    await handle_risk("L1", "Éú³ÉÂÖÖµ±¨¸æ")
+    domains = _get_domains()
+    active = [d for d in domains if d.get("active")]
+    inactive = [d for d in domains if not d.get("active")]
+    unhealthy = [d for d in domains if d.get("health") != "ok"]
+    return {
+        "total": len(domains),
+        "active": len(active),
+        "inactive": len(inactive),
+        "unhealthy": len(unhealthy),
+        "health_rate": f"{(len(active)-len(unhealthy))/max(len(active),1)*100:.0f}%",
+        "unhealthy_domains": [d["domain"] for d in unhealthy],
+    }
+
+@router.post("/weight")
+async def set_weight(req: WeightRequest, _=Depends(verify_token)):
+    """µ÷ÕûÓòÃûÈ¨ÖØ"""
+    await handle_risk("L2", "µ÷ÕûÓòÃûÈ¨ÖØ", f"{req.domain}={req.weight}")
+    for d in _get_domains():
+        if d["domain"] == req.domain:
+            d["weight"] = req.weight
+            state._save()
+            return {"domain": req.domain, "weight": req.weight}
+    raise HTTPException(status_code=404, detail="ÓòÃû²»´æÔÚ")
+
+@router.post("/check-all")
+async def check_all_domains(_=Depends(verify_token)):
+    """¼ì²âËùÓĞÓòÃûÌø×ªÁ´Â·"""
+    await handle_risk("L2", "È«Á¿¼ì²âÂÖÖµÓòÃû")
+    import httpx
+    domains = _get_domains()
+    results = []
+    async with httpx.AsyncClient(timeout=10, follow_redirects=True) as c:
+        for d in domains:
+            if not d.get("active"):
+                continue
+            url = f"https://{d['domain']}"
+            try:
+                r = await c.get(url, headers={"User-Agent": "Mozilla/5.0"})
+                chain = [str(r.url)] if r.url else []
+                history = [str(h.url) for h in r.history] if r.history else []
+                d["health"] = "ok" if r.status_code < 400 else "error"
+                results.append({
+                    "domain": d["domain"],
+                    "status": r.status_code,
+                    "redirect_chain": history + chain,
+                    "ok": d["health"] == "ok",
+                })
+            except Exception as e:
+                d["health"] = "error"
+                results.append({"domain": d["domain"], "status": 0, "error": str(e), "ok": False})
+    state._save()
+    return {"results": results, "total": len(results), "ok": sum(1 for r in results if r["ok"])}

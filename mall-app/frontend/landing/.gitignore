@@ -1,0 +1,32 @@
+.DS_Store
+node_modules
+/dist
+/Hive - ldy
+/FamilyMart - ldy
+/FamilyShop - ldy
+/GreenMall - ldy
+/Inchoi - ldy
+/MetaShop - ldy
+/Shop2u - ldy
+/TikTok - ldy
+/Tongda - ldy
+/Argos - ldy
+/演示-ldy
+# local env files
+.env.local
+.env.*.local
+
+# Log files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Editor directories and files
+.idea
+.vscode
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

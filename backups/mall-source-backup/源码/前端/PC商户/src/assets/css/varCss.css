@@ -1,0 +1,25 @@
+:root {
+  --color-main: #F89900;
+  --color-price: #F89900;
+  --color-submain: #F89900;
+  /* --color-submain: #000; */
+  --color-black: #000000;
+  --color-white: #ffffff;
+  --color-icon: #646464;
+  --color-title: #333333;
+  --color-subtitle: #999999;
+  --color-tips: #ababab;
+  --color-grey: #4d4d4d;
+  --color-border: #eeeeee;
+  --color-footer-bg: #212121;
+  --color-little-grey: #fafafa;
+  /* --color-submain1: #fcf2e2; */
+  --color-submain1: #fff;
+  --color-success: #32aa15;
+  --color-fail: #e10015;
+  --color-footer: #F89900;
+  --background: rgb(254, 245, 230);
+  --bg-border-color: rgb(252, 214, 153);
+  --hover-color: rgb(249, 173, 51);
+  --active-button: rgb(249, 173, 51);
+}

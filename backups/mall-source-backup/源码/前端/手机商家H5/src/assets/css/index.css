@@ -1,0 +1,134 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* overwite default */
+:root {
+    font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
+    font-size: 16px;
+    line-height: 24px;
+    font-weight: 400;
+    width: 100%;
+    color-scheme: light dark;
+    /* color: rgba(0, 0, 0, 0.87); */
+    background-color: #EFF2F6;
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-text-size-adjust: 100%;
+}
+
+body, #app {
+    width: 100%;
+    color: #1F2025;
+    background: #EFF2F6;
+}
+
+.page-main-content {
+    min-height: 100vh;
+    background-color: #EFF2F6;
+}
+
+input {
+    outline: none;
+}
+
+input::-webkit-input-placeholder {
+    color: #C0C4CC;
+}
+
+ul,
+li {
+    list-style: none;
+}
+
+p {
+    padding: 0;
+    margin: 0;
+}
+
+/* component css */
+.van-list {
+    min-height: calc(100vh - 120px);
+}
+
+.safe-area-inset-bottom {
+    height: constant(safe-area-inset-bottom);
+    height: env(safe-area-inset-bottom);
+}
+
+input[type="password"]::-ms-reveal{
+    display: none;
+}
+input[type="password"]::-ms-clear{
+    display: none;
+}
+input[type="password"]::-o-clear{
+    display: none;
+}
+
+.range-box {
+    direction: ltr !important;
+}
+
+.van-loading__text {
+    margin-right: 8px;
+}
+
+.im_create_iframe_client_wrapper {
+    z-index: 9999999 !important;
+}
+
+@keyframes bounceInUp {
+    0% {
+        opacity: 0;
+        -webkit-transform: translateY(2000px);
+        -ms-transform: translateY(2000px);
+        transform: translateY(2000px);
+    }
+
+    60% {
+        opacity: 1;
+        -webkit-transform: translateY(-30px);
+        -ms-transform: translateY(-30px);
+        transform: translateY(-30px);
+    }
+    80% {
+        -webkit-transform: translateY(10px);
+        -ms-transform: translateY(10px);
+        transform: translateY(10px);
+    }
+    100% {
+        -webkit-transform: translateY(0);
+        -ms-transform: translateY(0);
+        transform: translateY(0);
+    }
+}
+
+@keyframes heartBeat {
+    0% {
+        -webkit-transform: scale(1);
+        transform: scale(1)
+    }
+
+    14% {
+        -webkit-transform: scale(1.1);
+        transform: scale(1.1)
+    }
+
+    28% {
+        -webkit-transform: scale(1);
+        transform: scale(1)
+    }
+
+    42% {
+        -webkit-transform: scale(1.1);
+        transform: scale(1.1)
+    }
+
+    70% {
+        -webkit-transform: scale(1);
+        transform: scale(1)
+    }
+}

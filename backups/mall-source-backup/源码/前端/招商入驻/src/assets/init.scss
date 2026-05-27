@@ -1,0 +1,232 @@
+/** ************************* overwrite ****************/
+*{
+  margin: 0;
+  padding: 0;
+}
+html,body{
+  // width: 8.28rem;
+  // max-width: 828px;
+  margin: 0 auto;
+  height: 100vh;
+  box-sizing: border-box;
+}
+body {
+  font-size:30px;
+  font-family: "Noto Sans SC";
+  font-weight: 400;
+  // font-size: .32rem;
+  // background: #9E9FA3;
+}
+
+.doTouch {
+  touch-action: none;
+}
+
+/* 颜色值 */
+$white:#ffffff;
+$black:#000000;
+$dark-black:#22262F;
+// $grey:#868C9A;
+$grey: #f3f3f3;
+$dark-grey: #868C9A;
+$light-grey:#C8CAD2;
+$border-grey:#E5E7ED;
+$blue:#2C78F8;
+$light-blue:#1199FA;
+$red:#F6465D;
+$green:#2EBD85;
+$purple:#9A4DFD;
+
+// overwrite vant
+
+.mining-pledge {
+  .van-tabs__wrap {
+      height: 145px!important;
+      .van-tab {
+          &:first-child {
+              border-right: 1px solid $border-grey;
+          }
+      }
+  }
+}
+
+
+
+/***************** global use framework *****************/
+
+/* flex */
+.flex { display: flex; }
+.flex-row { flex-direction: row;}
+.flex-col { flex-direction: column; }
+.justify-between { justify-content: space-between; }
+.justify-around { justify-content:space-around; }
+.justify-evenly { justify-content: space-evenly;}
+.justify-start{ justify-content: flex-start;}
+.justify-end { justify-content: flex-end; }
+.justify-center	{justify-content: center;}
+.items-start { align-items:flex-start;}
+.items-end { align-items: flex-end; }
+.items-center { align-items: center; }
+.items-stretch {align-items: stretch;}
+.flex-1 { flex: 1}
+.flex-wrap { flex-wrap: wrap;}
+.flex-nowrap { flex-wrap: nowrap;}
+.align-center{align-content:center;}
+
+/* display */
+.block { display: block;}
+
+/* position */
+.absolute { position: absolute; }
+.relative { position: relative; }
+.fixed { position: fixed; }
+.z-10 { z-index: 10;}
+
+/* font */
+.font-bold { font-weight: bold; }
+.font-normal { font-weight: normal; }
+
+/* text */
+.text-center { text-align: center;}
+.text-left { text-align: left;}
+.text-right { text-align: right;}
+
+/* padding margin font */
+@for $i from 0 through 375 {
+  // font-weight
+  @if $i >= 0 and $i <=9 {
+      .font-#{$i * 100} {font-weight: #{$i * 100};}
+      @if $i == 1 {
+          .border { border-width: #{$i}px;}
+          .border-l { border-left-width: #{$i}px;}
+          .border-r { border-right-width: #{$i}px;}
+          .border-t { border-top-width: #{$i}px;}
+          .border-b { border-bottom-width: #{$i}px;}
+      }
+      .border-t-#{$i} {border-top-width: #{i}px;}
+      .border-b-#{$i} {border-bottom-width: #{i}px;}
+      .border-l-#{$i} {border-left-width: #{i}px;}
+      .border-r-#{$i} {border-right-width: #{i}px;}
+  }
+  // font-size
+  @if $i >= 10 and $i <= 100 {
+      .font-#{$i} { font-size: #{$i}px }
+  }
+  // margin
+  .m-#{$i} { margin: #{$i}px }
+  .ml-#{$i} { margin-left: #{$i}px }
+  .mr-#{$i} { margin-right: #{$i}px }
+  .mt-#{$i} { margin-top: #{$i}px }
+  .mb-#{$i} { margin-bottom: #{$i}px }
+  .mx-#{$i} { margin-left: #{$i}px; margin-right: #{$i}px;  }
+  .my-#{$i} { margin-top: #{$i}px;  margin-bottom: #{$i}px;}
+  // padding
+  .p-#{$i} { padding: #{$i}px }
+  .pl-#{$i} { padding-left: #{$i}px }
+  .pr-#{$i} { padding-right: #{$i}px }
+  .pt-#{$i} { padding-top: #{$i}px }
+  .pb-#{$i} { padding-bottom: #{$i}px }
+  .px-#{$i} { padding-left: #{$i}px; padding-right: #{$i}px;  }
+  .py-#{$i} { padding-top: #{$i}px;  padding-bottom: #{$i}px ;}
+  // width
+  .w-#{$i} { width: #{$i}px }
+  // height
+  .h-#{$i} { height: #{$i}px }
+  //line-height
+  .lh-#{$i} { line-height: #{$i}px }
+
+  // position
+  .left-#{$i} { left: #{$i}px }
+  .right-#{$i} { right: #{$i}px }
+  .top-#{$i} { top: #{$i}px }
+  .bottom-#{$i} { bottom: #{$i}px }
+}
+.w-half { width: 50%; }
+.w-full { width: 100%; }
+.w-screen { width: 100vw;}
+.h-full { height: 100%;}
+.h-screen { height: 100vh;}
+.h-1000 { height: 1000px;}
+
+/* background */
+.bg-white { background: $white; }
+.bg-black { background: $black;}
+.bg-grey { background: $grey;}
+.bg-dark-grey{ background:$dark-grey};
+.bg-light-grey{ background:$light-grey;}
+.bg-red { background: $red; }
+.bg-green { background: $green;}
+.bg-blue { background: $blue;}
+.bg-dark-blue {background: #6C52E6;}
+.bg-light-blue{background: #7F81FD;}
+
+.bg-none { background: none;}
+.bg-grey-f3 { background: $grey;}
+
+
+/* color */
+.text-white { color: $white; }
+.text-black { color: $black; }
+.text-dark-black{ color:$dark-black;}
+.text-grey { color: $dark-grey; }
+.text-blue{ color:$blue;}
+.text-light-blue{ color:$light-blue;}
+.text-red { color: $red; }
+.text-green { color: $green; }
+.text-purple { color: $purple; }
+
+/* border-color */
+.border-white { border-color: $white; }
+.border-black { border-color: $black; }
+.border-grey { border-color: $grey; }
+.border-light-grey{ border-color:$light-grey;}
+.border-red { border-color: $red; }
+.border-green { border-color: $green; }
+.border-light-blue { border-color: $light-blue; }
+
+.border-solid { border-style: solid; border-color: $border-grey;}
+
+.border-b-grey { border-bottom: 1px solid $border-grey;}
+.border-r-grey { border-right: 1px solid $border-grey;}
+.border-t-grey { border-top: 1px solid $border-grey;}
+
+.border-solid-blue{ border:1px solid $blue;}
+.border-solid-grey{ border:1px solid $grey;}
+.border-solid-dark-grey{ border:1px solid $dark-grey;}
+.border-solid-light-grey{ border:1px solid $border-grey;}
+.border-b-dashed-black { border-bottom: 1px dashed #000; }
+// .border-b-grey { border-bottom: 1px solid #E5E7ED;}
+// .border-r-grey { border-right: 1px solid #E5E7ED;}
+.border-none { border: none; outline: none;}
+
+/* border radius */
+.rounded-sm { border-radius: 2px;}
+.rounded { border-radius: 4px;}
+.rounded-md { border-radius: 6px;}
+.rounded-lg { border-radius: 8px;}
+.rounded-xl { border-radius: 12px;}
+.rounded-2xl { border-radius: 16px;}
+.rounded-full { border-radius: 9999px; }
+
+/** box-sizing */
+.box-border { box-sizing: border-box; }
+
+/* border */
+.border { border-width: 1px; }
+
+/* 解决重复点击报错的问题 */
+* {
+  //touch-action: pan-y;
+}
+/*常用*/
+.m-t10{
+  margin-top: 10px;
+}
+.m-t20{
+  margin-top: 20px;
+}
+.m-b10{
+  margin-bottom: 6px;
+}
+
+

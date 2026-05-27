@@ -1,0 +1,99 @@
+{
+    "name": "shop",
+    "version": "0.1.2",
+    "private": true,
+    "scripts": {
+        "serve": "vue-cli-service serve",
+        "dev": "vue-cli-service serve",
+        "build": "vue-cli-service build",
+        "build:Argos": "vue-cli-service build --mode Argos",
+        "build:Inchoi": "vue-cli-service build --mode Inchoi",
+        "build:Hive": "vue-cli-service build --mode Hive",
+        "build:FamilyShop": "vue-cli-service build --mode FamilyShop",
+        "build:TikTokMall": "vue-cli-service build --mode TikTokMall",
+        "build:Shop2u": "vue-cli-service build --mode Shop2u",
+        "build:GreenMall": "vue-cli-service build --mode GreenMall",
+        "build:SM-wholesaleShop": "vue-cli-service build --mode SM-wholesaleShop",
+        "build:ArgosShop": "vue-cli-service build --mode ArgosShop",
+        "build:Iceland": "vue-cli-service build --mode Iceland",
+        "build:INTOverstock": "vue-cli-service build --mode INTOverstock",
+        "build:TikTok-Wholesale": "vue-cli-service build --mode TikTok-Wholesale",
+        "build:AntMall": "vue-cli-service build --mode AntMall",
+        "build:all": "pnpm build && pnpm build:Argos && pnpm build:Inchoi && pnpm build:Hive && pnpm build:FamilyShop && pnpm build:TikTokMall && pnpm build:Shop2u && pnpm build:GreenMall && pnpm build:SM-wholesaleShop && pnpm build:ArgosShop && pnpm build:Iceland && pnpm build:INTOverstock && pnpm build:TikTok-Wholesale && pnpm build:AntMall",
+        "lint": "vue-cli-service lint",
+        "git": "git add . && git commit -m 'update' && git push"
+    },
+    "dependencies": {
+        "@babel/preset-env": "^7.24.6",
+        "@wcjiang/notify": "^2.1.0",
+        "amfe-flexible": "^2.2.1",
+        "axios": "^0.27.2",
+        "big.js": "^6.2.1",
+        "core-js": "^3.27.1",
+        "cropperjs": "^1.5.13",
+        "dayjs": "^1.11.7",
+        "element-ui": "^2.15.12",
+        "fastclick": "^1.0.6",
+        "firebase": "^10.5.0",
+        "image-conversion": "^2.1.1",
+        "js-cookie": "^3.0.1",
+        "lodash.debounce": "^4.0.8",
+        "moment-timezone": "^0.5.40",
+        "node-polyfill-webpack-plugin": "^2.0.1",
+        "node-sass": "^8.0.0",
+        "postcss-loader": "^7.0.2",
+        "qrcode": "^1.5.1",
+        "sass-loader": "^13.2.0",
+        "swiper": "4.5.0",
+        "vant": "^2.12.53",
+        "vue": "^2.7.14",
+        "vue-awesome-swiper": "3.1.3",
+        "vue-clipboard2": "^0.3.3",
+        "vue-count-to": "^1.0.13",
+        "vue-i18n": "^8.28.2",
+        "vue-ls": "^4.2.0",
+        "vue-monoplasty-slide-verify": "^1.3.1",
+        "vue-puzzle-vcode": "^1.1.10",
+        "vue-router": "^3.6.5",
+        "vue-seamless-scroll": "^1.1.23",
+        "vuex": "^3.6.2"
+    },
+    "devDependencies": {
+        "@babel/core": "^7.20.12",
+        "@babel/eslint-parser": "^7.19.1",
+        "@vue/cli-plugin-babel": "~5.0.8",
+        "@vue/cli-plugin-eslint": "~5.0.8",
+        "@vue/cli-service": "~5.0.8",
+        "babel-plugin-component": "^1.1.1",
+        "babel-plugin-import": "^1.13.6",
+        "babel-preset-es2015": "^6.24.1",
+        "eslint": "^8.32.0",
+        "eslint-plugin-vue": "^8.7.1",
+        "node-sass": "^7.0.1",
+        "postcss-pxtorem": "^6.0.0",
+        "postcss-rtlcss": "^4.0.6",
+        "sass-loader": "^13.0.2",
+        "style-loader": "^3.3.1",
+        "vue-template-compiler": "^2.7.14",
+        "webpack-bundle-analyzer": "^4.7.0"
+    },
+    "eslintConfig": {
+        "root": true,
+        "env": {
+            "node": true
+        },
+        "extends": [
+            "plugin:vue/essential",
+            "eslint:recommended"
+        ],
+        "parserOptions": {
+            "parser": "@babel/eslint-parser"
+        },
+        "rules": {}
+    },
+    "browserslist": [
+        "> 1%",
+        "last 2 versions",
+        "not dead"
+    ]
+}

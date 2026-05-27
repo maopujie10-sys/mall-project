@@ -1,0 +1,15 @@
+<svg width="144" height="144" viewBox="0 0 144 144" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect width="144" height="144" rx="31" fill="white"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M64.4108 82.1525L29.9658 49.6557L35.5585 48.4409L41.9364 45.1001L115.13 49.352L107.841 75.7746L64.4108 82.1525Z" fill="#FFB565" stroke="#381800" stroke-width="2"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M100.553 55.4261L107.234 54.515L114.827 49.3519V119.509L108.145 119.205L101.856 124.279L100.553 55.4261Z" fill="#FFD28A" stroke="#381800" stroke-width="2"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M107.842 76.3821V118.294Z" fill="#FFD28A"/>
+<path d="M107.842 76.3821V118.294" stroke="#381800" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M107.842 60.2854V68.7892Z" fill="#FFD28A"/>
+<path d="M107.842 60.2854V68.7892" stroke="#381800" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M56.818 46.0112C56.818 46.0112 55.0528 21.1679 75.6783 12.6002C77.9233 11.6676 79.2152 11.2943 82.0258 11.0847C83.8089 10.9202 85.6061 10.9955 87.3692 11.3089C89.1238 11.6632 90.8075 12.3058 92.3518 13.2107C99.0984 17.0034 106.909 22.1014 108.448 50.2631" stroke="#381800" stroke-width="4"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M47.0996 121.331L54.996 115.257H61.6776V93.6935L45.2773 76.3821L47.0996 121.331Z" fill="#FFD28A" stroke="#381800" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M54.9961 100.071V114.649Z" fill="#FFD28A"/>
+<path d="M54.9961 100.071V114.649" stroke="#381800" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M49.5291 51.1742L28.5732 49.3519L28.877 119.205L47.4032 121.331L47.7069 80.9376L65.0182 109.486L82.937 83.671V123.457L101.767 124.975L102.071 55.1224L82.3296 53.3001L65.3219 79.1153L49.5291 51.1742Z" fill="#F89900" stroke="#381800" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M44.9732 59.3743C44.9732 59.3743 43.2081 25.4197 63.8335 16.8521C66.0785 15.9194 68.2853 15.5914 71.0922 15.3366C74.3804 15.0402 76.3919 15.5316 79.3719 17.3444C87.3746 22.2123 96.4518 35.4227 96.6037 63.6262" stroke="#381800" stroke-width="4"/>
+</svg>
