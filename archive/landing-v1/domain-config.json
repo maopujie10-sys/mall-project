@@ -1,0 +1,82 @@
+﻿{
+  "groups": [
+    {
+      "main": "tiktook.eu.cc",
+      "enabled": true,
+      "children": [
+        "shop.tiktook.eu.cc",
+        "mall.tiktook.eu.cc",
+        "store.tiktook.eu.cc"
+      ]
+    },
+    {
+      "main": "tiktokmall.shop",
+      "enabled": true,
+      "children": [
+        "www.tiktokmall.shop",
+        "shop.tiktokmall.shop",
+        "mall.tiktokmall.shop"
+      ]
+    },
+    {
+      "main": "tiktokmall.store",
+      "enabled": true,
+      "children": [
+        "www.tiktokmall.store",
+        "shop.tiktokmall.store",
+        "mall.tiktokmall.store"
+      ]
+    },
+    {
+      "main": "tiktokmall.online",
+      "enabled": true,
+      "children": [
+        "www.tiktokmall.online",
+        "shop.tiktokmall.online",
+        "mall.tiktokmall.online"
+      ]
+    },
+    {
+      "main": "tiktokmall.live",
+      "enabled": true,
+      "children": [
+        "www.tiktokmall.live",
+        "shop.tiktokmall.live",
+        "mall.tiktokmall.live"
+      ]
+    },
+    {
+      "main": "tiktokmall.xyz",
+      "enabled": true,
+      "children": [
+        "www.tiktokmall.xyz",
+        "shop.tiktokmall.xyz",
+        "mall.tiktokmall.xyz"
+      ]
+    },
+    {
+      "main": "tiktokmall.top",
+      "enabled": true,
+      "children": [
+        "www.tiktokmall.top",
+        "shop.tiktokmall.top",
+        "mall.tiktokmall.top"
+      ]
+    },
+    {
+      "main": "tiktokmall.cloud",
+      "enabled": true,
+      "children": [
+        "www.tiktokmall.cloud",
+        "shop.tiktokmall.cloud",
+        "mall.tiktokmall.cloud"
+      ]
+    }
+  ],
+  "settings": {
+    "healthCheckTimeout": 5000,
+    "switchOnFail": true,
+    "retryDeadAfter": 600000,
+    "stickyGroup": false
+  }
+}
