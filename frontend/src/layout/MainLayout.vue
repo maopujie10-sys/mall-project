@@ -1,4 +1,5 @@
-﻿<template>
+<templa
+      <div class="sidebar-overlay" :class="{show:mobileMenuOpen}" @click="mobileMenuOpen=false"></div>te>
   <div class="app-shell" :class="{ collapsed: sidebarCollapsed, dark: theme.isDark.value }">
     <!-- Electron 窗口标题栏 -->
     <header v-if="isElectron" class="electron-titlebar">
@@ -106,7 +107,7 @@
         </div>
       </header>
 
-      <main class="content-area">
+      <<button class=mobile-menu-btn @click=mobileMenuOpen=!mobileMenuOpen>H</button>main class="content-area">
         <router-view v-slot="{ Component }">
           <transition name="page-fade" mode="out-in">
             <component :is="Component" />
@@ -114,7 +115,7 @@
         </router-view>
       </main>
     </div>
-    <LiveTaskPanel />
+    <nav class=mobile-bottom-nav><router-link to=/friday class=mb-item><span>B</span><span>Brain</span></router-link><router-link to=/chat class=mb-item><span>C</span><span>Chat</span></router-link><router-link to=/dashboard class=mb-item><span>D</span><span>Dash</span></router-link><router-link to=/server class=mb-item><span>S</span><span>Server</span></router-link><router-link to=/mall class=mb-item><span>M</span><span>Mall</span></router-link></nav><LiveTaskPanel />
     <el-dialog v-model="emergencyVisible" title="🚨 急救面板" width="520px" top="8vh"><EmergencyPanel :embedded="true" /></el-dialog>
     <!-- 全局 AI 浮动图标 -->
   </div>
