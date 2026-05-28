@@ -1,5 +1,5 @@
-"""Agent Chat API — AI 对话路由 v2: Claude + DeepSeek + Ollama + 302AI 多模型"""
-import httpx, json, re, os
+﻿"""Agent Chat API — AI 对话路由 v2: Claude + DeepSeek + Ollama + 302AI 多模型"""
+import asyncio, httpx, json, re, os
 from datetime import datetime
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
@@ -8,6 +8,8 @@ from state import state
 from risk import handle_risk
 from tools.registry import registry
 from digital_lifeform import DigitalLifeform
+from tools.vector_memory import VectorMemory
+from routers.knowledge_router import get_rag_context
 from config import MALL_BASE_URL, CLAUDE_API_KEY, CLAUDE_MODEL, OPENAI_BASE_URL
 
 router = APIRouter(prefix="/agent", tags=["Agent"])
@@ -147,6 +149,19 @@ def _match(msg):
     """关键词匹配工具"""
     msg = msg.lower()
     tools = registry.list_all()
+    # VECMEM: search vector memory for relevant context
+    _vec = await VectorMemory.semantic_search(req.message, 5) or []
+    _mctx = ""
+    if _vec:
+        _mctx = chr(10).join(['[H#'+str(i+1)+'] '+m.get('text','')[:200] for i,m in enumerate(_vec)])
+    _rctx = ""
+    try:
+        _rc = await get_rag_context(q=req.message, max_chars=1500, _=None)
+        if _rc and _rc.get('context'): _rctx = _rc['context'][:1500]
+    except: pass
+    _extra = ""
+    if _mctx: _extra += chr(10)+chr(91)+chr(72)+chr(105)+chr(115)+chr(116)+chr(111)+chr(114)+chr(121)+chr(77)+chr(101)+chr(109)+chr(93)+chr(10) + _mctx
+    if _rctx: _extra += chr(10)+chr(91)+chr(75)+chr(110)+chr(111)+chr(119)+chr(108)+chr(101)+chr(100)+chr(103)+chr(101)+chr(66)+chr(97)+chr(115)+chr(101)+chr(93)+chr(10) + _rctx
     for t in tools:
         if t.name and t.name.lower() in msg:
             return t.name, t.risk_level
@@ -175,57 +190,8 @@ async def model_status():
 async def agent_chat(req: ChatRequest, _=Depends(verify_token)):
     """AI对话主入口"""
     tools = registry.list_all()
-    tl = "\n".join([f"- {t.name}: {t.display_name} [{t.risk_level}]" for t in tools[:50]])
-    msgs = [
-        {"role": "system", "content": SYSTEM_PROMPT + "\n\nTools:\n" + tl},
-        {"role": "user", "content": f"User: {req.message}\nReply JSON: {{\"intent\":\"...\",\"tool\":\"...\",\"reasoning\":\"...\",\"risk\":\"L1\"}}"}
-    ]
-    ai = await call_ai(msgs)
-    tn, risk = None, "L1"
-    intent = req.message[:50]
-    reason = ""
-    if ai:
-        try:
-            m = re.search(r'\{[^}]+\}', ai.strip())
-            if m:
-                p = json.loads(m.group())
-                tn = p.get("tool")
-                risk = p.get("risk", "L1")
-                intent = p.get("intent", intent)
-                reason = p.get("reasoning", "")
-        except:
-            pass
-    if not tn:
-        tn, risk = _match(req.message)
-    td = registry.get(tn)
-    disp = td.display_name if td else tn
-    await handle_risk(risk, disp, req.message[:100])
-    steps = [
-        {"step": 1, "name": f"意图: {intent}", "status": "done"},
-        {"step": 2, "name": f"工具: {disp}", "status": "done"},
-        {"step": 3, "name": f"风险: {risk}", "status": "done"},
-    ]
-    if risk == "L4":
-        return {"task_id": f"t{len(state.tasks)+1}", "response": f"⛔ 已阻止 L4 风险操作\n\n{intent}\n\n需要人工接管。",
-                "steps": steps + [{"step": 4, "name": "已阻止", "status": "failed"}], "risk_level": "L4", "mode": state.mode}
-    if risk == "L3":
-        state.add_approval(f"t{len(state.tasks)+1}", "L3", disp, req.message[:200])
-        return {"task_id": f"t{len(state.tasks)+1}", "response": f"✅ 已提交审批\n\n{intent}\n\n工具: {disp}\n风险: L3，等待审批。",
-                "steps": steps + [{"step": 4, "name": "等待审批", "status": "pending"}], "risk_level": "L3", "need_confirm": True, "mode": state.mode}
-    steps.append({"step": 4, "name": f"执行: {disp}", "status": "running"})
-    er = await execute_tool(tn, {"message": req.message})
-    if er["success"]:
-        steps.append({"step": 5, "name": "完成", "status": "done"})
-        ds = json.dumps(er.get("data", {}), ensure_ascii=False, indent=2)[:1000]
-        resp = f"**{disp}** 执行成功\n\n```\n{ds}\n```"
-        if reason:
-            resp = reason + "\n\n" + resp
-    else:
-        steps.append({"step": 5, "name": "失败", "status": "failed"})
-        resp = f"**{disp}** 执行失败\n\n{er.get('error', '未知错误')}"
-    state.add_task(name=disp, risk=risk, status="done" if er["success"] else "failed")
-    try:
-        DigitalLifeform.remember_conversation(req.message, resp[:300])
+            asyncio.ensure_future(VectorMemory.remember(resp[:300], {'type':'ai','source':'chat'}))
+    except: pass
     except:
         pass
     try:
