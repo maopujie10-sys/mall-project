@@ -108,6 +108,27 @@ from routers.excel_router import router as excel_router
 from routers.auto_reply_router import router as auto_reply_router
 from routers.order_alert_router import router as order_alert_router
 
+
+# === 落地页轮值跳转 /api/r?flag=pc|spc|ldy ===
+import random
+from fastapi.responses import RedirectResponse
+
+ROTATION_DOMAINS = [
+    "chxhx.eu.cc", "drrgr.eu.cc", "drrimrf.eu.cc", "drriiu.eu.cc",
+    "duomi.eu.cc", "dengruihan.eu.cc", "yyawzx.eu.cc", "gamed.eu.cc"
+]
+
+FLAG_ROUTES = {
+    "pc": "/home",      # 用户商城
+    "spc": "/seller/",   # 卖家中心
+    "ldy": "/partner",   # 合作伙伴
+}
+
+@app.get("/api/r")
+async def rotation_redirect(flag: str = "pc"):
+    domain = random.choice(ROTATION_DOMAINS)
+    path = FLAG_ROUTES.get(flag, "/home")
+    return RedirectResponse(f"https://{domain}{path}", status_code=302)
 app.include_router(health.router)
 app.include_router(status.router)
 app.include_router(restart.router)
