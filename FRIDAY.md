@@ -30,7 +30,18 @@
 - 2026-05-28: [前端API接入] Dashboard/AIBrain/ScraperCenter/VirtualData 4个核心页面从mock改为真实API调用
 - 2026-05-28: [V5补全] 完成6项关键功能
 
-## 🔄 永久规则：asar 文件禁止提交
+- 2026-05-28: [域名轮值系统重写] 真正的轮值引擎上线
+  - 新增 _check_one() 真实HTTP健康检测（延迟/IP/状态码/跳转链）
+  - 新增 _check_ssl() SSL证书有效期检测（天级精度）
+  - 新增 _auto_rotate() 自动轮值逻辑（按权重+健康度选最优域名）
+  - 修复 scheduler.py 调用 _check_all（之前调用不存在的方法，静默失败）
+  - 新增每日9点+21点两次自动轮值检测
+  - 清除 mall_tools.py 中重复的轮值代理路由
+  - 扩展前端 rotation.js API层（全量检测/手动轮值/权重/历史）
+  - 修复前端 RotationPanel.vue 数据字段对齐+添加操作按钮
+
+$1## 🔄 永久规则：asar 文件禁止提交
 - app_patched.asar (154MB) / asar_extract/ 是 Codex 解包临时文件，绝不可提交
 - 每次 git add 之前必须先确认 .gitignore 已包含上述条目
 - 本规则优先级高于所有其他指令
+

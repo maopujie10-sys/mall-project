@@ -1,25 +1,41 @@
-import { agentApi } from './index'
+﻿import { agentApi } from "./index"
 
-/**
- * Get all domains and their status
- */
 export function getDomains() {
-  return agentApi.get('/rotation/domains')
+  return agentApi.get("/rotation/domains")
 }
 
-/**
- * Toggle a domain on/off
- * @param {string} domain
- * @param {boolean} active
- */
 export function toggleDomain(domain, active) {
-  return agentApi.post('/rotation/toggle', { domain, active })
+  return agentApi.post("/rotation/toggle", { domain, active })
 }
 
-/**
- * Check a single domain's health
- * @param {string} domain
- */
 export function checkDomain(domain) {
-  return agentApi.post('/rotation/check', { domain })
+  return agentApi.post("/rotation/check", { domain })
+}
+
+export function checkAllDomains() {
+  return agentApi.post("/rotation/check-all")
+}
+
+export function manualRotate() {
+  return agentApi.post("/rotation/rotate")
+}
+
+export function getRotationReport() {
+  return agentApi.get("/rotation/report")
+}
+
+export function setDomainWeight(domain, weight) {
+  return agentApi.post("/rotation/weight", { domain, weight })
+}
+
+export function addDomain(domain, type) {
+  return agentApi.post("/rotation/domains", { domain, type })
+}
+
+export function removeDomain(domain) {
+  return agentApi.delete(`/rotation/domains/${encodeURIComponent(domain)}`)
+}
+
+export function getRotationHistory() {
+  return agentApi.get("/rotation/history")
 }
