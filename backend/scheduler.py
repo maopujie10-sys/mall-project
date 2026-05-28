@@ -104,7 +104,7 @@ def start_scheduler():
     """启动定时任务"""
     scheduler.add_job(patrol_task, IntervalTrigger(minutes=30), id="patrol", replace_existing=True)
     scheduler.add_job(backup_task, CronTrigger(hour=2, minute=0), id="backup", replace_existing=True)
-    scheduler.add_job(rotation_check_task, CronTrigger(hour="9,21", minute=0), id="rotation", replace_existing=True)
+    scheduler.add_job(rotation_check_task, CronTrigger(minute='*/5'), id='rotation', replace_existing=True)
     scheduler.add_job(customer_report_task, CronTrigger(hour=18, minute=0), id="customer_report", replace_existing=True)
     scheduler.add_job(mall_scan_task, CronTrigger(hour=3, minute=0), id="mall_scan", replace_existing=True)
     scheduler.add_job(diary_task, CronTrigger(hour=23, minute=55), id="diary", replace_existing=True)
