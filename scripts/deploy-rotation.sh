@@ -6,7 +6,8 @@ echo "落地页已更新"
 
 echo "===== 2. 更新 nginx landing.conf ====="
 CONF="/usr/local/nginx/conf/conf.d/landing.conf"
-WILDCARD="*.chxhx.eu.cc *.drrgr.eu.cc *.drrimrf.eu.cc *.drriiu.eu.cc *.duomi.eu.cc *.dengruihan.eu.cc *.yyawzx.eu.cc *.gamed.eu.cc"
+BARE="chxhx.eu.cc drrgr.eu.cc drrimrf.eu.cc drriiu.eu.cc duomi.eu.cc dengruihan.eu.cc yyawzx.eu.cc gamed.eu.cc"
+WILDCARD="chxhx.eu.cc *.chxhx.eu.cc drrgr.eu.cc *.drrgr.eu.cc drrimrf.eu.cc *.drrimrf.eu.cc drriiu.eu.cc *.drriiu.eu.cc duomi.eu.cc *.duomi.eu.cc dengruihan.eu.cc *.dengruihan.eu.cc yyawzx.eu.cc *.yyawzx.eu.cc gamed.eu.cc *.gamed.eu.cc"
 
 cat > $CONF << 'NGINX'
 # ===== 主域名 → 落地页 =====
