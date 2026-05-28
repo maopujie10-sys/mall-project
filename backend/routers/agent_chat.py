@@ -1,4 +1,4 @@
-﻿"""Agent Chat API 閳?婢舵碍膩閸ㄥ娅ら懗鍊熺熅閻?v2: Claude + DeepSeek + Ollama 娑撳绱╅幙?""
+﻿"""Agent Chat API — AI 对话路由 v2: Claude + DeepSeek + Ollama 多模型支持"""
 import httpx, json, re, os
 from datetime import datetime
 from fastapi import APIRouter, Depends
@@ -32,7 +32,7 @@ DEEPSEEK_KEY = os.getenv("DEEPSEEK_API_KEY", "")
 OPENAI_KEY = os.getenv("OPENAI_API_KEY", "")
 
 async def call_ai(messages, model=None):
-    """婢舵碍膩閸ㄥ娅ら懗鍊熺熅閻? Ollama > DeepSeek > Claude > OpenAI (all keys empty = keyword fallback)"""
+    """模型选择优先级：Ollama > DeepSeek > Claude > OpenAI"""
     # 所有AI密钥为空时返回None，让主逻辑走关键词匹配
     if not any([os.getenv("DEEPSEEK_API_KEY"), os.getenv("OPENAI_API_KEY"), CLAUDE_API_KEY]):
         try:
@@ -42,7 +42,7 @@ async def call_ai(messages, model=None):
                     return None  # Ollama也不可用，走关键词匹配
         except:
             return None  # 所有AI不可用
-    """婢舵碍膩閸ㄥ娅ら懗鍊熺熅閻? Ollama > DeepSeek > Claude > OpenAI"""
+    """模型选择优先级：Ollama > DeepSeek > Claude > OpenAI"""
     model = model or CLAUDE_MODEL
     results = []
 

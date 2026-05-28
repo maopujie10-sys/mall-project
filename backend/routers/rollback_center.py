@@ -1,4 +1,4 @@
-﻿"""婢跺洣鍞ゆ稉搴℃礀濠婃氨搁悶閳閺佺増宓佹惔鎾愁槵娴闁秶鐤嗛崶鐐寸泊/娑撯偓闁款喗浠径""
+﻿﻿"""婢跺洣鍞ゆ稉搴℃礀濠婃氨搁悶閳閺佺増宓佹惔鎾愁槵娴闁秶鐤嗛崶鐐寸泊/娑撯偓闁款喗浠径""
 import os, json, subprocess
 from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException
@@ -152,7 +152,7 @@ async def verify_backup(backup_id: str, _=Depends(verify_token)):
 
 @router.post("/backups/{backup_id}/rollback")
 async def rollback(backup_id: str, _=Depends(verify_token)):
-    """閹笛嗩攽閸ョ偞绮撮幙宥勭稊"""
+    """查看备份详情 — 按ID/时间过滤"""
     records = _load_backups()
     for r in records:
         if r["id"] == backup_id:
