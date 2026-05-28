@@ -1,5 +1,0 @@
-export const SET_COIN_LIST = 'SET_COIN_LIST'
-export const GET_USERINFO = 'GET_USERINFO'
-export const SET_LANGUAGE = 'SET_LANGUAGE'
-export const GET_BALANCE = 'GET_BALANCE'
-export const SET_STAGE = 'SET_STAGE'

@@ -1,5 +1,0 @@
-admin
-<action name="adminRechargeOrderAction"
-			class="project.recharge.web.AdminRechargeOrderAction">
-			<result name="list">/recharge_list.jsp</result>
-</action>

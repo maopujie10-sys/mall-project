@@ -1,9 +1,0 @@
-
-admin
-
-<!-- withdraw -->
-<value>adminWithdrawService</value>
-
-api
-<!-- withdraw -->
-<value>withdrawService</value>
