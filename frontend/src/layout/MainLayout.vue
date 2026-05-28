@@ -1,5 +1,16 @@
 <template>
   <div class="app-shell" :class="{ collapsed: sidebarCollapsed, dark: theme.isDark.value }">
+    <!-- Electron 窗口标题栏 -->
+    <header v-if="isElectron" class="electron-titlebar">
+      <div class="titlebar-drag">
+        <span class="titlebar-text">🎯 Friday AI OS</span>
+      </div>
+      <div class="titlebar-actions">
+        <button class="tb-btn" @click="minimizeWin" title="最小化">─</button>
+        <button class="tb-btn" @click="maximizeWin" title="最大化">□</button>
+        <button class="tb-btn tb-close" @click="closeWin" title="关闭">✕</button>
+      </div>
+    </header>
     <aside class="sidebar">
       <div class="sidebar-brand" @click="$router.push('/friday')">
         <div class="brand-icon">
@@ -161,10 +172,15 @@
 </template>
 
 <script setup>
+
 import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useSystemStore } from '@/stores/system'
 import { useThemeStore } from '@/stores/theme'
+const isElectron = !!window.electronAPI
+const minimizeWin = () => window.electronAPI?.minimize()
+const maximizeWin = () => window.electronAPI?.maximize()
+const closeWin = () => window.electronAPI?.close()
 import LiveTaskPanel from '@/components/LiveTaskPanel.vue'
 import { storeToRefs } from 'pinia'
 
@@ -283,5 +299,30 @@ onMounted(() => {
 .content-area { flex: 1; overflow-y: auto; overflow-x: hidden; }
 .page-fade-enter-active, .page-fade-leave-active { transition: opacity 0.2s; }
 .page-fade-enter-from, .page-fade-leave-to { opacity: 0; }
+
+/* Electron 标题栏 */
+.electron-titlebar {
+  position: fixed; top: 0; left: 0; right: 0; height: 32px;
+  display: flex; align-items: center; justify-content: space-between;
+  background: #0a0d1a; z-index: 9999; -webkit-app-region: drag;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.titlebar-drag { flex: 1; display: flex; align-items: center; padding-left: 12px; }
+.titlebar-text { font-size: 12px; color: rgba(255,255,255,0.5); letter-spacing: 0.5px; }
+.titlebar-actions { display: flex; -webkit-app-region: no-drag; }
+.tb-btn {
+  width: 46px; height: 32px; border: none; background: transparent;
+  color: rgba(255,255,255,0.6); font-size: 12px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
+}
+.tb-btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
+.tb-close:hover { background: #e81123; color: #fff; }
+/* Adjust sidebar and main content for title bar */
+.app-shell { padding-top: 32px; }
+/* Restore sidebar height to fill */
+.sidebar { height: calc(100vh - 32px); top: 32px; }
+.main-area { height: calc(100vh - 32px); overflow-y: auto; }
+
 </style>
 

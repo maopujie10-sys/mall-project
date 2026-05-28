@@ -3,7 +3,7 @@ import vue from '@vitejs/plugin-vue'
 import { fileURLToPath, URL } from 'node:url'
 
 export default defineConfig({
-  base: '/ai/',
+  base: process.env.ELECTRON_BUILD === 'true' ? './' : '/ai/',
   plugins: [vue()],
   resolve: {
     alias: {
