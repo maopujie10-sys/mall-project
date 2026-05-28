@@ -110,8 +110,6 @@ from routers.order_alert_router import router as order_alert_router
 
 
 # === 落地页轮值跳转 /api/r?flag=pc|spc|ldy ===
-import random
-from fastapi.responses import RedirectResponse
 
 ROTATION_DOMAINS = [
     "chxhx.eu.cc", "drrgr.eu.cc", "drrimrf.eu.cc", "drriiu.eu.cc",

