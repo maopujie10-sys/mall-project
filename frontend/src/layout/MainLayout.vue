@@ -109,25 +109,17 @@
         </div>
         <div class="nav-section">
           <div class="nav-section-label" v-show="!sidebarCollapsed"><span class="sec-icon">🛡️</span> 安全合规</div>
-          <router-link to="/security" class="nav-item" :class="{ active: isActive('/security') }"><span class="nav-icon">🛡️</span><span>安全中心</span></router-link>
           <router-link to="/approval" class="nav-item" :class="{ active: isActive('/approval') }"><span class="nav-icon">✅</span><span>审批中心</span></router-link>
-          <router-link to="/rollback" class="nav-item" :class="{ active: isActive('/rollback') }"><span class="nav-icon">🔄</span><span>回滚中心</span></router-link>
-          
-        </div>
           <div class="nav-item" style="color:#ff4d4f;cursor:pointer" @click="emergencyVisible=true"><span class="nav-icon">🚨</span><span>急救面板</span></div>
+        </div>
         <div class="nav-section">
           <div class="nav-section-label" v-show="!sidebarCollapsed"><span class="sec-icon">📊</span> 监控与数据</div>
-          <router-link to="/alert" class="nav-item" :class="{ active: isActive('/alert') }"><span class="nav-icon">🔔</span><span>告警中心</span></router-link>
           <router-link to="/tasks" class="nav-item" :class="{ active: isActive('/tasks') }"><span class="nav-icon">📋</span><span>任务中心</span></router-link>
-          <router-link to="/site" class="nav-item" :class="{ active: isActive('/site') }"><span class="nav-icon">🔍</span><span>站点检测</span></router-link>
-          <router-link to="/rotation" class="nav-item" :class="{ active: isActive('/rotation') }"><span class="nav-icon">🌐</span><span>域名轮值</span></router-link>
           <router-link to="/database" class="nav-item" :class="{ active: isActive('/database') }"><span class="nav-icon">🗄️</span><span>数据库</span></router-link>
           <router-link to="/scraper" class="nav-item" :class="{ active: isActive('/scraper') }"><span class="nav-icon">🕷️</span><span>采集中心</span></router-link>
         </div>
         <div class="nav-section">
           <div class="nav-section-label" v-show="!sidebarCollapsed"><span class="sec-icon">🏪</span> 运营扩展</div>
-          <router-link to="/mall" class="nav-item" :class="{ active: isActive('/mall') }"><span class="nav-icon">🏪</span><span>商城管理</span></router-link>
-          <router-link to="/customer" class="nav-item" :class="{ active: isActive('/customer') }"><span class="nav-icon">👥</span><span>客服系统</span></router-link>
           <router-link to="/virtual" class="nav-item" :class="{ active: isActive('/virtual') }"><span class="nav-icon">🎮</span><span>虚拟数据</span></router-link>
           <router-link to="/image-process" class="nav-item" :class="{ active: isActive('/image-process') }"><span class="nav-icon">🖼️</span><span>商品图处理</span></router-link>
           <router-link to="/multilang" class="nav-item" :class="{ active: isActive('/multilang') }"><span class="nav-icon">🌍</span><span>多语言发布</span></router-link>

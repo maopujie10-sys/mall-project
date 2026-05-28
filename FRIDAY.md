@@ -54,6 +54,13 @@
 9. WebSocket实时推送
 10. 统一docker-compose编排
 
+
+### [修复] 全量审计修复 — PWA路径+菜单去重+unified-pwa补全
+- 'frontend/index.html': Service Worker 注册路径 '/sw.js'→'/service-worker.js', apple-touch-icon '.png'→'.svg'
+- 'frontend/src/layout/MainLayout.vue': 删除7组重复侧边栏菜单项(security/rollback/alert/site/rotation/mall/customer各出现2次)
+- 'mall-app/frontend/unified-pwa/public/service-worker.js': 新建离线缓存文件
+- 'mall-app/frontend/unified-pwa/index.html': 注册service worker
+
 ## 最近改动
 - 2026-05-28: [全量审计] 商城后台整合审计完成
   - 后端 mall_tools.py 113 端点代理 36 个 Controller，全部注册
@@ -137,6 +144,13 @@
 
 
 
+
+
+### [修复] 全量审计修复 — PWA路径+菜单去重+unified-pwa补全
+- 'frontend/index.html': Service Worker 注册路径 '/sw.js'→'/service-worker.js', apple-touch-icon '.png'→'.svg'
+- 'frontend/src/layout/MainLayout.vue': 删除7组重复侧边栏菜单项(security/rollback/alert/site/rotation/mall/customer各出现2次)
+- 'mall-app/frontend/unified-pwa/public/service-worker.js': 新建离线缓存文件
+- 'mall-app/frontend/unified-pwa/index.html': 注册service worker
 
 ## 最近改动 (2026-05-28)
 
