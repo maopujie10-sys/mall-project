@@ -23,6 +23,10 @@ DEFAULT_DOMAINS = [
     {"domain": "gamed.eu.cc", "active": True, "health": "ok", "type": "轮值", "weight": 3},
 ]
 
+def _get_domains():
+    if "rotation_domains" not in state._data:
+        state._data["rotation_domains"] = [dict(d) for d in DEFAULT_DOMAINS]
+        state._save()
     return state._data["rotation_domains"]
 
 
