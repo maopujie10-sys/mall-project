@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="friday-brain" ref="container">
     <canvas ref="canvas" class="brain-canvas"></canvas>
     
@@ -43,7 +43,7 @@ const container = ref(null)
 const canvas = ref(null)
 const selectedAgent = ref(null)
 const detailStyle = ref({})
-const totalAgents = 7
+const totalAgents = ref(7)
 const activeAgents = ref(7)
 
 let scene, camera, renderer, clock
@@ -52,8 +52,11 @@ let animFrameId
 let mouseX = 0, mouseY = 0
 let raycaster, mouse
 
-// Agent定义
-const agentDefs = [
+// Agent定义(默认值, fetchAgents 会从后端更新)
+
+
+async function fetchAgents() { try { const { data } = await agentApi.get('/agent/friday/agents'); if (data && data.agents && data.agents.length) { const colorMap = [0x667eea,0x52c41a,0x1890ff,0xfaad14,0xff4d4f,0x764ba2,0x13c2c2]; activeAgents.value = 0; totalAgents.value = data.agents.length; agentDefs = data.agents.map((a, i) => { if (a.status === 'active') activeAgents.value++; return { id: a.id || a.name, name: a.name, icon: a.icon || '🤖', color: colorMap[i % 7], radius: 2.0 + (i * 0.15), status: a.status || 'active', statusText: a.status === 'active' ? '运行中' : '待命中', tasks: a.tasks || 0, successRate: a.success_rate || 95 }; }); } } catch {} }
+let agentDefs = [
   { id: 'master', name: 'Master Agent', icon: '🧠', color: 0x667eea, radius: 2.8, status: 'active', statusText: '运行中', tasks: 156, successRate: 98.2 },
   { id: 'code', name: 'Code Agent', icon: '💻', color: 0x52c41a, radius: 2.2, status: 'active', statusText: '开发中', tasks: 89, successRate: 94.5 },
   { id: 'devops', name: 'DevOps Agent', icon: '⚙️', color: 0x1890ff, radius: 2.5, status: 'active', statusText: '监控中', tasks: 234, successRate: 99.1 },
@@ -319,18 +322,11 @@ function animate() {
   renderer.render(scene, camera)
 }
 
-function activateAgent(id) {
-  selectedAgent.value = null
-}
+async function activateAgent(id) { try { await agentApi.post("/agent/friday/agent/${id}/activate"); ElMessage.success('Agent ' + id + ' 已激活') } catch { ElMessage.error('激活失败') } selectedAgent.value = null }
 
-function viewAgentDetail(id) {
-  selectedAgent.value = null
-}
+function viewAgentDetail(id) { selectedAgent.value = null; window.location.hash = "#/agent/${id}" }
 
-onMounted(async () => {
-  await nextTick()
-  initScene()
-})
+onMounted(async () => { await fetchAgents(); await nextTick(); initScene() })
 
 onUnmounted(() => {
   if (animFrameId) cancelAnimationFrame(animFrameId)

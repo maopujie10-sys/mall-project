@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory } from "vue-router"
+﻿import { createRouter, createWebHistory } from "vue-router"
 
 const routes = [
   {
@@ -33,6 +33,7 @@ const routes = [
       { path: "ocr", name: "OcrPanel", component: () => import("@/views/OcrPanel.vue"), meta: { title: "OCR识别" } },
       { path: "plugins", name: "PluginCenter", component: () => import("@/views/PluginCenter.vue"), meta: { title: "插件系统" } },
       { path: "tasks", name: "TaskCenter", component: () => import("@/views/TaskCenter.vue"), meta: { title: "自动任务" } },
+      { path: "self-service", name: "SelfService", component: () => import("@/views/SelfService.vue"), meta: { title: "自助服务" } },
 
       { path: "alert", name: "AlertCenter", component: () => import("@/views/AlertCenter.vue"), meta: { title: "告警中心" } },
       { path: "security", name: "SecurityPanel", component: () => import("@/views/SecurityPanel.vue"), meta: { title: "安全中心" } },
