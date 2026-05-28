@@ -213,7 +213,7 @@
               <el-avatar :size="28" style="background: linear-gradient(135deg, #667eea, #13c2c2);">F</el-avatar>
             </span>
             <template #dropdown>
-              <el-dropdown-menu>
+              <el-dropdown-menu>                <el-dropdown-item @click="tokenDialogVisible = true">🔑 设置 Token</el-dropdown-item>
                 <el-dropdown-item disabled>Friday AI OS v3.0</el-dropdown-item>
                 <el-dropdown-item divided>
                   <router-link to="/emergency" style="color: #ff4d4f; text-decoration: none;">🚨 急救面板</router-link>
@@ -238,6 +238,15 @@
 
 <script setup>
 
+const tokenDialogVisible = ref(false)
+const tokenInput = ref(localStorage.getItem('agent_token') || '')
+
+function saveToken() {
+  localStorage.setItem('agent_token', tokenInput.value)
+  tokenDialogVisible.value = false
+  ElMessage.success('Token 已保存')
+}
+
 import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useSystemStore } from '@/stores/system'
@@ -246,6 +255,7 @@ const isElectron = !!window.electronAPI
 const minimizeWin = () => window.electronAPI?.minimize()
 const maximizeWin = () => window.electronAPI?.maximize()
 const closeWin = () => window.electronAPI?.close()
+import { ElMessage } from "element-plus"
 import LiveTaskPanel from '@/components/LiveTaskPanel.vue'
 import { storeToRefs } from 'pinia'
 

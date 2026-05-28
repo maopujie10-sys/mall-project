@@ -83,7 +83,7 @@ from routers import (
     nginx_panel, site_check, alert, inspector, task_queue, safety_api,
     mall_scanner, autopilot, ai_factory_router, batch_ops, sql_executor,
     daily_report, self_service, docker_panel, devops_agent_router, memory_router, heal_router,
-
+    daily_report, self_service, docker_panel, devops_agent_router,
 app.include_router(health.router)
 app.include_router(status.router)
 app.include_router(restart.router)

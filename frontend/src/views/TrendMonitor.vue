@@ -82,9 +82,9 @@ const trends = reactive({
   weibo: { name:'微博热搜', icon:'📢', color:'#ff4d4f', trends:[] },
   douyin: { name:'抖音热点', icon:'🎵', color:'#010101', trends:[] },
   bilibili: { name:'B站热门', icon:'📺', color:'#fb7299', trends:[] },
-})
-
-const filteredTrends = computed(() => {
+  youtube: { name:"YouTube热门", icon:"▶️", color:"#ff0000", trends:[] },
+  twitter: { name:"X/Twitter趋势", icon:"🐦", color:"#1da1f2", trends:[] },
+  google: { name:"Google Trends", icon:"🔍", color:"#4285f4", trends:[] },
   if (activePlatform.value === 'all') return trends
   const filtered = {}
   if (trends[activePlatform.value]) filtered[activePlatform.value] = trends[activePlatform.value]

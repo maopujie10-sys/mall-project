@@ -249,3 +249,37 @@ export function updateAttr(uuid, data) { return agentApi.put(`/tools/mall/attr/$
 export function deleteAttr(uuid) { return agentApi.delete(`/tools/mall/attr/${uuid}`) }
 
 
+
+// ===== 属性值管理 (新增) =====
+export function getAttrValueList(params) { return agentApi.get('/tools/mall/attr-values', { params }) }
+export function getAttrValueDetail(id) { return agentApi.get(`/tools/mall/attr-value/${id}`) }
+export function saveAttrValue(data) { return agentApi.post('/tools/mall/attr-value', data) }
+export function updateAttrValue(id, data) { return agentApi.put(`/tools/mall/attr-value/${id}`, data) }
+export function deleteAttrValue(id) { return agentApi.delete(`/tools/mall/attr-value/${id}`) }
+
+// ===== 种子数据 (新增) =====
+export function seedProducts() { return agentApi.post('/tools/mall/seed/products') }
+export function seedOrders() { return agentApi.post('/tools/mall/seed/orders') }
+export function seedUsers() { return agentApi.post('/tools/mall/seed/users') }
+export function seedMerchants() { return agentApi.post('/tools/mall/seed/merchants') }
+export function seedComments() { return agentApi.post('/tools/mall/seed/comments') }
+export function seedClear() { return agentApi.delete('/tools/mall/seed/clear') }
+
+// ===== 本地订单 (新增) =====
+export function submitLocalOrder(data) { return agentApi.post('/tools/mall/order-local/submit', data) }
+
+// ===== 商家版本管理 (新增) =====
+export function sellerVersionClient(data) { return agentApi.post('/tools/mall/seller/version/client', data) }
+export function sellerVersionRegister(data) { return agentApi.post('/tools/mall/seller/version/register', data) }
+export function sellerVersionRegisterJs(data) { return agentApi.post('/tools/mall/seller/version/register-js', data) }
+export function sellerVersionUpdateSign(data) { return agentApi.post('/tools/mall/seller/version/update-sign-pdf', data) }
+
+// ===== 图片上传管理 (新增) =====
+export function getUploadList(params) { return agentApi.get('/tools/mall/upload/files', { params }) }
+export function deleteUpload(id) { return agentApi.delete(`/tools/mall/upload/${id}`) }
+
+// ===== Java端轮值 (新增) =====
+export function getJavaRotationDomains() { return agentApi.get('/tools/mall/rotation/domains') }
+export function javaBlockDomain(data) { return agentApi.post('/tools/mall/rotation/block', data) }
+export function javaUnblockDomain(data) { return agentApi.post('/tools/mall/rotation/unblock', data) }
+export function getJavaRotationStats() { return agentApi.get('/tools/mall/rotation/stats') }

@@ -810,3 +810,192 @@ async def batch_order_status(data: dict, _=Depends(verify_token)):
 async def batch_user_status(data: dict, _=Depends(verify_token)):
     await handle_risk("L3", "批量更新用户状态")
     return await proxy_to_mall("/api/user/batch/status", method="POST", json_data=data)
+
+# ============================================================
+# 属性管理 (AgentController)
+# ============================================================
+
+@router.get("/attr-categories")
+async def list_attr_categories(_=Depends(verify_token)):
+    await handle_risk("L1", "查看属性分类")
+    return await proxy_to_mall("/agent/attr-category/list")
+
+@router.get("/attr-category/{uuid}")
+async def get_attr_category(uuid: str, _=Depends(verify_token)):
+    await handle_risk("L1", "查看属性分类详情")
+    return await proxy_to_mall(f"/agent/attr-category/{uuid}")
+
+@router.post("/attr-category")
+async def create_attr_category(data: dict, _=Depends(verify_token)):
+    await handle_risk("L2", "创建属性分类")
+    return await proxy_to_mall("/agent/attr-category", method="POST", json_data=data)
+
+@router.put("/attr-category/{uuid}")
+async def update_attr_category(uuid: str, data: dict, _=Depends(verify_token)):
+    await handle_risk("L2", "更新属性分类")
+    return await proxy_to_mall(f"/agent/attr-category/{uuid}", method="PUT", json_data=data)
+
+@router.delete("/attr-category/{uuid}")
+async def delete_attr_category(uuid: str, _=Depends(verify_token)):
+    await handle_risk("L2", "删除属性分类")
+    return await proxy_to_mall(f"/agent/attr-category/{uuid}", method="DELETE")
+
+@router.get("/attrs")
+async def list_attrs(_=Depends(verify_token)):
+    await handle_risk("L1", "查看属性列表")
+    return await proxy_to_mall("/agent/attr/list")
+
+@router.get("/attr/{uuid}")
+async def get_attr(uuid: str, _=Depends(verify_token)):
+    await handle_risk("L1", "查看属性详情")
+    return await proxy_to_mall(f"/agent/attr/{uuid}")
+
+@router.post("/attr")
+async def create_attr(data: dict, _=Depends(verify_token)):
+    await handle_risk("L2", "创建属性")
+    return await proxy_to_mall("/agent/attr", method="POST", json_data=data)
+
+@router.put("/attr/{uuid}")
+async def update_attr(uuid: str, data: dict, _=Depends(verify_token)):
+    await handle_risk("L2", "更新属性")
+    return await proxy_to_mall(f"/agent/attr/{uuid}", method="PUT", json_data=data)
+
+@router.delete("/attr/{uuid}")
+async def delete_attr(uuid: str, _=Depends(verify_token)):
+    await handle_risk("L2", "删除属性")
+    return await proxy_to_mall(f"/agent/attr/{uuid}", method="DELETE")
+
+@router.get("/attr-values")
+async def list_attr_values(_=Depends(verify_token)):
+    await handle_risk("L1", "查看属性值列表")
+    return await proxy_to_mall("/agent/attr-value/list")
+
+@router.get("/attr-value/{id}")
+async def get_attr_value(id: int, _=Depends(verify_token)):
+    await handle_risk("L1", "查看属性值详情")
+    return await proxy_to_mall(f"/agent/attr-value/{id}")
+
+@router.post("/attr-value")
+async def create_attr_value(data: dict, _=Depends(verify_token)):
+    await handle_risk("L2", "创建属性值")
+    return await proxy_to_mall("/agent/attr-value", method="POST", json_data=data)
+
+@router.put("/attr-value/{id}")
+async def update_attr_value(id: int, data: dict, _=Depends(verify_token)):
+    await handle_risk("L2", "更新属性值")
+    return await proxy_to_mall(f"/agent/attr-value/{id}", method="PUT", json_data=data)
+
+@router.delete("/attr-value/{id}")
+async def delete_attr_value(id: int, _=Depends(verify_token)):
+    await handle_risk("L2", "删除属性值")
+    return await proxy_to_mall(f"/agent/attr-value/{id}", method="DELETE")
+
+# ============================================================
+# 种子数据 (AgentController)
+# ============================================================
+
+@router.post("/seed/products")
+async def seed_products(_=Depends(verify_token)):
+    await handle_risk("L3", "生成种子商品数据")
+    return await proxy_to_mall("/agent/seed/products", method="POST")
+
+@router.post("/seed/orders")
+async def seed_orders(_=Depends(verify_token)):
+    await handle_risk("L3", "生成种子订单数据")
+    return await proxy_to_mall("/agent/seed/orders", method="POST")
+
+@router.post("/seed/users")
+async def seed_users(_=Depends(verify_token)):
+    await handle_risk("L3", "生成种子用户数据")
+    return await proxy_to_mall("/agent/seed/users", method="POST")
+
+@router.post("/seed/merchants")
+async def seed_merchants(_=Depends(verify_token)):
+    await handle_risk("L3", "生成种子商家数据")
+    return await proxy_to_mall("/agent/seed/merchants", method="POST")
+
+@router.post("/seed/comments")
+async def seed_comments(_=Depends(verify_token)):
+    await handle_risk("L3", "生成种子评论数据")
+    return await proxy_to_mall("/agent/seed/comments", method="POST")
+
+@router.post("/seed/clear")
+async def seed_clear(_=Depends(verify_token)):
+    await handle_risk("L4", "清除所有种子数据")
+    return await proxy_to_mall("/agent/seed/clear", method="DELETE")
+
+# ============================================================
+# 本地订单 (OrdersLocalController)
+# ============================================================
+
+@router.post("/order-local/submit")
+async def submit_local_order(data: dict, _=Depends(verify_token)):
+    await handle_risk("L2", "提交本地订单")
+    return await proxy_to_mall("/api/order-local/submit", method="POST", json_data=data)
+
+# ============================================================
+# 商家版本管理 (SellerVersionController)
+# ============================================================
+
+@router.post("/seller/version/client")
+async def seller_version_client(data: dict, _=Depends(verify_token)):
+    await handle_risk("L2", "商家版本客户端")
+    return await proxy_to_mall("/seller/version/client", method="POST", json_data=data)
+
+@router.post("/seller/version/register")
+async def seller_version_register(data: dict, _=Depends(verify_token)):
+    await handle_risk("L2", "商家版本注册")
+    return await proxy_to_mall("/seller/version/register", method="POST", json_data=data)
+
+@router.post("/seller/version/register-js")
+async def seller_version_register_js(data: dict, _=Depends(verify_token)):
+    await handle_risk("L2", "商家版本JS注册")
+    return await proxy_to_mall("/seller/version/register-js", method="POST", json_data=data)
+
+@router.post("/seller/version/update-sign-pdf")
+async def seller_version_update_sign(data: dict, _=Depends(verify_token)):
+    await handle_risk("L2", "商家版本签名更新")
+    return await proxy_to_mall("/seller/version/update-sign-pdf", method="POST", json_data=data)
+
+# ============================================================
+# 图片上传管理 (UploadImgController)
+# ============================================================
+
+@router.get("/upload/list")
+async def list_uploads(_=Depends(verify_token)):
+    await handle_risk("L1", "查看上传列表")
+    return await proxy_to_mall("/api/upload/list")
+
+@router.get("/upload/files")
+async def list_upload_files(_=Depends(verify_token)):
+    await handle_risk("L1", "查看上传文件列表")
+    return await proxy_to_mall("/api/upload/list")
+
+@router.delete("/upload/{id}")
+async def delete_upload(id: int, _=Depends(verify_token)):
+    await handle_risk("L2", "删除上传文件")
+    return await proxy_to_mall(f"/api/upload/{id}", method="DELETE")
+
+# ============================================================
+# Java端轮值系统 (RotationController) — 补充AI端轮值
+# ============================================================
+
+@router.get("/rotation/domains")
+async def java_rotation_domains(_=Depends(verify_token)):
+    await handle_risk("L1", "查看Java轮值域名")
+    return await proxy_to_mall("/api/rotation/domains")
+
+@router.post("/rotation/block")
+async def java_rotation_block(data: dict, _=Depends(verify_token)):
+    await handle_risk("L2", "封禁轮值域名")
+    return await proxy_to_mall("/api/rotation/block", method="POST", json_data=data)
+
+@router.post("/rotation/unblock")
+async def java_rotation_unblock(data: dict, _=Depends(verify_token)):
+    await handle_risk("L2", "解禁轮值域名")
+    return await proxy_to_mall("/api/rotation/unblock", method="POST", json_data=data)
+
+@router.get("/rotation/stats")
+async def java_rotation_stats(_=Depends(verify_token)):
+    await handle_risk("L1", "查看轮值统计")
+    return await proxy_to_mall("/api/rotation/stats")

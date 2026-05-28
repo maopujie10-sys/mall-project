@@ -1,6 +1,11 @@
 ﻿import axios from 'axios'
 import { ElMessage } from 'element-plus'
 
+// 从 localStorage 读取 Token
+function getToken() {
+  return localStorage.getItem('agent_token') || ''
+}
+
 function unwrapResponse(response) {
   const data = response.data
   if (data && typeof data === 'object' && 'code' in data) {
@@ -14,8 +19,12 @@ function unwrapResponse(response) {
 }
 
 function handleError(error) {
-  const message = error.response?.data?.message || error.message || '网络错误'
-  ElMessage.error(message)
+  const msg = error.response?.data?.detail || error.response?.data?.message || error.message || '网络错误'
+  if (error.response?.status === 403) {
+    ElMessage.error('Token 无效或未设置，请在右上角用户菜单中配置 Agent Token')
+  } else {
+    ElMessage.error(msg)
+  }
   return Promise.reject(error)
 }
 
@@ -34,8 +43,15 @@ const agentApi = axios.create({
   timeout: 30000,
   headers: { 'Content-Type': 'application/json' },
 })
-agentApi.interceptors.request.use((c) => c, (e) => Promise.reject(e))
+// 自动注入 X-Agent-Token
+agentApi.interceptors.request.use((config) => {
+  const token = getToken()
+  if (token) {
+    config.headers['X-Agent-Token'] = token
+  }
+  return config
+}, (e) => Promise.reject(e))
 agentApi.interceptors.response.use(unwrapResponse, handleError)
 
-export { api, agentApi }
+export { api, agentApi, getToken }
 export default api
