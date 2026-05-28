@@ -1,4 +1,8 @@
-﻿### [修复] 全量审计修复 — main.py + scheduler.py + vision_agent.py + 前端布局
+﻿### [修复] 数字生命体频率保护 — 防止高频执行导致内存泄漏
+- 'backend/digital_lifeform.py': 添加硬性最低间隔 min_interval=max(interval_seconds,60)，加入 nonlocal _last_cycle_time 闭包保护，防止 start_loop 被多次调用
+- 'backend/scheduler.py': 添加 MIN_SCHEDULE_INTERVAL=60 常量作为频率保护标记
+
+### [修复] 全量审计修复 — main.py + scheduler.py + vision_agent.py + 前端布局
 - 'backend/main.py': 修复 auth_router→user_auth_router 导入错误（auth_router.py不存在），添加 daily_report.router include
 - 'backend/scheduler.py': 修复 metrics_record_task 缺失 async def 关键字（语法错误），注册 daily_report_task 定时任务
 - 'backend/agents/vision_agent.py': 修复 async with 关闭共享client的bug + 缩进错误重写 analyze_image 用AI模型真实分析
@@ -157,4 +161,5 @@
 ### [修复] main.py 导入清理
 - 去除重复导入、修复缺失括号语法错误
 - 所有 6 个模型端点唯一无重复
+
 

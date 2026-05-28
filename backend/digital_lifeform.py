@@ -1,6 +1,6 @@
 ﻿"""数字生命体 v3 — 自主循环+反思+洞察+主动行动+做梦+情绪"""
 
-import asyncio, json, random
+import asyncio, json, random, time
 from datetime import datetime, timedelta
 from state import state
 from tools.memory_store import memory_store
@@ -312,18 +312,26 @@ class DigitalLifeform:
 
     @classmethod
     async def start_loop(cls, interval_seconds=300):
+        # 硬性最低间隔保护：无论interval_seconds多小，至少60秒一轮
+        min_interval = max(interval_seconds, 60)  # 最少60秒
+        _last_cycle_time = 0
         if cls._running: return {"status":"already_running"}
         cls._running = True
         cls._cycle_count = 0
         print(f"[Lifeform] v3数字生命体启动, 巡检间隔{interval_seconds}s")
         async def loop():
+            nonlocal _last_cycle_time
             while cls._running:
                 try:
                     result = await cls.one_cycle()
                     print(f"[Lifeform] 周期#{result['cycle']}: 反思✓ 洞察{result['insights']} 主动行动{len(result['proactive_actions'])} {'做梦✓' if result['dream'] else ''}")
                 except Exception as e:
                     print(f"[Lifeform] 周期异常: {e}")
-                await asyncio.sleep(interval_seconds)
+                # 频率保护：确保距上次执行至少min_interval秒
+                elapsed = time.time() - _last_cycle_time
+                if elapsed < min_interval:
+                    await asyncio.sleep(min_interval - elapsed)
+                _last_cycle_time = time.time()
         asyncio.create_task(loop())
         return {"status":"started","interval":interval_seconds}
 

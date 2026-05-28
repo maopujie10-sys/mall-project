@@ -13,6 +13,9 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.interval import IntervalTrigger
 from apscheduler.triggers.cron import CronTrigger
 
+# 最小间隔保护(秒) — 防止任何定时任务低于此频率
+MIN_SCHEDULE_INTERVAL = 60
+
 scheduler = AsyncIOScheduler()
 
 
