@@ -128,6 +128,7 @@
           <router-link to="/order-alert" class="nav-item" :class="{ active: isActive('/order-alert') }"><span class="nav-icon">🔔</span><span>订单预警</span></router-link>
           <router-link to="/plugins" class="nav-item" :class="{ active: isActive('/plugins') }"><span class="nav-icon">🧩</span><span>技能市场</span></router-link>
         </div>
+      </nav>
         </div>
       </header>
 
