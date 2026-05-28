@@ -97,6 +97,12 @@ from routers.network_router import router as network_router
 from routers.settings_router import router as settings_router
 from routers.dashboard_router import router as dashboard_router
 from routers.notification_router import router as notification_router
+from routers.phone_router import router as phone_router
+from routers.image_router import router as image_router
+from routers.translate_router import router as translate_router
+from routers.excel_router import router as excel_router
+from routers.auto_reply_router import router as auto_reply_router
+from routers.order_alert_router import router as order_alert_router
 
 app.include_router(health.router)
 app.include_router(status.router)
@@ -140,6 +146,12 @@ app.include_router(settings_router)
 app.include_router(dashboard_router)
 app.include_router(daily_report.router)
 app.include_router(notification_router)
+app.include_router(phone_router)
+app.include_router(image_router)
+app.include_router(translate_router)
+app.include_router(excel_router)
+app.include_router(auto_reply_router)
+app.include_router(order_alert_router)
 app.include_router(plugin_router)
 app.include_router(lifeform_router)
 app.include_router(workflow_router)

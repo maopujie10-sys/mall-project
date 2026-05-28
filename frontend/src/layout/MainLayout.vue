@@ -62,6 +62,7 @@
           <router-link to="/nginx" class="nav-item" :class="{ active: isActive('/nginx') }"><span class="nav-icon">🔧</span><span>Nginx</span></router-link>
           <router-link to="/network" class="nav-item" :class="{ active: isActive('/network') }"><span class="nav-icon">🌐</span><span>网络工具</span></router-link>
           <router-link to="/github" class="nav-item" :class="{ active: isActive('/github') }"><span class="nav-icon">🐙</span><span>GitHub MCP</span></router-link>
+          <router-link to="/phone" class="nav-item" :class="{ active: isActive('/phone') }"><span class="nav-icon">📞</span><span>AI电话助理</span></router-link>
           <router-link to="/emergency" class="nav-item" :class="{ active: isActive('/emergency') }"><span class="nav-icon">🚨</span><span>急救面板</span></router-link>
           <router-link to="/files" class="nav-item" :class="{ active: isActive('/files') }"><span class="nav-icon">📁</span><span>文件管理</span></router-link>
           <router-link to="/audit" class="nav-item" :class="{ active: isActive('/audit') }"><span class="nav-icon">📋</span><span>审计日志</span></router-link>
@@ -89,6 +90,11 @@
           <router-link to="/mall" class="nav-item" :class="{ active: isActive('/mall') }"><span class="nav-icon">🏪</span><span>商城管理</span></router-link>
           <router-link to="/customer" class="nav-item" :class="{ active: isActive('/customer') }"><span class="nav-icon">👥</span><span>客服系统</span></router-link>
           <router-link to="/virtual" class="nav-item" :class="{ active: isActive('/virtual') }"><span class="nav-icon">🎮</span><span>虚拟数据</span></router-link>
+          <router-link to="/image-process" class="nav-item" :class="{ active: isActive('/image-process') }"><span class="nav-icon">🖼️</span><span>商品图处理</span></router-link>
+          <router-link to="/multilang" class="nav-item" :class="{ active: isActive('/multilang') }"><span class="nav-icon">🌍</span><span>多语言发布</span></router-link>
+          <router-link to="/batch-upload" class="nav-item" :class="{ active: isActive('/batch-upload') }"><span class="nav-icon">📋</span><span>批量上架</span></router-link>
+          <router-link to="/auto-reply" class="nav-item" :class="{ active: isActive('/auto-reply') }"><span class="nav-icon">🤖</span><span>自动回复</span></router-link>
+          <router-link to="/order-alert" class="nav-item" :class="{ active: isActive('/order-alert') }"><span class="nav-icon">🔔</span><span>订单预警</span></router-link>
           <router-link to="/plugins" class="nav-item" :class="{ active: isActive('/plugins') }"><span class="nav-icon">🧩</span><span>技能市场</span></router-link>
         </div>
                 </el-dropdown-item>

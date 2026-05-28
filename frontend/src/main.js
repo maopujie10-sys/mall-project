@@ -19,3 +19,11 @@ app.use(router)
 app.use(ElementPlus, { size: 'default' })
 app.mount('#app')
 
+
+// 注册 PWA ServiceWorker
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("/ai/service-worker.js")
+  })
+}
+

@@ -45,6 +45,12 @@ const routes = [
       { path: "network", name: "NetworkTools", component: () => import("@/views/NetworkTools.vue"), meta: { title: "网络工具" } },
       { path: "github", name: "GitHubPanel", component: () => import("@/views/GitHubPanel.vue"), meta: { title: "GitHub" } }
       { path: "emergency", name: "Emergency", component: () => import("@/views/EmergencyPanel.vue"), meta: { title: "急救面板" } },
+      { path: "phone", name: "PhoneAssistant", component: () => import("@/views/PhoneAssistant.vue"), meta: { title: "AI电话助理" } },
+      { path: "image-process", name: "ImageProcessor", component: () => import("@/views/ImageProcessor.vue"), meta: { title: "AI商品图" } },
+      { path: "multilang", name: "MultiLangPublish", component: () => import("@/views/MultiLangPublish.vue"), meta: { title: "多语言发布" } },
+      { path: "batch-upload", name: "BatchUpload", component: () => import("@/views/BatchUpload.vue"), meta: { title: "批量上架" } },
+      { path: "auto-reply", name: "AutoReply", component: () => import("@/views/AutoReply.vue"), meta: { title: "自动回复" } },
+      { path: "order-alert", name: "OrderAlert", component: () => import("@/views/OrderAlert.vue"), meta: { title: "订单预警" } },
     ],
   },
 ]

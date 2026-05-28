@@ -1,4 +1,19 @@
-﻿### [修复] 数字生命体频率保护 — 防止高频执行导致内存泄漏
+﻿### [新增] 六大生产级功能 — AI电话助理/商品图处理/多语言发布/Excel上架/自动回复/订单预警
+- 'backend/routers/phone_router.py': AI电话助理（IVR菜单/模拟来电/转人工/统计）
+- 'backend/routers/image_router.py': AI商品图处理（去背景/水印/批量/remove.bg集成）
+- 'backend/routers/translate_router.py': 多语言商品发布（7种语言/5个平台）
+- 'backend/routers/excel_router.py': Excel批量上架（CSV解析/自动定价/一键发布）
+- 'backend/routers/auto_reply_router.py': 客服自动回复（规则引擎/AI回复/转人工/统计）
+- 'backend/routers/order_alert_router.py': 订单异常预警（退款/库存/物流/销售额+电话告警）
+- 'backend/tools/phone_alert.py': 电话告警服务（P0/P1/P2三级/防重复/模拟+真实）
+- 'frontend/src/views/': 6个新Vue页面（PhoneAssistant/ImageProcessor/MultiLangPublish/BatchUpload/AutoReply/OrderAlert）
+- 'frontend/src/api/': 6个新API文件
+- 'frontend/public/': PWA SVG图标+service-worker.js
+- 'backend/main.py': 注册6个新路由
+- 'frontend/src/router/index.js': 注册6个新路由
+- 'frontend/src/layout/MainLayout.vue': 侧边栏6个新入口
+
+### [修复] 数字生命体频率保护 — 防止高频执行导致内存泄漏
 - 'backend/digital_lifeform.py': 添加硬性最低间隔 min_interval=max(interval_seconds,60)，加入 nonlocal _last_cycle_time 闭包保护，防止 start_loop 被多次调用
 - 'backend/scheduler.py': 添加 MIN_SCHEDULE_INTERVAL=60 常量作为频率保护标记
 
@@ -161,5 +176,6 @@
 ### [修复] main.py 导入清理
 - 去除重复导入、修复缺失括号语法错误
 - 所有 6 个模型端点唯一无重复
+
 
 
