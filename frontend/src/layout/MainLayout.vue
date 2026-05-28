@@ -256,7 +256,6 @@ async function sendFloatMsg() {
   color: rgba(102,126,234,0.4); padding: 12px 10px 6px; white-space: nowrap;
 }
 
-.nav-item { display: flex; align-items: center; gap: 8px; }
   display: flex; align-items: center; gap: 10px;
   padding: 10px 12px; border-radius: 8px;
   color: rgba(255,255,255,0.5); text-decoration: none;
