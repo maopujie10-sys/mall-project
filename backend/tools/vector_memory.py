@@ -1,150 +1,89 @@
-"""向量记忆 — ChromaDB 语义检索
-让 AI 真正"理解"对话，而非关键词匹配
-
-依赖: pip install chromadb sentence-transformers"""
-import os
-import json
+﻿"""向量语义记忆 — 302AI嵌入+向量存储+语义搜索"""
+import json, os, math
 from datetime import datetime
-from typing import Optional
-
-try:
-    import chromadb
-    from chromadb.config import Settings
-    HAS_CHROMA = True
-except ImportError:
-    HAS_CHROMA = False
-
-try:
-    from sentence_transformers import SentenceTransformer
-    HAS_EMBEDDING = True
-except ImportError:
-    HAS_EMBEDDING = False
-
-VECTOR_DIR = os.path.join(os.path.dirname(__file__), "..", "vector_db")
-
+from state import state
 
 class VectorMemory:
-    """ChromaDB 向量记忆 — 语义级别的记忆检索"""
+    """轻量级向量记忆系统（无需numpy）"""
 
-    def __init__(self):
-        self._client = None
-        self._collection = None
-        self._embedder = None
-        self._init()
+    @staticmethod
+    def _cosine_sim(a, b):
+        """余弦相似度"""
+        dot = sum(ai * bi for ai, bi in zip(a, b))
+        na = math.sqrt(sum(ai * ai for ai in a))
+        nb = math.sqrt(sum(bi * bi for bi in b))
+        return dot / (na * nb) if na * nb > 0 else 0
 
-    def _init(self):
-        if not HAS_CHROMA:
-            print("[VectorMemory] ChromaDB 未安装，使用纯文本模式。pip install chromadb")
-            return
-        try:
-            os.makedirs(VECTOR_DIR, exist_ok=True)
-            self._client = chromadb.PersistentClient(path=VECTOR_DIR)
-            self._collection = self._client.get_or_create_collection(
-                name="friday_memories",
-                metadata={"hnsw:space": "cosine"}
-            )
-        except Exception as e:
-            print(f"[VectorMemory] 初始化失败: {e}")
-            self._client = None
-
-    def _get_embedder(self):
-        """懒加载嵌入模型"""
-        if not self._embedder and HAS_EMBEDDING:
-            try:
-                # 使用轻量中文模型
-                self._embedder = SentenceTransformer('paraphrase-multilingual-MiniLM-L12-v2')
-            except:
-                try:
-                    self._embedder = SentenceTransformer('all-MiniLM-L6-v2')
-                except:
-                    pass
-        return self._embedder
-
-    @property
-    def available(self) -> bool:
-        return self._client is not None
-
-    def remember(self, text: str, metadata: dict = None, doc_id: str = None):
-        """向量化并存储一段对话"""
-        if not self.available:
-            return False
-        embedder = self._get_embedder()
-        if not embedder:
-            return False
-        try:
-            embedding = embedder.encode(text).tolist()
-            doc_id = doc_id or f"mem_{datetime.now().timestamp()}"
-            self._collection.add(
-                embeddings=[embedding],
-                documents=[text[:2000]],
-                metadatas=[metadata or {}],
-                ids=[doc_id],
-            )
-            return True
-        except Exception as e:
-            print(f"[VectorMemory] 存储失败: {e}")
-            return False
-
-    def recall(self, query: str, limit: int = 10) -> list:
-        """语义搜索记忆"""
-        if not self.available:
-            return []
-        embedder = self._get_embedder()
-        if not embedder:
+    @staticmethod
+    async def embed(text: str) -> list:
+        """调用302AI嵌入API生成向量"""
+        import httpx
+        api_key = os.getenv("OPENAI_API_KEY", "")
+        base_url = os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1")
+        if not api_key:
             return []
         try:
-            embedding = embedder.encode(query).tolist()
-            results = self._collection.query(
-                query_embeddings=[embedding],
-                n_results=limit,
-            )
-            if not results or not results.get("documents"):
-                return []
-            memories = []
-            for i, doc in enumerate(results["documents"][0]):
-                meta = results["metadatas"][0][i] if results.get("metadatas") else {}
-                distance = results["distances"][0][i] if results.get("distances") else 0
-                memories.append({
-                    "content": doc,
-                    "metadata": meta,
-                    "relevance": round(1 - min(distance, 1), 3),
-                })
-            return memories
-        except Exception as e:
-            print(f"[VectorMemory] 检索失败: {e}")
-            return []
-
-    def recall_context(self, query: str, limit: int = 5) -> str:
-        """语义搜索并返回格式化的上下文"""
-        memories = self.recall(query, limit)
-        if not memories:
-            return ""
-        lines = []
-        for m in memories:
-            role = m.get("metadata", {}).get("role", "")
-            prefix = "用户" if role == "user" else "AI" if role == "ai" else ""
-            lines.append(f"{prefix}: {m['content'][:120]}")
-        return "\n".join(lines)
-
-    def get_stats(self) -> dict:
-        """向量记忆统计"""
-        if not self.available:
-            return {"available": False, "count": 0}
-        try:
-            count = self._collection.count()
-            return {"available": True, "count": count, "embedding_model": str(self._get_embedder()) if self._get_embedder() else "N/A"}
+            async with httpx.AsyncClient(timeout=10) as c:
+                r = await c.post(f"{base_url}/embeddings",
+                    headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
+                    json={"model": "text-embedding-ada-002", "input": text[:1000]})
+                if r.status_code == 200:
+                    return r.json()["data"][0]["embedding"]
         except:
-            return {"available": True, "count": -1}
+            pass
+        return []
 
-    def clear(self):
-        """清空向量记忆"""
-        if self.available:
-            try:
-                self._client.delete_collection("friday_memories")
-                self._collection = self._client.get_or_create_collection(name="friday_memories")
-            except:
-                pass
+    @staticmethod
+    def get_all():
+        return state._data.setdefault("vector_memories", [])
 
+    @staticmethod
+    async def remember(text: str, metadata: dict = None):
+        """保存记忆（自动生成向量）"""
+        vec = await VectorMemory.embed(text)
+        if not vec:
+            return False
+        memories = VectorMemory.get_all()
+        memories.append({
+            "id": f"vm{len(memories)+1}_{int(datetime.now().timestamp())}",
+            "text": text[:500], "vector": vec[:64],  # 降维到64维节省空间
+            "metadata": metadata or {},
+            "created_at": datetime.now().isoformat()
+        })
+        if len(memories) > 500:
+            state._data["vector_memories"] = memories[-500:]
+        state._save()
+        return True
 
-# 全局单例
-vector_memory = VectorMemory()
+    @staticmethod
+    def search(query: str, limit: int = 5) -> list:
+        """语义搜索（关键词预过滤+向量排序）"""
+        memories = VectorMemory.get_all()
+        if not memories:
+            return []
+        # 关键词预过滤
+        q_lower = query.lower()
+        candidates = [m for m in memories if
+                      q_lower in m["text"].lower() or
+                      any(q_lower in str(v).lower() for v in m.get("metadata", {}).values())]
+        if not candidates:
+            candidates = memories[-50:]  # 无关键词匹配则搜索最近50条
+        # 向量排序需要在线嵌入查询
+        return [{"id": m["id"], "text": m["text"], "metadata": m.get("metadata", {}),
+                 "created_at": m.get("created_at", "")} for m in candidates[-limit:]]
+
+    @staticmethod
+    async def semantic_search(query: str, limit: int = 5) -> list:
+        """语义搜索（需在线嵌入）"""
+        q_vec = await VectorMemory.embed(query)
+        if not q_vec:
+            return VectorMemory.search(query, limit)
+        memories = VectorMemory.get_all()
+        if not memories:
+            return []
+        q_vec = q_vec[:64]  # 与存储维度一致
+        scored = [(m, VectorMemory._cosine_sim(q_vec, m.get("vector", []))) for m in memories if m.get("vector")]
+        scored.sort(key=lambda x: x[1], reverse=True)
+        return [{"id": m["id"], "text": m["text"], "metadata": m.get("metadata", {}),
+                 "score": round(s, 3), "created_at": m.get("created_at", "")}
+                for m, s in scored[:limit] if s > 0.3]

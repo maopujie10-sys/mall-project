@@ -77,7 +77,7 @@ async function runOCR() {
   processing.value = true
   ocrResult.value = ''
   try {
-    const res = await agentApi.post('/agent/friday/vision/ocr', { url: imageUrl.value })
+    const res = await agentApi.get('/agent/friday/vision/ocr', { params: { image_url: imageUrl.value } })
     if (res?.data?.ok) {
       ocrResult.value = res.data.text || '未识别到文字'
     } else {
@@ -102,3 +102,4 @@ async function runOCR() {
 .result-header { display: flex; justify-content: space-between; align-items: center; }
 .stats-row { display: flex; justify-content: space-around; font-size: 12px; color: var(--text-muted); }
 </style>
+

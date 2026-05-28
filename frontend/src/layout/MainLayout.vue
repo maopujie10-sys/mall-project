@@ -11,7 +11,7 @@
         <button class="tb-btn tb-close" @click="closeWin" title="关闭">✕</button>
       </div>
     </header>
-    <aside class="sidebar">
+    <aside class="sidebar" :class="{'mobile-open':mobileMenuOpen}">
       <div class="sidebar-brand" @click="$router.push('/friday')">
         <div class="brand-icon">
           <svg viewBox="0 0 40 40" width="32" height="32">
@@ -38,188 +38,64 @@
 
       <nav class="sidebar-nav">
         <!-- 核心 -->
+                <div class="nav-section">
+          <div class="nav-section-label" v-show="!sidebarCollapsed"><span class="sec-icon">🤖</span> 核心</div>
+          <router-link to="/friday" class="nav-item" :class="{ active: isActive('/friday') }"><span class="nav-icon">🧠</span><span>Friday 大脑</span></router-link>
+          <router-link to="/dashboard" class="nav-item" :class="{ active: isActive('/dashboard') }"><span class="nav-icon">📊</span><span>仪表盘</span></router-link>
+          <router-link to="/chat" class="nav-item" :class="{ active: isActive('/chat') }"><span class="nav-icon">💬</span><span>AI 对话</span></router-link>
+        </div>
         <div class="nav-section">
-          <div class="nav-section-label" v-show="!sidebarCollapsed">核心</div>
-          <router-link to="/friday" class="nav-item" :class="{ active: isActive('/friday') }">
-            <span class="nav-icon">
-              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 1 7 10 10 10 0 0 1-7 10"/><path d="M12 2a10 10 0 0 0-7 10 10 10 0 0 0 7 10"/><circle cx="12" cy="12" r="4"/></svg>
-            </span>
-            <span class="nav-label" v-show="!sidebarCollapsed">Friday 神经网络</span>
-          </router-link>
-          <router-link to="/dashboard" class="nav-item" :class="{ active: isActive('/dashboard') }">
-            <span class="nav-icon">
-              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-            </span>
-            <span class="nav-label" v-show="!sidebarCollapsed">数据总览</span>
-          </router-link>
-          <router-link to="/chat" class="nav-item" :class="{ active: isActive('/chat') }">
-            <span class="nav-icon">
-              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-            </span>
-            <span class="nav-label" v-show="!sidebarCollapsed">AI 对话</span>
-          </router-link>
+          <div class="nav-section-label" v-show="!sidebarCollapsed"><span class="sec-icon">🧠</span> AI 能力</div>
+          <router-link to="/ai-brain" class="nav-item" :class="{ active: isActive('/ai-brain') }"><span class="nav-icon">🧠</span><span>AI 大脑</span></router-link>
+          <router-link to="/agents" class="nav-item" :class="{ active: isActive('/agents') }"><span class="nav-icon">🤖</span><span>Agent 列表</span></router-link>
+          <router-link to="/trends" class="nav-item" :class="{ active: isActive('/trends') }"><span class="nav-icon">📈</span><span>趋势监控</span></router-link>
+          <router-link to="/memory" class="nav-item" :class="{ active: isActive('/memory') }"><span class="nav-icon">💾</span><span>记忆中心</span></router-link>
+          <router-link to="/models" class="nav-item" :class="{ active: isActive('/models') }"><span class="nav-icon">🔬</span><span>模型中心</span></router-link>
+          <router-link to="/evolution" class="nav-item" :class="{ active: isActive('/evolution') }"><span class="nav-icon">🌱</span><span>进化报告</span></router-link>
+          <router-link to="/video" class="nav-item" :class="{ active: isActive('/video') }"><span class="nav-icon">🎬</span><span>视频分析</span></router-link>
+          <router-link to="/ocr" class="nav-item" :class="{ active: isActive('/ocr') }"><span class="nav-icon">🔍</span><span>OCR 识别</span></router-link>
         </div>
-
-        <!-- AI 大脑 -->
         <div class="nav-section">
-          <div class="nav-section-label" v-show="!sidebarCollapsed">AI 大脑</div>
-          <router-link to="/ai-brain" class="nav-item" :class="{ active: isActive('/ai-brain') }">
-            <span class="nav-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></span>
-            <span class="nav-label" v-show="!sidebarCollapsed">AI 大脑</span>
-          </router-link>
-                    <router-link to="/agents" class="nav-item" :class="{ active: isActive('/agents') }">
-            <span class="nav-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
-            <span class="nav-label" v-show="!sidebarCollapsed">Agent面板</span>
-          </router-link>
-          <router-link to="/trends" class="nav-item" :class="{ active: isActive('/trends') }">
-            <span class="nav-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></span>
-            <span class="nav-label" v-show="!sidebarCollapsed">热点监控</span>
-          </router-link>
-          <router-link to="/memory" class="nav-item" :class="{ active: isActive('/memory') }">
-            <span class="nav-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></span>
-            <span class="nav-label" v-show="!sidebarCollapsed">记忆中心</span>
-          </router-link>
-          <router-link to="/models" class="nav-item" :class="{ active: isActive('/models') }">
-            <span class="nav-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></span>
-            <span class="nav-label" v-show="!sidebarCollapsed">模型中心</span>
-          </router-link>
-          <router-link to="/evolution" class="nav-item" :class="{ active: isActive('/evolution') }">
-            <span class="nav-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></span>
-            <span class="nav-label" v-show="!sidebarCollapsed">进化报告</span>
-          </router-link>
-          <router-link to="/scraper" class="nav-item" :class="{ active: isActive('/scraper') }">
-            <span class="nav-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></span>
-            <span class="nav-label" v-show="!sidebarCollapsed">采集中心</span>
-          </router-link>
-          <router-link to="/virtual" class="nav-item" :class="{ active: isActive('/virtual') }">
-            <span class="nav-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg></span>
-            <span class="nav-label" v-show="!sidebarCollapsed">虚拟数据</span>
-          </router-link>
+          <div class="nav-section-label" v-show="!sidebarCollapsed"><span class="sec-icon">🛠️</span> 系统运维</div>
+          <router-link to="/server" class="nav-item" :class="{ active: isActive('/server') }"><span class="nav-icon">🖥️</span><span>服务器</span></router-link>
+          <router-link to="/docker" class="nav-item" :class="{ active: isActive('/docker') }"><span class="nav-icon">🐳</span><span>Docker</span></router-link>
+          <router-link to="/nginx" class="nav-item" :class="{ active: isActive('/nginx') }"><span class="nav-icon">🔧</span><span>Nginx</span></router-link>
+          <router-link to="/network" class="nav-item" :class="{ active: isActive('/network') }"><span class="nav-icon">🌐</span><span>网络工具</span></router-link>
+          <router-link to="/github" class="nav-item" :class="{ active: isActive('/github') }"><span class="nav-icon">🐙</span><span>GitHub MCP</span></router-link>
+          <router-link to="/emergency" class="nav-item" :class="{ active: isActive('/emergency') }"><span class="nav-icon">🚨</span><span>急救面板</span></router-link>
+          <router-link to="/files" class="nav-item" :class="{ active: isActive('/files') }"><span class="nav-icon">📁</span><span>文件管理</span></router-link>
+          <router-link to="/audit" class="nav-item" :class="{ active: isActive('/audit') }"><span class="nav-icon">📋</span><span>审计日志</span></router-link>
+          <router-link to="/self-service" class="nav-item" :class="{ active: isActive('/self-service') }"><span class="nav-icon">🔧</span><span>自助服务</span></router-link>
         </div>
-
-        <!-- 基础设施 -->
         <div class="nav-section">
-        <!-- 运营 -->
+          <div class="nav-section-label" v-show="!sidebarCollapsed"><span class="sec-icon">🛡️</span> 安全合规</div>
+          <router-link to="/security" class="nav-item" :class="{ active: isActive('/security') }"><span class="nav-icon">🛡️</span><span>安全中心</span></router-link>
+          <router-link to="/approval" class="nav-item" :class="{ active: isActive('/approval') }"><span class="nav-icon">✅</span><span>审批中心</span></router-link>
+          <router-link to="/rollback" class="nav-item" :class="{ active: isActive('/rollback') }"><span class="nav-icon">🔄</span><span>回滚中心</span></router-link>
+          
+        </div>
+          <div class="nav-item" style="color:#ff4d4f;cursor:pointer" @click="emergencyVisible=true"><span class="nav-icon">🚨</span><span>急救面板</span></div>
         <div class="nav-section">
-          <div class="nav-section-label" v-show="!sidebarCollapsed">运营</div>
-          <router-link to="/mall" class="nav-item" :class="{ active: isActive('/mall') }">
-            <span class="nav-icon">🛒</span>
-            <span class="nav-label" v-show="!sidebarCollapsed">商城管理</span>
-          </router-link>
-          <router-link to="/site" class="nav-item" :class="{ active: isActive('/site') }">
-            <span class="nav-icon">🌐</span>
-            <span class="nav-label" v-show="!sidebarCollapsed">网站检测</span>
-          </router-link>
-          <router-link to="/customer" class="nav-item" :class="{ active: isActive('/customer') }">
-            <span class="nav-icon">💬</span>
-            <span class="nav-label" v-show="!sidebarCollapsed">客服</span>
-          </router-link>
+          <div class="nav-section-label" v-show="!sidebarCollapsed"><span class="sec-icon">📊</span> 监控与数据</div>
+          <router-link to="/alert" class="nav-item" :class="{ active: isActive('/alert') }"><span class="nav-icon">🔔</span><span>告警中心</span></router-link>
+          <router-link to="/tasks" class="nav-item" :class="{ active: isActive('/tasks') }"><span class="nav-icon">📋</span><span>任务中心</span></router-link>
+          <router-link to="/site" class="nav-item" :class="{ active: isActive('/site') }"><span class="nav-icon">🔍</span><span>站点检测</span></router-link>
+          <router-link to="/rotation" class="nav-item" :class="{ active: isActive('/rotation') }"><span class="nav-icon">🌐</span><span>域名轮值</span></router-link>
+          <router-link to="/database" class="nav-item" :class="{ active: isActive('/database') }"><span class="nav-icon">🗄️</span><span>数据库</span></router-link>
+          <router-link to="/scraper" class="nav-item" :class="{ active: isActive('/scraper') }"><span class="nav-icon">🕷️</span><span>采集中心</span></router-link>
         </div>
-
-        <!-- 系统 -->
         <div class="nav-section">
-          <div class="nav-section-label" v-show="!sidebarCollapsed">系统</div>
-          <router-link to="/database" class="nav-item" :class="{ active: isActive('/database') }">
-            <span class="nav-icon">🗄️</span>
-            <span class="nav-label" v-show="!sidebarCollapsed">数据库</span>
-          </router-link>
-          <router-link to="/approval" class="nav-item" :class="{ active: isActive('/approval') }">
-            <span class="nav-icon">✅</span>
-            <span class="nav-label" v-show="!sidebarCollapsed">审批中心</span>
-          </router-link>
-          <router-link to="/security" class="nav-item" :class="{ active: isActive('/security') }">
-            <span class="nav-icon">🔒</span>
-            <span class="nav-label" v-show="!sidebarCollapsed">安全中心</span>
-          </router-link>
-          <router-link to="/rollback" class="nav-item" :class="{ active: isActive('/rollback') }">
-            <span class="nav-icon">⏪</span>
-            <span class="nav-label" v-show="!sidebarCollapsed">备份回滚</span>
-          </router-link>
-          <router-link to="/alert" class="nav-item" :class="{ active: isActive('/alert') }">
-            <span class="nav-icon">🔔</span>
-            <span class="nav-label" v-show="!sidebarCollapsed">告警中心</span>
-          </router-link>
-          <router-link to="/tasks" class="nav-item" :class="{ active: isActive('/tasks') }">
-            <span class="nav-icon">📋</span>
-            <span class="nav-label" v-show="!sidebarCollapsed">自动任务</span>
-          </router-link>
-          <router-link to="/self-service" class="nav-item" :class="{ active: isActive('/self-service') }">
-            <span class="nav-icon">🔧</span>
-            <span class="nav-label" v-show="!sidebarCollapsed">自助服务</span>
-          </router-link>
-          <router-link to="/plugins" class="nav-item" :class="{ active: isActive('/plugins') }">
-            <span class="nav-icon">🧩</span>
-            <span class="nav-label" v-show="!sidebarCollapsed">插件系统</span>
-          </router-link>
-          <router-link to="/rotation" class="nav-item" :class="{ active: isActive('/rotation') }">
-            <span class="nav-icon">🔄</span>
-            <span class="nav-label" v-show="!sidebarCollapsed">轮值</span>
-          </router-link>
-          <router-link to="/video" class="nav-item" :class="{ active: isActive('/video') }">
-            <span class="nav-icon">🎬</span>
-            <span class="nav-label" v-show="!sidebarCollapsed">视频分析</span>
-          </router-link>
-          <router-link to="/ocr" class="nav-item" :class="{ active: isActive('/ocr') }">
-            <span class="nav-icon">📝</span>
-            <span class="nav-label" v-show="!sidebarCollapsed">OCR识别</span>
-          </router-link>
+          <div class="nav-section-label" v-show="!sidebarCollapsed"><span class="sec-icon">🏪</span> 运营扩展</div>
+          <router-link to="/mall" class="nav-item" :class="{ active: isActive('/mall') }"><span class="nav-icon">🏪</span><span>商城管理</span></router-link>
+          <router-link to="/customer" class="nav-item" :class="{ active: isActive('/customer') }"><span class="nav-icon">👥</span><span>客服系统</span></router-link>
+          <router-link to="/virtual" class="nav-item" :class="{ active: isActive('/virtual') }"><span class="nav-icon">🎮</span><span>虚拟数据</span></router-link>
+          <router-link to="/plugins" class="nav-item" :class="{ active: isActive('/plugins') }"><span class="nav-icon">🧩</span><span>技能市场</span></router-link>
         </div>
-          <div class="nav-section-label" v-show="!sidebarCollapsed">基础设施</div>
-          <router-link to="/server" class="nav-item" :class="{ active: isActive('/server') }">
-            <span class="nav-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg></span>
-            <span class="nav-label" v-show="!sidebarCollapsed">服务器</span>
-          </router-link>
-          <router-link to="/docker" class="nav-item" :class="{ active: isActive('/docker') }">
-            <span class="nav-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="12" rx="2"/><path d="M5 7h2M9 7h2M5 11h2M9 11h2"/><rect x="8" y="9" width="8" height="10" rx="2"/></svg></span>
-            <span class="nav-label" v-show="!sidebarCollapsed">Docker</span>
-          </router-link>
-          <router-link to="/nginx" class="nav-item" :class="{ active: isActive('/nginx') }">
-            <span class="nav-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10"/><path d="M12 2a15.3 15.3 0 0 0-4 10"/></svg></span>
-            <span class="nav-label" v-show="!sidebarCollapsed">Nginx</span>
-          </router-link>
-        </div>
-      </nav>
-
-      <div class="sidebar-footer">
-        <button class="collapse-btn" @click="sidebarCollapsed = !sidebarCollapsed">
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline v-if="!sidebarCollapsed" points="15 18 9 12 15 6"/>
-            <polyline v-else points="9 18 15 12 9 6"/>
-          </svg>
-        </button>
-      </div>
-    </aside>
-
-    <div class="main-area">
-      <header class="top-bar">
-        <div class="top-left">
-          <el-breadcrumb separator="/">
-            <el-breadcrumb-item :to="{ path: '/friday' }">Friday AI OS</el-breadcrumb-item>
-            <el-breadcrumb-item v-if="currentTitle">{{ currentTitle }}</el-breadcrumb-item>
-          </el-breadcrumb>
-        </div>
-        <div class="top-right">
-          <div class="status-indicators" v-if="currentRoute !== '/friday'">
-            <span class="status-dot online"></span>
-            <span class="status-label">AI 在线</span>
-          </div>
-          <div class="mode-tag" :class="currentMode">{{ modeLabel }}</div>
-          <button class="theme-btn" @click="theme.toggle">
-            <svg v-if="!theme.isDark.value" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/></svg>
-            <svg v-else viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-          </button>
-          <el-dropdown trigger="click">
-            <span class="user-chip">
-              <el-avatar :size="28" style="background: linear-gradient(135deg, #667eea, #13c2c2);">F</el-avatar>
-            </span>
-            <template #dropdown>
-              <el-dropdown-menu>                <el-dropdown-item @click="tokenDialogVisible = true">🔑 设置 Token</el-dropdown-item>
-                <el-dropdown-item disabled>Friday AI OS v3.0</el-dropdown-item>
-                <el-dropdown-item divided>
-                  <router-link to="/emergency" style="color: #ff4d4f; text-decoration: none;">🚨 急救面板</router-link>
                 </el-dropdown-item>
               </el-dropdown-menu>
-            </template>
+            <div class="ai-float-widget"><el-button class="ai-float-btn" @click="floatDialog=true" title="AI 助手"><el-icon :size="22"><ChatDotRound /></el-icon></el-button></div>
+<el-dialog v-model="floatDialog" title="💬 AI 助手" width="380" :close-on-click-modal="false" class="float-chat-dialog"><div class="float-chat-body"><div class="float-msg-area" ref="floatMsgRef"><div v-for="(m,i) in floatMessages" :key="i" class="float-msg-row" :class="m.role"><div class="float-msg-text">{{ m.text }}</div></div><div v-if="floatMessages.length===0" style="text-align:center;color:#999;padding:40px 0;font-size:13px">输入问题，AI 帮你解答</div></div><div class="float-input-row"><el-input v-model="floatInput" placeholder="输入问题..." size="small" @keyup.enter="sendFloatMsg" :disabled="floatLoading"><template #append><el-button @click="sendFloatMsg" :loading="floatLoading" :disabled="!floatInput.trim()" size="small">发送</el-button></template></el-input></div></div></el-dialog>
+</template>
           </el-dropdown>
         </div>
       </header>
@@ -233,6 +109,8 @@
       </main>
     </div>
     <LiveTaskPanel />
+    <el-dialog v-model="emergencyVisible" title="🚨 急救面板" width="520px" top="8vh"><EmergencyPanel :embedded="true" /></el-dialog>
+    <!-- 全局 AI 浮动图标 -->
   </div>
 </template>
 
@@ -247,7 +125,7 @@ function saveToken() {
   ElMessage.success('Token 已保存')
 }
 
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useSystemStore } from '@/stores/system'
 import { useThemeStore } from '@/stores/theme'
@@ -257,9 +135,12 @@ const maximizeWin = () => window.electronAPI?.maximize()
 const closeWin = () => window.electronAPI?.close()
 import { ElMessage } from "element-plus"
 import LiveTaskPanel from '@/components/LiveTaskPanel.vue'
+import EmergencyPanel from '@/views/EmergencyPanel.vue'
 import { storeToRefs } from 'pinia'
 
 const route = useRoute()
+const emergencyVisible = ref(false)
+function switchLang(lang) { if (window.__vue_app__?.config?.globalProperties?.$i18n) { window.__vue_app__.config.globalProperties.$i18n.locale = lang; localStorage.setItem("lang", lang) } }
 const system = useSystemStore()
 const theme = useThemeStore()
 const { currentMode, modeLabel } = storeToRefs(system)
@@ -277,9 +158,44 @@ onMounted(() => {
   theme.initTheme()
   system.fetchMode()
 })
+
+const floatDialog = ref(false)
+const floatInput = ref("")
+const floatLoading = ref(false)
+const floatMessages = ref([])
+const floatMsgRef = ref(null)
+
+async function sendFloatMsg() {
+  const text = floatInput.value.trim()
+  if (!text || floatLoading.value) return
+  floatInput.value = ""
+  floatMessages.value.push({role:"user",text})
+  floatLoading.value = true
+  try {
+    const {agentApi} = await import("@/api")
+    const r = await agentApi.post("/agent/chat",{message:text})
+    floatMessages.value.push({role:"ai",text:r.response||r.reply||r.message||"收到"})
+  } catch(e) {
+    floatMessages.value.push({role:"ai",text:"连接失败: "+(e.message||"")})
+  }
+  floatLoading.value = false
+  setTimeout(()=>{if(floatMsgRef.value)floatMsgRef.value.scrollTop=floatMsgRef.value.scrollHeight},100)
+}
+
 </script>
 
 <style scoped>
+.ai-float-widget{position:fixed;bottom:24px;right:24px;z-index:9999}
+.ai-float-btn{width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#667eea,#764ba2);border:none;color:#fff;box-shadow:0 4px 16px rgba(102,126,234,0.4);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.float-chat-body{display:flex;flex-direction:column;height:400px}
+.float-msg-area{flex:1;overflow-y:auto;padding:12px}
+.float-msg-row{margin-bottom:10px}
+.float-msg-text{display:inline-block;padding:8px 12px;border-radius:8px;font-size:13px;max-width:85%;line-height:1.5}
+.float-msg-row .float-msg-text{background:#f0f0f0;color:#333}
+.float-msg-row.user{text-align:right}
+.float-msg-row.user .float-msg-text{background:#1890ff;color:#fff}
+.float-input-row{padding:8px 12px;border-top:1px solid #eee}
+
 .app-shell { display: flex; height: 100vh; background: var(--bg-page); overflow: hidden; }
 
 .sidebar {
@@ -303,12 +219,13 @@ onMounted(() => {
 
 .sidebar-nav { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 12px 10px; }
 .nav-section { margin-bottom: 4px; }
+.nav-section .sec-icon { margin-right: 4px; }
 .nav-section-label {
   font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;
   color: rgba(102,126,234,0.4); padding: 12px 10px 6px; white-space: nowrap;
 }
 
-.nav-item {
+.nav-item { display: flex; align-items: center; gap: 8px; }
   display: flex; align-items: center; gap: 10px;
   padding: 10px 12px; border-radius: 8px;
   color: rgba(255,255,255,0.5); text-decoration: none;
@@ -399,5 +316,50 @@ onMounted(() => {
 .sidebar { height: calc(100vh - 32px); top: 32px; }
 .main-area { height: calc(100vh - 32px); overflow-y: auto; }
 
+/* 通知面板 */
+.notif-item { display: flex; gap: 10px; padding: 10px; border-radius: 6px; cursor: pointer; transition: background 0.15s; margin-bottom: 4px; }
+.notif-item:hover { background: #f5f5f5; }
+.notif-item.unread { background: #e6f7ff; }
+.notif-icon { font-size: 20px; flex-shrink: 0; }
+.notif-body { flex: 1; min-width: 0; }
+.notif-title { font-size: 13px; font-weight: 500; color: #333; }
+.notif-msg { font-size: 12px; color: #666; margin-top: 2px; }
+.notif-time { font-size: 11px; color: #bbb; margin-top: 4px; }
+
+
+
+/* 📱 响应式：手机 */
+@media (max-width: 768px) {
+  .sidebar { position: fixed !important; left: -260px !important; top: 0 !important; height: 100vh !important; z-index: 9999 !important; transition: left 0.3s !important; }
+  .sidebar.mobile-open { left: 0 !important; }
+  .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 9998; }
+  .sidebar-overlay.show { display: block; }
+  .main-area { margin-left: 0 !important; }
+  .desktop-only { display: none !important; }
+  .mobile-menu-btn { display: flex !important; }
+}
+.mobile-menu-btn { display: none; }
+
+.ai-float-btn {
+  position: fixed; bottom: 32px; right: 32px; z-index: 9999;
+  width: 56px; height: 56px; border-radius: 50%;
+  background: linear-gradient(135deg, #667eea, #13c2c2);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; box-shadow: 0 4px 20px rgba(102,126,234,0.4);
+  transition: all 0.3s; border: none;
+}
+@media (max-width: 768px) {
+  .ai-float-btn { bottom: 20px; right: 20px; width: 48px; height: 48px; }
+}
 </style>
+
+
+
+
+
+
+
+
+
+
 

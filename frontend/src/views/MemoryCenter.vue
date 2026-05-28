@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="page-container memory-center">
     <div class="page-header">
       <h2>记忆中心</h2>

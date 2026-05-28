@@ -7,6 +7,7 @@ from fastapi.responses import JSONResponse
 from config import AGENT_TOKEN, MALL_BASE_URL
 from auth import verify_token
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     print(f"[Agent] 启动中, 商城: {MALL_BASE_URL}")
@@ -15,37 +16,35 @@ async def lifespan(app: FastAPI):
         from scheduler import start_scheduler
         from digital_lifeform import DigitalLifeform
         start_scheduler()
-        # 启动数字生命体自主循环(每5分钟, 含进化)
         asyncio.create_task(DigitalLifeform.start_loop(300))
     except Exception as e:
         print(f"[Agent] 定时任务启动失败(非致命): {e}")
-    # 加载持久记忆 + 注册内置工具
+    # 加载持久记忆
     try:
         from tools.memory_store import memory_store
-        from digital_lifeform import DigitalLifeform
         stats = memory_store.get_stats()
-        print(f"[Agent] 持久记忆已加载: {stats[\"total_conversations\"]}段对话, {len(memory_store.get_knowledge_categories())}个知识分类")
+        print(f"[Agent] 持久记忆已加载: {stats["total_conversations"]}段对话, {len(memory_store.get_knowledge_categories())}个知识分类")
     except Exception as e:
         print(f"[Agent] 记忆加载失败(非致命): {e}")
     # 注册内置工具
     from tools.registry import register_builtin_tools
     register_builtin_tools()
-    # 启动自检 + 长期记忆预热
+    # 启动自检
     print("[Agent] 执行启动自检...")
     try:
         from startup import startup_self_check, startup_warmup
         check_result = await startup_self_check()
-        print(f"[Agent] 自检结果: {check_result['summary']}")
+        print(f"[Agent] 自检结果: {check_result["summary"]}")
         await startup_warmup()
     except Exception as e:
         print(f"[Agent] 自检失败(非致命): {e}")
     yield
-    # 停止定时任务 + 数字生命体
+    # 关闭
     print("[Agent] 关闭前同步记忆...")
     try:
         from tools.memory_sync import MemorySync
         push_result = MemorySync.sync_push()
-        print(f"[Agent] 记忆同步: {'OK' if push_result['success'] else 'WARN'}")
+        print(f"[Agent] 记忆同步: {"OK" if push_result["success"] else "WARN"}")
     except Exception as e:
         print(f"[Agent] 记忆同步失败: {e}")
     try:
@@ -55,6 +54,7 @@ async def lifespan(app: FastAPI):
         asyncio.create_task(DigitalLifeform.stop_loop())
     except Exception:
         pass
+
 
 app = FastAPI(title="TikTokMall Agent", version="1.0.0", lifespan=lifespan)
 
@@ -67,23 +67,37 @@ app.add_middleware(
 )
 
 # 注册路由模块
+from routers.vector_router import router as vector_router
+from routers.backup_router import router as backup_router
+from routers.copy_router import router as copy_router
+from routers import (
+    health, status, restart, virtual, security, scraper, notify,
+    agent_chat, system_mode, server_panel, rotation_panel, rollback_center,
+    customer_panel, mall_tools, nginx_panel, site_check, alert, inspector,
+    task_queue, safety_api, mall_scanner, autopilot, ai_factory_router,
+    batch_ops, sql_executor, daily_report, self_service, docker_panel,
+    devops_agent_router, memory_router, heal_router,
+)
 from routers.virtual_data_router import router as virtual_data_router
 from routers.mall_brain_router import router as mall_brain_router
 from routers.evolution_router import router as evolution_router
 from routers.friday_router import router as friday_router
-from routers.devops_agent_router import router as devops_router
-from routers.memory_router import router as memory_router
-from routers.heal_router import router as heal_router
 from routers.github_router import router as github_router
+from routers.lifeform_router import router as lifeform_router
+from routers.workflow_router import router as workflow_router
+from routers.user_auth_router import router as user_auth_router
+from routers.inspect_router import router as inspect_router
+from routers.knowledge_router import router as knowledge_router
+from routers.competitor_router import router as competitor_router
 from routers.plugin_router import router as plugin_router
-from routers import (
-    health, status, restart, virtual, security, scraper, notify,
-    agent_chat, system_mode, server_panel, rotation_panel, rollback_center,
-    customer_panel, mall_tools,
-    nginx_panel, site_check, alert, inspector, task_queue, safety_api,
-    mall_scanner, autopilot, ai_factory_router, batch_ops, sql_executor,
-    daily_report, self_service, docker_panel, devops_agent_router, memory_router, heal_router,
-    daily_report, self_service, docker_panel, devops_agent_router,
+from routers.ssl_router import router as ssl_router
+from routers.db_router import router as db_router
+from routers.audit_router import router as audit_router
+from routers.network_router import router as network_router
+from routers.settings_router import router as settings_router
+from routers.dashboard_router import router as dashboard_router
+from routers.notification_router import router as notification_router
+
 app.include_router(health.router)
 app.include_router(status.router)
 app.include_router(restart.router)
@@ -115,10 +129,27 @@ app.include_router(virtual_data_router)
 app.include_router(mall_brain_router)
 app.include_router(evolution_router)
 app.include_router(friday_router)
-app.include_router(devops_router)
+app.include_router(devops_agent_router.router)
 app.include_router(memory_router)
 app.include_router(heal_router)
+app.include_router(ssl_router)
+app.include_router(db_router)
+app.include_router(audit_router)
+app.include_router(network_router)
+app.include_router(settings_router)
+app.include_router(dashboard_router)
+app.include_router(daily_report.router)
+app.include_router(notification_router)
 app.include_router(plugin_router)
+app.include_router(lifeform_router)
+app.include_router(workflow_router)
+app.include_router(user_auth_router)
+app.include_router(inspect_router)
+app.include_router(knowledge_router)
+app.include_router(competitor_router)
+app.include_router(vector_router)
+app.include_router(backup_router)
+app.include_router(copy_router)
 app.include_router(github_router)
 
 # 内嵌HTML仪表盘
@@ -128,9 +159,19 @@ async def dashboard():
     with open("templates/dashboard.html", encoding="utf-8") as f:
         return HTMLResponse(f.read())
 
+
 @app.get("/agent/health")
 async def agent_health():
     return {"status": "ok", "timestamp": __import__("datetime").datetime.now().isoformat()}
+
+
+
+
+
+
+
+
+
 
 
 

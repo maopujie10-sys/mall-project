@@ -72,7 +72,7 @@ async function analyzeVideo() {
   analyzing.value = true
   videoInfo.value = null
   try {
-    const res = await agentApi.post('/agent/friday/vision/video', { video_url: videoUrl.value })
+    const res = await agentApi.get('/agent/friday/vision/video', { params: { video_url: videoUrl.value } })
     if (res?.data?.ok) {
       videoInfo.value = res.data
     } else {
@@ -103,3 +103,4 @@ async function analyzeVideo() {
 .history-item:last-child { border: none; }
 .hist-date { color: var(--text-muted); font-size: 11px; }
 </style>
+

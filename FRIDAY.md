@@ -1,4 +1,11 @@
-﻿# 💻 Friday AI OS — 电脑端 AI 记忆
+﻿### [修复] 全量审计修复 — main.py + scheduler.py + vision_agent.py + 前端布局
+- 'backend/main.py': 修复 auth_router→user_auth_router 导入错误（auth_router.py不存在），添加 daily_report.router include
+- 'backend/scheduler.py': 修复 metrics_record_task 缺失 async def 关键字（语法错误），注册 daily_report_task 定时任务
+- 'backend/agents/vision_agent.py': 修复 async with 关闭共享client的bug + 缩进错误重写 analyze_image 用AI模型真实分析
+- 'frontend/src/router/index.js': 将 Emergency 从独立路由集成到主布局
+- 'frontend/src/layout/MainLayout.vue': 添加 GitHub MCP + 急救面板 侧边栏入口
+
+# 💻 Friday AI OS — 电脑端 AI 记忆
 
 > 最后更新: 2026-05-28 | 运行环境: local
 
@@ -113,3 +120,41 @@
   - 在 DEPLOY.md 第5章给出完整打包指引
 
 - [清理] 删除 audit_routes.cjs 遗留工具文件 + .gitignore 追加忽略
+
+## 🕐 最近改动 (2026-05-28)
+
+### [修复] 轮值系统假域名清理
+- `backend/routers/rotation_panel.py`: 清除所有 tiktokmall.* 假域名，只保留用户真实域名 tiktook.eu.cc
+- 清除两级轮值配置中的 8 个假轮值组
+
+### [修复] SSL自动证书系统
+- `backend/routers/ssl_router.py`: 重写，清理 JS 语法残留（||/slice/catch → Python语法）
+- `backend/main.py`: 注册 ssl_router
+- `backend/executor.py`: 加入 acme.sh 命令白名单
+- `backend/scheduler.py`: 添加每日 SSL 自动续签定时任务
+
+### [新增] 模型中心完整后端
+- `backend/routers/friday_router.py`: 补全 /models/test、/models/compare、/models/switch、/models/status 4个路由
+- 原来只有前端页面，后端只有 list 和 route，缺操作接口
+
+### [新增] 数据库管理面板
+- `backend/routers/db_router.py`: 新建，提供 /db/status 和 /db/tables 真实 MySQL 查询
+- `backend/main.py`: 注册 db_router
+
+### [新增] 轮值系统自动发现域名
+- `backend/routers/rotation_panel.py`: 添加 /rotation/auto-discover 端点
+- 自动检测解析到本服务器的域名并加入轮值
+
+### [修复] 服务器面板增加操作能力
+- `backend/routers/server_panel.py`: 新增 /cleanup(释放内存)、/kill-process(杀进程)、/files(文件管理) 端点
+- `frontend/src/api/server.js`: 新增 API 函数
+- `frontend/src/stores/server.js`: 修复后端响应解析格式不匹配问题
+- `frontend/src/views/ServerPanel.vue`: 新增释放缓存按钮、文件浏览器（浏览/上传/删除）
+
+### [修复] Docker部署配置
+- `backend/Dockerfile`: 安装 docker CLI，挂载 docker.sock 说明
+
+### [修复] main.py 导入清理
+- 去除重复导入、修复缺失括号语法错误
+- 所有 6 个模型端点唯一无重复
+

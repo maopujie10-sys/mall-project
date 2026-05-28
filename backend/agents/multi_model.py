@@ -146,19 +146,19 @@ class ModelRouter:
         try:
             client = _get_model_client()
             r = await client.post(
-            cfg.api_base + "/chat/completions",
-            json=payload,
-            headers=headers,
+                cfg.api_base + "/chat/completions",
+                json=payload,
+                headers=headers,
             )
             if r.status_code != 200:
-            return {"error": f"{cfg.provider} 返回 {r.status_code}: {r.text[:200]}"}
+                return {"error": f"{cfg.provider} 返回 {r.status_code}: {r.text[:200]}"}
             data = r.json()
             return {
-                    "model": model_id,
-                    "provider": cfg.provider,
-                    "content": data["choices"][0]["message"]["content"],
-                    "usage": data.get("usage", {}),
-                }
+                "model": model_id,
+                "provider": cfg.provider,
+                "content": data["choices"][0]["message"]["content"],
+                "usage": data.get("usage", {}),
+            }
         except Exception as e:
             return {"error": str(e)}
 
@@ -182,3 +182,31 @@ class FridayModes:
     def list_modes(cls):
         return [{"id": k, **v} for k, v in cls.MODES.items()]
 
+
+
+    @staticmethod
+    async def vote(prompt, models=None):
+        """多模型投票：3个模型同时回答，取最优"""
+        import asyncio, httpx, os
+        candidates = models or ["deepseek-chat", "gpt-4o-mini"]
+        async def ask(model):
+            try:
+                key = os.getenv("DEEPSEEK_API_KEY") if model == "deepseek-chat" else os.getenv("OPENAI_API_KEY")
+                if not key: return {"model": model, "error": "no key"}
+                if model == "deepseek-chat":
+                    url = "https://api.deepseek.com/v1/chat/completions"
+                else:
+                    base = os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1")
+                    url = f"{base}/chat/completions"
+                async with httpx.AsyncClient(timeout=30) as c:
+                    body = {"model": model, "messages": [{"role": "user", "content": prompt}], "max_tokens": 512}
+                    r = await c.post(url, headers={"Authorization": f"Bearer {key}"}, json=body)
+                    if r.status_code == 200:
+                        return {"model": model, "text": r.json()["choices"][0]["message"]["content"]}
+            except Exception as e:
+                return {"model": model, "error": str(e)[:50]}
+            return {"model": model, "error": "failed"}
+        results = await asyncio.gather(*[ask(m) for m in candidates[:3]])
+        valid = [r for r in results if r.get("text")]
+        best = max(valid, key=lambda x: len(x.get("text", ""))) if valid else None
+        return {"ok": bool(best), "results": results, "winner": best["model"] if best else None}

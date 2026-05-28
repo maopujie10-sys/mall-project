@@ -7,7 +7,7 @@ from typing import Optional
 COMMAND_WHITELIST = [
     "uptime", "free", "df", "docker", "nginx", "curl",
     "ss", "systemctl", "tail", "cat", "ls", "ps", "top",
-    "journalctl", "who", "last", "ping", "dig", "openssl", "pgrep", "host",
+    "journalctl", "who", "last", "ping", "dig", "openssl", "pgrep", "host", "acme.sh",
     "du", "grep", "wc", "sort", "head", "echo", "date",
 ]
 
@@ -178,4 +178,5 @@ async def execute_db(sql: str, db_name: str = "mall") -> dict:
         return {"success": False, "stdout": "", "stderr": "数据库查询超时", "exit_code": -1}
     except Exception as e:
         return {"success": False, "stdout": "", "stderr": str(e), "exit_code": -1}
+
 

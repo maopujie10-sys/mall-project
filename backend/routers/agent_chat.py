@@ -1,4 +1,4 @@
-﻿"""Agent Chat API — AI 对话路由 v2: Claude + DeepSeek + Ollama 多模型支持"""
+﻿"""Agent Chat API — AI 对话路由 v2: Claude + DeepSeek + Ollama + 302AI 多模型"""
 import httpx, json, re, os
 from datetime import datetime
 from fastapi import APIRouter, Depends
@@ -8,7 +8,7 @@ from state import state
 from risk import handle_risk
 from tools.registry import registry
 from digital_lifeform import DigitalLifeform
-from config import MALL_BASE_URL, CLAUDE_API_KEY, CLAUDE_MODEL
+from config import MALL_BASE_URL, CLAUDE_API_KEY, CLAUDE_MODEL, OPENAI_BASE_URL
 
 router = APIRouter(prefix="/agent", tags=["Agent"])
 
@@ -25,31 +25,53 @@ class HandoverRequest(BaseModel):
 SYSTEM_PROMPT = """Friday AI OS: server/Docker/Nginx/site/DB/mall/customer/rotation/scraper/virtual/alert/approval/evolution.
 Rule: 1)Understand intent 2)Select tool 3)Judge risk 4)L1 auto L3 confirm L4 block. Reply in Chinese."""
 
-# ===== 濡€崇€风捄顖滄暠 =====
+# 多模型配置
 OLLAMA_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
 OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "qwen2.5:7b")
 DEEPSEEK_KEY = os.getenv("DEEPSEEK_API_KEY", "")
 OPENAI_KEY = os.getenv("OPENAI_API_KEY", "")
+_API_URL = OPENAI_BASE_URL or "https://api.openai.com/v1"
+
+# 内置回复引擎（无API Key时使用）
+_BUILTIN_RESPONSES = {
+    "你好": "✨ 你好！我是 **Friday AI OS** — 你的智能运维助手。\n\n📌 **左侧面板**可查看所有65+工具，点击即可直接执行！",
+    "你是谁": "🤖 我是 **Friday AI OS**，集成了 65+ 真实工具的智能运维系统。\n\n💡 直接在左侧点击任意工具即可执行，或在输入框输入指令！",
+}
+
+async def _builtin_reply(message: str) -> str:
+    """内置回复引擎，不需要任何 API Key"""
+    msg = message.lower().strip()
+    for keyword, reply in _BUILTIN_RESPONSES.items():
+        if keyword in msg:
+            return reply
+    if any(w in msg for w in ["你好", "hi", "hello", "嗨"]):
+        return _BUILTIN_RESPONSES["你好"]
+    if any(w in msg for w in ["docker", "容器"]):
+        return "🐳 **Docker 管理**\n\n查看容器/日志/重启，点击左侧 `docker` 分类下的工具直接执行！"
+    if any(w in msg for w in ["服务", "cpu", "内存", "磁盘", "硬盘"]):
+        return "📊 **服务器监控**\n\nCPU/内存/磁盘/进程，点击左侧 `server` 分类下的工具直接执行！"
+    if any(w in msg for w in ["商城", "订单", "商品"]):
+        return "🏪 **商城管理**（142 接口已整合）\n\n商品/订单/客服/财务/营销，点击左侧工具直接执行！"
+    if any(w in msg for w in ["轮值", "域名", "rotation"]):
+        return "🌐 **企业级域名轮值**\n\n健康检测/自动切换/SSL，点击左侧 `rotation` 分类下的工具直接执行！"
+    if any(w in msg for w in ["nginx", "站点"]):
+        return "🔧 **Nginx 管理**\n\n状态/配置/reload，点击左侧 `nginx` 分类下的工具直接执行！"
+    if any(w in msg for w in ["ssl", "证书"]):
+        return "🔒 **SSL 证书管理**\n\n签发/续签/状态查询，点击左侧 `ssl` 分类下的工具直接执行！"
+    if any(w in msg for w in ["安全", "权限", "审批"]):
+        return "🛡️ **安全防护系统**\n\n模式切换/审批/急救切断，点击左侧 `security` 分类下的工具直接执行！"
+    if any(w in msg for w in ["帮助", "help", "功能", "可以"]):
+        return "📋 **可用指令**\n\n输入自然语言指令，或点击左侧 65+ 工具直接执行！"
+    return f"收到消息：{message}\n\n当前无 API Key 时使用内置回复引擎。\n如已配置 DeepSeek/302AI/Claude 密钥，自动启用 AI 对话。"
 
 async def call_ai(messages, model=None):
-    """模型选择优先级：Ollama > DeepSeek > Claude > OpenAI"""
-    # 所有AI密钥为空时返回None，让主逻辑走关键词匹配
-    if not any([os.getenv("DEEPSEEK_API_KEY"), os.getenv("OPENAI_API_KEY"), CLAUDE_API_KEY]):
-        try:
-            async with httpx.AsyncClient(timeout=5) as c:
-                r = await c.get(f"{OLLAMA_URL}/api/tags")
-                if r.status_code != 200:
-                    return None  # Ollama也不可用，走关键词匹配
-        except:
-            return None  # 所有AI不可用
-    """模型选择优先级：Ollama > DeepSeek > Claude > OpenAI"""
+    """模型选择优先级：Ollama > DeepSeek > 302AI(OpenAI兼容) > Claude"""
     model = model or CLAUDE_MODEL
     results = []
-
-    # 1. Ollama 本地模型(免费优先)
+    # 1. Ollama 本地模型
     try:
         async with httpx.AsyncClient(timeout=60) as c:
-            # 閺嬪嫬缂?Ollama 閺嶇厧绱￠惃鍕Х閹?            ollama_messages = []
+            ollama_messages = []
             for m in messages:
                 if m["role"] == "system":
                     ollama_messages.append({"role": "system", "content": m["content"]})
@@ -58,10 +80,9 @@ async def call_ai(messages, model=None):
             r = await c.post(f"{OLLAMA_URL}/api/chat",
                 json={"model": OLLAMA_MODEL, "messages": ollama_messages, "stream": False})
             if r.status_code == 200:
-                data = r.json()
-                text = data.get("message", {}).get("content", "")
+                text = r.json().get("message", {}).get("content", "")
                 if text:
-                    print(f"[AI] Ollama ({OLLAMA_MODEL}) 閸濆秴绨查幋鎰")
+                    print(f"[AI] Ollama ({OLLAMA_MODEL}) 回复成功")
                     return text
     except Exception as e:
         results.append(f"Ollama: {str(e)[:50]}")
@@ -74,13 +95,13 @@ async def call_ai(messages, model=None):
                     headers={"Authorization": f"Bearer {DEEPSEEK_KEY}", "Content-Type": "application/json"},
                     json={"model": "deepseek-chat", "messages": messages, "max_tokens": 1024})
                 if r.status_code == 200:
-                    print("[AI] DeepSeek 閸濆秴绨查幋鎰")
+                    print("[AI] DeepSeek 回复成功")
                     return r.json()["choices"][0]["message"]["content"]
         except Exception as e:
             results.append(f"DeepSeek: {str(e)[:50]}")
 
     # 3. Claude
-    if CLAUDE_API_KEY and "claude" in model.lower():
+    if CLAUDE_API_KEY:
         try:
             async with httpx.AsyncClient(timeout=30) as c:
                 r = await c.post("https://api.anthropic.com/v1/messages",
@@ -88,27 +109,28 @@ async def call_ai(messages, model=None):
                     json={"model": model, "max_tokens": 1024, "system": messages[0]["content"],
                           "messages": [m for m in messages if m["role"] != "system"]})
                 if r.status_code == 200:
-                    print("[AI] Claude 閸濆秴绨查幋鎰")
+                    print("[AI] Claude 回复成功")
                     return r.json()["content"][0]["text"]
         except Exception as e:
             results.append(f"Claude: {str(e)[:50]}")
 
-    # 4. OpenAI
+    # 4. 302AI / OpenAI 兼容接口
     if OPENAI_KEY:
         try:
             async with httpx.AsyncClient(timeout=30) as c:
-                r = await c.post("https://api.openai.com/v1/chat/completions",
+                r = await c.post(f"{_API_URL}/chat/completions",
                     headers={"Authorization": f"Bearer {OPENAI_KEY}", "Content-Type": "application/json"},
                     json={"model": "gpt-4o-mini", "messages": messages, "max_tokens": 1024})
                 if r.status_code == 200:
-                    print("[AI] OpenAI 閸濆秴绨查幋鎰")
+                    print("[AI] OpenAI/302AI 回复成功")
                     return r.json()["choices"][0]["message"]["content"]
         except Exception as e:
             results.append(f"OpenAI: {str(e)[:50]}")
 
     if results:
-        print(f"[AI] 閹碘偓閺堝膩閸ㄥ銇戠拹? {'; '.join(results)}")
+        print(f"[AI] 所有模型均失败: {'; '.join(results)}")
     return None
+
 async def execute_tool(tool_name, params=None):
     """统一通过 registry 执行所有工具"""
     from tools.registry import registry as _reg
@@ -121,9 +143,22 @@ async def execute_tool(tool_name, params=None):
         "error": result.get("error", ""),
     }
 
+def _match(msg):
+    """关键词匹配工具"""
+    msg = msg.lower()
+    tools = registry.list_all()
+    for t in tools:
+        if t.name and t.name.lower() in msg:
+            return t.name, t.risk_level
+    if any(w in msg for w in ["服务", "内存", "cpu"]):
+        return "server.metrics", "L1"
+    if any(w in msg for w in ["轮值", "域名"]):
+        return "rotation.domains", "L1"
+    return "chat.respond", "L1"
+
 @router.get("/models/status")
 async def model_status():
-    """濡偓閺屻儱鎮囧Ο鈥崇€烽崣顖滄暏閻樿埖鈧?""
+    """AI模型状态查询"""
     status = {"ollama": False, "deepseek": bool(DEEPSEEK_KEY), "claude": bool(CLAUDE_API_KEY), "openai": bool(OPENAI_KEY)}
     try:
         async with httpx.AsyncClient(timeout=3) as c:
@@ -134,10 +169,11 @@ async def model_status():
                 status["ollama_models"] = [m["name"] for m in models]
     except:
         pass
-    return {"ok": True, "engines": status, "current": OLLAMA_MODEL if status["ollama"] else ("deepseek" if status["deepseek"] else ("claude" if status["claude"] else "keyword"))}
+    return {"ok": True, "engines": status}
 
 @router.post("/chat")
 async def agent_chat(req: ChatRequest, _=Depends(verify_token)):
+    """AI对话主入口"""
     tools = registry.list_all()
     tl = "\n".join([f"- {t.name}: {t.display_name} [{t.risk_level}]" for t in tools[:50]])
     msgs = [
@@ -146,82 +182,79 @@ async def agent_chat(req: ChatRequest, _=Depends(verify_token)):
     ]
     ai = await call_ai(msgs)
     tn, risk = None, "L1"
-    intent = req.message[:50]; reason = ""
+    intent = req.message[:50]
+    reason = ""
     if ai:
         try:
             m = re.search(r'\{[^}]+\}', ai.strip())
             if m:
                 p = json.loads(m.group())
-                tn = p.get("tool"); risk = p.get("risk", "L1")
-                intent = p.get("intent", intent); reason = p.get("reasoning", "")
+                tn = p.get("tool")
+                risk = p.get("risk", "L1")
+                intent = p.get("intent", intent)
+                reason = p.get("reasoning", "")
         except:
             pass
-    if not tn: tn, risk = _match(req.message)
-    td = registry.get(tn); disp = td.display_name if td else tn
-    rr = await handle_risk(risk, disp, req.message[:100])
+    if not tn:
+        tn, risk = _match(req.message)
+    td = registry.get(tn)
+    disp = td.display_name if td else tn
+    await handle_risk(risk, disp, req.message[:100])
     steps = [
-        {"step": 1, "name": f"Intent: {intent}", "status": "done"},
-        {"step": 2, "name": f"Tool: {disp}", "status": "done"},
-        {"step": 3, "name": f"Risk: {risk}", "status": "done"},
+        {"step": 1, "name": f"意图: {intent}", "status": "done"},
+        {"step": 2, "name": f"工具: {disp}", "status": "done"},
+        {"step": 3, "name": f"风险: {risk}", "status": "done"},
     ]
     if risk == "L4":
-        return {"task_id": f"t{len(state.tasks)+1}", "response": f"BLOCKED L4\n\n{intent}\n\nRisk L4 - manual takeover forced.",
-                "steps": steps + [{"step": 4, "name": "Blocked", "status": "failed"}], "risk_level": "L4", "mode": state.mode}
+        return {"task_id": f"t{len(state.tasks)+1}", "response": f"⛔ 已阻止 L4 风险操作\n\n{intent}\n\n需要人工接管。",
+                "steps": steps + [{"step": 4, "name": "已阻止", "status": "failed"}], "risk_level": "L4", "mode": state.mode}
     if risk == "L3":
         state.add_approval(f"t{len(state.tasks)+1}", "L3", disp, req.message[:200])
-        return {"task_id": f"t{len(state.tasks)+1}", "response": f"APPROVAL NEEDED\n\n{intent}\n\nTool: {disp}\nRisk: L3\n\nSubmitted for approval.",
-                "steps": steps + [{"step": 4, "name": "Wait approval", "status": "pending"}], "risk_level": "L3", "need_confirm": True, "mode": state.mode}
-    steps.append({"step": 4, "name": f"Run: {disp}", "status": "running"})
+        return {"task_id": f"t{len(state.tasks)+1}", "response": f"✅ 已提交审批\n\n{intent}\n\n工具: {disp}\n风险: L3，等待审批。",
+                "steps": steps + [{"step": 4, "name": "等待审批", "status": "pending"}], "risk_level": "L3", "need_confirm": True, "mode": state.mode}
+    steps.append({"step": 4, "name": f"执行: {disp}", "status": "running"})
     er = await execute_tool(tn, {"message": req.message})
     if er["success"]:
-        steps.append({"step": 5, "name": "Done", "status": "done"})
+        steps.append({"step": 5, "name": "完成", "status": "done"})
         ds = json.dumps(er.get("data", {}), ensure_ascii=False, indent=2)[:1000]
-        resp = f"**{disp}** Done\n\n```\n{ds}\n```"
-        if reason: resp = reason + "\n\n" + resp
+        resp = f"**{disp}** 执行成功\n\n```\n{ds}\n```"
+        if reason:
+            resp = reason + "\n\n" + resp
     else:
-        steps.append({"step": 5, "name": "Failed", "status": "failed"})
-        resp = f"**{disp}** Failed\n\n{er.get('error', 'unknown')}"
+        steps.append({"step": 5, "name": "失败", "status": "failed"})
+        resp = f"**{disp}** 执行失败\n\n{er.get('error', '未知错误')}"
     state.add_task(name=disp, risk=risk, status="done" if er["success"] else "failed")
-    # 閹镐椒绠欓崠鏍ь嚠鐠囨繆顔囪箛?    try:
-        DigitalLifeform.remember_conversation(req.message, resp[:300])
     try:
-        from tools.vector_memory import vector_memory
-        vector_memory.remember("用户: " + req.message[:300], {"role": "user", "tool": tn})
-        vector_memory.remember("AI: " + resp[:300], {"role": "ai", "tool": tn})
-    except: pass
+        DigitalLifeform.remember_conversation(req.message, resp[:300])
     except:
         pass
     return {"task_id": f"t{len(state.tasks)}", "response": resp, "steps": steps, "risk_level": risk, "mode": state.mode}
 
 @router.get("/tools")
 async def list_tools(_=Depends(verify_token)):
+    """列出所有可用工具"""
     ts = registry.list_all()
     return {"tools": [{"name": t.name, "display_name": t.display_name, "description": t.description,
                        "risk_level": t.risk_level, "category": t.category} for t in ts], "count": len(ts)}
 
 @router.get("/tasks")
 async def list_tasks(_=Depends(verify_token)):
+    """列出任务和待审批"""
     return {"tasks": state.tasks[-50:], "pending": len(state.pending_approvals)}
 
 @router.post("/confirm")
 async def confirm_task(req: ConfirmRequest, _=Depends(verify_token)):
+    """审批确认/拒绝"""
     for a in state.pending_approvals:
         if a.get("id") == req.taskId:
-            if req.approved:
-                a["status"] = "approved"
-                state.approval_history.append({**a, "result": "approved"})
-                state.pending_approvals.remove(a)
-                return {"ok": True, "status": "approved"}
-            else:
-                a["status"] = "rejected"
-                state.approval_history.append({**a, "result": "rejected"})
-                state.pending_approvals.remove(a)
-                return {"ok": True, "status": "rejected"}
-    return {"ok": False, "error": "Task not found"}
+            a["status"] = "approved" if req.approved else "rejected"
+            state.approval_history.append({**a, "result": a["status"]})
+            state.pending_approvals.remove(a)
+            return {"ok": True, "status": a["status"]}
+    return {"ok": False, "error": "未找到该任务"}
 
 @router.post("/handover")
 async def agent_handover(req: HandoverRequest, _=Depends(verify_token)):
+    """交还人工控制"""
     state.mode = "human_control"
     return {"ok": True, "mode": "human_control", "reason": req.reason}
-
-

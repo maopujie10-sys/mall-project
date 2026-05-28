@@ -52,21 +52,11 @@ class _AgentState:
         self._load()
         self._ensure_limits()
 
-    def _ensure_limits(self):
+    def _ensure_limits:
         """强制所有key不超限（已知key按KEY_LIMITS，未知key默认上限1000）"""
         for key in list(self._data.keys()):
             val = self._data[key]
-            limit = KEY_LIMITS.get(key, 1000)  # 未知key默认上限1000
-            if isinstance(val, list) and len(val) > limit:
-                self._data[key] = val[-limit:]
-            elif isinstance(val, dict):
-                keys = list(val.keys())
-                if len(keys) > limit:
-                    for k in keys[:-limit]:
-                        del val[k]
-        """强制所有key不超限（惰性裁剪，每次save前执行）"""
-        for key, limit in KEY_LIMITS.items():
-            val = self._data.get(key)
+            limit = KEY_LIMITS.get(key, 1000)
             if isinstance(val, list) and len(val) > limit:
                 self._data[key] = val[-limit:]
             elif isinstance(val, dict):
@@ -241,6 +231,7 @@ class _AgentState:
 
 
 state = _AgentState()
+
 
 
 

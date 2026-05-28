@@ -1,5 +1,15 @@
 ﻿<template>
   <div class="page-container">
+  <!-- 3D神经网络可视化 -->
+  <el-card shadow="never" style="margin-bottom:24px;overflow:hidden;border-radius:12px">
+    <template #header>
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <span>🧬 AI 神经网络实时状态 <span style="font-size:12px;color:var(--text-muted);font-weight:400;margin-left:8px">拖拽旋转 · 滚轮缩放</span></span>
+        <el-tag size="small" type="success">● 运行中</el-tag>
+      </div>
+    </template>
+    <NeuralNetwork3D />
+  </el-card>
     <div class="page-header">
       <div>
         <h1>🧠 AI 商城大脑</h1>
@@ -111,6 +121,7 @@
 </template>
 
 <script setup>
+import NeuralNetwork3D from "@/components/NeuralNetwork3D.vue"
 import { ref, reactive, computed } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
@@ -224,3 +235,4 @@ function handleRemove(row) {
 .ai-suggestions { display: flex; flex-direction: column; gap: 8px; }
 .sug-item { display: flex; align-items: flex-start; gap: 8px; font-size: 12px; color: var(--text-secondary); line-height: 1.5; }
 </style>
+

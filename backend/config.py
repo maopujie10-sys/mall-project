@@ -1,4 +1,4 @@
-"""配置中心 — 支持多环境"""
+﻿"""配置中心 — 支持多环境"""
 import os, sys
 from dotenv import load_dotenv
 
@@ -14,6 +14,10 @@ if not AGENT_TOKEN or AGENT_TOKEN == "change-me-in-production":
         sys.exit(1)
 
 # ===== Claude =====
+DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY", "")
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
+OPENAI_BASE_URL = os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1")
+
 CLAUDE_API_KEY = os.getenv("CLAUDE_API_KEY", "")
 CLAUDE_MODEL = os.getenv("CLAUDE_MODEL", "claude-3-5-sonnet-latest")
 

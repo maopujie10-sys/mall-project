@@ -40,11 +40,16 @@ const routes = [
       { path: "rollback", name: "RollbackCenter", component: () => import("@/views/RollbackCenter.vue"), meta: { title: "备份回滚" } },
       { path: "rotation", name: "RotationPanel", component: () => import("@/views/RotationPanel.vue"), meta: { title: "轮值" } },
       { path: "approval", name: "ApprovalCenter", component: () => import("@/views/ApprovalCenter.vue"), meta: { title: "审批中心" } },
+      { path: "audit", name: "AuditLog", component: () => import("@/views/AuditLog.vue"), meta: { title: "审计日志" } },
+      { path: "files", name: "FileManager", component: () => import("@/views/FileManager.vue"), meta: { title: "文件管理" } },
+      { path: "network", name: "NetworkTools", component: () => import("@/views/NetworkTools.vue"), meta: { title: "网络工具" } },
+      { path: "github", name: "GitHubPanel", component: () => import("@/views/GitHubPanel.vue"), meta: { title: "GitHub" } }
+      { path: "emergency", name: "Emergency", component: () => import("@/views/EmergencyPanel.vue"), meta: { title: "急救面板" } },
     ],
   },
-  { path: "/emergency", name: "Emergency", component: () => import("@/views/EmergencyPanel.vue"), meta: { title: "急救面板" } },
-  { path: "/:pathMatch(.*)*", name: "NotFound", component: () => import("@/views/NotFound.vue") },
 ]
 
 const router = createRouter({ history: createWebHistory("/ai/"), routes })
 export default router
+
+

@@ -1,96 +1,43 @@
-"""ÔËÓªÈÕ±¨ ¡ª ×Ô¶¯Éú³ÉÃ¿ÈÕÔËÓªÊı¾İ±¨¸æ"""
-import httpx
+ï»¿"""æ¯æ—¥è¿è¥æ—©æŠ¥ â€” è‡ªåŠ¨ç”Ÿæˆ+å¤šæ¸ é“æ¨é€"""
 from datetime import datetime
 from fastapi import APIRouter, Depends
 from auth import verify_token
-from config import MALL_BASE_URL
-from risk import handle_risk
 from state import state
+from risk import handle_risk
 
-router = APIRouter(prefix="/report", tags=["Report"])
-
-def _get_reports():
-    return state._data.setdefault("daily_reports", [])
-
-@router.post("/daily")
-async def generate_daily_report(_=Depends(verify_token)):
-    """Éú³É½ñÈÕÔËÓªÈÕ±¨"""
-    await handle_risk("L2", "Éú³ÉÔËÓªÈÕ±¨")
-    today = datetime.now().strftime("%Y-%m-%d")
-    now = datetime.now().strftime("%H:%M:%S")
-
-    # ÊÕ¼¯¸÷ÏîÊı¾İ
-    data = {}
-
-    # ÉÌ³Ç×´Ì¬
-    async with httpx.AsyncClient(timeout=10) as c:
-        try:
-            r = await c.get(f"{MALL_BASE_URL}/api/orders", params={"page": 1, "size": 1})
-            data["orders_total"] = r.json().get("total", "N/A") if r.status_code == 200 else "N/A"
-        except Exception:
-            data["orders_total"] = "N/A"
-
-        try:
-            r = await c.get(f"{MALL_BASE_URL}/api/products", params={"page": 1, "size": 1})
-            data["products_total"] = r.json().get("total", "N/A") if r.status_code == 200 else "N/A"
-        except Exception:
-            data["products_total"] = "N/A"
-
-    # ÏµÍ³×´Ì¬
-    data["agent_mode"] = state.mode
-    data["pending_approvals"] = len(state.pending_approvals)
-    data["tasks_today"] = len(state.tasks)
-    data["alerts_unresolved"] = len([a for a in state._data.get("alerts", []) if not a.get("resolved")])
-
-    # ¿Í·şÊı¾İ
-    msgs = state._data.get("customer_messages", [])
-    today_msgs = [m for m in msgs if today in m.get("time", "")]
-    data["customer_messages_today"] = len(today_msgs)
-
-    # ¸æ¾¯Êı¾İ
-    alerts = state._data.get("alerts", [])
-    today_alerts = [a for a in alerts if today in a.get("time", "")]
-    data["alerts_today"] = len(today_alerts)
-
-    report = {
-        "date": today,
-        "generated_at": now,
-        "data": data,
-        "summary": (
-            f"?? {today} ÔËÓªÈÕ±¨\n"
-            f"? Ä£Ê½: {data['agent_mode']}\n"
-            f"? ¶©µ¥: {data.get('orders_total', 'N/A')} | ÉÌÆ·: {data.get('products_total', 'N/A')}\n"
-            f"? ´ıÉóÅú: {data['pending_approvals']} | ½ñÈÕ¸æ¾¯: {data['alerts_today']}\n"
-            f"? ¿Í·şÏûÏ¢: {data['customer_messages_today']}"
-        ),
-    }
-
-    reports = _get_reports()
-    reports.insert(0, report)
-    if len(reports) > 30: reports[:] = reports[:30]
-    state._save()
-
-    return report
+router = APIRouter(prefix="/agent/report", tags=["DailyReport"])
 
 @router.get("/daily")
-async def list_reports(_=Depends(verify_token)):
-    """²é¿´ÀúÊ·ÈÕ±¨"""
-    await handle_risk("L1", "²é¿´ÔËÓªÈÕ±¨")
-    return {"reports": _get_reports()}
+async def daily_report(_=Depends(verify_token)):
+    """ç”Ÿæˆæ¯æ—¥è¿è¥æ—©æŠ¥"""
+    await handle_risk("L1", "ç”Ÿæˆæ¯æ—¥æ—©æŠ¥")
+    import psutil
+    mem = psutil.virtual_memory()
+    disk = psutil.disk_usage("/")
+    cpu = psutil.cpu_percent(interval=0.3)
+    domains = state._data.get("rotation_domains", [])
+    active = sum(1 for d in domains if d.get("active"))
+    pending = state._data.get("pending_approvals", [])
+    blacklist = state._data.get("ip_blacklist", [])
+    score = 100
+    if mem.percent > 80: score -= 15
+    if disk.percent > 85: score -= 15
+    if cpu > 80: score -= 10
+    if pending: score -= 5 * min(len(pending), 4)
+    score = max(0, score)
+    report = {"date": datetime.now().strftime("%Y-%m-%d"), "time": datetime.now().strftime("%H:%M"),
+              "health_score": score, "health_level": "ä¼˜ç§€" if score>85 else "è‰¯å¥½" if score>70 else "éœ€å…³æ³¨" if score>50 else "å±é™©",
+              "server": {"cpu":f"{cpu}%","memory":f"{mem.percent}%","disk":f"{disk.percent}%"},
+              "domains":{"total":len(domains),"active":active,"offline":len(domains)-active},
+              "pending_approvals":len(pending),"blocked_ips":len(blacklist),"suggestions":[]}
+    if mem.percent > 80: report["suggestions"].append(f"å†…å­˜ä½¿ç”¨{mem.percent}%ï¼Œå»ºè®®é‡Šæ”¾")
+    if disk.percent > 85: report["suggestions"].append(f"ç£ç›˜ä½¿ç”¨{disk.percent}%ï¼Œå»ºè®®æ¸…ç†")
+    if cpu > 80: report["suggestions"].append(f"CPUè´Ÿè½½{cpu}%ï¼Œå»ºè®®æ£€æŸ¥")
+    if pending: report["suggestions"].append(f"{len(pending)}ä¸ªå®¡æ‰¹å¾…å¤„ç†")
+    if not report["suggestions"]: report["suggestions"].append("ä¸€åˆ‡æ­£å¸¸")
+    state.append_data("daily_reports", report, 365)
+    return {"ok": True, **report}
 
-@router.get("/trend")
-async def trend_analysis(_=Depends(verify_token)):
-    """Òì³£Ç÷ÊÆ·ÖÎö"""
-    await handle_risk("L1", "Òì³£Ç÷ÊÆ·ÖÎö")
-    reports = _get_reports()
-    if len(reports) < 2:
-        return {"trend": "Êı¾İ²»×ã£¬ÖÁÉÙĞèÒª2ÌìµÄÈÕ±¨²ÅÄÜ·ÖÎöÇ÷ÊÆ"}
-    recent = reports[:7]
-    alert_counts = [r["data"].get("alerts_today", 0) for r in recent]
-    avg = sum(alert_counts) / len(alert_counts)
-    return {
-        "days": len(recent),
-        "avg_daily_alerts": round(avg, 1),
-        "alert_trend": "ÉÏÉı ??" if alert_counts[0] > alert_counts[-1] else "ÏÂ½µ ??" if alert_counts[0] < alert_counts[-1] else "Æ½ÎÈ ??",
-        "latest_alerts": alert_counts[0],
-    }
+@router.get("/daily/history")
+async def daily_history(_=Depends(verify_token)):
+    return {"ok": True, "reports": state._data.get("daily_reports", [])[-30:]}

@@ -100,6 +100,76 @@ async def mall_scan_task():
         print(f"[Scheduler] 商城扫描异常: {e}")
 
 
+
+async def ssl_renew_check_task():
+    """SSL证书到期检查 + 自动续签"""
+    print(f"[Scheduler] SSL证书检查 {datetime.now().strftime("%H:%M:%S")}")
+    try:
+        from routers.ssl_router import _cert_valid, _issue
+        from routers.rotation_panel import _get_domains
+        domains = _get_domains()
+        for d in domains:
+            info = _cert_valid(d["domain"])
+            if info.get("ok") and info.get("days_left", 0) > 30:
+                continue
+            print(f"[Scheduler] SSL到期({info.get('days_left', 0)}天), 自动续签: {d['domain']}")
+            result = _issue(d["domain"], "")
+            if result.get("ok"):
+                print(f"[Scheduler] SSL续签成功: {d['domain']}")
+            else:
+                print(f"[Scheduler] SSL续签失败: {d['domain']} - {result.get('error', '')}")
+    except Exception as e:
+        print(f"[Scheduler] SSL检查异常: {e}")
+
+
+async def daily_report_task():
+    """每日8点生成运营早报"""
+    try:
+        from routers.daily_report import daily_report
+        from auth import verify_token
+        from fastapi import Depends
+        print(f"[Scheduler] 生成每日早报...")
+        # 直接调用生成逻辑
+        import psutil
+        from state import state
+        mem = psutil.virtual_memory()
+        disk = psutil.disk_usage("/")
+        cpu = psutil.cpu_percent(interval=0.3)
+        domains = state._data.get("rotation_domains", [])
+        active = sum(1 for d in domains if d.get("active"))
+        pending = state._data.get("pending_approvals", [])
+        score = 100
+        if mem.percent > 80: score -= 15
+        if disk.percent > 85: score -= 15
+        if cpu > 80: score -= 10
+        if pending: score -= 5 * min(len(pending), 4)
+        score = max(0, score)
+        report = {"date": __import__("datetime").datetime.now().strftime("%Y-%m-%d"),
+                  "time": __import__("datetime").datetime.now().strftime("%H:%M"),
+                  "health_score": score, "server": {"cpu":f"{cpu}%","memory":f"{mem.percent}%","disk":f"{disk.percent}%"},
+                  "domains":{"total":len(domains),"active":active},"pending_approvals":len(pending)}
+        state.append_data("daily_reports", report, 365)
+        # 发通知
+        state._data["last_notification"] = f"每日早报: 健康分{score}, CPU{cpu}%, 内存{mem.percent}%, 磁盘{disk.percent}%"
+        state._save()
+        print(f"[Scheduler] 每日早报: 健康分{score}")
+    except Exception as e:
+        print(f"[Scheduler] 早报失败: {e}")
+
+async def metrics_record_task():
+    """定时记录系统指标"""
+    try:
+        from routers.dashboard_router import collect_metrics
+        from state import state as _s
+        m = await collect_metrics()
+        history = _s._data.setdefault("metrics_history", [])
+        history.append(m)
+        if len(history) > 500:
+            _s._data["metrics_history"] = history[-500:]
+        _s._save()
+    except Exception as e:
+        print(f"[Scheduler] 指标记录异常: {e}")
+
 def start_scheduler():
     """启动定时任务"""
     scheduler.add_job(patrol_task, IntervalTrigger(minutes=30), id="patrol", replace_existing=True)
@@ -108,11 +178,18 @@ def start_scheduler():
     scheduler.add_job(customer_report_task, CronTrigger(hour=18, minute=0), id="customer_report", replace_existing=True)
     scheduler.add_job(mall_scan_task, CronTrigger(hour=3, minute=0), id="mall_scan", replace_existing=True)
     scheduler.add_job(diary_task, CronTrigger(hour=23, minute=55), id="diary", replace_existing=True)
+    scheduler.add_job(ssl_renew_check_task, CronTrigger(hour=3, minute=30), id="ssl_renew", replace_existing=True)
+    scheduler.add_job(daily_report_task, CronTrigger(hour=8, minute=0), id="daily_report", replace_existing=True)
+    scheduler.add_job(metrics_record_task, IntervalTrigger(minutes=5), id="metrics", replace_existing=True)
     scheduler.start()
-    print("[Scheduler] 定时任务启动完成: 巡检/备份/轮值/商城扫描/客服/日记")
+    print("[Scheduler] 定时任务启动完成: 巡检/备份/轮值/SSL续签/商城扫描/客服/日记/早报/指标")
 
 
 def stop_scheduler():
     """停止定时任务"""
     scheduler.shutdown(wait=False)
     print("[Scheduler] 定时任务已停止")
+
+
+
+

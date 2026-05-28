@@ -13,13 +13,8 @@ router = APIRouter(prefix="/rotation", tags=["Rotation"])
 
 DEFAULT_DOMAINS = [
     {"domain": "tiktook.eu.cc", "active": True, "health": "ok", "type": "主域名", "weight": 5},
-    {"domain": "tiktokmall.shop", "active": True, "health": "ok", "type": "轮值", "weight": 3},
-    {"domain": "tiktokmall.store", "active": True, "health": "ok", "type": "轮值", "weight": 3},
-    {"domain": "tiktokmall.online", "active": True, "health": "ok", "type": "轮值", "weight": 3},
-    {"domain": "tiktokmall.live", "active": True, "health": "ok", "type": "轮值", "weight": 3},
-    {"domain": "tiktokmall.xyz", "active": True, "health": "ok", "type": "轮值", "weight": 2},
-    {"domain": "tiktokmall.top", "active": True, "health": "ok", "type": "轮值", "weight": 2},
-    {"domain": "img.tiktook.eu.cc", "active": True, "health": "ok", "type": "CDN图片", "weight": 1},
+]
+    {"domain": "tiktook.eu.cc", "active": True, "health": "ok", "type": "主域名", "weight": 5},
 ]
 
 
@@ -378,16 +373,7 @@ def _get_config():
                     {"host": "store.tiktook.eu.cc", "weight": 2}
                 ]
             },
-            "rotation": [
-                {"id":"r1","main":"tiktokmall.shop","weight":5,"enabled":True,"children":[{"host":"www.tiktokmall.shop","weight":3},{"host":"shop.tiktokmall.shop","weight":2},{"host":"mall.tiktokmall.shop","weight":2}]},
-                {"id":"r2","main":"tiktokmall.store","weight":5,"enabled":True,"children":[{"host":"www.tiktokmall.store","weight":3},{"host":"shop.tiktokmall.store","weight":2},{"host":"mall.tiktokmall.store","weight":2}]},
-                {"id":"r3","main":"tiktokmall.online","weight":4,"enabled":True,"children":[{"host":"www.tiktokmall.online","weight":3},{"host":"shop.tiktokmall.online","weight":2},{"host":"mall.tiktokmall.online","weight":2}]},
-                {"id":"r4","main":"tiktokmall.live","weight":4,"enabled":True,"children":[{"host":"www.tiktokmall.live","weight":3},{"host":"shop.tiktokmall.live","weight":2},{"host":"mall.tiktokmall.live","weight":2}]},
-                {"id":"r5","main":"tiktokmall.xyz","weight":3,"enabled":True,"children":[{"host":"www.tiktokmall.xyz","weight":3},{"host":"shop.tiktokmall.xyz","weight":2},{"host":"mall.tiktokmall.xyz","weight":2}]},
-                {"id":"r6","main":"tiktokmall.top","weight":3,"enabled":True,"children":[{"host":"www.tiktokmall.top","weight":3},{"host":"shop.tiktokmall.top","weight":2},{"host":"mall.tiktokmall.top","weight":2}]},
-                {"id":"r7","main":"tiktokmall.cloud","weight":2,"enabled":True,"children":[{"host":"www.tiktokmall.cloud","weight":3},{"host":"shop.tiktokmall.cloud","weight":2},{"host":"mall.tiktokmall.cloud","weight":2}]},
-                {"id":"r8","main":"tiktokmall.site","weight":2,"enabled":True,"children":[{"host":"www.tiktokmall.site","weight":3},{"host":"shop.tiktokmall.site","weight":2},{"host":"mall.tiktokmall.site","weight":2}]}
-            ]
+            "rotation": []
         }
         state._save()
     return state._data["rotation_two_level"]
@@ -475,3 +461,62 @@ async def get_public_config():
         "primary": config["primary"],
         "rotation": [r for r in config["rotation"] if r.get("enabled", True)],
     }
+
+
+# ===== 自动发现解析到本服务器的域名 =====
+
+async def _get_server_ip() -> str:
+    """获取本服务器公网IP"""
+    import httpx
+    for url in ["https://ifconfig.me", "https://api.ipify.org", "https://checkip.amazonaws.com"]:
+        try:
+            async with httpx.AsyncClient(timeout=5) as c:
+                r = await c.get(url)
+                if r.status_code == 200:
+                    return r.text.strip()
+        except Exception:
+            continue
+    return ""
+
+
+@router.get("/auto-discover")
+async def auto_discover_domains(_=Depends(verify_token)):
+    """自动检测解析到本服务器的域名并加入轮值系统"""
+    await handle_risk("L2", "自动发现域名")
+    server_ip = await _get_server_ip()
+    if not server_ip:
+        return {"ok": False, "error": "无法获取本服务器公网IP"}
+    existing = _get_domains()
+    existing_domains = {d["domain"] for d in existing}
+    # 从现有域名衍生候选域名（tld轮值）
+    candidates = set()
+    for d in existing:
+        parts = d["domain"].split(".")
+        if len(parts) >= 2:
+            base = parts[-2] if len(parts) == 2 else ".".join(parts[:-1])
+            # 常见TLD
+            for tld in [".eu.cc", ".shop", ".store", ".online", ".live", ".xyz", ".top", ".cloud", ".site", ".fun", ".vip", ".pro", ".cc", ".com", ".net", ".org"]:
+                candidates.add(f"{base}{tld}")
+    discovered = []
+    import asyncio, socket
+    for dom in sorted(candidates):
+        if dom in existing_domains:
+            continue
+        try:
+            ips = await asyncio.get_event_loop().run_in_executor(
+                None, lambda d=dom: socket.getaddrinfo(d, 443, socket.AF_INET))
+            if ips and ips[0][4][0] == server_ip:
+                existing.append({
+                    "domain": dom, "active": True, "health": "pending",
+                    "type": "自动发现", "weight": 1
+                })
+                discovered.append(dom)
+        except Exception:
+            continue
+    if discovered:
+        state._data["rotation_domains"] = existing
+        state._save()
+    return {"ok": True, "server_ip": server_ip, "discovered": discovered, "count": len(discovered)}
+
+
+

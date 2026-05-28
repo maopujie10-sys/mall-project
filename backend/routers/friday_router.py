@@ -1,5 +1,5 @@
 ﻿"""Friday AI OS — Agent API路由"""
-from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect
+from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect, Query
 from pydantic import BaseModel
 from typing import Optional
 from risk import handle_risk
@@ -138,6 +138,57 @@ async def route_model(mode: str = "quality", _=Depends(verify_token)):
 # ===== WebSocket广播测试 =====
 
 # ===== Playwright 浏览器自动化 =====
+@router.post("/models/test")
+async def test_model_speed(model_id: str, _=Depends(verify_token)):
+    """测试模型响应速度"""
+    from agents.multi_model import ModelRouter
+    start = __import__("time").time()
+    try:
+        resp = await ModelRouter.route(
+            prompt="你好，请回复"hello"测试响应速度",
+            model_id=model_id or None
+        )
+        elapsed = round(__import__("time").time() - start, 2)
+        return {"ok": True, "model_id": model_id or "auto", "latency_ms": round(elapsed * 1000), "response": str(resp)[:100]}
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+
+@router.post("/models/compare")
+async def compare_models(model_ids: list[str], _=Depends(verify_token)):
+    """对比多个模型"""
+    from agents.multi_model import ModelRouter
+    results = []
+    for mid in model_ids[:3]:  # 最多比3个
+        start = __import__("time").time()
+        try:
+            resp = await ModelRouter.route(prompt="回复"hello world"", model_id=mid)
+            elapsed = round(__import__("time").time() - start, 2)
+            results.append({"model_id": mid, "latency_ms": round(elapsed * 1000), "ok": True})
+        except Exception as e:
+            results.append({"model_id": mid, "ok": False, "error": str(e)})
+    return {"ok": True, "results": results}
+
+
+@router.post("/models/switch")
+async def switch_active_model(model_id: str, _=Depends(verify_token)):
+    """切换当前使用的模型"""
+    from state import state
+    state._data["active_model"] = model_id
+    state._save()
+    return {"ok": True, "active_model": model_id}
+
+
+@router.get("/models/status")
+async def model_status(_=Depends(verify_token)):
+    """获取模型状态"""
+    from agents.multi_model import ModelRouter
+    return {
+        "ok": True,
+        "active_model": ModelRouter.get_config().get("default_model", "auto"),
+        "available_models": list(ModelRouter.get_config().get("models", {}).keys()),
+        "mode": "auto",
+    }
 @router.get("/playwright/status")
 async def playwright_status(_=Depends(verify_token)):
     installed = await PlaywrightAgent.check_installed()
@@ -200,28 +251,28 @@ async def test_broadcast(message: str = "Friday AI OS 在线", _=Depends(verify_
 
 
 # ===== Vision Agent: OCR/视频/物体/人脸 =====
-@router.post("/vision/ocr")
-async def vision_ocr(url: str, _=Depends(verify_token)):
+@router.get("/vision/ocr")
+async def vision_ocr(image_url: str = Query(...), _=Depends(verify_token)):
     """OCR 文字识别"""
     return await VisionAgent.ocr_recognize(url)
 
-@router.post("/vision/video")
-async def vision_video(video_url: str, _=Depends(verify_token)):
+@router.get("/vision/video")
+async def vision_video(video_url: str = Query(...), _=Depends(verify_token)):
     """视频分析"""
     return await VisionAgent.analyze_video(video_url=video_url)
 
-@router.post("/vision/objects")
-async def vision_objects(image_url: str, _=Depends(verify_token)):
+@router.get("/vision/objects")
+async def vision_objects(image_url: str = Query(...), _=Depends(verify_token)):
     """物体检测"""
     return await VisionAgent.detect_objects(image_url)
 
-@router.post("/vision/faces")
-async def vision_faces(image_url: str, _=Depends(verify_token)):
+@router.get("/vision/faces")
+async def vision_faces(image_url: str = Query(...), _=Depends(verify_token)):
     """人脸检测"""
     return await VisionAgent.detect_faces(image_url)
 
 @router.post("/vision/upload")
-async def vision_upload(file: bytes = None, url: str = "", _=Depends(verify_token)):
+async def vision_upload(url: str = Query(""), file: bytes = None, _=Depends(verify_token)):
     """上传图片并分析（支持文件上传或URL）"""
     if url:
         return await VisionAgent.analyze_image(image_url=url)
@@ -237,61 +288,6 @@ async def vision_upload(file: bytes = None, url: str = "", _=Depends(verify_toke
             os.unlink(tmp.name)
     return {"ok": False, "error": "请提供图片URL或上传文件"}
 
-
-
-@router.post("/models/switch")
-async def switch_model(model_id: str, _=Depends(verify_token)):
-    """切换当前模型"""
-    await handle_risk("L1", f"切换模型: {model_id}")
-    state.current_model = model_id
-    state._save()
-    return {"ok": True, "current_model": model_id}
-
-@router.post("/models/test")
-async def test_model(model_id: str, _=Depends(verify_token)):
-    """测试模型响应速度 — 直接API调用测试"""
-    import time, httpx
-    model = ModelRouter.get_model(model_id)
-    if not model:
-        return {"ok": False, "error": f"模型 {model_id} 不存在"}
-    start = time.time()
-    try:
-        api_base = model.api_base if hasattr(model, 'api_base') else "https://api.openai.com/v1"
-        api_key_env = model.api_key_env if hasattr(model, 'api_key_env') else ""
-        api_key = __import__("os").environ.get(api_key_env, "")
-        if not api_key and not model.is_local:
-            return {"ok": False, "error": f"模型 {model_id} 的API密钥未配置 ({api_key_env})"}
-        async with httpx.AsyncClient(timeout=15) as c:
-            if model.is_local:
-                r = await c.post(f"{api_base}/chat/completions",
-                    json={"model": model.model_name, "messages":[{"role":"user","content":"ping"}], "max_tokens":5})
-            else:
-                r = await c.post(f"{api_base}/chat/completions",
-                    headers={"Authorization": f"Bearer {api_key}"},
-                    json={"model": model.model_name, "messages":[{"role":"user","content":"ping"}], "max_tokens":5})
-            latency = int((time.time() - start) * 1000)
-            return {"ok": True, "model_id": model_id, "latency_ms": latency, "status": "ok" if r.status_code < 500 else "error", "code": r.status_code}
-    except Exception as e:
-        return {"ok": False, "model_id": model_id, "latency_ms": int((time.time()-start)*1000), "error": str(e)}
-
-@router.post("/models/compare")
-async def compare_models(model_ids: list[str], _=Depends(verify_token)):
-    """对比多个模型"""
-    results = []
-    for mid in model_ids:
-        model = ModelRouter.get_model(mid)
-        if model:
-            results.append({"model_id": mid, "name": model.name if hasattr(model, "name") else mid, "status": "available"})
-        else:
-            results.append({"model_id": mid, "status": "unavailable"})
-    return {"ok": True, "comparison": results}
-
-@router.get("/models/status")
-async def model_status(_=Depends(verify_token)):
-    """获取所有模型状态"""
-    models = ModelRouter.list_models()
-    current = getattr(state, "current_model", None)
-    return {"ok": True, "models": models, "current": current}
 
 
 

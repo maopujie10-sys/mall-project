@@ -203,3 +203,4 @@ function handleSuggestion(sug) {
 .sug-text { flex: 1; font-size: 12px; color: var(--text-secondary); line-height: 1.5; }
 .empty-hint { text-align: center; padding: 30px; color: var(--text-muted); font-size: 13px; }
 </style>
+
