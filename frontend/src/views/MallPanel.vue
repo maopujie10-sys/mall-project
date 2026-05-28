@@ -1,125 +1,201 @@
-<template>
-  <div class="mall-panel">
-    <h2>鍟嗗煄鐘舵€佺洃鎺?/h2>
+﻿<template>
+  <div class="mall-admin-panel">
+    <div class="page-header">
+      <h2>商城总后台管理</h2>
+      <div class="header-actions">
+        <el-button size="small" @click="scanAll" :loading="scanning">一键扫描</el-button>
+        <el-button size="small" type="primary" @click="aiBrainScan" :loading="brainLoading">AI大脑分析</el-button>
+      </div>
+    </div>
 
-    <!-- KPI -->
-    <el-row :gutter="16" class="kpi-row">
-      <el-col :span="6" v-for="k in kpis" :key="k.label">
-        <div class="kpi-card" :class="k.color">
+    <!-- KPI 指标卡 -->
+    <el-row :gutter="12" class="kpi-row">
+      <el-col :span="4" v-for="k in kpis" :key="k.label">
+        <div class="kpi-card" :style="{ background: k.bg }">
           <div class="kpi-num">{{ k.value }}</div>
           <div class="kpi-label">{{ k.label }}</div>
         </div>
       </el-col>
     </el-row>
 
-    <!-- 绔偣鐘舵€?-->
-    <el-row :gutter="16" style="margin-top:16px">
-      <el-col :span="12">
-        <el-card shadow="never">
-          <template #header>
-            <span>鎺ュ彛杩為€氭€?/span>
-            <el-button size="small" @click="scanStructure" :loading="scanning" style="margin-left:12px">鎵弿</el-button>
-          </template>
-          <el-table :data="endpoints" stripe size="small" v-if="endpoints.length">
-            <el-table-column prop="name" label="绔偣" width="100" />
-            <el-table-column label="鐘舵€? width="80">
-              <template #default="{row}">
-                <el-tag :type="row.ok ? 'success' : 'danger'" size="small">{{ row.ok ? '姝ｅ父' : '寮傚父' }}</el-tag>
-              </template>
-            </el-table-column>
-            <el-table-column prop="code" label="鐘舵€佺爜" width="80" />
-            <el-table-column prop="error" label="閿欒" show-overflow-tooltip />
-          </el-table>
-          <el-empty v-else description="鐐瑰嚮鎵弿妫€娴嬪晢鍩庣姸鎬? :image-size="60" />
-        </el-card>
-      </el-col>
-      <el-col :span="12">
-        <el-card shadow="never">
-          <template #header>鍟嗗搧 / 璁㈠崟姒傝</template>
-          <el-button size="small" @click="checkProducts" :loading="prodLoading">妫€娴嬪晢鍝?/el-button>
-          <el-button size="small" @click="checkOrders" :loading="ordLoading" style="margin-left:8px">妫€娴嬭鍗?/el-button>
-          <div v-if="productInfo" style="margin-top:12px">
-            <p>鍟嗗搧鎬绘暟: <strong>{{ productInfo.total || 'N/A' }}</strong></p>
-            <p>鐘舵€? <el-tag :type="productInfo.ok ? 'success' : 'danger'" size="small">{{ productInfo.ok ? '姝ｅ父' : '寮傚父' }}</el-tag></p>
-          </div>
-          <div v-if="orderInfo" style="margin-top:8px">
-            <p>璁㈠崟鎬绘暟: <strong>{{ orderInfo.total || 'N/A' }}</strong></p>
-            <p>鐘舵€? <el-tag :type="orderInfo.ok ? 'success' : 'danger'" size="small">{{ orderInfo.ok ? '姝ｅ父' : '寮傚父' }}</el-tag></p>
-          </div>
-        </el-card>
-      </el-col>
-    </el-row>
+    <!-- Tab 导航 -->
+    <el-tabs v-model="activeTab" type="border-card" class="mall-tabs">
+      <el-tab-pane label="总览" name="overview">
+        <OverviewPanel :stats="stats" :endpoints="endpoints" :scanHistory="scanHistory" :aiSummary="aiSummary" @scan="scanAll" @brain="aiBrainScan" />
+      </el-tab-pane>
 
-    <!-- 鎵弿鍘嗗彶 -->
-    <el-card shadow="never" style="margin-top:16px">
-      <template #header>鎵弿鍘嗗彶</template>
-      <el-timeline v-if="history.length">
-        <el-timeline-item v-for="h in history" :key="h.time" :timestamp="h.time">
-          {{ h.summary || `${h.total} 涓鐐癸紝${h.passed} 姝ｅ父` }}
-        </el-timeline-item>
-      </el-timeline>
-      <el-empty v-else description="鏆傛棤鎵弿璁板綍" :image-size="50" />
-    </el-card>
+      <el-tab-pane label="商品" name="products">
+        <DataTablePanel title="商品管理" :columns="productColumns" :fetch="getProductList" :onDelete="deleteProduct" :onAudit="auditProduct" searchPlaceholder="搜索商品名称/ID" />
+      </el-tab-pane>
+
+      <el-tab-pane label="订单" name="orders">
+        <DataTablePanel title="订单管理" :columns="orderColumns" :fetch="getOrderList" :onDetail="getOrderDetail" :onRefund="forceRefund" :onLogs="getOrderLogs" searchPlaceholder="搜索订单号/用户" />
+      </el-tab-pane>
+
+      <el-tab-pane label="用户" name="users">
+        <DataTablePanel title="用户管理" :columns="userColumns" :fetch="getUserList" :onStatus="updateUserStatus" :onBalance="adjustUserBalance" searchPlaceholder="搜索用户名/手机号" />
+      </el-tab-pane>
+
+      <el-tab-pane label="分类" name="categories">
+        <CategoryPanel />
+      </el-tab-pane>
+
+      <el-tab-pane label="财务" name="finance">
+        <FinancePanel />
+      </el-tab-pane>
+
+      <el-tab-pane label="物流" name="logistics">
+        <DataTablePanel title="物流管理" :columns="logisticsColumns" :fetch="fetchLogistics" :onTrace="getLogisticsTrace" searchPlaceholder="输入订单ID查询物流" />
+      </el-tab-pane>
+
+      <el-tab-pane label="认证" name="kyc">
+        <KycPanel />
+      </el-tab-pane>
+
+      <el-tab-pane label="商家" name="merchants">
+        <MerchantPanel />
+      </el-tab-pane>
+
+      <el-tab-pane label="内容" name="content">
+        <ContentPanel />
+      </el-tab-pane>
+
+      <el-tab-pane label="客服" name="service">
+        <CustomerServicePanel />
+      </el-tab-pane>
+
+      <el-tab-pane label="风控" name="risk">
+        <RiskPanel />
+      </el-tab-pane>
+
+      <el-tab-pane label="营销" name="marketing">
+        <MarketingPanel />
+      </el-tab-pane>
+
+      <el-tab-pane label="系统" name="system">
+        <SystemPanel />
+      </el-tab-pane>
+    </el-tabs>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { agentApi } from '@/api'
 import { ElMessage } from 'element-plus'
+import * as mallApi from '@/api/mall'
+import OverviewPanel from './mall/OverviewPanel.vue'
+import DataTablePanel from './mall/DataTablePanel.vue'
+import CategoryPanel from './mall/CategoryPanel.vue'
+import FinancePanel from './mall/FinancePanel.vue'
+import KycPanel from './mall/KycPanel.vue'
+import MerchantPanel from './mall/MerchantPanel.vue'
+import ContentPanel from './mall/ContentPanel.vue'
+import CustomerServicePanel from './mall/CustomerServicePanel.vue'
+import RiskPanel from './mall/RiskPanel.vue'
+import MarketingPanel from './mall/MarketingPanel.vue'
+import SystemPanel from './mall/SystemPanel.vue'
 
-const kpis = ref([
-  { label: '鎺ュ彛鎬绘暟', value: 0, color: 'blue' },
-  { label: '姝ｅ父', value: 0, color: 'green' },
-  { label: '寮傚父', value: 0, color: 'red' },
-  { label: '鍋ュ悍鐜?, value: '0%', color: 'blue' },
-])
-const endpoints = ref([])
-const history = ref([])
+const activeTab = ref('overview')
 const scanning = ref(false)
-const prodLoading = ref(false)
-const ordLoading = ref(false)
-const productInfo = ref(null)
-const orderInfo = ref(null)
+const brainLoading = ref(false)
+const stats = ref({})
+const endpoints = ref([])
+const scanHistory = ref([])
+const aiSummary = ref({})
+const kpis = ref([
+  { label: '商品总数', value: 0, bg: 'linear-gradient(135deg,#409eff,#337ecc)' },
+  { label: '订单总数', value: 0, bg: 'linear-gradient(135deg,#67c23a,#529b2e)' },
+  { label: '用户总数', value: 0, bg: 'linear-gradient(135deg,#e6a23c,#cf9236)' },
+  { label: '商家总数', value: 0, bg: 'linear-gradient(135deg,#f56c6c,#c45656)' },
+  { label: '待审核', value: 0, bg: 'linear-gradient(135deg,#909399,#73767a)' },
+  { label: '今日订单', value: 0, bg: 'linear-gradient(135deg,#8b5cf6,#7c3aed)' },
+])
 
-async function scanStructure() {
+const productColumns = [
+  { prop: 'id', label: 'ID', width: 80 },
+  { prop: 'title', label: '商品名称' },
+  { prop: 'price', label: '价格', width: 100 },
+  { prop: 'stock', label: '库存', width: 80 },
+  { prop: 'status', label: '状态', width: 80 },
+]
+const orderColumns = [
+  { prop: 'order_id', label: '订单号', width: 180 },
+  { prop: 'user_name', label: '用户名', width: 100 },
+  { prop: 'total', label: '金额', width: 100 },
+  { prop: 'status', label: '状态', width: 80 },
+  { prop: 'create_time', label: '时间', width: 160 },
+]
+const userColumns = [
+  { prop: 'id', label: 'ID', width: 80 },
+  { prop: 'username', label: '用户名', width: 120 },
+  { prop: 'phone', label: '手机号', width: 130 },
+  { prop: 'balance', label: '余额', width: 100 },
+  { prop: 'status', label: '状态', width: 80 },
+]
+const logisticsColumns = [
+  { prop: 'order_id', label: '订单ID', width: 180 },
+  { prop: 'carrier', label: '快递公司', width: 120 },
+  { prop: 'tracking_no', label: '运单号', width: 150 },
+  { prop: 'status', label: '状态', width: 100 },
+]
+
+async function fetchLogistics(params) {
+  const keyword = params?.keyword
+  if (!keyword) return { list: [], total: 0 }
+  try {
+    const data = await mallApi.getLogisticsInfo(keyword)
+    if (!data || data.error) return { list: [], total: 0 }
+    return { list: [data], total: 1 }
+  } catch { return { list: [], total: 0 } }
+}
+
+async function loadAll() {
+  try {
+    const [sRes, pRes, oRes, uRes] = await Promise.allSettled([
+      mallApi.getMallStatus(),
+      mallApi.getProductList({ page: 1, size: 1 }),
+      mallApi.getOrderList({ page: 1, size: 1 }),
+      mallApi.getUserList({ page: 1, size: 1 }),
+    ])
+    if (sRes.status === 'fulfilled') stats.value = sRes.value
+    if (pRes.status === 'fulfilled') kpis.value[0].value = pRes.value?.total || 0
+    if (oRes.status === 'fulfilled') kpis.value[1].value = oRes.value?.total || 0
+    if (uRes.status === 'fulfilled') kpis.value[2].value = uRes.value?.total || 0
+  } catch (e) { /* ignore */ }
+}
+
+async function scanAll() {
   scanning.value = true
   try {
-    const r = await agentApi.post('/mall/scan/structure')
+    const r = await mallApi.scanStructure()
     endpoints.value = Object.entries(r.status || {}).map(([k, v]) => ({ name: k, ...v }))
-    const ok = endpoints.value.filter(e => e.ok).length
-    const total = endpoints.value.length
-    kpis.value = [
-      { label: '鎺ュ彛鎬绘暟', value: total, color: 'blue' },
-      { label: '姝ｅ父', value: ok, color: 'green' },
-      { label: '寮傚父', value: total - ok, color: 'red' },
-      { label: '鍋ュ悍鐜?, value: total ? `${Math.round(ok/total*100)}%` : '0%', color: 'blue' },
-    ]
-    ElMessage.success(`鎵弿瀹屾垚: ${ok}/${total} 姝ｅ父`)
-  } catch { ElMessage.error('鎵弿澶辫触锛岃纭鍟嗗煄鏈嶅姟鏄惁杩愯') }
+    ElMessage.success(`扫描完成: ${r.summary}`)
+  } catch { ElMessage.error('扫描失败') }
   scanning.value = false
 }
-async function checkProducts() {
-  prodLoading.value = true
-  try { productInfo.value = await agentApi.post('/mall/scan/products') } catch { ElMessage.error('妫€娴嬪け璐?) }
-  prodLoading.value = false
+
+async function aiBrainScan() {
+  brainLoading.value = true
+  try {
+    const r = await mallApi.mallBrainScan()
+    aiSummary.value = r
+    ElMessage.success('AI分析完成')
+  } catch { ElMessage.error('AI分析失败') }
+  brainLoading.value = false
 }
-async function checkOrders() {
-  ordLoading.value = true
-  try { orderInfo.value = await agentApi.post('/mall/scan/orders') } catch { ElMessage.error('妫€娴嬪け璐?) }
-  ordLoading.value = false
-}
-onMounted(scanStructure)
+
+onMounted(() => { loadAll(); scanAll() })
 </script>
 
 <style scoped>
-.mall-panel { padding: 24px; }
-h2 { margin-bottom: 16px; font-size: 18px; }
-.kpi-row { margin-bottom: 0; }
-.kpi-card { padding: 16px; border-radius: 8px; color: #fff; text-align: center; }
-.kpi-card.blue { background: linear-gradient(135deg, #409eff, #337ecc); }
-.kpi-card.green { background: linear-gradient(135deg, #67c23a, #529b2e); }
-.kpi-card.red { background: linear-gradient(135deg, #f56c6c, #c45656); }
-.kpi-num { font-size: 28px; font-weight: 700; }
-.kpi-label { font-size: 13px; opacity: 0.9; margin-top: 4px; }
+.mall-admin-panel { padding: 16px 20px; }
+.page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.page-header h2 { margin: 0; font-size: 18px; }
+.header-actions { display: flex; gap: 8px; }
+.kpi-row { margin-bottom: 12px; }
+.kpi-card { padding: 12px 16px; border-radius: 8px; color: #fff; text-align: center; }
+.kpi-num { font-size: 24px; font-weight: 700; }
+.kpi-label { font-size: 12px; opacity: 0.9; margin-top: 2px; }
+.mall-tabs { border-radius: 8px; overflow: hidden; }
+:deep(.el-tabs__content) { padding: 16px; }
 </style>
