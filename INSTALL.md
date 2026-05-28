@@ -233,4 +233,66 @@ npm run electron:build  # 打包 .exe (Windows) / .dmg (macOS)
 
 ---
 
+
+---
+
+## 🌐 落地页域名轮值部署
+
+### 架构说明
+```
+用户打开落地页
+  ↓
+rotation-engine.js 从 AI 后台拉配置
+  ↓
+主域名(tiktook.eu.cc)优先 → 轮询子域名池
+  ↓  如果主域名挂了
+8个轮值域名降级 → 按权重轮流切换
+  ↓
+健康检测通过 → 跳转目标子域名
+```
+
+### 部署步骤
+\`\`\`bash
+# landing/ 是纯静态文件，放到任何 HTTP 服务器即可
+# 例如 Nginx:
+cp -r landing/* /var/www/landing/
+
+# Nginx 配置
+server {
+    listen 80;
+    server_name your-landing-domain.com;
+    root /var/www/landing;
+    index index.html;
+
+    # API 代理到 AI 后台(落地页拉配置用)
+    location /api/ {
+        proxy_pass http://localhost:9000/;
+        proxy_set_header Host $host;
+    }
+}
+\`\`\`
+
+### 在 AI 后台管理域名池
+1. 打开 AI 控制台 → **域名轮值** 页面
+2. 在「两级轮值配置」面板中：
+   - 主域名：查看/添加/删除子域名
+   - 轮值组：启停开关、调整权重(1-10)、添加/删除子域名
+3. 配置实时生效，落地页下次请求即更新
+
+### 落地页文件
+| 文件 | 说明 |
+|------|------|
+| `landing/index.html` | 落地页(加载动画+步骤提示+手动选择降级) |
+| `landing/rotation-engine.js` | 两级轮值引擎(自动拉配置+健康检测+跳转) |
+| `landing/domain-config.json` | 初始配置(上线后由AI后台管理) |
+
+### 轮值逻辑
+1. 主域名 `tiktook.eu.cc` 优先，子域名轮流分配
+2. 主域名挂了 → 自动切到权重最高的轮值域名
+3. 每个轮值域名内部子域名也轮流分配
+4. 每次访问分配不同的子域名
+5. 死域名冷却 10 分钟后自动复活重试
+
+---
+
 *Friday AI OS v4.0 · 超级AI数字生命体*
