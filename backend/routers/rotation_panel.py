@@ -1,4 +1,4 @@
-﻿"""域名轮值管理 — 真正的健康检测/自动切换/权重轮值"""
+"""域名轮值管理 — 真正的健康检测/自动切换/权重轮值"""
 import asyncio
 import ssl as ssl_mod
 import socket
@@ -13,15 +13,16 @@ router = APIRouter(prefix="/rotation", tags=["Rotation"])
 
 DEFAULT_DOMAINS = [
     {"domain": "tiktook.eu.cc", "active": True, "health": "ok", "type": "主域名", "weight": 5},
-]
-    {"domain": "tiktook.eu.cc", "active": True, "health": "ok", "type": "主域名", "weight": 5},
+    {"domain": "chxhx.eu.cc", "active": True, "health": "ok", "type": "轮值", "weight": 5},
+    {"domain": "drrgr.eu.cc", "active": True, "health": "ok", "type": "轮值", "weight": 5},
+    {"domain": "drrimrf.eu.cc", "active": True, "health": "ok", "type": "轮值", "weight": 5},
+    {"domain": "drriiu.eu.cc", "active": True, "health": "ok", "type": "轮值", "weight": 5},
+    {"domain": "duomi.eu.cc", "active": True, "health": "ok", "type": "轮值", "weight": 4},
+    {"domain": "dengruihan.eu.cc", "active": True, "health": "ok", "type": "轮值", "weight": 4},
+    {"domain": "yyawzx.eu.cc", "active": True, "health": "ok", "type": "轮值", "weight": 3},
+    {"domain": "gamed.eu.cc", "active": True, "health": "ok", "type": "轮值", "weight": 3},
 ]
 
-
-def _get_domains():
-    if "rotation_domains" not in state._data:
-        state._data["rotation_domains"] = [dict(d) for d in DEFAULT_DOMAINS]
-        state._save()
     return state._data["rotation_domains"]
 
 
