@@ -15,7 +15,10 @@
 6. 客服自动回复 + 轮值域名监控
 
 ## 最近改动
-- 2026-05-28: [403修复] AI面板全部API返回403 — 前端agentApi(src/api/index.js)请求拦截器未注入X-Agent-Token头，后端verify_token拦截所有/ai/api/*请求。修复：agentApi.interceptors.request中添加X-Agent-Token头。前端镜像已重新构建并重启。
+- 2026-05-28: [全量暴力测试] 商城前台PC(26路由)+WAP(23路由)+WWW+Seller+Admin全量测试通过。商品图片全量COS零S3死链。matashop2.svg创建修复favicon 404。
+- 2026-05-28: [API修复×6] rotation/domains超时(改缓存)、friday/models/status 500(缺await)、task_queue补/stats端点、customer_panel补read/read-all/transfer端点、self_service注册customer_order、前端task.js/customer.js路径修正
+- 2026-05-28: [磁盘清理] 97%→70%，释放13GB: Docker构建缓存4.7G、SQL压缩2.8G、旧备份1.9G、npm/playwright 1.5G、系统日志450M、临时文件等
+- 2026-05-28: [403修复] AI面板全部API返回403 — 前端agentApi(src/api/index.js)请求拦截器未注入X-Agent-Token头，后端verify_token拦截所有/ai/api/*请求。修复：agentApi.interceptors.request中添加X-Agent-Token头。
 - 2026-05-28: [落地页] 域名轮值落地页部署到根域名。landing/ → /opt/landing，Nginx根路径改为轮值入口("正在连接最优线路"→健康检测→自动跳转)。/api/rotation/ 代理到AI后端公开端点。8个轮值域名组(tiktokmall.shop/.store/.online/.live/.xyz/.top/.cloud/.site)，主域名tiktook.eu.cc优先。MainLayout侧边栏补全商城管理/客服/落地页检测/域名轮值/备份回滚/告警/安全入口。
 - 2026-05-28: [全量审计] 电脑端完成商城后台整合审计：后端113端点代理36个Controller全部注册，前端14个标签页全部对接真实API，修复物流面板Mock→真实接口。三层路由对齐无遗漏。
 - 2026-05-28: [商城全量对接] Agent代理全部51个商城Controller, 113个API端点, 前端全功能管理面板上线, 客服系统完整对接
