@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="app-shell" :class="{ collapsed: sidebarCollapsed, dark: theme.isDark.value }">
     <!-- Electron 窗口标题栏 -->
     <header v-if="isElectron" class="electron-titlebar">
@@ -99,6 +99,71 @@
 
         <!-- 基础设施 -->
         <div class="nav-section">
+        <!-- 运营 -->
+        <div class="nav-section">
+          <div class="nav-section-label" v-show="!sidebarCollapsed">运营</div>
+          <router-link to="/mall" class="nav-item" :class="{ active: isActive('/mall') }">
+            <span class="nav-icon">🛒</span>
+            <span class="nav-label" v-show="!sidebarCollapsed">商城管理</span>
+          </router-link>
+          <router-link to="/site" class="nav-item" :class="{ active: isActive('/site') }">
+            <span class="nav-icon">🌐</span>
+            <span class="nav-label" v-show="!sidebarCollapsed">网站检测</span>
+          </router-link>
+          <router-link to="/customer" class="nav-item" :class="{ active: isActive('/customer') }">
+            <span class="nav-icon">💬</span>
+            <span class="nav-label" v-show="!sidebarCollapsed">客服</span>
+          </router-link>
+        </div>
+
+        <!-- 系统 -->
+        <div class="nav-section">
+          <div class="nav-section-label" v-show="!sidebarCollapsed">系统</div>
+          <router-link to="/database" class="nav-item" :class="{ active: isActive('/database') }">
+            <span class="nav-icon">🗄️</span>
+            <span class="nav-label" v-show="!sidebarCollapsed">数据库</span>
+          </router-link>
+          <router-link to="/approval" class="nav-item" :class="{ active: isActive('/approval') }">
+            <span class="nav-icon">✅</span>
+            <span class="nav-label" v-show="!sidebarCollapsed">审批中心</span>
+          </router-link>
+          <router-link to="/security" class="nav-item" :class="{ active: isActive('/security') }">
+            <span class="nav-icon">🔒</span>
+            <span class="nav-label" v-show="!sidebarCollapsed">安全中心</span>
+          </router-link>
+          <router-link to="/rollback" class="nav-item" :class="{ active: isActive('/rollback') }">
+            <span class="nav-icon">⏪</span>
+            <span class="nav-label" v-show="!sidebarCollapsed">备份回滚</span>
+          </router-link>
+          <router-link to="/alert" class="nav-item" :class="{ active: isActive('/alert') }">
+            <span class="nav-icon">🔔</span>
+            <span class="nav-label" v-show="!sidebarCollapsed">告警中心</span>
+          </router-link>
+          <router-link to="/tasks" class="nav-item" :class="{ active: isActive('/tasks') }">
+            <span class="nav-icon">📋</span>
+            <span class="nav-label" v-show="!sidebarCollapsed">自动任务</span>
+          </router-link>
+          <router-link to="/self-service" class="nav-item" :class="{ active: isActive('/self-service') }">
+            <span class="nav-icon">🔧</span>
+            <span class="nav-label" v-show="!sidebarCollapsed">自助服务</span>
+          </router-link>
+          <router-link to="/plugins" class="nav-item" :class="{ active: isActive('/plugins') }">
+            <span class="nav-icon">🧩</span>
+            <span class="nav-label" v-show="!sidebarCollapsed">插件系统</span>
+          </router-link>
+          <router-link to="/rotation" class="nav-item" :class="{ active: isActive('/rotation') }">
+            <span class="nav-icon">🔄</span>
+            <span class="nav-label" v-show="!sidebarCollapsed">轮值</span>
+          </router-link>
+          <router-link to="/video" class="nav-item" :class="{ active: isActive('/video') }">
+            <span class="nav-icon">🎬</span>
+            <span class="nav-label" v-show="!sidebarCollapsed">视频分析</span>
+          </router-link>
+          <router-link to="/ocr" class="nav-item" :class="{ active: isActive('/ocr') }">
+            <span class="nav-icon">📝</span>
+            <span class="nav-label" v-show="!sidebarCollapsed">OCR识别</span>
+          </router-link>
+        </div>
           <div class="nav-section-label" v-show="!sidebarCollapsed">基础设施</div>
           <router-link to="/server" class="nav-item" :class="{ active: isActive('/server') }">
             <span class="nav-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg></span>
