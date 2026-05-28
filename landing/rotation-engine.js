@@ -1,18 +1,16 @@
 /**
- * 企业级两级域名轮值引擎 v3.4
- * 粘组 + 随机前缀 + 按钮跳转
- * a1.A.com → a2.A.com → a3.A.com（随机不重复）→ A死 → B组
+ * 企业级两级域名轮值引擎 v4.0
+ * 落地页显示按钮 → 点击按钮 → 轮值选域名 → 跳转到指定路由
  */
 (function(){'use strict';
 var CONFIG_URL = '/domain-config.json';
-var STORAGE_KEY = 'lr_v34';
+var STORAGE_KEY = 'lr_v40';
 var DEAD_TTL = 600000;
 var PROBE_TIMEOUT = 3000;
 var MAX_RETRIES = 3;
 
 var state = { deadDomains: {}, groupIndex: 0, usedPrefixes: {} };
 var config = null;
-var pickedTarget = null;
 
 function loadState() {
   try {
@@ -100,48 +98,69 @@ function updateStep(name, status) {
   if (el) el.className = 'step ' + status;
 }
 
-function showJumpButton(target) {
-  document.getElementById('spinner').style.display = 'none';
-  document.getElementById('title').textContent = '线路已就绪';
-  document.getElementById('jumpBtn').classList.add('show');
-  document.getElementById('targetInfo').textContent = '目标: ' + target.host;
-  document.getElementById('targetInfo').classList.add('show');
-}
-
-function showManualLinks() {
-  var el = document.getElementById('fallback');
-  if (!el) return;
-  document.getElementById('spinner').style.display = 'none';
-  document.getElementById('jumpBtn').style.display = 'none';
-  document.getElementById('title').textContent = '所有线路暂不可用';
-  el.innerHTML = '<p style="color:#ff4d4f">请稍后重试</p>';
-  el.style.display = 'block';
-}
-
-window.doJump = function() {
-  if (pickedTarget) window.location.replace('https://' + pickedTarget.host + '/');
-};
-
-async function run() {
-  loadState();
-  updateStep('config', 'active');
-  try {
-    var resp = await fetch(CONFIG_URL, { cache: 'no-store' });
-    config = await resp.json();
-    updateStep('config', 'done');
-  } catch(e) { updateStep('config', 'fail'); showManualLinks(); return; }
-
+// === 点击按钮：开始轮值 + 跳转到指定路由 ===
+window.doJump = async function(targetPath) {
+  targetPath = targetPath || '/home';
+  var spinner = document.getElementById('spinner');
+  var titleEl = document.getElementById('title');
+  var allBtns = document.querySelectorAll('.jump-btn');
+  
+  // 显示加载状态
+  if (spinner) spinner.style.display = 'block';
+  if (titleEl) titleEl.textContent = '正在连接最优线路...';
+  allBtns.forEach(function(b) { b.disabled = true; b.style.opacity = '0.6'; });
+  
+  if (!config) {
+    try {
+      updateStep('config', 'active');
+      var resp = await fetch(CONFIG_URL, { cache: 'no-store' });
+      config = await resp.json();
+      updateStep('config', 'done');
+    } catch(e) {
+      updateStep('config', 'fail');
+      showError('配置加载失败');
+      return;
+    }
+  }
+  
   for (var retry = 0; retry < MAX_RETRIES; retry++) {
     updateStep('group', 'active'); updateStep('child', 'active');
     var target = pickTarget();
-    if (!target) { updateStep('group', 'fail'); showManualLinks(); return; }
+    if (!target) { updateStep('group', 'fail'); showError('所有线路暂不可用'); return; }
     updateStep('group', 'done'); updateStep('child', 'done');
     updateStep('probe', 'active');
+    if (titleEl) titleEl.textContent = '检测: ' + target.host + '...';
     var ok = await probe(target.host, PROBE_TIMEOUT);
-    if (ok) { updateStep('probe', 'done'); pickedTarget = target; showJumpButton(target); return; }
-    updateStep('probe', 'fail'); markDead(target.host, 'probe_failed');
+    if (ok) {
+      updateStep('probe', 'done');
+      if (titleEl) titleEl.textContent = '连接成功，正在跳转...';
+      window.location.replace('https://' + target.host + targetPath);
+      return;
+    }
+    updateStep('probe', 'fail');
+    markDead(target.host, 'probe_failed');
   }
-  showManualLinks();
+  showError('连接失败，请重试');
+};
+
+function showError(msg) {
+  var spinner = document.getElementById('spinner');
+  var titleEl = document.getElementById('title');
+  if (spinner) spinner.style.display = 'none';
+  if (titleEl) titleEl.textContent = msg || '暂不可用';
+  var allBtns = document.querySelectorAll('.jump-btn');
+  allBtns.forEach(function(b) { b.disabled = false; b.style.opacity = '1'; });
 }
-run().catch(function() { showManualLinks(); });
+
+// === 页面加载：预加载配置（后台静默，不执行轮值）===
+loadState();
+fetch(CONFIG_URL, { cache: 'no-store' }).then(function(resp) {
+  return resp.json();
+}).then(function(cfg) {
+  config = cfg;
+  updateStep('config', 'done');
+}).catch(function() {
+  updateStep('config', 'fail');
+});
+
 })();
