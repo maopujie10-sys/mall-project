@@ -454,6 +454,7 @@ class eBayAdapter:
         except Exception as e:
             print(f"[eBay API] 提取失败 ({item_id}): {e}")
             return None
+
 class BaseScrapeAdapter:
     """反反爬采集基类 — 所有 HTML 爬虫适配器继承此类"""
     
@@ -469,7 +470,7 @@ class BaseScrapeAdapter:
         await self.anti.smart_delay(is_search)
     
     def _parse_price(self, text: str) -> float:
-        """通用价格解析 — 处理 $19.99 / USD 19.99 / ¥129 / 12,99€ 等格式"""
+        """通用价格解析 — $19.99 / USD 19.99 / 12,99€ 等"""
         if not text:
             return 0.0
         text = text.strip().replace(",", "").replace(" ", "")
@@ -477,296 +478,15 @@ class BaseScrapeAdapter:
         if not match:
             return 0.0
         val = float(match.group())
-        # 汇率转换
-        if any(c in text for c in ['
-# ═══════════════════════════════════════
-#  采集引擎
-# ═══════════════════════════════════════
-
-ADAPTERS = {
-    "ebay": eBayAdapter(),           # 官方API
-    "aliexpress": AliExpressAdapter(), # 反反爬
-    "amazon": AmazonAdapter(),        # 反反爬
-    "wish": WishAdapter(),            # 反反爬
-    "shopee": ShopeeAdapter(),        # 反反爬(API优先)
-    "lazada": LazadaAdapter(),        # 反反爬
-}
-
-PRIORITY_SOURCES = [
-    "ebay",      # 官方API — 稳定首选
-    "shopee",    # API+爬虫双模 — 东南亚货源王
-    "aliexpress", # 反反爬 — 中国直发全球
-    "amazon",    # 反反爬 — 全球最大
-    "wish",      # 反反爬 — 低价爆款
-    "lazada",    # 反反爬 — 东南亚老二
-    "tiktok",   # 反反爬 — 海外抖音电商新贵
-]
-
-def _get_jobs():
-    return state._data.setdefault("scraper_jobs", {})
-
-def _get_products():
-    return state._data.setdefault("scraped_products", [])
-
-def _job_progress(job_id: str, update: dict):
-    jobs = _get_jobs()
-    if job_id in jobs:
-        jobs[job_id].update(update)
-    state._save()
-
-class ScraperEngine:
-    """商品采集引擎"""
-
-    @staticmethod
-    async def start_job(platform: str, keyword: str, max_items: int = 20, download_images: bool = True) -> dict:
-        job_id = hashlib.md5(f"{platform}{keyword}{time.time()}".encode()).hexdigest()[:12]
-        jobs = _get_jobs()
-        jobs[job_id] = {
-            "id": job_id,
-            "platform": platform,
-            "keyword": keyword,
-            "status": "searching",
-            "progress": 0,
-            "total": 0,
-            "found": 0,
-            "uploaded": 0,
-            "failed": 0,
-            "created_at": datetime.now().isoformat(),
-            "products": [],
-        }
-        state._save()
-
-        # 异步执行采集
-        asyncio.create_task(_do_scrape(job_id, platform, keyword, max_items, download_images))
-        return jobs[job_id]
-
-    @staticmethod
-    def get_jobs() -> list:
-        return list(_get_jobs().values())
-
-    @staticmethod
-    def get_job(job_id: str) -> Optional[dict]:
-        return _get_jobs().get(job_id)
-
-    @staticmethod
-    def get_products(page: int = 1, size: int = 20, status: str = None) -> dict:
-        products = _get_products()
-        if status:
-            products = [p for p in products if p.get("status") == status]
-        total = len(products)
-        start = (page - 1) * size
-        items = products[start:start + size]
-        return {"items": items, "total": total, "page": page, "size": size}
-
-    @staticmethod
-    def import_to_mall(product_ids: list[str]) -> dict:
-        """标记产品为待导入商城"""
-        products = _get_products()
-        count = 0
-        for pid in product_ids:
-            for p in products:
-                if p.get("id") == pid:
-                    p["status"] = "importing"
-                    count += 1
-        state._save()
-        return {"imported": count, "status": "pending_mall_api_call"}
-
-async def _do_scrape(job_id: str, platform: str, keyword: str, max_items: int, download_images: bool):
-    """后台执行采集任务"""
-    adapter = ADAPTERS.get(platform, ADAPTERS["ebay"])
-    _job_progress(job_id, {"status": "searching"})
-
-    async with httpx.AsyncClient(timeout=20, follow_redirects=True) as session:
-        # 1. 搜索获取商品URL
-        urls = await adapter.search(keyword, max_pages=2, session=session)
-        _job_progress(job_id, {"status": "extracting", "total": len(urls), "found": 0})
-
-        products = []
-        for i, url in enumerate(urls[:max_items]):
-            product = await adapter.extract_product(url, session=session)
-            if product and product.title and product.images:
-                product.id = hashlib.md5(product.source_url.encode()).hexdigest()[:16]
-                products.append(product)
-                _job_progress(job_id, {"progress": i + 1, "found": len(products)})
-            await polite_delay()
-
-        # 2. 下载图片 + 上传COS
-        if download_images:
-            _job_progress(job_id, {"status": "uploading"})
-            for p in products:
-                uploaded = []
-                for idx, img_url in enumerate(p.images[:8]):
-                    cos_url = await download_and_upload(img_url, p.id, idx, session)
-                    if cos_url:
-                        uploaded.append(cos_url)
-                    if len(uploaded) >= 5:
-                        break
-                p.cos_images = uploaded
-                p.status = "uploaded"
-                _job_progress(job_id, {"uploaded": _job_progress.__defaults__[0].get("uploaded", 0) + 1})
-
-        # 3. 存储
-        all_products = _get_products()
-        for p in products:
-            all_products.insert(0, p.to_dict())
-        if len(all_products) > 500:
-            all_products[:] = all_products[:500]
-        state._save()
-
-        _job_progress(job_id, {
-            "status": "done",
-            "uploaded": sum(1 for p in products if p.cos_images),
-            "failed": sum(1 for p in products if not p.cos_images),
-            "products": [p.to_dict() for p in products]
-        }), 'USD', 'US
-# ═══════════════════════════════════════
-#  采集引擎
-# ═══════════════════════════════════════
-
-ADAPTERS = {
-    "ebay": eBayAdapter(),           # 官方API
-    "aliexpress": AliExpressAdapter(), # 反反爬
-    "amazon": AmazonAdapter(),        # 反反爬
-    "wish": WishAdapter(),            # 反反爬
-    "shopee": ShopeeAdapter(),        # 反反爬(API优先)
-    "lazada": LazadaAdapter(),        # 反反爬
-}
-
-PRIORITY_SOURCES = [
-    "ebay",      # 官方API — 稳定首选
-    "shopee",    # API+爬虫双模 — 东南亚货源王
-    "aliexpress", # 反反爬 — 中国直发全球
-    "amazon",    # 反反爬 — 全球最大
-    "wish",      # 反反爬 — 低价爆款
-    "lazada",    # 反反爬 — 东南亚老二
-    "tiktok",   # 反反爬 — 海外抖音电商新贵
-]
-
-def _get_jobs():
-    return state._data.setdefault("scraper_jobs", {})
-
-def _get_products():
-    return state._data.setdefault("scraped_products", [])
-
-def _job_progress(job_id: str, update: dict):
-    jobs = _get_jobs()
-    if job_id in jobs:
-        jobs[job_id].update(update)
-    state._save()
-
-class ScraperEngine:
-    """商品采集引擎"""
-
-    @staticmethod
-    async def start_job(platform: str, keyword: str, max_items: int = 20, download_images: bool = True) -> dict:
-        job_id = hashlib.md5(f"{platform}{keyword}{time.time()}".encode()).hexdigest()[:12]
-        jobs = _get_jobs()
-        jobs[job_id] = {
-            "id": job_id,
-            "platform": platform,
-            "keyword": keyword,
-            "status": "searching",
-            "progress": 0,
-            "total": 0,
-            "found": 0,
-            "uploaded": 0,
-            "failed": 0,
-            "created_at": datetime.now().isoformat(),
-            "products": [],
-        }
-        state._save()
-
-        # 异步执行采集
-        asyncio.create_task(_do_scrape(job_id, platform, keyword, max_items, download_images))
-        return jobs[job_id]
-
-    @staticmethod
-    def get_jobs() -> list:
-        return list(_get_jobs().values())
-
-    @staticmethod
-    def get_job(job_id: str) -> Optional[dict]:
-        return _get_jobs().get(job_id)
-
-    @staticmethod
-    def get_products(page: int = 1, size: int = 20, status: str = None) -> dict:
-        products = _get_products()
-        if status:
-            products = [p for p in products if p.get("status") == status]
-        total = len(products)
-        start = (page - 1) * size
-        items = products[start:start + size]
-        return {"items": items, "total": total, "page": page, "size": size}
-
-    @staticmethod
-    def import_to_mall(product_ids: list[str]) -> dict:
-        """标记产品为待导入商城"""
-        products = _get_products()
-        count = 0
-        for pid in product_ids:
-            for p in products:
-                if p.get("id") == pid:
-                    p["status"] = "importing"
-                    count += 1
-        state._save()
-        return {"imported": count, "status": "pending_mall_api_call"}
-
-async def _do_scrape(job_id: str, platform: str, keyword: str, max_items: int, download_images: bool):
-    """后台执行采集任务"""
-    adapter = ADAPTERS.get(platform, ADAPTERS["ebay"])
-    _job_progress(job_id, {"status": "searching"})
-
-    async with httpx.AsyncClient(timeout=20, follow_redirects=True) as session:
-        # 1. 搜索获取商品URL
-        urls = await adapter.search(keyword, max_pages=2, session=session)
-        _job_progress(job_id, {"status": "extracting", "total": len(urls), "found": 0})
-
-        products = []
-        for i, url in enumerate(urls[:max_items]):
-            product = await adapter.extract_product(url, session=session)
-            if product and product.title and product.images:
-                product.id = hashlib.md5(product.source_url.encode()).hexdigest()[:16]
-                products.append(product)
-                _job_progress(job_id, {"progress": i + 1, "found": len(products)})
-            await polite_delay()
-
-        # 2. 下载图片 + 上传COS
-        if download_images:
-            _job_progress(job_id, {"status": "uploading"})
-            for p in products:
-                uploaded = []
-                for idx, img_url in enumerate(p.images[:8]):
-                    cos_url = await download_and_upload(img_url, p.id, idx, session)
-                    if cos_url:
-                        uploaded.append(cos_url)
-                    if len(uploaded) >= 5:
-                        break
-                p.cos_images = uploaded
-                p.status = "uploaded"
-                _job_progress(job_id, {"uploaded": _job_progress.__defaults__[0].get("uploaded", 0) + 1})
-
-        # 3. 存储
-        all_products = _get_products()
-        for p in products:
-            all_products.insert(0, p.to_dict())
-        if len(all_products) > 500:
-            all_products[:] = all_products[:500]
-        state._save()
-
-        _job_progress(job_id, {
-            "status": "done",
-            "uploaded": sum(1 for p in products if p.cos_images),
-            "failed": sum(1 for p in products if not p.cos_images),
-            "products": [p.to_dict() for p in products]
-        })]):
-            return round(val * 7.2, 2)  # USD→CNY
+        if any(c in text for c in ['$', 'USD', 'US$']):
+            return round(val * 7.2, 2)
         elif any(c in text for c in ['€', 'EUR']):
-            return round(val * 7.8, 2)  # EUR→CNY
+            return round(val * 7.8, 2)
         elif any(c in text for c in ['£', 'GBP']):
-            return round(val * 9.1, 2)  # GBP→CNY
-        elif any(c in text for c in ['¥', '￥', 'CNY']):
+            return round(val * 9.1, 2)
+        elif any(c in text for c in ['¥', 'CNY']):
             return val
-        return round(val * 7.2, 2)  # 默认USD
+        return round(val * 7.2, 2)
 
     def _extract_images(self, soup, base_url: str, max_images: int = 20) -> list[str]:
         """通用图片提取"""
@@ -779,7 +499,6 @@ async def _do_scrape(job_id: str, platform: str, keyword: str, max_items: int, d
             if ext not in (".jpg", ".jpeg", ".png", ".webp"):
                 continue
             full = urljoin(base_url, src)
-            # 过滤图标/logo/广告
             skip_kw = ["sprite", "icon", "logo", "avatar", "badge", "banner", "pixel", "1x1", "tracking"]
             if any(k in full.lower() for k in skip_kw):
                 continue
@@ -788,7 +507,6 @@ async def _do_scrape(job_id: str, platform: str, keyword: str, max_items: int, d
             if len(images) >= max_images:
                 break
         return images
-
 
 class AliExpressAdapter(BaseScrapeAdapter):
     """AliExpress 速卖通 — 反反爬增强版"""
@@ -1176,6 +894,82 @@ class LazadaAdapter(BaseScrapeAdapter):
             return None
 # ═══════════════════════════════════════
 #  采集引擎
+
+
+class TikTokShopAdapter(BaseScrapeAdapter):
+    """TikTok Shop 海外抖音电商 — 反反爬增强版"""
+    name = "tiktok"
+
+    def __init__(self):
+        super().__init__("tiktok", "tiktok.com")
+
+    async def search(self, keyword: str, max_pages: int = 3, session: httpx.AsyncClient = None) -> list[str]:
+        urls = []
+        close_session = session is None
+        if close_session:
+            session = httpx.AsyncClient(timeout=25, follow_redirects=True)
+
+        for page in range(1, min(max_pages + 1, 5)):
+            url = f"https://www.tiktok.com/search?q={quote_plus(keyword)}"
+            r = await self._safe_get(session, url, keyword, is_search=True)
+            if not r:
+                continue
+
+            soup = BeautifulSoup(r.text, "html.parser")
+            for link in soup.select("a[href*='/product/'], a[href*='tiktok.com/@']"):
+                href = link.get("href", "")
+                full = urljoin("https://www.tiktok.com", href)
+                if full not in urls and "tiktok.com" in full:
+                    urls.append(full)
+
+            await self._delay(is_search=True)
+
+        if close_session:
+            await session.aclose()
+        return urls
+
+    async def extract_product(self, url: str, session: httpx.AsyncClient = None) -> Optional[ScrapedProduct]:
+        close_session = session is None
+        if close_session:
+            session = httpx.AsyncClient(timeout=25, follow_redirects=True)
+
+        try:
+            r = await self._safe_get(session, url, max_retries=2)
+            if not r:
+                return None
+
+            soup = BeautifulSoup(r.text, "html.parser")
+
+            title = ""
+            title_el = soup.select_one("h1") or soup.select_one("[class*='title']")
+            if title_el:
+                title = title_el.get_text(strip=True)
+
+            price = 0.0
+            price_el = soup.select_one("[class*='price']")
+            if price_el:
+                price = self._parse_price(price_el.get_text(strip=True))
+
+            images = self._extract_images(soup, url)
+
+            sales = 0
+            sold_el = soup.select_one("[class*='sold']")
+            if sold_el:
+                nums = re.findall(r'[\d,]+', sold_el.get_text())
+                if nums:
+                    sales = int(nums[0].replace(",", ""))
+
+            return ScrapedProduct(
+                platform="tiktok", source_url=url, title=title,
+                price=price, currency="CNY", images=images,
+                sales_count=sales, crawled_at=datetime.now().isoformat()
+            )
+        except Exception:
+            return None
+
+
+# ═══════════════════════════════════════
+#  采集引擎
 # ═══════════════════════════════════════
 
 ADAPTERS = {
@@ -1185,6 +979,7 @@ ADAPTERS = {
     "wish": WishAdapter(),            # 反反爬
     "shopee": ShopeeAdapter(),        # 反反爬(API优先)
     "lazada": LazadaAdapter(),        # 反反爬
+    "tiktok": TikTokShopAdapter(),    # 反反爬
 }
 
 PRIORITY_SOURCES = [
@@ -1230,8 +1025,6 @@ class ScraperEngine:
             "products": [],
         }
         state._save()
-
-        # 异步执行采集
         asyncio.create_task(_do_scrape(job_id, platform, keyword, max_items, download_images))
         return jobs[job_id]
 
@@ -1255,7 +1048,6 @@ class ScraperEngine:
 
     @staticmethod
     def import_to_mall(product_ids: list[str]) -> dict:
-        """标记产品为待导入商城"""
         products = _get_products()
         count = 0
         for pid in product_ids:
@@ -1272,7 +1064,6 @@ async def _do_scrape(job_id: str, platform: str, keyword: str, max_items: int, d
     _job_progress(job_id, {"status": "searching"})
 
     async with httpx.AsyncClient(timeout=20, follow_redirects=True) as session:
-        # 1. 搜索获取商品URL
         urls = await adapter.search(keyword, max_pages=2, session=session)
         _job_progress(job_id, {"status": "extracting", "total": len(urls), "found": 0})
 
@@ -1285,7 +1076,6 @@ async def _do_scrape(job_id: str, platform: str, keyword: str, max_items: int, d
                 _job_progress(job_id, {"progress": i + 1, "found": len(products)})
             await polite_delay()
 
-        # 2. 下载图片 + 上传COS
         if download_images:
             _job_progress(job_id, {"status": "uploading"})
             for p in products:
@@ -1298,9 +1088,7 @@ async def _do_scrape(job_id: str, platform: str, keyword: str, max_items: int, d
                         break
                 p.cos_images = uploaded
                 p.status = "uploaded"
-                _job_progress(job_id, {"uploaded": _job_progress.__defaults__[0].get("uploaded", 0) + 1})
 
-        # 3. 存储
         all_products = _get_products()
         for p in products:
             all_products.insert(0, p.to_dict())

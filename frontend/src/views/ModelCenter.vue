@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="page-container model-center">
     <div class="page-header">
       <h2>模型中心</h2>
@@ -107,9 +107,9 @@
 <script setup>
 import { ref, computed, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { listModels, switchModel, getModelStatus, testModelSpeed } from '@/api/model'
+import { listModels, switchModel, getModelStatus, testModelSpeed, compareModels } from '@/api/model'
 
-const activeModelId = ref('deepseek')
+const activeModelId = ref('')
 const activeMode = ref('quality')
 const showAdd = ref(false)
 const showSpeedResult = ref(false)
@@ -117,23 +117,17 @@ const editingModel = ref(null)
 const saving = ref(false)
 const speedResult = ref(null)
 const testingModel = ref('')
+const loading = ref(true)
 
 const providers = ['DeepSeek', 'OpenAI', 'Anthropic', 'Google', 'Ollama', 'OpenRouter', '自定义']
 
-const models = ref([
-  { id:'deepseek', name:'DeepSeek V4 Pro', provider:'DeepSeek', icon:'🐋', type:'text', apiUrl:'', apiKey:'', speed:92, inputPrice:0.14, outputPrice:0.28, calls:12893, avgLatency:'320ms', enabled:true },
-  { id:'claude', name:'Claude 4 Opus', provider:'Anthropic', icon:'🎭', type:'multimodal', apiUrl:'', apiKey:'', speed:65, inputPrice:15, outputPrice:75, calls:3421, avgLatency:'580ms', enabled:true },
-  { id:'gpt4', name:'GPT-4.5', provider:'OpenAI', icon:'🧩', type:'multimodal', apiUrl:'', apiKey:'', speed:55, inputPrice:2.5, outputPrice:10, calls:7654, avgLatency:'720ms', enabled:false },
-  { id:'gemini', name:'Gemini 2.5 Pro', provider:'Google', icon:'💎', type:'multimodal', apiUrl:'', apiKey:'', speed:78, inputPrice:1.25, outputPrice:5, calls:2100, avgLatency:'450ms', enabled:true },
-  { id:'qwen', name:'Qwen3-Max', provider:'OpenRouter', icon:'🔥', type:'text', apiUrl:'', apiKey:'', speed:88, inputPrice:0.5, outputPrice:1.5, calls:890, avgLativity:'280ms', enabled:false },
-  { id:'local', name:'Local LLM', provider:'Ollama', icon:'🏠', type:'text', apiUrl:'http://localhost:11434', apiKey:'', speed:40, inputPrice:0, outputPrice:0, calls:340, avgLatency:'2000ms', enabled:false },
-])
+const models = ref([])
 
 const stats = reactive({
-  todayCalls: 2847,
-  successRate: 98.3,
-  monthlyCost: '¥ 1,247.50',
-  remaining: '¥ 8,752.50',
+  todayCalls: 0,
+  successRate: 0,
+  monthlyCost: '¥ 0',
+  remaining: '¥ 0',
 })
 
 const modes = [
@@ -143,12 +137,7 @@ const modes = [
   { id:'economy', name:'省钱', desc:'最低消耗，适合非关键任务' },
 ]
 
-const usageStats = ref([
-  { date:'2026-05-28', model:'DeepSeek V4 Pro', calls:482, tokens:'1.2M', cost:'¥168', avgTime:'320ms' },
-  { date:'2026-05-27', model:'DeepSeek V4 Pro', calls:567, tokens:'1.5M', cost:'¥210', avgTime:'315ms' },
-  { date:'2026-05-27', model:'Claude 4 Opus', calls:89, tokens:'0.3M', cost:'¥450', avgTime:'580ms' },
-  { date:'2026-05-26', model:'DeepSeek V4 Pro', calls:623, tokens:'1.8M', cost:'¥252', avgTime:'340ms' },
-])
+const usageStats = ref([])
 
 const modelForm = reactive({ name:'', provider:'', apiUrl:'', apiKey:'', type:'text', inputPrice:0, outputPrice:0 })
 
@@ -158,28 +147,41 @@ const filteredModels = computed(() => models.value)
 function speedColor(v) { if (v >= 80) return '#52c41a'; if (v >= 50) return '#faad14'; return '#ff4d4f' }
 
 async function toggleModel(row) {
-  try { ElMessage.success(row.enabled ? `${row.name} 已启用` : `${row.name} 已禁用`) } catch {}
+  try {
+    row.enabled = !row.enabled
+    ElMessage.success(row.enabled ? `${row.name} 已启用` : `${row.name} 已禁用`)
+  } catch {}
 }
 
 async function setActive(row) {
   if (!row.enabled) { ElMessage.warning('请先启用该模型'); return }
   try {
-    await switchModel(row.id)
-    activeModelId.value = row.id
-    ElMessage.success(`已切换至 ${row.name}`)
+    const res = await switchModel(row.id)
+    if (res?.ok) {
+      activeModelId.value = row.id
+      ElMessage.success(`已切换至 ${row.name}`)
+    }
   } catch { ElMessage.error('切换失败') }
 }
 
 async function testSpeed(row) {
   testingModel.value = row.id
+  showSpeedResult.value = true
+  speedResult.value = { model:row.name, latency:0, firstToken:0, tokensPerSec:0, ok:false, loading: true }
   try {
-    speedResult.value = await testModelSpeed(row.id)
-    if (!speedResult.value) {
-      speedResult.value = { model:row.name, latency: Math.floor(Math.random()*500+100), firstToken: Math.floor(Math.random()*200+50), tokensPerSec: Math.floor(Math.random()*60+20), ok:true }
-      row.avgLatency = speedResult.value.latency + 'ms'
+    const res = await testModelSpeed(row.id)
+    speedResult.value = {
+      model: row.name,
+      latency: res?.latency_ms || 0,
+      firstToken: Math.floor((res?.latency_ms || 500) * 0.3),
+      tokensPerSec: res?.latency_ms ? Math.floor(60000 / res.latency_ms) : 0,
+      ok: res?.ok !== false,
     }
-    showSpeedResult.value = true
-  } catch { speedResult.value = { model:row.name, latency:0, firstToken:0, tokensPerSec:0, ok:false }; showSpeedResult.value = true }
+    if (res?.latency_ms) row.avgLatency = res.latency_ms + 'ms'
+  } catch {
+    speedResult.value = { model:row.name, latency:0, firstToken:0, tokensPerSec:0, ok:false }
+  }
+  speedResult.value.loading = false
   testingModel.value = ''
 }
 
@@ -221,11 +223,38 @@ function switchMode() {
   ElMessage.success(`已切换至${modes.find(m=>m.id===activeMode.value)?.name}模式`)
 }
 
-onMounted(async () => {
-  try { const list = await listModels(); if (list?.length) models.value = list } catch {}
-  try { const s = await getModelStatus(); if (s?.active) activeModelId.value = s.active } catch {}
-})
-</script>
+async function fetchModels() {
+  loading.value = true
+  try {
+    const list = await listModels()
+    if (list?.models) {
+      models.value = list.models.map(m => ({
+        id: m.id || m.model_id,
+        name: m.name || m.model_id || '未知模型',
+        provider: m.provider || '未知',
+        icon: m.icon || '🤖',
+        type: m.type || 'text',
+        apiUrl: m.api_url || '',
+        apiKey: '',
+        speed: m.speed || 50,
+        inputPrice: m.input_price || 0,
+        outputPrice: m.output_price || 0,
+        calls: m.calls || 0,
+        avgLatency: m.avg_latency || '-',
+        enabled: m.enabled !== false,
+      }))
+    }
+    const status = await getModelStatus()
+    if (status?.current) activeModelId.value = status.current
+    else if (models.value.length > 0) activeModelId.value = models.value[0].id
+  } catch {
+    // 后端不可用时使用空列表
+    models.value = []
+  }
+  loading.value = false
+}
+
+onMounted(fetchModels)
 
 <style scoped>
 .model-center { padding: 24px; }

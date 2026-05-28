@@ -60,3 +60,26 @@ async def learn_habit(habit_type: str = Query(...), detail: str = Query(...), _=
     """学习用户习惯"""
     await handle_risk("L1", "习惯学习")
     return await MemoryAgent.learn_user_habit(habit_type, detail)
+
+@router.get("/stats")
+async def memory_stats(_=Depends(verify_token)):
+    """记忆统计"""
+    await handle_risk("L1", "记忆统计")
+    memories = await MemoryAgent.recall(limit=9999)
+    memories_list = memories.get("memories", [])
+    total = len(memories_list)
+    categories = {}
+    for m in memories_list:
+        cat = m.get("category", "general")
+        categories[cat] = categories.get(cat, 0) + 1
+    return {
+        "total": total,
+        "categories": categories,
+        "avg_importance": round(sum(m.get("importance", 1) for m in memories_list) / max(total, 1), 1),
+    }
+
+@router.post("/cleanup")
+async def cleanup_memory(days_old: int = 30, _=Depends(verify_token)):
+    """清除旧记忆"""
+    await handle_risk("L2", f"清除{days_old}天前旧记忆")
+    return await MemoryAgent.cleanup(days_old)

@@ -73,6 +73,7 @@
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
+import { agentApi } from '@/api/index'
 
 const loading = ref(false)
 const activePlatform = ref('all')
@@ -90,18 +91,8 @@ const filteredTrends = computed(() => {
   return filtered
 })
 
-const predictions = [
-  { name:'科技数码', items:['AI手机','折叠屏','AR眼镜','智能手表'] },
-  { name:'美妆护肤', items:['防晒霜','精华液','面膜','粉底'] },
-  { name:'服饰穿搭', items:['防晒衣','运动鞋','潮牌T恤'] },
-]
-
-const suggestions = [
-  '抖音"防晒衣"话题爆火，建议商城上架相关商品',
-  'B站数码区新发布5款手机评测，可采集相关配件',
-  '微博热搜"618"活动预热，建议启动促销活动',
-  'AI预测科技类产品下周需求上涨30%',
-]
+const predictions = ref([])
+const suggestions = ref([])
 
 function formatHeat(n) {
   if (!n) return ''
@@ -109,24 +100,33 @@ function formatHeat(n) {
   return (n/10000).toFixed(1) + '万'
 }
 
-function refreshTrends() {
+async function refreshTrends() {
   loading.value = true
-  setTimeout(() => {
-    const samples = {
-      weibo: ['某明星官宣恋情','高考分数线公布','新政策出台','热门综艺首播','618大促开启','AI新规发布','世界杯预选赛','旅游旺季到来'],
-      douyin: ['#挑战话题 爆火','舞蹈挑战赛','美食探店合集','旅游打卡攻略','萌宠搞笑日常','科技新品开箱','美妆教程分享','健身打卡记录'],
-      bilibili: ['四月新番推荐','3A游戏实况','鬼畜全明星','数码产品横评','独立纪录片','编程教程合集','音乐翻唱榜','舞蹈区精选'],
+  try {
+    const res = await agentApi.get('/agent/friday/trends')
+    if (res?.data?.ok && res?.data?.trends) {
+      Object.keys(trends).forEach(key => {
+        if (res.data.trends[key]) {
+          trends[key].trends = res.data.trends[key].map((t, i) => ({
+            rank: i + 1,
+            title: t.title || t.name || '',
+            hot_score: t.hot_score || t.heat || 0,
+          }))
+        }
+      })
     }
-    Object.keys(trends).forEach(key => {
-      trends[key].trends = samples[key].map((t, i) => ({
-        rank: i + 1,
-        title: t,
-        hot_score: 1000000 - i * 80000 + Math.random() * 50000,
-      }))
-    })
-    loading.value = false
+    // 获取预测数据
+    const predRes = await agentApi.get('/agent/friday/trends/predict', { params: { category: '科技' } })
+    if (predRes?.data?.ok && predRes?.data?.predictions) {
+      predictions.value = [{ name:'AI预测', items: predRes.data.predictions.slice(0, 6) }]
+    } else {
+      predictions.value = []
+    }
     ElMessage.success('热点已更新')
-  }, 800)
+  } catch {
+    ElMessage.error('获取热点数据失败')
+  }
+  loading.value = false
 }
 
 onMounted(refreshTrends)
@@ -159,3 +159,4 @@ onMounted(refreshTrends)
 .suggest-list { display: flex; flex-direction: column; gap: 10px; }
 .suggest-item { display: flex; align-items: flex-start; gap: 8px; font-size: 13px; color: var(--text-secondary); line-height: 1.5; }
 </style>
+

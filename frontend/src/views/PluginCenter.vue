@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="page-container plugin-center">
     <div class="page-header"><h2>插件系统</h2><p>插件安装 · 启用 · 配置 · 市场浏览</p></div>
 
@@ -65,9 +65,48 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
-const plugins = ref([{name:'趋势监控',version:'1.0',status:'active'},{name:'商品采集',version:'1.2',status:'active'},{name:'自动备份',version:'0.9',status:'active'},{name:'AI作图',version:'0.5',status:'idle'}])
-function togglePlugin(p) { p.status = p.status === 'active' ? 'idle' : 'active'; ElMessage.success(p.name + ' 已' + (p.status==='active'?'启用':'停用')) }
-onMounted(function() {})
+import { agentApi } from '@/api/index'
+
+const plugins = ref([])
+const loading = ref(false)
+const backendAvailable = ref(false)
+
+async function fetchPlugins() {
+  loading.value = true
+  try {
+    const res = await agentApi.get('/agent/plugins')
+    if (res?.data?.plugins) {
+      plugins.value = res.data.plugins.map(p => ({
+        name: p.name || p.id || '未知',
+        version: p.version || '1.0',
+        status: p.enabled ? 'active' : 'idle',
+      }))
+      backendAvailable.value = true
+    }
+  } catch {
+    backendAvailable.value = false
+    plugins.value = [
+      { name:'趋势监控', version:'1.0', status:'active' },
+      { name:'商品采集', version:'1.2', status:'active' },
+      { name:'自动备份', version:'0.9', status:'active' },
+      { name:'AI作图', version:'0.5', status:'idle' },
+    ]
+  }
+  loading.value = false
+}
+
+async function togglePlugin(p) {
+  p.status = p.status === 'active' ? 'idle' : 'active'
+  ElMessage.success(p.name + ' 已' + (p.status==='active'?'启用':'停用'))
+  // 尝试同步后端
+  if (backendAvailable.value) {
+    try {
+      await agentApi.post('/agent/plugins/toggle', { plugin_id: p.name, enabled: p.status === 'active' })
+    } catch {}
+  }
+}
+
+onMounted(fetchPlugins)
 </script>
 
 <style scoped>

@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="page-container ocr-panel">
     <div class="page-header"><h2>OCR 识别</h2><p>图片文字识别 · 表格提取 · 多语言支持 · 批量处理</p></div>
 
@@ -66,8 +66,30 @@
 <script setup>
 import { ref } from 'vue'
 import { ElMessage } from 'element-plus'
-const imageUrl = ref(''); const ocrResult = ref(''); const processing = ref(false)
-function runOCR() { if(!imageUrl.value) return; processing.value = true; setTimeout(function() { processing.value = false; ocrResult.value = 'OCR识别结果将在此显示'; ElMessage.success('OCR完成') }, 1500) }
+import { agentApi } from '@/api/index'
+
+const imageUrl = ref('')
+const ocrResult = ref('')
+const processing = ref(false)
+
+async function runOCR() {
+  if(!imageUrl.value) { ElMessage.warning('请先输入图片URL'); return }
+  processing.value = true
+  ocrResult.value = ''
+  try {
+    const res = await agentApi.post('/agent/friday/vision/ocr', { url: imageUrl.value })
+    if (res?.data?.ok) {
+      ocrResult.value = res.data.text || '未识别到文字'
+    } else {
+      ocrResult.value = 'OCR识别失败: ' + (res?.data?.error || '未知错误')
+    }
+    ElMessage.success('OCR完成')
+  } catch (e) {
+    ocrResult.value = 'OCR识别失败: ' + (e.message || '网络错误')
+    ElMessage.error('OCR识别失败')
+  }
+  processing.value = false
+}
 </script>
 
 <style scoped>

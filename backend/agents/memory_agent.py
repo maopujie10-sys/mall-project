@@ -1,4 +1,20 @@
-﻿"""Memory Agent — 长期记忆/用户习惯/项目状态/Bug历史/自动总结
+﻿
+    @staticmethod
+    async def cleanup(days_old: int = 30) -> dict:
+        """清除旧记忆"""
+        memories = MemoryAgent._load_memories()
+        cutoff = (datetime.now() - timedelta(days=days_old)).isoformat()
+        before = len(memories)
+        kept = []
+        removed = 0
+        for m in memories:
+            if m.get("created_at", "") < cutoff and m.get("importance", 1) < 3:
+                removed += 1
+            else:
+                kept.append(m)
+        MemoryAgent._save_memories(kept)
+        return {"ok": True, "before": before, "after": len(kept), "removed": removed}
+"""Memory Agent — 长期记忆/用户习惯/项目状态/Bug历史/自动总结
 职责：记录一切、检索历史、学习模式、关联知识"""
 import json
 import os

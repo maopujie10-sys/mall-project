@@ -2,6 +2,8 @@
 from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect
 from pydantic import BaseModel
 from typing import Optional
+from risk import handle_risk
+from state import state
 from auth import verify_token
 from agents.master_agent import MasterAgent
 from agents.code_agent import CodeAgent
@@ -170,4 +172,89 @@ async def remember_something(req: RememberRequest, _=Depends(verify_token)):
 async def test_broadcast(message: str = "Friday AI OS 在线", _=Depends(verify_token)):
     await ws_manager.broadcast("test", {"message": message})
     return {"ok": True, "clients": ws_manager.count()}
+
+
+# ===== Vision Agent: OCR/视频/物体/人脸 =====
+@router.post("/vision/ocr")
+async def vision_ocr(url: str, _=Depends(verify_token)):
+    """OCR 文字识别"""
+    return await VisionAgent.ocr_recognize(url)
+
+@router.post("/vision/video")
+async def vision_video(video_url: str, _=Depends(verify_token)):
+    """视频分析"""
+    return await VisionAgent.analyze_video(video_url=video_url)
+
+@router.post("/vision/objects")
+async def vision_objects(image_url: str, _=Depends(verify_token)):
+    """物体检测"""
+    return await VisionAgent.detect_objects(image_url)
+
+@router.post("/vision/faces")
+async def vision_faces(image_url: str, _=Depends(verify_token)):
+    """人脸检测"""
+    return await VisionAgent.detect_faces(image_url)
+
+@router.post("/vision/upload")
+async def vision_upload(file: bytes = None, url: str = ""):
+    """上传图片并分析（支持文件上传或URL）"""
+    if url:
+        return await VisionAgent.analyze_image(image_url=url)
+    if file:
+        import tempfile, os, base64
+        tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".jpg")
+        tmp.write(file)
+        tmp.close()
+        try:
+            result = await VisionAgent.analyze_image(image_path=tmp.name)
+            return result
+        finally:
+            os.unlink(tmp.name)
+    return {"ok": False, "error": "请提供图片URL或上传文件"}
+
+
+
+@router.post("/models/switch")
+async def switch_model(model_id: str, _=Depends(verify_token)):
+    """切换当前模型"""
+    await handle_risk("L1", f"切换模型: {model_id}")
+    state.current_model = model_id
+    state._save()
+    return {"ok": True, "current_model": model_id}
+
+@router.post("/models/test")
+async def test_model(model_id: str, _=Depends(verify_token)):
+    """测试模型响应速度"""
+    model = ModelRouter.get_model(model_id)
+    if not model:
+        return {"ok": False, "error": f"模型 {model_id} 不存在"}
+    import time
+    start = time.time()
+    try:
+        result = await model.test()
+        latency = int((time.time() - start) * 1000)
+        return {"ok": True, "model_id": model_id, "latency_ms": latency, "status": "ok"}
+    except Exception as e:
+        return {"ok": False, "model_id": model_id, "error": str(e)}
+
+@router.post("/models/compare")
+async def compare_models(model_ids: list[str], _=Depends(verify_token)):
+    """对比多个模型"""
+    results = []
+    for mid in model_ids:
+        model = ModelRouter.get_model(mid)
+        if model:
+            results.append({"model_id": mid, "name": model.name if hasattr(model, "name") else mid, "status": "available"})
+        else:
+            results.append({"model_id": mid, "status": "unavailable"})
+    return {"ok": True, "comparison": results}
+
+@router.get("/models/status")
+async def model_status(_=Depends(verify_token)):
+    """获取所有模型状态"""
+    models = ModelRouter.list_models()
+    current = getattr(state, "current_model", None)
+    return {"ok": True, "models": models, "current": current}
+
+
 

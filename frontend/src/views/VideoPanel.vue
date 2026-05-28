@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="page-container video-panel">
     <div class="page-header"><h2>视频分析</h2><p>视频理解 · 字幕提取 · 内容分析 · 热点研判</p></div>
 
@@ -61,8 +61,29 @@
 <script setup>
 import { ref } from 'vue'
 import { ElMessage } from 'element-plus'
-const videoUrl = ref(''); const analyzing = ref(false)
-function analyzeVideo() { if(!videoUrl.value) return; analyzing.value = true; setTimeout(function() { analyzing.value = false; ElMessage.success('视频分析完成') }, 2000) }
+import { agentApi } from '@/api/index'
+
+const videoUrl = ref('')
+const analyzing = ref(false)
+const videoInfo = ref(null)
+
+async function analyzeVideo() {
+  if(!videoUrl.value) { ElMessage.warning('请先输入视频URL'); return }
+  analyzing.value = true
+  videoInfo.value = null
+  try {
+    const res = await agentApi.post('/agent/friday/vision/video', { video_url: videoUrl.value })
+    if (res?.data?.ok) {
+      videoInfo.value = res.data
+    } else {
+      ElMessage.error('视频分析失败: ' + (res?.data?.error || '未知错误'))
+    }
+    ElMessage.success('视频分析完成')
+  } catch (e) {
+    ElMessage.error('视频分析失败: ' + (e.message || '网络错误'))
+  }
+  analyzing.value = false
+}
 </script>
 
 <style scoped>

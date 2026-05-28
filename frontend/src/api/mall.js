@@ -1,4 +1,4 @@
-import axios from "axios"
+﻿import axios from "axios"
 import { agentApi } from './index'
 
 // ===== 统计面板 =====
@@ -218,7 +218,7 @@ export function replyCustomerMessage(data) { return agentApi.post('/agent/custom
 export function getCustomerStats() { return agentApi.get('/agent/customer/stats') }
 export function getCustomerReport() { return agentApi.get('/agent/customer/report') }
 
-const merchant = axios.create({ baseURL: '/merchant', timeout: 15000, headers: { 'Content-Type': 'application/json' } });
+const merchant = axios.create({ baseURL: '/api', timeout: 15000, headers: { 'Content-Type': 'application/json' } });
 merchant.interceptors.response.use((r)=>{const d=r.data;if(d&&typeof d==='object'&&'code' in d)return d.data!==undefined?d.data:d;return d;},e=>Promise.reject(e));
 
 
@@ -247,4 +247,5 @@ export function saveAttr(data) { return agentApi.post('/tools/mall/attr', data) 
 export function updateAttr(uuid, data) { return agentApi.put(`/tools/mall/attr/${uuid}`, data) }
 
 export function deleteAttr(uuid) { return agentApi.delete(`/tools/mall/attr/${uuid}`) }
+
 
