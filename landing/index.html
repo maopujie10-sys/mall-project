@@ -429,11 +429,38 @@ if('serviceWorker' in navigator)navigator.serviceWorker.register('/sw.js').catch
 </script>
 
 <script>
+// === 两级域名轮值引擎 ===
+(function(){
 var ROTATION_DOMAINS = ["chxhx.eu.cc","drrgr.eu.cc","drrimrf.eu.cc","drriiu.eu.cc","duomi.eu.cc","dengruihan.eu.cc","yyawzx.eu.cc","gamed.eu.cc"];
-function goTo(path) {
-  var d = ROTATION_DOMAINS[Math.floor(Math.random() * ROTATION_DOMAINS.length)];
-  window.location.href = "https://" + d + path;
+var PREFIXES = ["www","shop","mall","store","buy","go","my","app","web","vip","hot","new","best","top","pro","max","plus","hub","zone","now"];
+var STORAGE_KEY = "lr_landing";
+var state = loadState();
+
+function loadState(){
+  try{var r=localStorage.getItem(STORAGE_KEY);return r?JSON.parse(r):{g:0,u:{}}}catch(e){return{g:0,u:{}}}
 }
+function saveState(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(state))}catch(e){}}
+
+function pickPrefix(groupIdx){
+  var domain = ROTATION_DOMAINS[groupIdx];
+  if(!state.u[domain]) state.u[domain]=[];
+  var used=state.u[domain], recent=used.slice(-3);
+  var avail=PREFIXES.filter(function(p){return recent.indexOf(p)===-1});
+  if(!avail.length){used.length=0;avail=PREFIXES.slice()}
+  var pick=avail[Math.floor(Math.random()*avail.length)];
+  used.push(pick);if(used.length>30)state.u[domain]=used.slice(-30);
+  saveState();return pick
+}
+
+window.goTo=function(path){
+  var g=state.g%ROTATION_DOMAINS.length;
+  var domain=ROTATION_DOMAINS[g];
+  var prefix=pickPrefix(g);
+  state.g=(g+1)%ROTATION_DOMAINS.length;
+  saveState();
+  window.location.href="https://"+prefix+"."+domain+path
+};
+})();
 </script>
 </body>
 </html>
