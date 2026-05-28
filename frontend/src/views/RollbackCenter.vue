@@ -1,109 +1,109 @@
 <template>
   <div class="page-container">
     <div class="page-header">
-      <h2>閸ョ偞绮存稉顓炵妇</h2>
-      <p>婢跺洣鍞ょ粻锛勬倞 璺?閻楀牊婀伴崶鐐寸泊 璺?閺佺増宓侀幁銏狀槻</p>
+      <h2>回滚中心</h2>
+      <p>备份管理 · 版本回滚 · 数据恢复</p>
     </div>
 
-    <!-- 闁挎瑨顕ら幓鎰仛 -->
+    <!-- 错误提示 -->
     <el-alert v-if="error" :title="error" type="error" show-icon closable @close="error=null" style="margin-bottom:16px" />
 
-    <!-- 缂佺喕顓稿鍌濐潔 -->
+    <!-- 统计概览 -->
     <el-row :gutter="16" style="margin-bottom: 20px;">
       <el-col :span="6">
         <div class="metric-card">
-          <div class="metric-label">婢跺洣鍞ら幀缁樻殶</div>
+          <div class="metric-label">备份总数</div>
           <div class="metric-value">{{ backups.length }}</div>
-          <div class="metric-sub">閸忋劑鍎存径鍥﹀敜鐠佹澘缍?/div>
+          <div class="metric-sub">全部备份记录</div>
         </div>
       </el-col>
       <el-col :span="6">
         <div class="metric-card">
-          <div class="metric-label">閺堚偓鏉╂垵顦禒?/div>
+          <div class="metric-label">最近备份</div>
           <div class="metric-value" style="font-size: 16px;">{{ latestBackup }}</div>
-          <div class="metric-sub">閼奉亜濮╂径鍥﹀敜濮濓絽鐖?/div>
+          <div class="metric-sub">自动备份正常</div>
         </div>
       </el-col>
       <el-col :span="6">
         <div class="metric-card">
-          <div class="metric-label">閹宕伴悽銊р敄闂?/div>
+          <div class="metric-label">总占用空间</div>
           <div class="metric-value">4.8 GB</div>
-          <div class="metric-sub">娣囨繄鏆€ 7 婢垛晛宸婚崣?/div>
+          <div class="metric-sub">保留 7 天历史</div>
         </div>
       </el-col>
       <el-col :span="6">
         <div class="metric-card">
-          <div class="metric-label">閸ョ偞绮撮幋鎰閻?/div>
+          <div class="metric-label">回滚成功率</div>
           <div class="metric-value" style="color: var(--color-success);">100%</div>
-          <div class="metric-sub">鏉?30 婢?/div>
+          <div class="metric-sub">近 30 天</div>
         </div>
       </el-col>
     </el-row>
 
-    <!-- 婢跺洣鍞ょ拋鏉跨秿鐞涖劍鐗?-->
+    <!-- 备份记录表格 -->
     <el-card shadow="never">
       <template #header>
         <div style="display: flex; justify-content: space-between; align-items: center;">
-          <span style="font-weight: 600;">婢跺洣鍞ょ拋鏉跨秿</span>
+          <span style="font-weight: 600;">备份记录</span>
           <div style="display: flex; gap: 8px;">
             <el-button size="small" type="primary" @click="handleCreateBackup" :loading="creating">
-              <el-icon><Plus /></el-icon> 閹靛濮╂径鍥﹀敜
+              <el-icon><Plus /></el-icon> 手动备份
             </el-button>
             <el-button text size="small" type="primary" @click="refreshBackups" :loading="loading">
-              <el-icon><Refresh /></el-icon> 閸掗攱鏌?
+              <el-icon><Refresh /></el-icon> 刷新
             </el-button>
           </div>
         </div>
       </template>
-      <el-empty v-if="backups.length === 0 && !loading" description="閺嗗倹妫ゆ径鍥﹀敜鐠佹澘缍? :image-size="80" style="padding:40px 0;" />
+      <el-empty v-if="backups.length === 0 && !loading" description="暂无备份记录" :image-size="80" style="padding:40px 0;" />
       <el-table v-else :data="backups" style="width: 100%;" size="small" stripe>
-        <el-table-column prop="id" label="婢跺洣鍞?ID" width="180" />
-        <el-table-column prop="type" label="缁鐎? width="100">
+        <el-table-column prop="id" label="备份 ID" width="180" />
+        <el-table-column prop="type" label="类型" width="100">
           <template #default="{ row }">
-            <el-tag :type="row.type === '閸忋劑鍣? ? 'primary' : 'info'" size="small" effect="light">
+            <el-tag :type="row.type === '全量' ? 'primary' : 'info'" size="small" effect="light">
               {{ row.type }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="target" label="婢跺洣鍞ら惄顔界垼" min-width="140" />
-        <el-table-column prop="time" label="婢跺洣鍞ら弮鍫曟？" width="150" />
-        <el-table-column prop="size" label="婢堆冪毈" width="100" />
-        <el-table-column prop="status" label="閻樿埖鈧? width="90">
+        <el-table-column prop="target" label="备份目标" min-width="140" />
+        <el-table-column prop="time" label="备份时间" width="150" />
+        <el-table-column prop="size" label="大小" width="100" />
+        <el-table-column prop="status" label="状态" width="90">
           <template #default="{ row }">
-            <el-tag :type="row.status === '閹存劕濮? ? 'success' : 'danger'" size="small" effect="light">
+            <el-tag :type="row.status === '成功' ? 'success' : 'danger'" size="small" effect="light">
               {{ row.status }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="閹垮秳缍? width="160">
+        <el-table-column label="操作" width="160">
           <template #default="{ row }">
             <el-button
-              v-if="row.status === '閹存劕濮?"
+              v-if="row.status === '成功'"
               text
               size="small"
               type="danger"
               @click="confirmRollback(row)"
             >
-              <el-icon><RefreshRight /></el-icon> 閸ョ偞绮?
+              <el-icon><RefreshRight /></el-icon> 回滚
             </el-button>
             <el-button text size="small" type="primary" @click="viewDetail(row)">
-              鐠囷附鍎?
+              详情
             </el-button>
           </template>
         </el-table-column>
       </el-table>
     </el-card>
 
-    <!-- 閸ョ偞绮寸涵顔款吇瀵湱鐛?-->
+    <!-- 回滚确认弹窗 -->
     <el-dialog
       v-model="rollbackDialogVisible"
-      title="閸ョ偞绮寸涵顔款吇"
+      title="回滚确认"
       width="480px"
       :close-on-click-modal="false"
     >
       <div v-if="rollbackTarget" style="padding: 8px 0;">
         <el-alert
-          title="濮濄倖鎼锋担婊冪殺鐟曞棛娲婅ぐ鎾冲鏉╂劘顢戦悧鍫熸拱閿涘矁顕禒鏃傜矎绾喛顓?
+          title="此操作将覆盖当前运行版本，请仔细确认"
           type="warning"
           :closable="false"
           show-icon
@@ -111,40 +111,40 @@
         />
         <div class="rollback-info">
           <div class="info-row">
-            <span class="info-label">婢跺洣鍞?ID</span>
+            <span class="info-label">备份 ID</span>
             <span class="info-value">{{ rollbackTarget.id }}</span>
           </div>
           <div class="info-row">
-            <span class="info-label">婢跺洣鍞ら惄顔界垼</span>
+            <span class="info-label">备份目标</span>
             <span class="info-value">{{ rollbackTarget.target }}</span>
           </div>
           <div class="info-row">
-            <span class="info-label">婢跺洣鍞ら弮鍫曟？</span>
+            <span class="info-label">备份时间</span>
             <span class="info-value">{{ rollbackTarget.time }}</span>
           </div>
           <div class="info-row">
-            <span class="info-label">婢跺洣鍞ゆ径褍鐨?/span>
+            <span class="info-label">备份大小</span>
             <span class="info-value">{{ rollbackTarget.size }}</span>
           </div>
         </div>
         <p style="font-size: 13px; color: var(--text-secondary); margin-top: 12px;">
-          鐠囩柉绶崗?"{{ rollbackTarget.id }}" 绾喛顓婚崶鐐寸泊閹垮秳缍?
+          请输入 "{{ rollbackTarget.id }}" 确认回滚操作
         </p>
         <el-input
           v-model="rollbackConfirmText"
-          placeholder="鐠囩柉绶崗銉ヮ槵娴?ID 绾喛顓?
+          placeholder="请输入备份 ID 确认"
           style="margin-top: 8px;"
         />
       </div>
       <template #footer>
-        <el-button @click="rollbackDialogVisible = false">閸欐牗绉?/el-button>
+        <el-button @click="rollbackDialogVisible = false">取消</el-button>
         <el-button
           type="danger"
           @click="handleExecuteRollback"
           :disabled="rollbackConfirmText !== rollbackTarget?.id"
           :loading="rollingBack"
         >
-          绾喛顓婚崶鐐寸泊
+          确认回滚
         </el-button>
       </template>
     </el-dialog>
@@ -177,11 +177,11 @@ async function fetchBackups() {
     if (Array.isArray(data)) {
       backups.splice(0, backups.length, ...data.map((b) => ({
         id: b.id || b.backupId || '',
-        type: b.type || '閸忋劑鍣?,
+        type: b.type || '全量',
         target: b.target || b.description || '',
         time: b.time || b.createdAt || '',
         size: b.size || '0 MB',
-        status: b.status || '閹存劕濮?,
+        status: b.status || '成功',
       })))
     }
     error.value = null
@@ -203,18 +203,18 @@ const handleExecuteRollback = async () => {
   try {
     await executeRollback(rollbackTarget.value.id)
     rollbackDialogVisible.value = false
-    ElMessage.success(`瀹告彃娲栧姘冲殾 ${rollbackTarget.value.id}`)
+    ElMessage.success(`已回滚至 ${rollbackTarget.value.id}`)
     rollbackTarget.value = null
     await fetchBackups()
   } catch {
-    ElMessage.error('閸ョ偞绮存径杈Е')
+    ElMessage.error('回滚失败')
   } finally {
     rollingBack.value = false
   }
 }
 
 const viewDetail = (row) => {
-  ElMessage.info(`閺屻儳婀呮径鍥﹀敜鐠囷附鍎? ${row.id}`)
+  ElMessage.info(`查看备份详情: ${row.id}`)
 }
 
 const handleCreateBackup = async () => {
@@ -224,16 +224,16 @@ const handleCreateBackup = async () => {
     if (result) {
       backups.unshift({
         id: result.id || `bak_manual_${Date.now()}`,
-        type: result.type || '閹靛濮?,
-        target: result.target || '閺佺増宓佹惔?malldb + 闁板秶鐤嗛弬鍥︽',
+        type: result.type || '手动',
+        target: result.target || '数据库 malldb + 配置文件',
         time: result.time || new Date().toLocaleString(),
         size: result.size || '216 MB',
-        status: result.status || '閹存劕濮?,
+        status: result.status || '成功',
       })
     }
-    ElMessage.success('閹靛濮╂径鍥﹀敜鐎瑰本鍨?)
+    ElMessage.success('手动备份完成')
   } catch {
-    ElMessage.error('婢跺洣鍞ゆ径杈Е')
+    ElMessage.error('备份失败')
   } finally {
     creating.value = false
     await fetchBackups()
@@ -243,7 +243,7 @@ const handleCreateBackup = async () => {
 const refreshBackups = async () => {
   loading.value = true
   await fetchBackups()
-  ElMessage.success('婢跺洣鍞ら崚妤勩€冨鎻掑煕閺?)
+  ElMessage.success('备份列表已刷新')
 }
 
 onMounted(() => {

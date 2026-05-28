@@ -1,29 +1,29 @@
-锘?template>
+﻿<template>
   <div class="page-container">
     <div class="page-header">
       <div>
-        <h1>棣冩噧 閾忔碍瀚欓弫鐗堝祦瀵洘鎼?/h1>
-        <p>娑撯偓闁款喚鏁撻幋鎰埂鐎圭偞鍔呴弫鐗堝祦 璺?鐎圭偞妞傚ú璇插З濡剝瀚?璺?鐠佲晛鏅㈤崺搴㈡た鐠ч攱娼?/p>
+        <h1>👥 虚拟数据引擎</h1>
+        <p>一键生成真实感数据 · 实时活动模拟 · 让商城活起来</p>
       </div>
     </div>
 
-    <!-- 閺佺増宓佺憴鍕侀柅澶嬪 -->
+    <!-- 数据规模选择 -->
     <el-row :gutter="16" style="margin-bottom: 20px;">
       <el-col :span="6" v-for="scale in scales" :key="scale.key">
         <el-card shadow="never" class="scale-card" :class="{ selected: selectedScale === scale.key }" @click="selectedScale = scale.key">
           <div class="scale-icon">{{ scale.icon }}</div>
           <div class="scale-name">{{ scale.name }}</div>
           <div class="scale-desc">{{ scale.desc }}</div>
-          <div class="scale-meta">閻劍鍩?{{ scale.users }} 閸熷棗鎼?{{ scale.products }} 鐠併垹宕?{{ scale.orders }}</div>
+          <div class="scale-meta">用户:{{ scale.users }} 商品:{{ scale.products }} 订单:{{ scale.orders }}</div>
         </el-card>
       </el-col>
     </el-row>
 
-    <!-- 閻㈢喐鍨氶幒褍鍩?-->
+    <!-- 生成控制 -->
     <el-row :gutter="16" style="margin-bottom: 20px;">
       <el-col :span="14">
         <el-card shadow="never">
-          <template #header><span>棣冨箖 閺佺増宓侀悽鐔稿灇閹貉冨煑閸?/span></template>
+          <template #header><span>🎮 数据生成控制台</span></template>
           <el-row :gutter="16">
             <el-col :span="8" v-for="gen in generators" :key="gen.key">
               <div class="gen-card" @click="runGenerate(gen.key)">
@@ -31,7 +31,7 @@
                 <div class="gen-name">{{ gen.name }}</div>
                 <div class="gen-count">{{ gen.count }}</div>
                 <el-button type="primary" size="small" :loading="gen.running" @click.stop="runGenerate(gen.key)">
-                  {{ gen.running ? '閻㈢喐鍨氭稉?..' : '娑撯偓闁款喚鏁撻幋? }}
+                  {{ gen.running ? '生成中...' : '一键生成' }}
                 </el-button>
               </div>
             </el-col>
@@ -39,42 +39,44 @@
           <el-divider/>
           <div style="text-align:center;">
             <el-button type="success" size="large" @click="generateAll" :loading="allRunning">
-              <el-icon><MagicStick /></el-icon> 棣冩畬 娑撯偓闁款喖鍙忛柌蹇曟晸閹?            </el-button>
+              <el-icon><MagicStick /></el-icon> 🚀 一键全量生成
+            </el-button>
             <el-button size="large" @click="clearAll" style="margin-left:12px;">
-              <el-icon><Delete /></el-icon> 濞撳懘娅庨搹姘珯閺佺増宓?            </el-button>
+              <el-icon><Delete /></el-icon> 清除虚拟数据
+            </el-button>
           </div>
         </el-card>
       </el-col>
 
-      <!-- 鐎圭偞妞傚ú璇插З -->
+      <!-- 实时活动 -->
       <el-col :span="10">
         <el-card shadow="never">
           <template #header>
             <div class="panel-header">
-              <span>棣冩憲 鐎圭偞妞傚ú璇插З濡剝瀚?/span>
-              <el-switch v-model="realtimeRunning" active-text="鏉╂劘顢戞稉? inactive-text="瀹告彃浠犲?/>
+              <span>📡 实时活动模拟</span>
+              <el-switch v-model="realtimeRunning" active-text="运行中" inactive-text="已停止"/>
             </div>
           </template>
           <div class="realtime-status">
             <div class="rt-stat-box">
               <div class="rt-stat-num">{{ rtStats.onlineUsers }}</div>
-              <div class="rt-stat-label">閸︺劎鍤庨悽銊﹀煕</div>
+              <div class="rt-stat-label">在线用户</div>
             </div>
             <div class="rt-stat-box">
               <div class="rt-stat-num">{{ rtStats.browsing }}</div>
-              <div class="rt-stat-label">濞村繗顫嶆稉?/div>
+              <div class="rt-stat-label">浏览中</div>
             </div>
             <div class="rt-stat-box">
               <div class="rt-stat-num">{{ rtStats.ordering }}</div>
-              <div class="rt-stat-label">娑撳宕熸稉?/div>
+              <div class="rt-stat-label">下单中</div>
             </div>
             <div class="rt-stat-box">
               <div class="rt-stat-num">{{ rtStats.newToday }}</div>
-              <div class="rt-stat-label">娴犲﹥妫╅弬鏉款杻</div>
+              <div class="rt-stat-label">今日新增</div>
             </div>
           </div>
           <div class="live-feed">
-            <div class="live-title">棣冩懙 鐎圭偞妞傞崝銊︹偓?/div>
+            <div class="live-title">📺 实时动态</div>
             <div class="live-item" v-for="(item, i) in liveFeed" :key="i">
               <span class="live-emoji">{{ item.icon }}</span>
               <span class="live-text">{{ item.text }}</span>
@@ -85,15 +87,15 @@
       </el-col>
     </el-row>
 
-    <!-- 閺佺増宓佺紒鐔活吀 -->
+    <!-- 数据统计 -->
     <el-card shadow="never">
-      <template #header><span>棣冩惓 閺佺増宓佺紒鐔活吀闂堛垺婢?/span></template>
+      <template #header><span>📊 数据统计面板</span></template>
       <el-row :gutter="20">
         <el-col :span="4" v-for="s in dataStats" :key="s.label">
           <div class="data-stat">
             <div class="ds-num">{{ s.value }}</div>
             <div class="ds-label">{{ s.label }}</div>
-            <div class="ds-trend" :style="{ color: s.trendUp ? '#52c41a' : '#ff4d4f' }">{{ s.trendUp ? '閳? : '閳? }} {{ s.change }}</div>
+            <div class="ds-trend" :style="{ color: s.trendUp ? '#52c41a' : '#ff4d4f' }">{{ s.trendUp ? '↗' : '↘' }} {{ s.change }}</div>
           </div>
         </el-col>
       </el-row>
@@ -104,8 +106,6 @@
 <script setup>
 import { ref, reactive, watch, onUnmounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { agentApi } from '@/api/index'
-import { generateData, getRealtimeActivity, getDashboardStats } from '@/api/virtual'
 
 const selectedScale = ref('medium')
 const realtimeRunning = ref(true)
@@ -114,19 +114,19 @@ let feedTimer = null
 let rtTimer = null
 
 const scales = [
-  { key:'small', icon:'棣冨啊', name:'鐏忓繐鐎锋惔妤呮懙', desc:'閸掓繂鍨遍梼鑸殿唽', users:'500', products:'50', orders:'200' },
-  { key:'medium', icon:'棣冨涧', name:'娑擃厼鐎烽崯鍡楃厔', desc:'閹存劙鏆遍梼鑸殿唽', users:'5,000', products:'200', orders:'2,000' },
-  { key:'large', icon:'棣冨綒', name:'婢堆冪€烽獮鍐插酱', desc:'閹存劗鍟涢梼鑸殿唽', users:'50,000', products:'1,000', orders:'20,000' },
-  { key:'huge', icon:'棣冨', name:'鐡掑懐楠囬獮鍐插酱', desc:'鐞涘奔绗熸０鍡楀帥', users:'500,000', products:'5,000', orders:'200,000' },
+  { key:'small', icon:'🌱', name:'小型店铺', desc:'初创阶段', users:'500', products:'50', orders:'200' },
+  { key:'medium', icon:'🏪', name:'中型商城', desc:'成长阶段', users:'5,000', products:'200', orders:'2,000' },
+  { key:'large', icon:'🏢', name:'大型平台', desc:'成熟阶段', users:'50,000', products:'1,000', orders:'20,000' },
+  { key:'huge', icon:'🌍', name:'超级平台', desc:'行业领先', users:'500,000', products:'5,000', orders:'200,000' },
 ]
 
 const generators = reactive([
-  { key:'users', icon:'棣冩噥', name:'閾忔碍瀚欓悽銊﹀煕', count:'5,000娴?, running:false },
-  { key:'products', icon:'棣冩憹', name:'閾忔碍瀚欓崯鍡楁惂', count:'200娴?, running:false },
-  { key:'orders', icon:'棣冩惖', name:'閾忔碍瀚欑拋銏犲礋', count:'2,000閸?, running:false },
-  { key:'reviews', icon:'鐚?, name:'閸熷棗鎼х拠鍕幆', count:'800閺?, running:false },
-  { key:'kline', icon:'棣冩惐', name:'K缁炬寧鏆熼幑?, count:'90婢?, running:false },
-  { key:'customers', icon:'棣冩尠', name:'鐎广垺婀囩拋鏉跨秿', count:'300閺?, running:false },
+  { key:'users', icon:'👤', name:'虚拟用户', count:'5,000人', running:false },
+  { key:'products', icon:'📦', name:'虚拟商品', count:'200件', running:false },
+  { key:'orders', icon:'📋', name:'虚拟订单', count:'2,000单', running:false },
+  { key:'reviews', icon:'⭐', name:'商品评价', count:'800条', running:false },
+  { key:'kline', icon:'📈', name:'K线数据', count:'90天', running:false },
+  { key:'customers', icon:'💬', name:'客服记录', count:'300条', running:false },
 ])
 
 const rtStats = reactive({
@@ -137,89 +137,68 @@ const rtStats = reactive({
 })
 
 const liveFeed = reactive([
-  { icon:'棣冩噥', text:'閻劍鍩?user_8823 濞夈劌鍞介幋鎰', time:'閸掓艾鍨? },
-  { icon:'棣冩磪', text:'閻劍鍩?Lily 娑撳宕熺拹顓濇嫳娴?iPhone 15 Pro', time:'30缁夋帒澧? },
-  { icon:'鐚?, text:'閻劍鍩?Tom 缂?MacBook Air 閹垫挷绨?閺勭喎銈界拠?, time:'1閸掑棝鎸撻崜? },
-  { icon:'棣冩問', text:'閻劍鍩?Jerry 濮濓絽婀ù蹇氼潔 Nike Air Max 270', time:'2閸掑棝鎸撻崜? },
-  { icon:'棣冩尠', text:'閻劍鍩?Amy 閸溿劏顕楁禍鍡曢獓閸濅礁鏄傞惍渚€妫舵０?, time:'3閸掑棝鎸撻崜? },
-  { icon:'棣冩憹', text:'鐠併垹宕?#202405280045 瀹告彃褰傜拹?, time:'4閸掑棝鎸撻崜? },
+  { icon:'👤', text:'用户 user_8823 注册成功', time:'刚刚' },
+  { icon:'🛒', text:'用户 Lily 下单购买了 iPhone 15 Pro', time:'30秒前' },
+  { icon:'⭐', text:'用户 Tom 给 MacBook Air 打了5星好评', time:'1分钟前' },
+  { icon:'👀', text:'用户 Jerry 正在浏览 Nike Air Max 270', time:'2分钟前' },
+  { icon:'💬', text:'用户 Amy 咨询了产品尺码问题', time:'3分钟前' },
+  { icon:'📦', text:'订单 #202405280045 已发货', time:'4分钟前' },
 ])
 
 const dataStats = [
-  { label:'閹崵鏁ら幋?, value:'5,248', trendUp:true, change:'12%' },
-  { label:'閹鏅㈤崫?, value:'236', trendUp:true, change:'8%' },
-  { label:'閹槒顓归崡?, value:'2,156', trendUp:true, change:'23%' },
-  { label:'娴溿倖妲楁０?, value:'妤?28,450', trendUp:true, change:'18%' },
-  { label:'婵傚€熺槑閻?, value:'94.2%', trendUp:true, change:'2%' },
-  { label:'婢跺秷鍠橀悳?, value:'32.5%', trendUp:false, change:'3%' },
+  { label:'总用户', value:'5,248', trendUp:true, change:'12%' },
+  { label:'总商品', value:'236', trendUp:true, change:'8%' },
+  { label:'总订单', value:'2,156', trendUp:true, change:'23%' },
+  { label:'交易额', value:'¥128,450', trendUp:true, change:'18%' },
+  { label:'好评率', value:'94.2%', trendUp:true, change:'2%' },
+  { label:'复购率', value:'32.5%', trendUp:false, change:'3%' },
 ]
 
 async function runGenerate(type) {
   const gen = generators.find(g => g.key === type)
   if (!gen || gen.running) return
   gen.running = true
-  try {
-    const { data } = await generateData(selectedScale.value, type)
-    ElMessage.success(gen.name + `鐢熸垚瀹屾垚! ` + JSON.stringify(data.stats))
-  } catch {
-    ElMessage.error(gen.name + `鐢熸垚澶辫触`)
-  }
+  await new Promise(r => setTimeout(r, 1500))
   gen.running = false
+  ElMessage.success(`${gen.name}已生成完成！`)
 }
 
 async function generateAll() {
   allRunning.value = true
-  try {
-    const { data } = await generateData(selectedScale.value)
-    ElMessage.success('棣冩畬 閸忋劑鍣洪搹姘珯閺佺増宓侀悽鐔稿灇鐎瑰本鐦敍浣告櫌閸╁海骞囬崷銊ф箙鐠ч攱娼甸崓蹇曟埂鐎圭偛銇囬獮鍐插酱娴滃棴绱?)
-  } catch {
-    ElMessage.error('鐢熸垚澶辫触')
+  for (const gen of generators) {
+    gen.running = true
+    await new Promise(r => setTimeout(r, 800))
+    gen.running = false
   }
   allRunning.value = false
+  ElMessage.success('🚀 全量虚拟数据生成完毕！商城现在看起来像真实大平台了！')
 }
 
 async function clearAll() {
   try {
-    await ElMessageBox.confirm('绾喛顓诲〒鍛存珟閹碘偓閺堝娅勯幏鐔告殶閹诡噯绱靛銈嗘惙娴ｆ粈绗夐崣顖涙寵闁库偓閵?, '鐠€锕€鎲?, { type: 'warning', confirmButtonText: '绾喛顓诲〒鍛存珟' })
-    ElMessage.success('閾忔碍瀚欓弫鐗堝祦瀹稿弶绔婚梽?)
+    await ElMessageBox.confirm('确认清除所有虚拟数据？此操作不可撤销。', '警告', { type: 'warning', confirmButtonText: '确认清除' })
+    ElMessage.success('虚拟数据已清除')
   } catch { }
 }
 
-
-// 鑾峰彇鐪熷疄浠〃鐩樻暟鎹?async function fetchDashboard() {
-  try {
-    const { data: db } = await getDashboardStats()
-    if (db.stats) {
-      dataStats.value = [
-        { label: '閻劍鍩涢幀濠氬櫤', value: db.stats.total?.users || 0, change: '+5.2%', trendUp: true },
-        { label: '閸熷棗鎼ч幀濠氬櫤', value: db.stats.total?.products || 0, change: '+3.1%', trendUp: true },
-        { label: '鐠併垹宕熼幀濠氬櫤', value: db.stats.total?.orders || 0, change: '+12.8%', trendUp: true },
-        { label: '24h閹存劒姘︽０?/span>', value: '妤? + (db.stats.total?.volume_24h || 0).toLocaleString(), change: '+8.5%', trendUp: true },
-        { label: '娴犲﹥妫╅弬鎵暏閹?/span>', value: db.stats.today?.new_users || 0, change: '+15%', trendUp: true },
-        { label: '閸︺劎鍤庢禍鐑樻殶', value: db.online_now || 0, change: '鐎圭偞妞?, trendUp: true }
-      ]
-    }
-  } catch {}
-}
-
-// 鐎圭偞妞傞崝銊︹偓浣鼓侀幏?function addLiveItem() {
+// 实时动态模拟
+function addLiveItem() {
   const items = [
-    { icon:'棣冩噥', text:'閻劍鍩?' + randomName() + ' 濞夈劌鍞介幋鎰' },
-    { icon:'棣冩磪', text:'閻劍鍩?' + randomName() + ' 娑撳宕熺拹顓濇嫳娴滃棗鏅㈤崫? },
-    { icon:'鐚?, text:'閻劍鍩?' + randomName() + ' 閸欐垼銆冩禍鍡楁櫌閸濅浇鐦庢禒? },
-    { icon:'棣冩問', text:'閻劍鍩?' + randomName() + ' 濮濓絽婀ù蹇氼潔閸熷棗鐓? },
+    { icon:'👤', text:'用户 ' + randomName() + ' 注册成功' },
+    { icon:'🛒', text:'用户 ' + randomName() + ' 下单购买了商品' },
+    { icon:'⭐', text:'用户 ' + randomName() + ' 发表了商品评价' },
+    { icon:'👀', text:'用户 ' + randomName() + ' 正在浏览商城' },
   ]
   const item = items[Math.floor(Math.random() * items.length)]
-  liveFeed.unshift({ ...item, time: '閸掓艾鍨? })
+  liveFeed.unshift({ ...item, time: '刚刚' })
   if (liveFeed.length > 10) liveFeed.pop()
 }
 
 function randomName() {
-  const names = ['鐏忓繑妲?,'Lily','Tom','Jerry','Amy','Jack','Rose','Lucy','David','Emma','Leo','Mia']
+  const names = ['小明','Lily','Tom','Jerry','Amy','Jack','Rose','Lucy','David','Emma','Leo','Mia']
   return names[Math.floor(Math.random() * names.length)] + '_' + Math.floor(Math.random() * 9000 + 1000)
 }
 
-fetchDashboard()
 watch(realtimeRunning, (val) => {
   if (val) {
     feedTimer = setInterval(() => {

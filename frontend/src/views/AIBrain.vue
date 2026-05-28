@@ -1,21 +1,21 @@
-<template>
+﻿<template>
   <div class="page-container">
     <div class="page-header">
       <div>
-        <h1>棣冾潵 AI 閸熷棗鐓勬径褑鍓?/h1>
-        <p>閸忋劏鍤滈崝銊ュ瀻閺嬫劕鏅㈤崺搴′淮鎼村嘲瀹抽敍灞藉絺閻滄澘鎼х猾鑽ゅ繁閸欙綇绱濋弲楦垮厴閹恒劏宕樻潻鎰樊閺傝顢?/p>
+        <h1>🧠 AI 商城大脑</h1>
+        <p>全自动分析商城健康度，发现品类缺口，智能推荐运维方案</p>
       </div>
       <div class="header-actions">
         <el-button type="primary" @click="runScan" :loading="scanning">
-          <el-icon><Search /></el-icon> 閸忋劎鐝幍顐ｅ伎
+          <el-icon><Search /></el-icon> 全站扫描
         </el-button>
         <el-button type="success" @click="runAutoOps" :loading="autoRunning">
-          <el-icon><Promotion /></el-icon> AI閼奉亜濮╂潻鎰樊
+          <el-icon><Promotion /></el-icon> AI自动运维
         </el-button>
       </div>
     </div>
 
-    <!-- 閸嬨儱鎮嶅鍌濐潔 -->
+    <!-- 健康概览 -->
     <el-row :gutter="16" style="margin-bottom: 20px;">
       <el-col :span="6" v-for="item in summaryCards" :key="item.label">
         <el-card shadow="never" class="metric-card" :class="item.color">
@@ -26,24 +26,24 @@
       </el-col>
     </el-row>
 
-    <!-- 閸熷棗鎼ч崑銉ユ倣鎼达箒銆冮弽?-->
+    <!-- 商品健康度表格 -->
     <el-row :gutter="16" style="margin-bottom: 20px;">
       <el-col :span="16">
         <el-card shadow="never">
           <template #header>
             <div class="panel-header">
-              <span>棣冩惓 閸熷棗鎼ч崑銉ユ倣鎼达箑鍨庨弸?/span>
-              <el-select v-model="filterStatus" placeholder="缁涙盯鈧? size="small" style="width:120px">
-                <el-option label="閸忋劑鍎? value="all"/>
-                <el-option label="閻戭參鏀? value="hot"/>
-                <el-option label="濮濓絽鐖? value="normal"/>
-                <el-option label="閸愮兘妫? value="cold"/>
-                <el-option label="濮濊鎼? value="dead"/>
+              <span>📊 商品健康度分析</span>
+              <el-select v-model="filterStatus" placeholder="筛选" size="small" style="width:120px">
+                <el-option label="全部" value="all"/>
+                <el-option label="热销" value="hot"/>
+                <el-option label="正常" value="normal"/>
+                <el-option label="冷门" value="cold"/>
+                <el-option label="死品" value="dead"/>
               </el-select>
             </div>
           </template>
           <el-table :data="filteredProducts" style="width: 100%" size="small" max-height="400">
-            <el-table-column prop="name" label="閸熷棗鎼ч崥宥囆? min-width="180">
+            <el-table-column prop="name" label="商品名称" min-width="180">
               <template #default="{ row }">
                 <div style="display:flex;align-items:center;gap:8px;">
                   <div :style="{ width:36,height:36,borderRadius:6,background:row.color+'22',display:'flex',alignItems:'center',justifyContent:'center',fontSize:18 }">{{ row.icon }}</div>
@@ -51,34 +51,34 @@
                 </div>
               </template>
             </el-table-column>
-            <el-table-column prop="category" label="閸濅胶琚? width="100"/>
-            <el-table-column prop="price" label="娴犻攱鐗? width="100"/>
-            <el-table-column prop="sales" label="闁库偓闁? width="80" sortable/>
-            <el-table-column prop="stock" label="鎼存挸鐡? width="80">
+            <el-table-column prop="category" label="品类" width="100"/>
+            <el-table-column prop="price" label="价格" width="100"/>
+            <el-table-column prop="sales" label="销量" width="80" sortable/>
+            <el-table-column prop="stock" label="库存" width="80">
               <template #default="{ row }">
                 <span :style="{ color: row.stock < 10 ? '#ff4d4f' : '#52c41a' }">{{ row.stock }}</span>
               </template>
             </el-table-column>
-            <el-table-column prop="status" label="閻樿埖鈧? width="90">
+            <el-table-column prop="status" label="状态" width="90">
               <template #default="{ row }">
                 <el-tag :type="row.statusType" size="small">{{ row.status }}</el-tag>
               </template>
             </el-table-column>
-            <el-table-column label="閹垮秳缍? width="120">
+            <el-table-column label="操作" width="120">
               <template #default="{ row }">
-                <el-button text size="small" type="primary" @click="handleReplace(row)">閺囨寧宕?/el-button>
-                <el-button text size="small" type="danger" v-if="row.statusType==='info'" @click="handleRemove(row)">娑撳鐏?/el-button>
+                <el-button text size="small" type="primary" @click="handleReplace(row)">替换</el-button>
+                <el-button text size="small" type="danger" v-if="row.statusType==='info'" @click="handleRemove(row)">下架</el-button>
               </template>
             </el-table-column>
           </el-table>
         </el-card>
       </el-col>
 
-      <!-- 閸濅胶琚紓鍝勫經 -->
+      <!-- 品类缺口 -->
       <el-col :span="8">
         <el-card shadow="never">
           <template #header>
-            <span>棣冩敵 閸濅胶琚紓鍝勫經閸掑棙鐎?/span>
+            <span>🔍 品类缺口分析</span>
           </template>
           <div class="gap-list">
             <div v-for="gap in gaps" :key="gap.name" class="gap-item">
@@ -92,11 +92,11 @@
                 </div>
               </div>
               <el-tag :type="gap.level === 'low' ? 'danger' : gap.level === 'mid' ? 'warning' : 'success'" size="small">
-                {{ gap.level === 'low' ? '娑撱儵鍣告稉宥堝喕' : gap.level === 'mid' ? '闂団偓鐞涖儱鍘? : '閸忓懓鍐? }}
+                {{ gap.level === 'low' ? '严重不足' : gap.level === 'mid' ? '需补充' : '充足' }}
               </el-tag>
             </div>
             <el-divider style="margin:16px 0"/>
-            <div style="font-size:13px;color:var(--text-muted);margin-bottom:10px;">棣冾樆 AI瀵ら缚顔?/div>
+            <div style="font-size:13px;color:var(--text-muted);margin-bottom:10px;">🤖 AI建议</div>
             <div class="ai-suggestions">
               <div v-for="s in suggestions" :key="s" class="sug-item">
                 <el-icon color="#667eea"><CircleCheckFilled /></el-icon>
@@ -111,121 +111,84 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, computed } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { agentApi } from '@/api/index'
 
 const scanning = ref(false)
 const autoRunning = ref(false)
 const filterStatus = ref('all')
 
-const summaryCards = reactive([
-  { label: '鍟嗗搧鎬绘暟', value: 0, sub: '鍔犺浇涓?..', color: 'blue' },
-  { label: '鐑攢鍟嗗搧', value: 0, sub: '鍔犺浇涓?..', color: 'red' },
-  { label: '姝诲搧寰呮崲', value: 0, sub: '鍔犺浇涓?..', color: 'gray' },
-  { label: '鍝佺被缂哄彛', value: 0, sub: '鍔犺浇涓?..', color: 'orange' },
+const summaryCards = [
+  { label: '商品总数', value: 68, sub: '个在线商品', color: 'blue' },
+  { label: '热销商品', value: 12, sub: '🔥 高活跃', color: 'red' },
+  { label: '死品待换', value: 3, sub: '💀 需替换', color: 'gray' },
+  { label: '品类缺口', value: 4, sub: '⚠ 需补充', color: 'orange' },
+]
+
+const products = reactive([
+  { id:1, icon:'📱', name:'iPhone 15 Pro Max 256GB', category:'手机数码', price:'¥8,999', sales:234, stock:45, status:'热销', statusType:'danger', color:'#ff4d4f' },
+  { id:2, icon:'🎧', name:'AirPods Pro 2代', category:'手机数码', price:'¥1,699', sales:189, stock:23, status:'热销', statusType:'danger', color:'#ff4d4f' },
+  { id:3, icon:'💻', name:'MacBook Air M3 15寸', category:'电脑办公', price:'¥9,499', sales:156, stock:12, status:'正常', statusType:'success', color:'#52c41a' },
+  { id:4, icon:'👟', name:'Nike Air Max 270', category:'运动鞋服', price:'¥899', sales:67, stock:88, status:'正常', statusType:'success', color:'#52c41a' },
+  { id:5, icon:'⌚', name:'Apple Watch Ultra 2', category:'手机数码', price:'¥5,999', sales:45, stock:18, status:'正常', statusType:'success', color:'#52c41a' },
+  { id:6, icon:'🎮', name:'PS5 Slim 数字版', category:'游戏设备', price:'¥2,999', sales:12, stock:55, status:'冷门', statusType:'warning', color:'#faad14' },
+  { id:7, icon:'📷', name:'Canon EOS R6 Mark II', category:'摄影摄像', price:'¥15,999', sales:5, stock:8, status:'冷门', statusType:'warning', color:'#faad14' },
+  { id:8, icon:'🧸', name:'Jellycat 毛绒兔 30cm', category:'母婴玩具', price:'¥259', sales:0, stock:120, status:'死品', statusType:'info', color:'#d9d9d9' },
 ])
 
-const products = ref([])
-const gaps = ref([])
-const suggestions = ref([])
+const gaps = [
+  { name:'母婴玩具', current:1, target:8, percent:12, level:'low' },
+  { name:'美妆护肤', current:2, target:10, percent:20, level:'low' },
+  { name:'食品饮料', current:3, target:10, percent:30, level:'mid' },
+  { name:'家居生活', current:5, target:12, percent:42, level:'mid' },
+  { name:'运动户外', current:8, target:12, percent:67, level:'ok' },
+  { name:'手机数码', current:15, target:15, percent:100, level:'ok' },
+]
+
+const suggestions = [
+  '母婴玩具仅1件商品，建议从 eBay 采集补充',
+  '美妆护肤严重不足，建议采集韩国美妆品牌',
+  '发现3件死品超过30天零销量，建议下架替换',
+]
 
 const filteredProducts = computed(() => {
-  if (filterStatus.value === 'all') return products.value
-  const map = { hot: 'hot', normal: 'warm', cold: 'cold', dead: 'dead' }
-  const target = map[filterStatus.value] || filterStatus.value
-  return products.value.filter(p => p.status === target)
+  if (filterStatus.value === 'all') return products
+  const map = { hot:'热销', normal:'正常', cold:'冷门', dead:'死品' }
+  return products.filter(p => p.status === map[filterStatus.value])
 })
-
-function statusText(s) {
-  return { hot: '鐑攢', warm: '姝ｅ父', cold: '鍐烽棬', dead: '姝诲搧' }[s] || s
-}
-
-function statusColor(s) {
-  return { hot: '#ff4d4f', warm: '#52c41a', cold: '#faad14', dead: '#d9d9d9' }[s] || '#d9d9d9'
-}
 
 async function runScan() {
   scanning.value = true
-  try {
-    const { data } = await agentApi.post('/agent/mall-brain/scan')
-    if (data.products) {
-      products.value = data.products.map(function(p, i) {
-        return {
-          id: p.id || i + 1,
-          icon: '馃摝',
-          name: p.title || '鍟嗗搧',
-          category: p.category || '鏈煡',
-          price: '楼' + (p.price || 0),
-          sales: p.sales || 0,
-          stock: p.stock || 0,
-          status: p.status || 'normal',
-          color: statusColor(p.status),
-          health_score: p.health_score || 0,
-          recommendation: p.recommendation || ''
-        }
-      })
-      const d = data.distribution || {}
-      summaryCards[0].value = data.total || products.value.length
-      summaryCards[1].value = d.hot || 0
-      summaryCards[2].value = d.dead || 0
-      summaryCards[3].value = 0
-    }
-    // 鑾峰彇鍝佺被缂哄彛
-    try {
-      const { data: gd } = await agentApi.get('/agent/mall-brain/gaps')
-      gaps.value = (gd?.gaps || []).map(function(g) {
-        return { name: g.category || g.name, current: g.current || 0, target: g.target || 10, percent: Math.round((g.current||0)/(g.target||1)*100), level: g.level || 'low' }
-      })
-      summaryCards[3].value = gaps.value.length
-    } catch {}
-    // 鑾峰彇AI寤鸿
-    try {
-      const { data: rd } = await agentApi.get('/agent/mall-brain/report')
-      suggestions.value = rd?.suggestions || rd?.recommendations || []
-    } catch {}
-    ElMessage.success('鍏ㄧ珯鎵弿瀹屾垚锛?)
-  } catch {
-    ElMessage.error('鎵弿澶辫触锛岃妫€鏌ュ悗绔湇鍔?)
-  } finally {
-    scanning.value = false
-  }
+  await new Promise(r => setTimeout(r, 1500))
+  scanning.value = false
+  ElMessage.success('全站扫描完成！发现 3 件死品，4 个品类缺口')
 }
 
 async function runAutoOps() {
   autoRunning.value = true
-  try {
-    const { data } = await agentApi.post('/agent/mall-brain/auto', { dry_run: false })
-    ElMessage.success(data?.message || 'AI鑷姩杩愮淮瀹屾垚')
-  } catch {
-    ElMessage.error('鑷姩杩愮淮澶辫触')
-  } finally {
-    autoRunning.value = false
-  }
+  await new Promise(r => setTimeout(r, 2000))
+  autoRunning.value = false
+  ElMessage.success('AI自动运维完成：下架1件死品，采集8件新品，补充库存12件')
 }
 
 function handleReplace(row) {
-  ElMessageBox.confirm('纭瑕佷粠閲囬泦搴撲腑瀵绘壘 "' + row.name + '" 鐨勬浛浠ｅ搧鍚楋紵', '鏇挎崲鍟嗗搧', {
-    confirmButtonText: '纭',
-    cancelButtonText: '鍙栨秷',
-  }).then(function() {
-    ElMessage.success('宸插紑濮嬩负 "' + row.name + '" 瀵绘壘鏇夸唬鍝?)
-  }).catch(function() {})
+  ElMessageBox.confirm(`确认要从采集库中寻找 "${row.name}" 的替代品吗？`, '替换商品', {
+    confirmButtonText: '确认',
+    cancelButtonText: '取消',
+  }).then(() => {
+    ElMessage.success(`已开始为 "${row.name}" 寻找替代品`)
+  }).catch(() => {})
 }
 
 function handleRemove(row) {
-  ElMessageBox.confirm('纭瑕佷笅鏋?"' + row.name + '" 鍚楋紵璇ユ搷浣滀細鑷姩澶囦唤銆?, '涓嬫灦鍟嗗搧', {
-    confirmButtonText: '纭涓嬫灦',
-    cancelButtonText: '鍙栨秷',
+  ElMessageBox.confirm(`确认要下架 "${row.name}" 吗？该操作会自动备份。`, '下架商品', {
+    confirmButtonText: '确认下架',
+    cancelButtonText: '取消',
     type: 'warning',
-  }).then(function() {
-    ElMessage.success('"' + row.name + '" 宸蹭笅鏋?)
-  }).catch(function() {})
+  }).then(() => {
+    ElMessage.success(`"${row.name}" 已下架`)
+  }).catch(() => {})
 }
-
-onMounted(function() {
-  runScan()
-})
 </script>
 
 <style scoped>

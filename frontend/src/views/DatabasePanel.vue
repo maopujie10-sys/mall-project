@@ -1,6 +1,6 @@
 <template>
   <div class="page-container db-panel">
-    <div class="page-header"><h2>鏁版嵁搴撻潰鏉?/h2><p>MySQL 路 PostgreSQL 路 Redis 路 MongoDB 缁熶竴绠＄悊</p></div>
+    <div class="page-header"><h2>数据库面板</h2><p>MySQL · PostgreSQL · Redis · MongoDB 统一管理</p></div>
 
     <el-row :gutter="16" style="margin-bottom:20px">
       <el-col :span="6" v-for="db in databases" :key="db.id">
@@ -9,7 +9,7 @@
           <h3>{{ db.name }}</h3>
           <el-tag :type="db.type==='MySQL'?'':db.type==='PostgreSQL'?'success':'warning'" size="small">{{ db.type }}</el-tag>
           <p>{{ db.host }}:{{ db.port }}</p>
-          <div class="db-meta"><span :class="{online:db.online}">鈼?{{ db.online?'鍦ㄧ嚎':'绂荤嚎' }}</span><span>{{ db.tables }}琛?/span></div>
+          <div class="db-meta"><span :class="{online:db.online}">● {{ db.online?'在线':'离线' }}</span><span>{{ db.tables }}表</span></div>
         </el-card>
       </el-col>
     </el-row>
@@ -17,14 +17,14 @@
     <div v-if="activeDb" class="db-workspace">
       <div class="workspace-header">
         <span>{{ activeDbName }}</span>
-        <el-button type="primary" size="small" @click="showSqlEditor=!showSqlEditor">SQL鏌ヨ</el-button>
-        <el-button size="small" @click="refreshTables">鍒锋柊</el-button>
+        <el-button type="primary" size="small" @click="showSqlEditor=!showSqlEditor">SQL查询</el-button>
+        <el-button size="small" @click="refreshTables">刷新</el-button>
       </div>
 
       <el-row :gutter="12">
         <el-col :span="6">
           <el-card shadow="never">
-            <template #header><span>鏁版嵁琛?/span></template>
+            <template #header><span>数据表</span></template>
             <el-menu :default-active="activeTable" @select="selectTable">
               <el-menu-item v-for="t in tables" :key="t" :index="t">{{ t }}</el-menu-item>
             </el-menu>
@@ -32,19 +32,19 @@
         </el-col>
         <el-col :span="18">
           <el-card shadow="never" v-if="activeTable">
-            <template #header><span>{{ activeTable }} 鈥?{{ tableRowCount }} 琛?/span></template>
+            <template #header><span>{{ activeTable }} — {{ tableRowCount }} 行</span></template>
             <el-table :data="tableData" stripe max-height="calc(100vh - 420px)" border size="small">
               <el-table-column v-for="col in tableColumns" :key="col" :prop="col" :label="col" min-width="130" show-overflow-tooltip />
             </el-table>
           </el-card>
-          <el-empty v-else description="閫夋嫨宸︿晶鏁版嵁琛ㄦ煡鐪? />
+          <el-empty v-else description="选择左侧数据表查看" />
         </el-col>
       </el-row>
     </div>
 
-    <el-dialog v-model="showSqlEditor" title="SQL 鏌ヨ" width="700px">
+    <el-dialog v-model="showSqlEditor" title="SQL 查询" width="700px">
       <el-input v-model="sqlQuery" type="textarea" :rows="6" placeholder="SELECT * FROM ..." />
-      <el-button type="primary" @click="runSql" :loading="sqlRunning" style="margin-top:12px">鎵ц</el-button>
+      <el-button type="primary" @click="runSql" :loading="sqlRunning" style="margin-top:12px">执行</el-button>
       <el-table :data="sqlResult" stripe border size="small" style="margin-top:16px" max-height="300" v-if="sqlResult.length">
         <el-table-column v-for="col in sqlColumns" :key="col" :prop="col" :label="col" min-width="120" show-overflow-tooltip />
       </el-table>
@@ -59,14 +59,14 @@ import { ElMessage } from 'element-plus'
 import { agentApi } from '@/api/index'
 
 const tables = ref([])
-const dbStatus = ref({ connected: false, size: '鏈煡', tables: 0 })
+const dbStatus = ref({ connected: false, size: '未知', tables: 0 })
 const loading = ref(false)
 
 async function fetchDBStatus() {
   loading.value = true
   try {
     const { data: s } = await agentApi.get('/db/status')
-    dbStatus.value = { connected: s.connected || false, size: s.size || '鏈煡', tables: s.table_count || 0 }
+    dbStatus.value = { connected: s.connected || false, size: s.size || '未知', tables: s.table_count || 0 }
     const { data: t } = await agentApi.get('/db/tables')
     tables.value = (t.tables || []).map(function(name) { return { name: name, rows: '?' } })
   } catch {

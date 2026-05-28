@@ -1,34 +1,34 @@
-<template>
+﻿<template>
   <div class="site-check">
-    <h2>缂冩垹鐝拋鍧楁６濡偓濞?/h2>
+    <h2>网站访问检测</h2>
     <el-row :gutter="16">
       <el-col :span="12">
         <el-card shadow="never">
-          <template #header>濡偓閺屻儳缍夌粩娆忓讲鐠佸潡妫堕幀?/template>
-          <el-input v-model="checkUrl" placeholder="鏉堟挸鍙哢RL閹存牕鐓欓崥宥忕礉婵?https://example.com" clearable />
-          <el-button type="primary" @click="doCheck" :loading="checkLoading" style="margin-top:8px">濡偓濞?/el-button>
-          <el-result v-if="checkResult" :status="checkResult.accessible ? 'success' : 'error'" :title="checkResult.accessible ? '閸欘垵顔栭梻? : '閺冪姵纭剁拋鍧楁６'">
+          <template #header>检查网站可访问性</template>
+          <el-input v-model="checkUrl" placeholder="输入URL或域名，如 https://example.com" clearable />
+          <el-button type="primary" @click="doCheck" :loading="checkLoading" style="margin-top:8px">检测</el-button>
+          <el-result v-if="checkResult" :status="checkResult.accessible ? 'success' : 'error'" :title="checkResult.accessible ? '可访问' : '无法访问'">
             <template #extra>
-              <p>閻樿埖鈧胶鐖? {{ checkResult.status_code }}</p>
-              <p>瀵ゆ儼绻? {{ checkResult.latency_ms }}ms</p>
-              <p v-if="checkResult.error">闁挎瑨顕? {{ checkResult.error }}</p>
+              <p>状态码: {{ checkResult.status_code }}</p>
+              <p>延迟: {{ checkResult.latency_ms }}ms</p>
+              <p v-if="checkResult.error">错误: {{ checkResult.error }}</p>
             </template>
           </el-result>
         </el-card>
       </el-col>
       <el-col :span="12">
         <el-card shadow="never">
-          <template #header>DNS 閺屻儴顕?/template>
-          <el-input v-model="dnsDomain" placeholder="鏉堟挸鍙嗛崺鐔锋倳" clearable />
-          <el-button type="primary" @click="doDns" :loading="dnsLoading" style="margin-top:8px">閺屻儴顕?/el-button>
+          <template #header>DNS 查询</template>
+          <el-input v-model="dnsDomain" placeholder="输入域名" clearable />
+          <el-button type="primary" @click="doDns" :loading="dnsLoading" style="margin-top:8px">查询</el-button>
           <pre v-if="dnsResult" class="result-box">{{ dnsResult.records }}</pre>
         </el-card>
       </el-col>
     </el-row>
     <el-card shadow="never" style="margin-top:16px">
-      <template #header>SSL 鐠囦椒鍔熷Λ鈧ù?/template>
-      <el-input v-model="sslDomain" placeholder="鏉堟挸鍙嗛崺鐔锋倳" clearable style="max-width:400px" />
-      <el-button type="primary" @click="doSsl" :loading="sslLoading" style="margin-left:8px">濡偓濞?/el-button>
+      <template #header>SSL 证书检测</template>
+      <el-input v-model="sslDomain" placeholder="输入域名" clearable style="max-width:400px" />
+      <el-button type="primary" @click="doSsl" :loading="sslLoading" style="margin-left:8px">检测</el-button>
       <el-descriptions v-if="sslResult && sslResult.cert_info" :column="1" border style="margin-top:12px">
         <el-descriptions-item v-for="(v, k) in sslResult.cert_info" :key="k" :label="k">{{ v }}</el-descriptions-item>
       </el-descriptions>
@@ -38,34 +38,38 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref } from 'vue'
+import { checkSite, checkDns, checkSsl } from '@/api/site'
 import { ElMessage } from 'element-plus'
-import { agentApi } from '@/api/index'
 
-const url = ref('')
-const results = ref([])
-const checking = ref(false)
+const checkUrl = ref('')
+const checkResult = ref(null)
+const checkLoading = ref(false)
+const dnsDomain = ref('')
+const dnsResult = ref(null)
+const dnsLoading = ref(false)
+const sslDomain = ref('')
+const sslResult = ref(null)
+const sslLoading = ref(false)
 
-async function checkSite() {
-  if (!url.value) { ElMessage.warning('璇疯緭鍏ョ綉鍧€'); return }
-  checking.value = true
-  try {
-    const { data } = await agentApi.post('/site/check', { url: url.value })
-    results.value.unshift({ url: url.value, status: data.status_code, accessible: data.accessible, latency: data.latency_ms + 'ms', time: new Date().toTimeString().slice(0,5) })
-    ElMessage.success(data.accessible ? '缃戠珯鍙闂? : '缃戠珯寮傚父')
-  } catch {
-    ElMessage.error('妫€娴嬪け璐?)
-  } finally { checking.value = false }
+async function doCheck() {
+  if (!checkUrl.value) return
+  checkLoading.value = true
+  try { checkResult.value = await checkSite(checkUrl.value) } catch { ElMessage.error('检测失败') }
+  checkLoading.value = false
 }
-
-async function checkSSL(domain) {
-  try {
-    const { data } = await agentApi.post('/site/ssl', { domain: domain || url.value })
-    ElMessage.success('SSL妫€娴嬪畬鎴?)
-  } catch { ElMessage.error('SSL妫€娴嬪け璐?) }
+async function doDns() {
+  if (!dnsDomain.value) return
+  dnsLoading.value = true
+  try { dnsResult.value = await checkDns(dnsDomain.value) } catch { ElMessage.error('查询失败') }
+  dnsLoading.value = false
 }
-
-onMounted(function() {})
+async function doSsl() {
+  if (!sslDomain.value) return
+  sslLoading.value = true
+  try { sslResult.value = await checkSsl(sslDomain.value) } catch { ElMessage.error('检测失败') }
+  sslLoading.value = false
+}
 </script>
 
 <style scoped>

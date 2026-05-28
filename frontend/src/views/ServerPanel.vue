@@ -1,67 +1,67 @@
 <template>
   <div class="page-container">
     <div class="page-header">
-      <h2>閺堝秴濮熼崳銊ф磧閹貉囨桨閺?/h2>
-      <p>缁崵绮虹挧鍕爱 璺?鏉╂稓鈻肩粻锛勬倞 璺?缁旑垰褰涢惄鎴濇儔</p>
+      <h2>服务器监控面板</h2>
+      <p>系统资源 · 进程管理 · 端口监听</p>
     </div>
 
     <el-alert v-if="error" :title="error" type="error" show-icon closable @close="error=null" style="margin-bottom:16px" />
 
-    <!-- 閹稿洦鐖ｉ崡锛勫 -->
+    <!-- 指标卡片 -->
     <el-row :gutter="16" style="margin-bottom: 20px;">
       <el-col :span="6">
         <div class="metric-card">
-          <div class="metric-label">CPU 娴ｈ法鏁ら悳?/div>
+          <div class="metric-label">CPU 使用率</div>
           <div class="metric-value">{{ systemMetrics.cpu }}%</div>
           <el-progress :percentage="systemMetrics.cpu" :color="cpuColor" :show-text="false" style="margin-top: 12px;" />
-          <div class="metric-sub">4 閺嶇绺?璺?{{ systemMetrics.cpuCores }} 缁捐法鈻?/div>
+          <div class="metric-sub">4 核心 · {{ systemMetrics.cpuCores }} 线程</div>
         </div>
       </el-col>
       <el-col :span="6">
         <div class="metric-card">
-          <div class="metric-label">閸愬懎鐡ㄦ担璺ㄦ暏</div>
+          <div class="metric-label">内存使用</div>
           <div class="metric-value">{{ systemMetrics.memory }}%</div>
           <el-progress :percentage="systemMetrics.memory" :color="memColor" :show-text="false" style="margin-top: 12px;" />
-          <div class="metric-sub">瀹歌尙鏁?{{ systemMetrics.memUsed }} / 閹槒顓?{{ systemMetrics.memTotal }}</div>
+          <div class="metric-sub">已用 {{ systemMetrics.memUsed }} / 总计 {{ systemMetrics.memTotal }}</div>
         </div>
       </el-col>
       <el-col :span="6">
         <div class="metric-card">
-          <div class="metric-label">绾句胶娲忔担璺ㄦ暏</div>
+          <div class="metric-label">磁盘使用</div>
           <div class="metric-value">{{ systemMetrics.disk }}%</div>
           <el-progress :percentage="systemMetrics.disk" :color="diskColor" :show-text="false" style="margin-top: 12px;" />
-          <div class="metric-sub">瀹歌尙鏁?{{ systemMetrics.diskUsed }} / 閹槒顓?{{ systemMetrics.diskTotal }}</div>
+          <div class="metric-sub">已用 {{ systemMetrics.diskUsed }} / 总计 {{ systemMetrics.diskTotal }}</div>
         </div>
       </el-col>
       <el-col :span="6">
         <div class="metric-card">
-          <div class="metric-label">缁崵绮虹拹鐔绘祰</div>
+          <div class="metric-label">系统负载</div>
           <div class="metric-value">{{ systemMetrics.loadAvg }}</div>
           <div class="metric-sub">1min / 5min / 15min</div>
           <div style="margin-top: 8px; display: flex; gap: 8px;">
-            <span class="status-dot online"><span class="dot"></span>鏉╂劘顢戝锝呯埗</span>
+            <span class="status-dot online"><span class="dot"></span>运行正常</span>
           </div>
         </div>
       </el-col>
     </el-row>
 
-    <!-- 鏉╂稓鈻奸崚妤勩€?+ 缁旑垰褰涢惄鎴濇儔 -->
+    <!-- 进程列表 + 端口监听 -->
     <el-row :gutter="16">
       <el-col :span="14">
         <el-card shadow="never">
           <template #header>
             <div style="display: flex; justify-content: space-between; align-items: center;">
-              <span style="font-weight: 600;">鏉╂稓鈻奸崚妤勩€?/span>
+              <span style="font-weight: 600;">进程列表</span>
               <el-button text type="primary" size="small" @click="refreshAll" :loading="loading">
-                <el-icon><Refresh /></el-icon> 閸掗攱鏌?
+                <el-icon><Refresh /></el-icon> 刷新
               </el-button>
             </div>
           </template>
           <el-table :data="processes" style="width: 100%;" size="small" stripe>
             <template #empty>
-              <el-empty description="閺嗗倹妫ゆ潻娑氣柤閺佺増宓? :image-size="60" />
+              <el-empty description="暂无进程数据" :image-size="60" />
             </template>
-            <el-table-column prop="name" label="鏉╂稓鈻奸崥宥囆? min-width="140">
+            <el-table-column prop="name" label="进程名称" min-width="140">
               <template #default="{ row }">
                 <span style="display: flex; align-items: center; gap: 6px;">
                   <span class="status-dot" :class="row.status === 'running' ? 'online' : 'offline'">
@@ -79,18 +79,18 @@
                 </span>
               </template>
             </el-table-column>
-            <el-table-column prop="mem" label="閸愬懎鐡?%" width="90">
+            <el-table-column prop="mem" label="内存 %" width="90">
               <template #default="{ row }">
                 <span :style="{ color: row.mem > 70 ? 'var(--color-danger)' : row.mem > 40 ? 'var(--color-warning)' : 'var(--text-primary)' }">
                   {{ row.mem }}%
                 </span>
               </template>
             </el-table-column>
-            <el-table-column prop="uptime" label="鏉╂劘顢戦弮鍫曟？" width="120" />
-            <el-table-column prop="status" label="閻樿埖鈧? width="80">
+            <el-table-column prop="uptime" label="运行时间" width="120" />
+            <el-table-column prop="status" label="状态" width="80">
               <template #default="{ row }">
                 <el-tag :type="row.status === 'running' ? 'success' : 'danger'" size="small" effect="light">
-                  {{ row.status === 'running' ? '鏉╂劘顢戞稉? : '瀹告彃浠犲? }}
+                  {{ row.status === 'running' ? '运行中' : '已停止' }}
                 </el-tag>
               </template>
             </el-table-column>
@@ -100,10 +100,10 @@
       <el-col :span="10">
         <el-card shadow="never">
           <template #header>
-            <span style="font-weight: 600;">缁旑垰褰涢惄鎴濇儔</span>
+            <span style="font-weight: 600;">端口监听</span>
           </template>
           <div class="port-list">
-            <el-empty v-if="ports.length===0" description="閺嗗倹妫ょ粩顖氬經閺佺増宓? :image-size="60" style="padding:20px 0;" />
+            <el-empty v-if="ports.length===0" description="暂无端口数据" :image-size="60" style="padding:20px 0;" />
             <template v-else>
             <div v-for="port in ports" :key="port.port" class="port-item">
               <div class="port-info">
@@ -112,11 +112,11 @@
                 </span>
                 <div>
                   <div class="port-name">{{ port.service }}</div>
-                  <div class="port-detail">{{ port.port }} 璺?{{ port.protocol }}</div>
+                  <div class="port-detail">{{ port.port }} · {{ port.protocol }}</div>
                 </div>
               </div>
               <el-tag size="small" :type="port.listening ? 'success' : 'danger'" effect="light">
-                {{ port.listening ? '閻╂垵鎯夋稉? : '閺堫亞娲冮崥? }}
+                {{ port.listening ? '监听中' : '未监听' }}
               </el-tag>
             </div>
             </template>
@@ -141,7 +141,7 @@ let pollTimer = null
 const refreshAll = async () => {
   await serverStore.fetchAll()
   if (!error.value) {
-    ElMessage.success('閺佺増宓佸鎻掑煕閺?)
+    ElMessage.success('数据已刷新')
   }
 }
 

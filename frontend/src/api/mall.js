@@ -1,3 +1,4 @@
+import axios from "axios"
 import { agentApi } from './index'
 
 // ===== 统计面板 =====
@@ -216,3 +217,34 @@ export function getCustomerMessages() { return agentApi.get('/agent/customer/mes
 export function replyCustomerMessage(data) { return agentApi.post('/agent/customer/reply', data) }
 export function getCustomerStats() { return agentApi.get('/agent/customer/stats') }
 export function getCustomerReport() { return agentApi.get('/agent/customer/report') }
+
+const merchant = axios.create({ baseURL: '/merchant', timeout: 15000, headers: { 'Content-Type': 'application/json' } });
+merchant.interceptors.response.use((r)=>{const d=r.data;if(d&&typeof d==='object'&&'code' in d)return d.data!==undefined?d.data:d;return d;},e=>Promise.reject(e));
+
+
+
+// ===== 补充API函数 =====
+export function getDashboard() { return agentApi.get('/tools/mall/stats') }
+
+export function getDashboardHead(params) { return merchant.post('/dashboard/head', params || {}) }
+
+export function getDashboardLine(params) { return merchant.post('/dashboard/line', params || {}) }
+
+export function getDashboardGoods(params) { return merchant.post('/dashboard/goods', params || {}) }
+
+export function getAttrCategoryList(params) { return agentApi.get('/tools/mall/attr-categories', { params }) }
+
+export function saveAttrCategory(data) { return agentApi.post('/tools/mall/attr-category', data) }
+
+export function updateAttrCategory(uuid, data) { return agentApi.put(`/tools/mall/attr-category/${uuid}`, data) }
+
+export function deleteAttrCategory(uuid) { return agentApi.delete(`/tools/mall/attr-category/${uuid}`) }
+
+export function getAttrList(params) { return agentApi.get('/tools/mall/attrs', { params }) }
+
+export function saveAttr(data) { return agentApi.post('/tools/mall/attr', data) }
+
+export function updateAttr(uuid, data) { return agentApi.put(`/tools/mall/attr/${uuid}`, data) }
+
+export function deleteAttr(uuid) { return agentApi.delete(`/tools/mall/attr/${uuid}`) }
+

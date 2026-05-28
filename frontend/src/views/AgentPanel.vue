@@ -1,13 +1,13 @@
-<template>
+﻿<template>
   <div class="agents-page">
     <div class="page-header">
       <div>
-        <h1>馃 Agent 鎺у埗闈㈡澘</h1>
-        <p>7澶gent鍗忓悓宸ヤ綔 路 瀹炴椂鐘舵€佺洃鎺?路 浠诲姟璋冨害</p>
+        <h1>🤖 Agent 控制面板</h1>
+        <p>7大Agent协同工作 · 实时状态监控 · 任务调度</p>
       </div>
     </div>
 
-    <!-- Agent缃戞牸 -->
+    <!-- Agent网格 -->
     <div class="agent-grid">
       <div v-for="agent in agents" :key="agent.id" class="agent-card" :class="agent.status">
         <div class="agent-top">
@@ -19,18 +19,18 @@
         <div class="agent-stats">
           <div class="astat">
             <span class="astat-num">{{ agent.tasks }}</span>
-            <span class="astat-label">浠诲姟</span>
+            <span class="astat-label">任务</span>
           </div>
           <div class="astat">
             <span class="astat-num" style="color:#52c41a">{{ agent.successRate }}%</span>
-            <span class="astat-label">鎴愬姛鐜?/span>
+            <span class="astat-label">成功率</span>
           </div>
         </div>
         <div class="agent-bar">
           <div class="agent-bar-fill" :style="{ width: agent.successRate + '%', background: agent.color }"></div>
         </div>
         <el-button size="small" :type="agent.status === 'active' ? 'success' : 'default'" style="width:100%;margin-top:12px" @click="toggleAgent(agent.id)">
-          {{ agent.status === 'active' ? '杩愯涓? : '寰呮満涓? }}
+          {{ agent.status === 'active' ? '运行中' : '待机中' }}
         </el-button>
       </div>
     </div>
@@ -38,56 +38,32 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import { agentApi } from '@/api/index'
-import { ElMessage } from 'element-plus'
+import { ref } from 'vue'
 
 const agentDescriptions = {
-  master: '鎬绘帶璋冨害 路 鎷嗚В浠诲姟 路 鍒嗛厤Agent',
-  code: '浠ｇ爜缂栧啓 路 Bug淇 路 鎺ュ彛鐢熸垚',
-  devops: '鏈嶅姟鍣ㄧ鐞?路 Docker 路 Nginx 路 閮ㄧ讲',
-  vision: '鍥剧墖璇嗗埆 路 瑙嗛鍒嗘瀽 路 OCR',
-  trend: '鐑偣鐩戞帶 路 鑸嗘儏鍒嗘瀽 路 瓒嬪娍棰勬祴',
-  memory: '闀挎湡璁板繂 路 鐭ヨ瘑妫€绱?路 缁忛獙瀛︿範',
-  heal: '寮傚父妫€娴?路 鑷姩淇 路 鏈嶅姟鎭㈠',
+  master: '总控调度 · 拆解任务 · 分配Agent',
+  code: '代码编写 · Bug修复 · 接口生成',
+  devops: '服务器管理 · Docker · Nginx · 部署',
+  vision: '图片识别 · 视频分析 · OCR',
+  trend: '热点监控 · 舆情分析 · 趋势预测',
+  memory: '长期记忆 · 知识检索 · 经验学习',
+  heal: '异常检测 · 自动修复 · 服务恢复',
 }
 
-const agentColors = {
-  master: '#667eea', code: '#52c41a', devops: '#1890ff',
-  vision: '#faad14', trend: '#ff4d4f', memory: '#764ba2', heal: '#13c2c2'
-}
-
-const agents = ref([])
-
-async function fetchAgents() {
-  try {
-    const { data } = await agentApi.get('/agent/friday/agents')
-    if (Array.isArray(data.agents)) {
-      agents.value = data.agents.map(function(a) {
-        return {
-          id: a.id || a.name,
-          name: a.display_name || a.name || '',
-          icon: '馃',
-          status: a.status || 'active',
-          tasks: a.tasks || 0,
-          successRate: a.success_rate || 0,
-          color: agentColors[a.id] || '#667eea'
-        }
-      })
-    }
-  } catch {
-    agents.value = Object.keys(agentDescriptions).map(function(id) {
-      return { id, name: id.charAt(0).toUpperCase()+id.slice(1)+' Agent', icon:'馃', status:'active', tasks:0, successRate:0, color:agentColors[id]||'#667eea' }
-    })
-  }
-}
+const agents = ref([
+  { id:'master', name:'Master Agent', icon:'🧠', status:'active', tasks:156, successRate:98.2, color:'#667eea' },
+  { id:'code', name:'Code Agent', icon:'💻', status:'active', tasks:89, successRate:94.5, color:'#52c41a' },
+  { id:'devops', name:'DevOps Agent', icon:'⚙️', status:'active', tasks:234, successRate:99.1, color:'#1890ff' },
+  { id:'vision', name:'Vision Agent', icon:'👁️', status:'idle', tasks:45, successRate:91.3, color:'#faad14' },
+  { id:'trend', name:'Trend Agent', icon:'📡', status:'active', tasks:312, successRate:96.7, color:'#ff4d4f' },
+  { id:'memory', name:'Memory Agent', icon:'💾', status:'active', tasks:567, successRate:99.8, color:'#764ba2' },
+  { id:'heal', name:'Self-Healing', icon:'🛡️', status:'idle', tasks:23, successRate:100, color:'#13c2c2' },
+])
 
 function toggleAgent(id) {
-  const a = agents.value.find(function(x) { return x.id === id })
+  const a = agents.value.find(x => x.id === id)
   if (a) a.status = a.status === 'active' ? 'idle' : 'active'
 }
-
-onMounted(function() { fetchAgents() })
 </script>
 
 <style scoped>

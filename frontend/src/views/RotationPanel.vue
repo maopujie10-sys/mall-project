@@ -1,112 +1,57 @@
-锘?template>
+<template>
   <div class="page-container">
     <div class="page-header">
-      <h2>鏉烆喖鈧偐顓搁悶鍡涙桨閺?/h2>
-      <p>閸╃喎鎮曢悩鑸碘偓浣烘磧閹?璺?鐠愮喕娴囬崸鍥€€ 璺?閼奉亜濮╅崚鍥ㄥ床</p>
+      <h2>轮值管理面板</h2>
+      <p>域名状态监控 · 负载均衡 · 自动切换</p>
     </div>
 
     <el-alert v-if="error" :title="error" type="error" show-icon closable @close="error=null" style="margin-bottom:16px" />
 
-    <!-- 缂佺喕顓稿鍌濐潔 -->
+    <!-- 统计概览 -->
     <el-row :gutter="16" style="margin-bottom: 20px;">
       <el-col :span="6">
         <div class="metric-card">
-          <div class="metric-label">濞叉槒绌崺鐔锋倳</div>
+          <div class="metric-label">活跃域名</div>
           <div class="metric-value" style="color: var(--color-success);">{{ activeCount }}</div>
-          <div class="metric-sub">閸?{{ domains.length }} 娑擃亜鐓欓崥?/div>
+          <div class="metric-sub">共 {{ domains.length }} 个域名</div>
         </div>
       </el-col>
       <el-col :span="6">
         <div class="metric-card">
-          <div class="metric-label">楠炲啿娼庨崫宥呯安閺冨爼妫?/div>
+          <div class="metric-label">平均响应时间</div>
           <div class="metric-value">{{ avgLatency }}ms</div>
-          <div class="metric-sub">鏉?5 閸掑棝鎸?/div>
+          <div class="metric-sub">近 5 分钟</div>
         </div>
       </el-col>
       <el-col :span="6">
         <div class="metric-card">
-          <div class="metric-label">SSL 閸楀啿鐨㈤崚鐗堟埂</div>
+          <div class="metric-label">SSL 即将到期</div>
           <div class="metric-value" style="color: var(--color-warning);">{{ sslExpiring }}</div>
-          <div class="metric-sub">30 婢垛晛鍞撮崚鐗堟埂</div>
+          <div class="metric-sub">30 天内到期</div>
         </div>
       </el-col>
       <el-col :span="6">
         <div class="metric-card">
-          <div class="metric-label">娴犲﹥妫╅崚鍥ㄥ床濞嗏剝鏆?/div>
+          <div class="metric-label">今日切换次数</div>
           <div class="metric-value">2</div>
-          <div class="metric-sub">閼奉亜濮╅弫鍛存閸掑洦宕?/div>
+          <div class="metric-sub">自动故障切换</div>
         </div>
       </el-col>
     </el-row>
 
-    <!-- 閸╃喎鎮曢崚妤勩€?-->
+    <!-- 域名列表 -->
     <el-card shadow="never">
       <template #header>
         <div style="display: flex; justify-content: space-between; align-items: center;">
-          <span style="font-weight: 600;">閸╃喎鎮曢悩鑸碘偓?/span>
+          <span style="font-weight: 600;">域名状态</span>
           <el-button text type="primary" size="small" @click="refreshDomains" :loading="loading">
-            <el-icon><Refresh /></el-icon> 閸掗攱鏌?
+            <el-icon><Refresh /></el-icon> 刷新
           </el-button>
         </div>
-      
-    <!-- 涓ょ骇杞€奸厤缃?-->
-    <el-card shadow="never" style="margin-top:20px">
-      <template #header>
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <span style="font-weight:600">馃攢 涓ょ骇杞€奸厤缃?(1涓?+ 8杞€肩粍)</span>
-          <el-button text size="small" type="primary" @click="loadTwoLevel" :loading="tlLoading">鍒锋柊</el-button>
-        </div>
       </template>
-
-      <!-- 涓诲煙鍚?-->
-      <div style="margin-bottom:20px">
-        <div style="font-size:13px;font-weight:600;color:var(--text-primary);margin-bottom:10px">
-          猸?涓诲煙鍚?<el-tag type="success" size="small">{{ tlConfig.primary?.main || '-' }}</el-tag>
-        </div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <el-tag v-for="c in tlConfig.primary?.children||[]" :key="c.host" closable size="small"
-            @close="removeChild('primary', c.host)">{{ c.host }} (鏉冮噸:{{ c.weight }})</el-tag>
-          <el-button size="small" text type="primary" @click="showAddChild('primary')">+ 瀛愬煙鍚?/el-button>
-        </div>
-      </div>
-
-      <!-- 杞€肩粍 -->
-      <el-divider />
-      <div v-for="r in tlConfig.rotation||[]" :key="r.id" style="margin-bottom:16px;padding:12px;border-radius:8px;background:var(--bg-page)">
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
-          <el-switch v-model="r.enabled" size="small" @change="toggleGroup(r)" />
-          <span style="font-size:13px;font-weight:500">{{ r.main }}</span>
-          <el-tag size="small" :type="r.enabled?'success':'info'">{{ r.enabled ? '鍚敤' : '鍋滅敤' }}</el-tag>
-          <span style="font-size:11px;color:var(--text-muted)">鏉冮噸:</span>
-          <el-input-number v-model="r.weight" :min="1" :max="10" size="small" style="width:70px" @change="updateWeight(r)" />
-        </div>
-        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-left:44px">
-          <el-tag v-for="c in r.children||[]" :key="c.host" closable size="small" type="warning"
-            @close="removeChild(r.id, c.host)">{{ c.host }}</el-tag>
-          <el-button size="small" text type="primary" @click="showAddChild(r.id)">+ 瀛愬煙鍚?/el-button>
-        </div>
-      </div>
-    </el-card>
-
-    <!-- 娣诲姞瀛愬煙鍚嶅璇濇 -->
-    <el-dialog v-model="addChildVisible" title="娣诲姞瀛愬煙鍚? width="360px">
-      <el-form :model="newChild">
-        <el-form-item label="瀛愬煙鍚?>
-          <el-input v-model="newChild.host" placeholder="shop.example.com" />
-        </el-form-item>
-        <el-form-item label="鏉冮噸">
-          <el-input-number v-model="newChild.weight" :min="1" :max="5" />
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <el-button @click="addChildVisible=false">鍙栨秷</el-button>
-        <el-button type="primary" @click="addChild">纭畾</el-button>
-      </template>
-    </el-dialog>
-</template>
-      <el-empty v-if="domains.length===0 && !loading" description="閺嗗倹妫ら崺鐔锋倳閺佺増宓? :image-size="80" style="padding:40px 0;" />
+      <el-empty v-if="domains.length===0 && !loading" description="暂无域名数据" :image-size="80" style="padding:40px 0;" />
       <el-table v-else :data="domains" style="width: 100%;" size="small" stripe>
-        <el-table-column prop="domain" label="閸╃喎鎮? min-width="200">
+        <el-table-column prop="domain" label="域名" min-width="200">
           <template #default="{ row }">
             <span style="display: flex; align-items: center; gap: 8px;">
               <span class="status-dot" :class="row.active ? 'online' : 'offline'">
@@ -114,251 +59,31 @@
               </span>
               {{ row.domain }}
             </span>
-          
-    <!-- 涓ょ骇杞€奸厤缃?-->
-    <el-card shadow="never" style="margin-top:20px">
-      <template #header>
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <span style="font-weight:600">馃攢 涓ょ骇杞€奸厤缃?(1涓?+ 8杞€肩粍)</span>
-          <el-button text size="small" type="primary" @click="loadTwoLevel" :loading="tlLoading">鍒锋柊</el-button>
-        </div>
-      </template>
-
-      <!-- 涓诲煙鍚?-->
-      <div style="margin-bottom:20px">
-        <div style="font-size:13px;font-weight:600;color:var(--text-primary);margin-bottom:10px">
-          猸?涓诲煙鍚?<el-tag type="success" size="small">{{ tlConfig.primary?.main || '-' }}</el-tag>
-        </div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <el-tag v-for="c in tlConfig.primary?.children||[]" :key="c.host" closable size="small"
-            @close="removeChild('primary', c.host)">{{ c.host }} (鏉冮噸:{{ c.weight }})</el-tag>
-          <el-button size="small" text type="primary" @click="showAddChild('primary')">+ 瀛愬煙鍚?/el-button>
-        </div>
-      </div>
-
-      <!-- 杞€肩粍 -->
-      <el-divider />
-      <div v-for="r in tlConfig.rotation||[]" :key="r.id" style="margin-bottom:16px;padding:12px;border-radius:8px;background:var(--bg-page)">
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
-          <el-switch v-model="r.enabled" size="small" @change="toggleGroup(r)" />
-          <span style="font-size:13px;font-weight:500">{{ r.main }}</span>
-          <el-tag size="small" :type="r.enabled?'success':'info'">{{ r.enabled ? '鍚敤' : '鍋滅敤' }}</el-tag>
-          <span style="font-size:11px;color:var(--text-muted)">鏉冮噸:</span>
-          <el-input-number v-model="r.weight" :min="1" :max="10" size="small" style="width:70px" @change="updateWeight(r)" />
-        </div>
-        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-left:44px">
-          <el-tag v-for="c in r.children||[]" :key="c.host" closable size="small" type="warning"
-            @close="removeChild(r.id, c.host)">{{ c.host }}</el-tag>
-          <el-button size="small" text type="primary" @click="showAddChild(r.id)">+ 瀛愬煙鍚?/el-button>
-        </div>
-      </div>
-    </el-card>
-
-    <!-- 娣诲姞瀛愬煙鍚嶅璇濇 -->
-    <el-dialog v-model="addChildVisible" title="娣诲姞瀛愬煙鍚? width="360px">
-      <el-form :model="newChild">
-        <el-form-item label="瀛愬煙鍚?>
-          <el-input v-model="newChild.host" placeholder="shop.example.com" />
-        </el-form-item>
-        <el-form-item label="鏉冮噸">
-          <el-input-number v-model="newChild.weight" :min="1" :max="5" />
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <el-button @click="addChildVisible=false">鍙栨秷</el-button>
-        <el-button type="primary" @click="addChild">纭畾</el-button>
-      </template>
-    </el-dialog>
-</template>
+          </template>
         </el-table-column>
-        <el-table-column prop="ip" label="鐟欙絾鐎介崷鏉挎絻" width="140" />
-        <el-table-column prop="status" label="閸嬨儱鎮嶉悩鑸碘偓? width="100">
+        <el-table-column prop="ip" label="解析地址" width="140" />
+        <el-table-column prop="status" label="健康状态" width="100">
           <template #default="{ row }">
             <el-tag :type="row.active ? 'success' : row.status === 'fail' ? 'danger' : 'info'" size="small" effect="light">
-              {{ row.active ? '閸︺劎鍤? : row.status === 'fail' ? '閺佸懘娈? : '瀹稿弶娈忛崑? }}
+              {{ row.active ? '在线' : row.status === 'fail' ? '故障' : '已暂停' }}
             </el-tag>
-          
-    <!-- 涓ょ骇杞€奸厤缃?-->
-    <el-card shadow="never" style="margin-top:20px">
-      <template #header>
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <span style="font-weight:600">馃攢 涓ょ骇杞€奸厤缃?(1涓?+ 8杞€肩粍)</span>
-          <el-button text size="small" type="primary" @click="loadTwoLevel" :loading="tlLoading">鍒锋柊</el-button>
-        </div>
-      </template>
-
-      <!-- 涓诲煙鍚?-->
-      <div style="margin-bottom:20px">
-        <div style="font-size:13px;font-weight:600;color:var(--text-primary);margin-bottom:10px">
-          猸?涓诲煙鍚?<el-tag type="success" size="small">{{ tlConfig.primary?.main || '-' }}</el-tag>
-        </div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <el-tag v-for="c in tlConfig.primary?.children||[]" :key="c.host" closable size="small"
-            @close="removeChild('primary', c.host)">{{ c.host }} (鏉冮噸:{{ c.weight }})</el-tag>
-          <el-button size="small" text type="primary" @click="showAddChild('primary')">+ 瀛愬煙鍚?/el-button>
-        </div>
-      </div>
-
-      <!-- 杞€肩粍 -->
-      <el-divider />
-      <div v-for="r in tlConfig.rotation||[]" :key="r.id" style="margin-bottom:16px;padding:12px;border-radius:8px;background:var(--bg-page)">
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
-          <el-switch v-model="r.enabled" size="small" @change="toggleGroup(r)" />
-          <span style="font-size:13px;font-weight:500">{{ r.main }}</span>
-          <el-tag size="small" :type="r.enabled?'success':'info'">{{ r.enabled ? '鍚敤' : '鍋滅敤' }}</el-tag>
-          <span style="font-size:11px;color:var(--text-muted)">鏉冮噸:</span>
-          <el-input-number v-model="r.weight" :min="1" :max="10" size="small" style="width:70px" @change="updateWeight(r)" />
-        </div>
-        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-left:44px">
-          <el-tag v-for="c in r.children||[]" :key="c.host" closable size="small" type="warning"
-            @close="removeChild(r.id, c.host)">{{ c.host }}</el-tag>
-          <el-button size="small" text type="primary" @click="showAddChild(r.id)">+ 瀛愬煙鍚?/el-button>
-        </div>
-      </div>
-    </el-card>
-
-    <!-- 娣诲姞瀛愬煙鍚嶅璇濇 -->
-    <el-dialog v-model="addChildVisible" title="娣诲姞瀛愬煙鍚? width="360px">
-      <el-form :model="newChild">
-        <el-form-item label="瀛愬煙鍚?>
-          <el-input v-model="newChild.host" placeholder="shop.example.com" />
-        </el-form-item>
-        <el-form-item label="鏉冮噸">
-          <el-input-number v-model="newChild.weight" :min="1" :max="5" />
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <el-button @click="addChildVisible=false">鍙栨秷</el-button>
-        <el-button type="primary" @click="addChild">纭畾</el-button>
-      </template>
-    </el-dialog>
-</template>
+          </template>
         </el-table-column>
-        <el-table-column prop="latency" label="閸濆秴绨查弮鍫曟？" width="100">
+        <el-table-column prop="latency" label="响应时间" width="100">
           <template #default="{ row }">
             <span :style="{ color: row.latency > 500 ? 'var(--color-danger)' : row.latency > 200 ? 'var(--color-warning)' : 'var(--text-primary)' }">
               {{ row.latency }}ms
             </span>
-          
-    <!-- 涓ょ骇杞€奸厤缃?-->
-    <el-card shadow="never" style="margin-top:20px">
-      <template #header>
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <span style="font-weight:600">馃攢 涓ょ骇杞€奸厤缃?(1涓?+ 8杞€肩粍)</span>
-          <el-button text size="small" type="primary" @click="loadTwoLevel" :loading="tlLoading">鍒锋柊</el-button>
-        </div>
-      </template>
-
-      <!-- 涓诲煙鍚?-->
-      <div style="margin-bottom:20px">
-        <div style="font-size:13px;font-weight:600;color:var(--text-primary);margin-bottom:10px">
-          猸?涓诲煙鍚?<el-tag type="success" size="small">{{ tlConfig.primary?.main || '-' }}</el-tag>
-        </div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <el-tag v-for="c in tlConfig.primary?.children||[]" :key="c.host" closable size="small"
-            @close="removeChild('primary', c.host)">{{ c.host }} (鏉冮噸:{{ c.weight }})</el-tag>
-          <el-button size="small" text type="primary" @click="showAddChild('primary')">+ 瀛愬煙鍚?/el-button>
-        </div>
-      </div>
-
-      <!-- 杞€肩粍 -->
-      <el-divider />
-      <div v-for="r in tlConfig.rotation||[]" :key="r.id" style="margin-bottom:16px;padding:12px;border-radius:8px;background:var(--bg-page)">
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
-          <el-switch v-model="r.enabled" size="small" @change="toggleGroup(r)" />
-          <span style="font-size:13px;font-weight:500">{{ r.main }}</span>
-          <el-tag size="small" :type="r.enabled?'success':'info'">{{ r.enabled ? '鍚敤' : '鍋滅敤' }}</el-tag>
-          <span style="font-size:11px;color:var(--text-muted)">鏉冮噸:</span>
-          <el-input-number v-model="r.weight" :min="1" :max="10" size="small" style="width:70px" @change="updateWeight(r)" />
-        </div>
-        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-left:44px">
-          <el-tag v-for="c in r.children||[]" :key="c.host" closable size="small" type="warning"
-            @close="removeChild(r.id, c.host)">{{ c.host }}</el-tag>
-          <el-button size="small" text type="primary" @click="showAddChild(r.id)">+ 瀛愬煙鍚?/el-button>
-        </div>
-      </div>
-    </el-card>
-
-    <!-- 娣诲姞瀛愬煙鍚嶅璇濇 -->
-    <el-dialog v-model="addChildVisible" title="娣诲姞瀛愬煙鍚? width="360px">
-      <el-form :model="newChild">
-        <el-form-item label="瀛愬煙鍚?>
-          <el-input v-model="newChild.host" placeholder="shop.example.com" />
-        </el-form-item>
-        <el-form-item label="鏉冮噸">
-          <el-input-number v-model="newChild.weight" :min="1" :max="5" />
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <el-button @click="addChildVisible=false">鍙栨秷</el-button>
-        <el-button type="primary" @click="addChild">纭畾</el-button>
-      </template>
-    </el-dialog>
-</template>
+          </template>
         </el-table-column>
-        <el-table-column prop="sslExpiry" label="SSL 閺堝鏅ラ張? width="120">
+        <el-table-column prop="sslExpiry" label="SSL 有效期" width="120">
           <template #default="{ row }">
             <span :style="{ color: row.sslDays > 30 ? 'var(--text-secondary)' : 'var(--color-warning)' }">
               {{ row.sslExpiry }}
             </span>
-          
-    <!-- 涓ょ骇杞€奸厤缃?-->
-    <el-card shadow="never" style="margin-top:20px">
-      <template #header>
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <span style="font-weight:600">馃攢 涓ょ骇杞€奸厤缃?(1涓?+ 8杞€肩粍)</span>
-          <el-button text size="small" type="primary" @click="loadTwoLevel" :loading="tlLoading">鍒锋柊</el-button>
-        </div>
-      </template>
-
-      <!-- 涓诲煙鍚?-->
-      <div style="margin-bottom:20px">
-        <div style="font-size:13px;font-weight:600;color:var(--text-primary);margin-bottom:10px">
-          猸?涓诲煙鍚?<el-tag type="success" size="small">{{ tlConfig.primary?.main || '-' }}</el-tag>
-        </div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <el-tag v-for="c in tlConfig.primary?.children||[]" :key="c.host" closable size="small"
-            @close="removeChild('primary', c.host)">{{ c.host }} (鏉冮噸:{{ c.weight }})</el-tag>
-          <el-button size="small" text type="primary" @click="showAddChild('primary')">+ 瀛愬煙鍚?/el-button>
-        </div>
-      </div>
-
-      <!-- 杞€肩粍 -->
-      <el-divider />
-      <div v-for="r in tlConfig.rotation||[]" :key="r.id" style="margin-bottom:16px;padding:12px;border-radius:8px;background:var(--bg-page)">
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
-          <el-switch v-model="r.enabled" size="small" @change="toggleGroup(r)" />
-          <span style="font-size:13px;font-weight:500">{{ r.main }}</span>
-          <el-tag size="small" :type="r.enabled?'success':'info'">{{ r.enabled ? '鍚敤' : '鍋滅敤' }}</el-tag>
-          <span style="font-size:11px;color:var(--text-muted)">鏉冮噸:</span>
-          <el-input-number v-model="r.weight" :min="1" :max="10" size="small" style="width:70px" @change="updateWeight(r)" />
-        </div>
-        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-left:44px">
-          <el-tag v-for="c in r.children||[]" :key="c.host" closable size="small" type="warning"
-            @close="removeChild(r.id, c.host)">{{ c.host }}</el-tag>
-          <el-button size="small" text type="primary" @click="showAddChild(r.id)">+ 瀛愬煙鍚?/el-button>
-        </div>
-      </div>
-    </el-card>
-
-    <!-- 娣诲姞瀛愬煙鍚嶅璇濇 -->
-    <el-dialog v-model="addChildVisible" title="娣诲姞瀛愬煙鍚? width="360px">
-      <el-form :model="newChild">
-        <el-form-item label="瀛愬煙鍚?>
-          <el-input v-model="newChild.host" placeholder="shop.example.com" />
-        </el-form-item>
-        <el-form-item label="鏉冮噸">
-          <el-input-number v-model="newChild.weight" :min="1" :max="5" />
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <el-button @click="addChildVisible=false">鍙栨秷</el-button>
-        <el-button type="primary" @click="addChild">纭畾</el-button>
-      </template>
-    </el-dialog>
-</template>
+          </template>
         </el-table-column>
-        <el-table-column label="閹垮秳缍? width="180">
+        <el-table-column label="操作" width="180">
           <template #default="{ row }">
             <el-button
               v-if="row.active"
@@ -367,7 +92,7 @@
               type="warning"
               @click="handleToggleDomain(row)"
             >
-              閺嗗倸浠?
+              暂停
             </el-button>
             <el-button
               v-else
@@ -376,124 +101,14 @@
               type="success"
               @click="handleToggleDomain(row)"
             >
-              閹垹顦?
+              恢复
             </el-button>
-            <el-button text size="small" type="primary" @click="handleCheckDomain(row)">濡偓濞?/el-button>
-          
-    <!-- 涓ょ骇杞€奸厤缃?-->
-    <el-card shadow="never" style="margin-top:20px">
-      <template #header>
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <span style="font-weight:600">馃攢 涓ょ骇杞€奸厤缃?(1涓?+ 8杞€肩粍)</span>
-          <el-button text size="small" type="primary" @click="loadTwoLevel" :loading="tlLoading">鍒锋柊</el-button>
-        </div>
-      </template>
-
-      <!-- 涓诲煙鍚?-->
-      <div style="margin-bottom:20px">
-        <div style="font-size:13px;font-weight:600;color:var(--text-primary);margin-bottom:10px">
-          猸?涓诲煙鍚?<el-tag type="success" size="small">{{ tlConfig.primary?.main || '-' }}</el-tag>
-        </div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <el-tag v-for="c in tlConfig.primary?.children||[]" :key="c.host" closable size="small"
-            @close="removeChild('primary', c.host)">{{ c.host }} (鏉冮噸:{{ c.weight }})</el-tag>
-          <el-button size="small" text type="primary" @click="showAddChild('primary')">+ 瀛愬煙鍚?/el-button>
-        </div>
-      </div>
-
-      <!-- 杞€肩粍 -->
-      <el-divider />
-      <div v-for="r in tlConfig.rotation||[]" :key="r.id" style="margin-bottom:16px;padding:12px;border-radius:8px;background:var(--bg-page)">
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
-          <el-switch v-model="r.enabled" size="small" @change="toggleGroup(r)" />
-          <span style="font-size:13px;font-weight:500">{{ r.main }}</span>
-          <el-tag size="small" :type="r.enabled?'success':'info'">{{ r.enabled ? '鍚敤' : '鍋滅敤' }}</el-tag>
-          <span style="font-size:11px;color:var(--text-muted)">鏉冮噸:</span>
-          <el-input-number v-model="r.weight" :min="1" :max="10" size="small" style="width:70px" @change="updateWeight(r)" />
-        </div>
-        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-left:44px">
-          <el-tag v-for="c in r.children||[]" :key="c.host" closable size="small" type="warning"
-            @close="removeChild(r.id, c.host)">{{ c.host }}</el-tag>
-          <el-button size="small" text type="primary" @click="showAddChild(r.id)">+ 瀛愬煙鍚?/el-button>
-        </div>
-      </div>
-    </el-card>
-
-    <!-- 娣诲姞瀛愬煙鍚嶅璇濇 -->
-    <el-dialog v-model="addChildVisible" title="娣诲姞瀛愬煙鍚? width="360px">
-      <el-form :model="newChild">
-        <el-form-item label="瀛愬煙鍚?>
-          <el-input v-model="newChild.host" placeholder="shop.example.com" />
-        </el-form-item>
-        <el-form-item label="鏉冮噸">
-          <el-input-number v-model="newChild.weight" :min="1" :max="5" />
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <el-button @click="addChildVisible=false">鍙栨秷</el-button>
-        <el-button type="primary" @click="addChild">纭畾</el-button>
-      </template>
-    </el-dialog>
-</template>
+            <el-button text size="small" type="primary" @click="handleCheckDomain(row)">检测</el-button>
+          </template>
         </el-table-column>
       </el-table>
     </el-card>
   </div>
-
-    <!-- 涓ょ骇杞€奸厤缃?-->
-    <el-card shadow="never" style="margin-top:20px">
-      <template #header>
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <span style="font-weight:600">馃攢 涓ょ骇杞€奸厤缃?(1涓?+ 8杞€肩粍)</span>
-          <el-button text size="small" type="primary" @click="loadTwoLevel" :loading="tlLoading">鍒锋柊</el-button>
-        </div>
-      </template>
-
-      <!-- 涓诲煙鍚?-->
-      <div style="margin-bottom:20px">
-        <div style="font-size:13px;font-weight:600;color:var(--text-primary);margin-bottom:10px">
-          猸?涓诲煙鍚?<el-tag type="success" size="small">{{ tlConfig.primary?.main || '-' }}</el-tag>
-        </div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <el-tag v-for="c in tlConfig.primary?.children||[]" :key="c.host" closable size="small"
-            @close="removeChild('primary', c.host)">{{ c.host }} (鏉冮噸:{{ c.weight }})</el-tag>
-          <el-button size="small" text type="primary" @click="showAddChild('primary')">+ 瀛愬煙鍚?/el-button>
-        </div>
-      </div>
-
-      <!-- 杞€肩粍 -->
-      <el-divider />
-      <div v-for="r in tlConfig.rotation||[]" :key="r.id" style="margin-bottom:16px;padding:12px;border-radius:8px;background:var(--bg-page)">
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
-          <el-switch v-model="r.enabled" size="small" @change="toggleGroup(r)" />
-          <span style="font-size:13px;font-weight:500">{{ r.main }}</span>
-          <el-tag size="small" :type="r.enabled?'success':'info'">{{ r.enabled ? '鍚敤' : '鍋滅敤' }}</el-tag>
-          <span style="font-size:11px;color:var(--text-muted)">鏉冮噸:</span>
-          <el-input-number v-model="r.weight" :min="1" :max="10" size="small" style="width:70px" @change="updateWeight(r)" />
-        </div>
-        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-left:44px">
-          <el-tag v-for="c in r.children||[]" :key="c.host" closable size="small" type="warning"
-            @close="removeChild(r.id, c.host)">{{ c.host }}</el-tag>
-          <el-button size="small" text type="primary" @click="showAddChild(r.id)">+ 瀛愬煙鍚?/el-button>
-        </div>
-      </div>
-    </el-card>
-
-    <!-- 娣诲姞瀛愬煙鍚嶅璇濇 -->
-    <el-dialog v-model="addChildVisible" title="娣诲姞瀛愬煙鍚? width="360px">
-      <el-form :model="newChild">
-        <el-form-item label="瀛愬煙鍚?>
-          <el-input v-model="newChild.host" placeholder="shop.example.com" />
-        </el-form-item>
-        <el-form-item label="鏉冮噸">
-          <el-input-number v-model="newChild.weight" :min="1" :max="5" />
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <el-button @click="addChildVisible=false">鍙栨秷</el-button>
-        <el-button type="primary" @click="addChild">纭畾</el-button>
-      </template>
-    </el-dialog>
 </template>
 
 <script setup>
@@ -538,23 +153,23 @@ async function fetchDomains() {
 }
 
 const handleToggleDomain = async (row) => {
-  const action = row.active ? '閺嗗倸浠? : '閹垹顦?
+  const action = row.active ? '暂停' : '恢复'
   try {
-    await ElMessageBox.confirm(`绾喖鐣剧憰?{action}閸╃喎鎮?${row.domain} 閸氭绱礰, '閹垮秳缍旂涵顔款吇', {
-      confirmButtonText: '绾喖鐣?,
-      cancelButtonText: '閸欐牗绉?,
+    await ElMessageBox.confirm(`确定要${action}域名 ${row.domain} 吗？`, '操作确认', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
       type: row.active ? 'warning' : 'success',
     })
     try {
       await toggleDomain(row.domain, !row.active)
       row.active = !row.active
       row.status = row.active ? 'ok' : 'paused'
-      ElMessage.success(`瀹?{action}閸╃喎鎮?${row.domain}`)
+      ElMessage.success(`已${action}域名 ${row.domain}`)
     } catch {
       // If API fails, still toggle locally
       row.active = !row.active
       row.status = row.active ? 'ok' : 'paused'
-      ElMessage.success(`瀹?{action}閸╃喎鎮?${row.domain}`)
+      ElMessage.success(`已${action}域名 ${row.domain}`)
     }
   } catch {
     // User cancelled
@@ -562,71 +177,28 @@ const handleToggleDomain = async (row) => {
 }
 
 const handleCheckDomain = async (row) => {
-  ElMessage.info(`濮濓絽婀Λ鈧ù?${row.domain} ...`)
+  ElMessage.info(`正在检测 ${row.domain} ...`)
   try {
     const result = await checkDomain(row.domain)
     if (result) {
       row.latency = result.latency ?? row.latency
       row.active = result.online ?? row.active
       row.status = row.active ? 'ok' : 'fail'
-      ElMessage.success(`${row.domain} 濡偓濞村鐣幋? ${row.latency}ms`)
+      ElMessage.success(`${row.domain} 检测完成: ${row.latency}ms`)
     }
   } catch {
-    ElMessage.warning(`${row.domain} 濡偓濞村顕Ч鍌氬嚒閸欐垿鈧梗)
+    ElMessage.warning(`${row.domain} 检测请求已发送`)
   }
 }
 
 const refreshDomains = async () => {
   loading.value = true
   await fetchDomains()
-  loadTwoLevel()
-  ElMessage.success('閸╃喎鎮曢悩鑸碘偓浣稿嚒閸掗攱鏌?)
-}
-
-
-// 鈺愨晲鈺?涓ょ骇杞€奸厤缃?鈺愨晲鈺?const tlLoading = ref(false)
-const tlConfig = reactive({ primary: { main: '', children: [] }, rotation: [] })
-const addChildVisible = ref(false)
-const addChildTarget = ref('')
-const newChild = reactive({ host: '', weight: 1 })
-
-async function loadTwoLevel() {
-  tlLoading.value = true
-  try {
-    const r = await getTwoLevelConfig()
-    if (r.config) {
-      tlConfig.primary = r.config.primary || { main: '', children: [] }
-      tlConfig.rotation = r.config.rotation || []
-    }
-  } catch {}
-  tlLoading.value = false
-}
-
-async function toggleGroup(r) {
-  try { await toggleRotationGroup(r.id) } catch {}
-}
-
-async function updateWeight(r) {
-  try { await setRotationWeight(r.id, r.weight) } catch {}
-}
-
-function showAddChild(groupId) { addChildTarget.value = groupId; newChild.host = ''; newChild.weight = 1; addChildVisible.value = true }
-
-async function addChild() {
-  if (!newChild.host) return
-  try { await addSubdomain(addChildTarget.value, newChild.host, newChild.weight) } catch {}
-  addChildVisible.value = false
-  await loadTwoLevel()
-}
-
-async function removeChild(groupId, host) {
-  try { await removeSubdomain(groupId, host) } catch {}
-  await loadTwoLevel()
+  ElMessage.success('域名状态已刷新')
 }
 
 onMounted(() => {
   fetchDomains()
-  loadTwoLevel()
   pollTimer = setInterval(fetchDomains, 30000)
 })
 
@@ -638,6 +210,3 @@ onUnmounted(() => {
 <style scoped>
 /* Uses global styles from global.css */
 </style>
-
-
-

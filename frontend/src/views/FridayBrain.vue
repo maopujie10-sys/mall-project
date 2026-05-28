@@ -1,20 +1,20 @@
-锘?template>
+﻿<template>
   <div class="friday-brain" ref="container">
     <canvas ref="canvas" class="brain-canvas"></canvas>
     
-    <!-- 瑕嗙洊灞傦細淇℃伅闈㈡澘 -->
+    <!-- 覆盖层：信息面板 -->
     <div class="brain-overlay">
       <div class="brain-status">
         <span class="pulse-dot active"></span>
         <span>Friday AI OS v3.0</span>
-        <span class="status-text">绁炵粡缃戠粶鍦ㄧ嚎</span>
+        <span class="status-text">神经网络在线</span>
       </div>
       <div class="agent-counts">
-        <span>{{ activeAgents }} / {{ totalAgents }} Agent 娲昏穬</span>
+        <span>{{ activeAgents }} / {{ totalAgents }} Agent 活跃</span>
       </div>
     </div>
 
-    <!-- 閫変腑Agent璇︽儏寮圭獥 -->
+    <!-- 选中Agent详情弹窗 -->
     <transition name="fade">
       <div v-if="selectedAgent" class="agent-detail" :style="detailStyle">
         <div class="ad-header">
@@ -23,12 +23,12 @@
           <span class="ad-status" :class="selectedAgent.status">{{ selectedAgent.statusText }}</span>
         </div>
         <div class="ad-info">
-          <div class="ad-row"><span>浠诲姟</span><span>{{ selectedAgent.tasks }}</span></div>
-          <div class="ad-row"><span>鎴愬姛鐜?/span><span style="color:#52c41a">{{ selectedAgent.successRate }}%</span></div>
+          <div class="ad-row"><span>任务</span><span>{{ selectedAgent.tasks }}</span></div>
+          <div class="ad-row"><span>成功率</span><span style="color:#52c41a">{{ selectedAgent.successRate }}%</span></div>
         </div>
         <div class="ad-actions">
-          <button class="ad-btn" @click="activateAgent(selectedAgent.id)">婵€娲?/button>
-          <button class="ad-btn secondary" @click="viewAgentDetail(selectedAgent.id)">璇︽儏</button>
+          <button class="ad-btn" @click="activateAgent(selectedAgent.id)">激活</button>
+          <button class="ad-btn secondary" @click="viewAgentDetail(selectedAgent.id)">详情</button>
         </div>
       </div>
     </transition>
@@ -37,87 +37,100 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted, computed, nextTick } from 'vue'
-import * as THREE from 'three'
 
 const container = ref(null)
 const canvas = ref(null)
 const selectedAgent = ref(null)
 const detailStyle = ref({})
-const totalAgents = ref(7)
+const totalAgents = 7
 const activeAgents = ref(7)
 
-let scene, camera, renderer, clock
+let THREE, scene, camera, renderer, clock
 let brainSphere, agentNodes = [], connections = [], particles
 let animFrameId
 let mouseX = 0, mouseY = 0
 let raycaster, mouse
 
-// Agent瀹氫箟(榛樿鍊? fetchAgents 浼氫粠鍚庣鏇存柊)
-
-
-async function fetchAgents() { try { const { data } = await agentApi.get('/agent/friday/agents'); if (data && data.agents && data.agents.length) { const colorMap = [0x667eea,0x52c41a,0x1890ff,0xfaad14,0xff4d4f,0x764ba2,0x13c2c2]; activeAgents.value = 0; totalAgents.value = data.agents.length; agentDefs = data.agents.map((a, i) => { if (a.status === 'active') activeAgents.value++; return { id: a.id || a.name, name: a.name, icon: a.icon || '馃', color: colorMap[i % 7], radius: 2.0 + (i * 0.15), status: a.status || 'active', statusText: a.status === 'active' ? '杩愯涓? : '寰呭懡涓?, tasks: a.tasks || 0, successRate: a.success_rate || 95 }; }); } } catch {} }
-let agentDefs = [
-  { id: 'master', name: 'Master Agent', icon: '馃', color: 0x667eea, radius: 2.8, status: 'active', statusText: '杩愯涓?, tasks: 156, successRate: 98.2 },
-  { id: 'code', name: 'Code Agent', icon: '馃捇', color: 0x52c41a, radius: 2.2, status: 'active', statusText: '寮€鍙戜腑', tasks: 89, successRate: 94.5 },
-  { id: 'devops', name: 'DevOps Agent', icon: '鈿欙笍', color: 0x1890ff, radius: 2.5, status: 'active', statusText: '鐩戞帶涓?, tasks: 234, successRate: 99.1 },
-  { id: 'vision', name: 'Vision Agent', icon: '馃憗锔?, color: 0xfaad14, radius: 2.0, status: 'idle', statusText: '寰呭懡涓?, tasks: 45, successRate: 91.3 },
-  { id: 'trend', name: 'Trend Agent', icon: '馃摗', color: 0xff4d4f, radius: 2.3, status: 'active', statusText: '閲囬泦鐑偣', tasks: 312, successRate: 96.7 },
-  { id: 'memory', name: 'Memory Agent', icon: '馃捑', color: 0x764ba2, radius: 2.6, status: 'active', statusText: '璁板繂涓?, tasks: 567, successRate: 99.8 },
-  { id: 'heal', name: 'Self-Healing', icon: '馃洝锔?, color: 0x13c2c2, radius: 2.4, status: 'idle', statusText: '寰呭懡涓?, tasks: 23, successRate: 100 },
+// Agent定义
+const agentDefs = [
+  { id: 'master', name: 'Master Agent', icon: '🧠', color: 0x667eea, radius: 2.8, status: 'active', statusText: '运行中', tasks: 156, successRate: 98.2 },
+  { id: 'code', name: 'Code Agent', icon: '💻', color: 0x52c41a, radius: 2.2, status: 'active', statusText: '开发中', tasks: 89, successRate: 94.5 },
+  { id: 'devops', name: 'DevOps Agent', icon: '⚙️', color: 0x1890ff, radius: 2.5, status: 'active', statusText: '监控中', tasks: 234, successRate: 99.1 },
+  { id: 'vision', name: 'Vision Agent', icon: '👁️', color: 0xfaad14, radius: 2.0, status: 'idle', statusText: '待命中', tasks: 45, successRate: 91.3 },
+  { id: 'trend', name: 'Trend Agent', icon: '📡', color: 0xff4d4f, radius: 2.3, status: 'active', statusText: '采集热点', tasks: 312, successRate: 96.7 },
+  { id: 'memory', name: 'Memory Agent', icon: '💾', color: 0x764ba2, radius: 2.6, status: 'active', statusText: '记忆中', tasks: 567, successRate: 99.8 },
+  { id: 'heal', name: 'Self-Healing', icon: '🛡️', color: 0x13c2c2, radius: 2.4, status: 'idle', statusText: '待命中', tasks: 23, successRate: 100 },
 ]
 
+async function loadThreeJS() {
+  return new Promise((resolve, reject) => {
+    if (window.THREE) { resolve(window.THREE); return }
+    const script = document.createElement('script')
+    script.src = 'https://unpkg.com/three@0.170.0/build/three.min.js'
+    script.onload = () => resolve(window.THREE)
+    script.onerror = () => reject(new Error('Three.js 加载失败'))
+    document.head.appendChild(script)
+  })
+}
+
 async function initScene() {
-  const dbg = document.getElementById("debug3d");
-  try {
-    if (!container.value) { if(dbg) dbg.textContent="3D: no container"; return; }
+  try { THREE = await loadThreeJS() } catch (e) { console.error(e); return }
+  if (!container.value) return
 
-    const w = container.value.clientWidth;
-    const h = container.value.clientHeight;
-    if(dbg) dbg.textContent = "3D: " + w + "x" + h;
+  const w = container.value.clientWidth
+  const h = container.value.clientHeight
 
-    scene = new THREE.Scene();
-    if(dbg) dbg.textContent = "3D: scene ok";
+  // 场景
+  scene = new THREE.Scene()
+  
+  // 相机
+  camera = new THREE.PerspectiveCamera(60, w / h, 0.1, 100)
+  camera.position.set(0, 3, 14)
+  camera.lookAt(0, 0, 0)
 
-    camera = new THREE.PerspectiveCamera(60, w / h, 0.1, 100);
-    camera.position.set(0, 3, 14);
-    camera.lookAt(0, 0, 0);
+  // 渲染器
+  renderer = new THREE.WebGLRenderer({ canvas: canvas.value, antialias: true, alpha: true })
+  renderer.setSize(w, h)
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+  renderer.toneMapping = THREE.ACESFilmicToneMapping
+  renderer.toneMappingExposure = 1.2
 
-    renderer = new THREE.WebGLRenderer({ canvas: canvas.value, antialias: true, alpha: true });
-    renderer.setSize(w, h);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.2;
-    if(dbg) dbg.textContent = "3D: renderer ok";
+  // 时钟
+  clock = new THREE.Clock()
 
-    clock = new THREE.Clock();
-    raycaster = new THREE.Raycaster();
-    mouse = new THREE.Vector2();
+  // 射线检测
+  raycaster = new THREE.Raycaster()
+  mouse = new THREE.Vector2()
 
-    const ambientLight = new THREE.AmbientLight(0x334466, 1.5);
-    scene.add(ambientLight);
-    const pointLight = new THREE.PointLight(0x667eea, 30, 30);
-    pointLight.position.set(0, 5, 10);
-    scene.add(pointLight);
-    if(dbg) dbg.textContent = "3D: lights ok";
+  // 灯光
+  const ambientLight = new THREE.AmbientLight(0x334466, 1.5)
+  scene.add(ambientLight)
+  const pointLight = new THREE.PointLight(0x667eea, 30, 30)
+  pointLight.position.set(0, 5, 10)
+  scene.add(pointLight)
 
-    createStarfield();
-    createGridRing();
-    createBrainCore();
-    if(dbg) dbg.textContent = "3D: brain ok";
-    createAgentNodes();
-    if(dbg) dbg.textContent = "3D: agents ok";
-    createConnections();
+  // 粒子星场背景
+  createStarfield()
+  
+  // 圆环网格
+  createGridRing()
+  
+  // 中央大脑球体
+  createBrainCore()
+  
+  // 7个Agent节点
+  createAgentNodes()
+  
+  // 连接线
+  createConnections()
 
-    canvas.value.addEventListener("mousemove", onMouseMove);
-    canvas.value.addEventListener("click", onClick);
-    window.addEventListener("resize", onResize);
+  // 事件
+  canvas.value.addEventListener('mousemove', onMouseMove)
+  canvas.value.addEventListener('click', onClick)
+  window.addEventListener('resize', onResize)
 
-    animate();
-    if(dbg) dbg.textContent = "3D: running 鉁?;
-  } catch (e) {
-    if(dbg) dbg.textContent = "3D ERROR: " + (e.message || e);
-    console.error("FridayBrain:", e);
-  }
+  // 开始渲染循环
+  animate()
 }
 
 function createStarfield() {
@@ -157,7 +170,7 @@ function createGridRing() {
 }
 
 function createBrainCore() {
-  // 鏍稿績鐞冧綋
+  // 核心球体
   const geo = new THREE.IcosahedronGeometry(1.2, 3)
   const mat = new THREE.MeshPhongMaterial({ 
     color: 0x667eea, emissive: 0x223366, emissiveIntensity: 0.8,
@@ -166,13 +179,13 @@ function createBrainCore() {
   brainSphere = new THREE.Mesh(geo, mat)
   scene.add(brainSphere)
 
-  // 澶栧眰绾挎
+  // 外层线框
   const wireGeo = new THREE.IcosahedronGeometry(1.35, 3)
   const wireMat = new THREE.MeshBasicMaterial({ color: 0x8899ff, wireframe: true, transparent: true, opacity: 0.2 })
   const wireframe = new THREE.Mesh(wireGeo, wireMat)
   brainSphere.add(wireframe)
 
-  // 鍏夌幆
+  // 光环
   const glowGeo = new THREE.RingGeometry(1.5, 1.8, 64)
   const glowMat = new THREE.MeshBasicMaterial({ color: 0x667eea, side: THREE.DoubleSide, transparent: true, opacity: 0.4 })
   const glowRing = new THREE.Mesh(glowGeo, glowMat)
@@ -187,14 +200,15 @@ function createAgentNodes() {
     const z = Math.sin(angle) * def.radius
     const y = Math.sin(i * 1.5) * 1.5
 
-    // 鑺傜偣鐞?    const geo = new THREE.SphereGeometry(0.25, 32, 32)
+    // 节点球
+    const geo = new THREE.SphereGeometry(0.25, 32, 32)
     const mat = new THREE.MeshPhongMaterial({ color: def.color, emissive: def.color, emissiveIntensity: 0.6, shininess: 100 })
     const node = new THREE.Mesh(geo, mat)
     node.position.set(x, y, z)
     node.userData = { ...def, baseX: x, baseY: y, baseZ: z, angle }
     scene.add(node)
 
-    // 鍏夌幆
+    // 光环
     const ringGeo = new THREE.RingGeometry(0.32, 0.4, 32)
     const ringMat = new THREE.MeshBasicMaterial({ color: def.color, side: THREE.DoubleSide, transparent: true, opacity: 0.5 })
     const glow = new THREE.Mesh(ringGeo, ringMat)
@@ -207,7 +221,8 @@ function createAgentNodes() {
 function createConnections() {
   connections = []
   agentNodes.forEach((node, i) => {
-    // 姣忎釜Agent杩炴帴鍒板ぇ鑴?    const lineGeo = new THREE.BufferGeometry()
+    // 每个Agent连接到大脑
+    const lineGeo = new THREE.BufferGeometry()
     const midX = node.position.x * 0.5
     const midY = node.position.y * 0.5 + 0.3
     const midZ = node.position.z * 0.5
@@ -222,7 +237,7 @@ function createConnections() {
     connections.push({ line, target: node, color: node.userData.color })
   })
 
-  // Agent涔嬮棿杩炴帴
+  // Agent之间连接
   for (let i = 0; i < agentNodes.length; i++) {
     for (let j = i + 1; j < agentNodes.length; j++) {
       const lineGeo = new THREE.BufferGeometry().setFromPoints([
@@ -273,17 +288,18 @@ function animate() {
   animFrameId = requestAnimationFrame(animate)
   const time = clock.getElapsedTime()
 
-  // 鐩告満闅忛紶鏍囧井鍔?  camera.position.x += (mouseX * 2 - camera.position.x) * 0.02
+  // 相机随鼠标微动
+  camera.position.x += (mouseX * 2 - camera.position.x) * 0.02
   camera.position.y += (-mouseY * 1.5 + 3 - camera.position.y) * 0.02
   camera.lookAt(0, 0, 0)
 
-  // 澶ц剳鏃嬭浆+鑴夊啿
+  // 大脑旋转+脉冲
   brainSphere.rotation.y += 0.003
   brainSphere.rotation.x += 0.001
   const pulse = 1 + Math.sin(time * 2) * 0.05
   brainSphere.scale.setScalar(pulse)
 
-  // Agent鑺傜偣娴姩
+  // Agent节点浮动
   agentNodes.forEach((node) => {
     const d = node.userData
     const floatY = Math.sin(time * 1.5 + d.angle) * 0.3
@@ -292,7 +308,8 @@ function animate() {
     node.rotation.x += 0.005
   })
 
-  // 鏇存柊Agent-澶ц剳杩炴帴绾?  connections.forEach((conn) => {
+  // 更新Agent-大脑连接线
+  connections.forEach((conn) => {
     if (conn.target && conn.line.geometry) {
       const pos = conn.target.position
       const midX = pos.x * 0.5
@@ -312,17 +329,24 @@ function animate() {
     }
   })
 
-  // 绮掑瓙鏃嬭浆
+  // 粒子旋转
   if (particles) particles.rotation.y += 0.0003
 
   renderer.render(scene, camera)
 }
 
-async function activateAgent(id) { try { await agentApi.post("/agent/friday/agent/${id}/activate"); ElMessage.success('Agent ' + id + ' 宸叉縺娲?) } catch { ElMessage.error('婵€娲诲け璐?) } selectedAgent.value = null }
+function activateAgent(id) {
+  selectedAgent.value = null
+}
 
-function viewAgentDetail(id) { selectedAgent.value = null; window.location.hash = "#/agent/${id}" }
+function viewAgentDetail(id) {
+  selectedAgent.value = null
+}
 
-onMounted(async () => { await fetchAgents(); await nextTick(); initScene() })
+onMounted(async () => {
+  await nextTick()
+  initScene()
+})
 
 onUnmounted(() => {
   if (animFrameId) cancelAnimationFrame(animFrameId)
@@ -389,7 +413,7 @@ onUnmounted(() => {
   50% { opacity: 0.5; transform: scale(1.3); }
 }
 
-/* Agent璇︽儏寮圭獥 */
+/* Agent详情弹窗 */
 .agent-detail {
   position: absolute;
   background: rgba(12, 16, 30, 0.95);

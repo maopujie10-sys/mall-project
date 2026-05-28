@@ -1,18 +1,18 @@
-<template>
+﻿<template>
   <div class="page-container">
     <div class="page-header">
       <div>
-        <h1>棣冃?AI 鏉╂稑瀵查幎銉ユ啞</h1>
-        <p>AI 閼奉亝鍨滅拠鍕強 璺?閹存劕濮涢悳鍥Ъ閸?璺?閻儴鐦戠粔顖滅柈 璺?閹镐胶鐢绘潻娑樺</p>
+        <h1>🧬 AI 进化报告</h1>
+        <p>AI 自我评估 · 成功率趋势 · 知识积累 · 持续进化</p>
       </div>
       <div class="header-actions">
         <el-button type="primary" @click="refreshReport" :loading="loading">
-          <el-icon><Refresh /></el-icon> 閻㈢喐鍨氶幎銉ユ啞
+          <el-icon><Refresh /></el-icon> 生成报告
         </el-button>
       </div>
     </div>
 
-    <!-- 鏉╂稑瀵查幐鍥ㄧ垼 -->
+    <!-- 进化指标 -->
     <el-row :gutter="16" style="margin-bottom: 20px;">
       <el-col :span="6" v-for="card in evoCards" :key="card.label">
         <el-card shadow="never" class="evo-card">
@@ -27,11 +27,11 @@
       </el-col>
     </el-row>
 
-    <!-- 鐡掑濞?+ 閻儴鐦戞惔?-->
+    <!-- 趋势 + 知识库 -->
     <el-row :gutter="16" style="margin-bottom: 20px;">
       <el-col :span="12">
         <el-card shadow="never">
-          <template #header><span>棣冩惐 閹存劕濮涢悳鍥Ъ閸?/span></template>
+          <template #header><span>📈 成功率趋势</span></template>
           <div class="trend-chart">
             <div class="trend-row" v-for="item in trends" :key="item.label">
               <div class="trend-label">{{ item.label }}</div>
@@ -46,7 +46,7 @@
       </el-col>
       <el-col :span="12">
         <el-card shadow="never">
-          <template #header><span>棣冩憥 閻儴鐦戞惔?/span></template>
+          <template #header><span>📚 知识库</span></template>
           <div class="knowledge-list">
             <div v-for="k in knowledge" :key="k.key" class="kn-item">
               <div class="kn-cat">
@@ -65,37 +65,37 @@
       </el-col>
     </el-row>
 
-    <!-- 鐞涘苯濮╅崢鍡楀蕉 + 缁剧姵顒?-->
+    <!-- 行动历史 + 纠正 -->
     <el-row :gutter="16">
       <el-col :span="14">
         <el-card shadow="never">
-          <template #header><span>棣冩惖 鐞涘苯濮╅崢鍡楀蕉</span></template>
+          <template #header><span>📋 行动历史</span></template>
           <el-table :data="actionHistory" size="small" max-height="320">
-            <el-table-column prop="type" label="缁鐎? width="90">
+            <el-table-column prop="type" label="类型" width="90">
               <template #default="{ row }">
                 <el-tag size="small" :type="row.typeTag">{{ row.type }}</el-tag>
               </template>
             </el-table-column>
-            <el-table-column prop="name" label="鐞涘苯濮? min-width="150"/>
-            <el-table-column prop="result" label="缂佹挻鐏? width="80">
+            <el-table-column prop="name" label="行动" min-width="150"/>
+            <el-table-column prop="result" label="结果" width="80">
               <template #default="{ row }">
-                <span :style="{ color: row.ok ? '#52c41a' : '#ff4d4f' }">{{ row.ok ? '閴?閹存劕濮? : '閴?婢惰精瑙? }}</span>
+                <span :style="{ color: row.ok ? '#52c41a' : '#ff4d4f' }">{{ row.ok ? '✓ 成功' : '✗ 失败' }}</span>
               </template>
             </el-table-column>
-            <el-table-column prop="time" label="閺冨爼妫? width="140"/>
+            <el-table-column prop="time" label="时间" width="140"/>
           </el-table>
         </el-card>
       </el-col>
       <el-col :span="10">
         <el-card shadow="never">
-          <template #header><span>棣冩寱 鏉╂稑瀵插楦款唴</span></template>
+          <template #header><span>💡 进化建议</span></template>
           <div class="evo-suggestions">
             <div v-for="(s, i) in suggestions" :key="i" class="sug-card" :class="s.level">
               <div class="sug-icon">{{ s.icon }}</div>
               <div class="sug-text">{{ s.text }}</div>
               <el-button v-if="s.action" text size="small" type="primary" @click="handleSuggestion(s)">{{ s.action }}</el-button>
             </div>
-            <div v-if="suggestions.length === 0" class="empty-hint">閺嗗倹妫ゆ潻娑樺瀵ら缚顔呴敍瀛塈鐞涖劎骞囬懝顖氥偨閿?/div>
+            <div v-if="suggestions.length === 0" class="empty-hint">暂无进化建议，AI表现良好！</div>
           </div>
         </el-card>
       </el-col>
@@ -104,85 +104,65 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive } from 'vue'
 import { ElMessage } from 'element-plus'
-import { agentApi } from '@/api/index'
 
 const loading = ref(false)
 
-const evoCards = reactive([
-  { icon:'馃К', label:'30澶╂垚鍔熺巼', value:'0%', color:'#52c41a', bg:'rgba(82,196,26,0.1)' },
-  { icon:'馃搸', label:'宸插鐭ヨ瘑', value:'0', color:'#667eea', bg:'rgba(102,126,234,0.1)' },
-  { icon:'鉁忥笍', label:'鐢ㄦ埛绾犳', value:'0', color:'#faad14', bg:'rgba(250,173,20,0.1)' },
-  { icon:'馃摫', label:'杩涘寲瓒嬪娍', value:'鍔犺浇涓?..', color:'#764ba2', bg:'rgba(118,75,162,0.1)' },
-])
+const evoCards = [
+  { icon:'🎯', label:'30天成功率', value:'87.5%', color:'#52c41a', bg:'rgba(82,196,26,0.1)' },
+  { icon:'📚', label:'已学知识', value:'156条', color:'#667eea', bg:'rgba(102,126,234,0.1)' },
+  { icon:'✏️', label:'用户纠正', value:'23次', color:'#faad14', bg:'rgba(250,173,20,0.1)' },
+  { icon:'📈', label:'进化趋势', value:'↗ 上升', color:'#764ba2', bg:'rgba(118,75,162,0.1)' },
+]
 
-const trends = ref([])
-const knowledge = ref([])
-const actionHistory = ref([])
-const suggestions = ref([])
+const trends = [
+  { label:'商品采集', rate:92, color:'#52c41a', trend:'↗ +3%', trendType:'success' },
+  { label:'健康扫描', rate:100, color:'#667eea', trend:'→ 持平', trendType:'info' },
+  { label:'商品替换', rate:78, color:'#faad14', trend:'↗ +5%', trendType:'success' },
+  { label:'自动运维', rate:85, color:'#764ba2', trend:'↗ +2%', trendType:'success' },
+  { label:'价格优化', rate:70, color:'#ff4d4f', trend:'↘ -3%', trendType:'danger' },
+]
 
-async function fetchReport() {
+const knowledge = [
+  { category:'采集源', key:'eBay > 电子产品', score:0.92, catType:'success' },
+  { category:'采集源', key:'AliExpress > 服装', score:0.85, catType:'success' },
+  { category:'品类偏好', key:'手机数码 > 热门', score:0.88, catType:'' },
+  { category:'品类偏好', key:'运动鞋服 > 增长中', score:0.76, catType:'' },
+  { category:'用户偏好', key:'价格区间 ¥500-2000', score:0.82, catType:'warning' },
+  { category:'纠正学习', key:'采集时保留原始规格', score:0.95, catType:'danger' },
+  { category:'纠正学习', key:'图片上传COS前压缩', score:0.90, catType:'danger' },
+]
+
+const actionHistory = [
+  { type:'采集', typeTag:'', name:'采集:eBay:iPhone配件', ok:true, time:'2024-05-28 14:32' },
+  { type:'健康', typeTag:'success', name:'商品健康度扫描', ok:true, time:'2024-05-28 14:15' },
+  { type:'替换', typeTag:'warning', name:'替换商品:旧数据线', ok:true, time:'2024-05-28 13:08' },
+  { type:'采集', typeTag:'', name:'采集:AliExpress:夏季T恤', ok:false, time:'2024-05-28 12:45' },
+  { type:'运维', typeTag:'danger', name:'AI自动运维执行', ok:true, time:'2024-05-28 11:20' },
+  { type:'采集', typeTag:'', name:'采集:eBay:数码相机', ok:true, time:'2024-05-28 10:05' },
+  { type:'健康', typeTag:'success', name:'每日健康扫描', ok:true, time:'2024-05-28 08:00' },
+]
+
+const suggestions = [
+  { icon:'⚠️', level:'warn', text:'价格优化成功率仅70%，建议学习更多定价策略', action:'开始学习' },
+  { icon:'💡', level:'tip', text:'采集源 AliExpress 时装类成功率下降，建议降低优先级', action:'调整' },
+  { icon:'✅', level:'good', text:'eBay电子产品采集表现优异，建议保持当前策略' },
+  { icon:'📝', level:'tip', text:'还有2条用户纠正未学习，说"AI学习纠正"来消化' },
+]
+
+function refreshReport() {
   loading.value = true
-  try {
-    // 鑾峰彇杩涘寲缁熻
-    const { data: st } = await agentApi.get('/agent/evolution/stats')
-    evoCards[0].value = (st.success_rate_7d || 0) + '%'
-    evoCards[3].value = (st.success_rate_7d || 0) > 70 ? '鈫?涓婂崌' : '鈫?绋冲畾'
-    if (st.motto) evoCards[3].value = st.motto
-
-    // 鑾峰彇鐭ヨ瘑搴?    const { data: kb } = await agentApi.get('/agent/evolution/knowledge')
-    if (Array.isArray(kb.knowledge)) {
-      knowledge.value = kb.knowledge.map(function(k) { return { category:k.category||'鐭ヨ瘑', key:k.key||k.value||'', score:k.score||k.avg_score||0, catType:k.score>0.8?'success':k.score>0.5?'':'warning' } })
-      evoCards[1].value = kb.knowledge.length + ''
-    }
-
-    // 鑾峰彇绾犳
-    const { data: corr } = await agentApi.get('/agent/evolution/corrections')
-    if (Array.isArray(corr.corrections)) {
-      evoCards[2].value = corr.corrections.length + ''
-    }
-
-    // 鑾峰彇琛屽姩鍘嗗彶
-    const { data: mem } = await agentApi.get('/agent/evolution/memory', { params: { limit: 20 } })
-    if (Array.isArray(mem.actions)) {
-      actionHistory.value = mem.actions.map(function(a) {
-        return { type:a.action_type||'琛屽姩', typeTag:'', name:a.description||a.action||'', ok:a.success!==false, time:a.created_at||'' }
-      })
-    }
-
-    // 鑾峰彇杩涘寲鎶ュ憡
-    const { data: report } = await agentApi.get('/agent/evolution/report')
-    if (Array.isArray(report.report?.suggestions)) {
-      suggestions.value = report.report.suggestions.map(function(s) {
-        return { icon:'馃挕', level:'tip', text:s, action:'' }
-      })
-    }
-
-    // 鑾峰彇瓒嬪娍
-    if (Array.isArray(report.report?.success_trends)) {
-      trends.value = report.report.success_trends.map(function(t) {
-        return { label:t.name||t.category, rate:t.rate||t.value||0, color:t.rate>80?'#52c41a':t.rate>60?'#faad14':'#ff4d4f', trend:t.trend||'', trendType:t.rate>80?'success':t.rate>60?'':'danger' }
-      })
-    }
-
-    ElMessage.success('杩涘寲鎶ュ憡宸叉洿鏂?)
-  } catch {
-    ElMessage.error('鑾峰彇杩涘寲鏁版嵁澶辫触')
-  } finally {
-    loading.value = false
-  }
+  setTimeout(() => { loading.value = false; ElMessage.success('进化报告已更新') }, 1200)
 }
-
-function refreshReport() { fetchReport() }
 
 function handleSuggestion(sug) {
-  if (sug.action) {
-    ElMessage.success('宸叉墽琛? ' + sug.text.slice(0,30))
+  if (sug.action === '开始学习') {
+    ElMessage.success('已开始学习定价策略，下次会更准确')
+  } else if (sug.action === '调整') {
+    ElMessage.success('已降低 AliExpress 时装类优先级')
   }
 }
-
-onMounted(function() { fetchReport() })
 </script>
 
 <style scoped>

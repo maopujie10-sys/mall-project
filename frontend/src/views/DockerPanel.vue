@@ -1,10 +1,11 @@
-<template>
+﻿<template>
   <div class="docker-panel">
     <div class="page-header">
-      <h1>棣冩儞 Docker 缁狅紕鎮?/h1>
+      <h1>🐳 Docker 管理</h1>
       <div class="header-actions">
         <el-button type="primary" @click="fetchAll" :loading="loading" size="small">
-          <el-icon><Refresh /></el-icon> 閸掗攱鏌?        </el-button>
+          <el-icon><Refresh /></el-icon> 刷新
+        </el-button>
       </div>
     </div>
 
@@ -12,48 +13,49 @@
       <el-col :span="6">
         <el-card shadow="hover">
           <div class="stat-value">{{ stats.running ?? "-" }}</div>
-          <div class="stat-label">鏉╂劘顢戞稉?/div>
+          <div class="stat-label">运行中</div>
         </el-card>
       </el-col>
       <el-col :span="6">
         <el-card shadow="hover">
           <div class="stat-value">{{ stats.total ?? "-" }}</div>
-          <div class="stat-label">閹顔愰崳銊︽殶</div>
+          <div class="stat-label">总容器数</div>
         </el-card>
       </el-col>
       <el-col :span="6">
         <el-card shadow="hover">
           <div class="stat-value">{{ containers.length }}</div>
-          <div class="stat-label">鐎圭懓娅掗崚妤勩€?/div>
+          <div class="stat-label">容器列表</div>
         </el-card>
       </el-col>
       <el-col :span="6">
         <el-card shadow="hover">
           <div class="stat-value">{{ images.length }}</div>
-          <div class="stat-label">闂€婊冨剼閺?/div>
+          <div class="stat-label">镜像数</div>
         </el-card>
       </el-col>
     </el-row>
 
     <el-card class="section-card">
       <template #header>
-        <span>鐎圭懓娅掗崚妤勩€?/span>
+        <span>容器列表</span>
       </template>
       <el-table :data="containers" stripe v-loading="loading" max-height="400">
-        <el-table-column prop="name" label="閸氬秶袨" min-width="160" />
-        <el-table-column prop="image" label="闂€婊冨剼" min-width="200" />
-        <el-table-column prop="status" label="閻樿埖鈧? min-width="180">
+        <el-table-column prop="name" label="名称" min-width="160" />
+        <el-table-column prop="image" label="镜像" min-width="200" />
+        <el-table-column prop="status" label="状态" min-width="180">
           <template #default="{ row }">
             <el-tag :type="row.status?.includes('Up') ? 'success' : 'danger'" size="small">
               {{ row.status?.substring(0, 30) }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="ports" label="缁旑垰褰? min-width="120" />
-        <el-table-column label="閹垮秳缍? width="100" fixed="right">
+        <el-table-column prop="ports" label="端口" min-width="120" />
+        <el-table-column label="操作" width="100" fixed="right">
           <template #default="{ row }">
             <el-button size="small" type="warning" @click="restartContainer(row.name)" :loading="restarting === row.name">
-              闁插秴鎯?            </el-button>
+              重启
+            </el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -62,31 +64,31 @@
     <el-row :gutter="16">
       <el-col :span="12">
         <el-card class="section-card">
-          <template #header><span>闂€婊冨剼閸掓銆?/span></template>
+          <template #header><span>镜像列表</span></template>
           <el-table :data="images" stripe v-loading="loading" max-height="300">
-            <el-table-column prop="repo" label="娴犳挸绨? min-width="200" />
-            <el-table-column prop="tag" label="閺嶅洨顒? width="100" />
-            <el-table-column prop="size" label="婢堆冪毈" width="100" />
+            <el-table-column prop="repo" label="仓库" min-width="200" />
+            <el-table-column prop="tag" label="标签" width="100" />
+            <el-table-column prop="size" label="大小" width="100" />
           </el-table>
         </el-card>
       </el-col>
       <el-col :span="12">
         <el-card class="section-card">
-          <template #header><span>缂冩垹绮堕崚妤勩€?/span></template>
+          <template #header><span>网络列表</span></template>
           <el-table :data="networks" stripe v-loading="loading" max-height="300">
-            <el-table-column prop="name" label="閸氬秶袨" min-width="160" />
-            <el-table-column prop="driver" label="妞瑰崬濮? width="100" />
-            <el-table-column prop="scope" label="閼煎啫娲? width="80" />
+            <el-table-column prop="name" label="名称" min-width="160" />
+            <el-table-column prop="driver" label="驱动" width="100" />
+            <el-table-column prop="scope" label="范围" width="80" />
           </el-table>
         </el-card>
       </el-col>
     </el-row>
 
     <el-card class="section-card">
-      <template #header><span>鐎圭懓娅掗弮銉ョ箶</span></template>
+      <template #header><span>容器日志</span></template>
       <div style="display: flex; gap: 8px; margin-bottom: 12px;">
-        <el-input v-model="logContainer" placeholder="鏉堟挸鍙嗙€圭懓娅掗崥宥囆為幋鏈揇" style="width: 300px;" size="small" />
-        <el-button @click="fetchLogs" type="primary" size="small">閺屻儳婀呴弮銉ョ箶</el-button>
+        <el-input v-model="logContainer" placeholder="输入容器名称或ID" style="width: 300px;" size="small" />
+        <el-button @click="fetchLogs" type="primary" size="small">查看日志</el-button>
       </div>
       <el-input type="textarea" :rows="8" :value="logs" readonly style="font-family: monospace; font-size: 12px;" />
     </el-card>
@@ -121,18 +123,18 @@ async function fetchAll() {
     images.value = imgs.images || []
     networks.value = nets.networks || []
   } catch (e) {
-    ElMessage.error("閼惧嘲褰嘍ocker娣団剝浼呮径杈Е")
+    ElMessage.error("获取Docker信息失败")
   }
   loading.value = false
 }
 
 async function fetchLogs() {
-  if (!logContainer.value) return ElMessage.warning("鐠囩柉绶崗銉ヮ啇閸ｃ劌鎮曠粔?)
+  if (!logContainer.value) return ElMessage.warning("请输入容器名称")
   try {
     const r = await agentApi.get("/docker/logs", { params: { container: logContainer.value, lines: 100 } })
-    logs.value = r.content || "閺冪姵妫╄箛?
+    logs.value = r.content || "无日志"
   } catch (e) {
-    logs.value = "閼惧嘲褰囬弮銉ョ箶婢惰精瑙? " + (e.response?.data?.detail || e.message)
+    logs.value = "获取日志失败: " + (e.response?.data?.detail || e.message)
   }
 }
 
@@ -140,9 +142,9 @@ async function restartContainer(name) {
   restarting.value = name
   try {
     const r = await agentApi.post("/docker/restart", { container_id: name, action: "restart" })
-    ElMessage.success(r.ok ? `鐎圭懓娅?${name} 瀹告煡鍣搁崥鐥?: (r.error || "瀹稿弶褰佹禍銈咁吀閹?))
+    ElMessage.success(r.ok ? `容器 ${name} 已重启` : (r.error || "已提交审批"))
   } catch (e) {
-    ElMessage.error("闁插秴鎯庢径杈Е: " + (e.response?.data?.detail || e.message))
+    ElMessage.error("重启失败: " + (e.response?.data?.detail || e.message))
   }
   restarting.value = ""
 }

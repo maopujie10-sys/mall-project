@@ -1,41 +1,41 @@
-<template>
+﻿<template>
   <div class="alert-center">
-    <h2>閸涘﹨顒熸稉顓炵妇</h2>
+    <h2>告警中心</h2>
     <el-row :gutter="16" class="stats-row">
       <el-col :span="6" v-for="s in levelStats" :key="s.level">
         <div class="stat-card" :class="s.level">
           <div class="stat-label">{{ s.name }}</div>
           <div class="stat-num">{{ s.count }}</div>
-          <div class="stat-sub">閺堫亣袙閸? {{ s.unresolved }}</div>
+          <div class="stat-sub">未解决: {{ s.unresolved }}</div>
         </div>
       </el-col>
     </el-row>
     <el-card shadow="never" style="margin-top:16px">
       <template #header>
-        <span>閸涘﹨顒熼崚妤勩€?/span>
-        <el-select v-model="filterLevel" size="small" clearable placeholder="缁涙盯鈧鐡戠痪? style="width:120px;margin-left:12px">
+        <span>告警列表</span>
+        <el-select v-model="filterLevel" size="small" clearable placeholder="筛选等级" style="width:120px;margin-left:12px">
           <el-option v-for="(n, k) in levelMap" :key="k" :label="`${k} - ${n}`" :value="k" />
         </el-select>
-        <el-button size="small" @click="fetchAlerts" style="margin-left:8px">閸掗攱鏌?/el-button>
+        <el-button size="small" @click="fetchAlerts" style="margin-left:8px">刷新</el-button>
       </template>
-      <el-table :data="alerts" stripe size="small" empty-text="閺嗗倹妫ら崨濠咁劅">
-        <el-table-column label="缁涘楠? width="80">
+      <el-table :data="alerts" stripe size="small" empty-text="暂无告警">
+        <el-table-column label="等级" width="80">
           <template #default="{row}">
             <el-tag :type="tagType(row.level)" size="small">{{ row.level }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="time" label="閺冨爼妫? width="80" />
-        <el-table-column prop="title" label="閺嶅洭顣? min-width="200" />
-        <el-table-column prop="detail" label="鐠囷附鍎? min-width="200" show-overflow-tooltip />
-        <el-table-column prop="source" label="閺夈儲绨? width="80" />
-        <el-table-column label="閻樿埖鈧? width="80">
+        <el-table-column prop="time" label="时间" width="80" />
+        <el-table-column prop="title" label="标题" min-width="200" />
+        <el-table-column prop="detail" label="详情" min-width="200" show-overflow-tooltip />
+        <el-table-column prop="source" label="来源" width="80" />
+        <el-table-column label="状态" width="80">
           <template #default="{row}">
-            <el-tag :type="row.resolved ? 'info' : 'danger'" size="small">{{ row.resolved ? '瀹歌尪袙閸? : '閺堫亣袙閸? }}</el-tag>
+            <el-tag :type="row.resolved ? 'info' : 'danger'" size="small">{{ row.resolved ? '已解决' : '未解决' }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="閹垮秳缍? width="100">
+        <el-table-column label="操作" width="100">
           <template #default="{row}">
-            <el-button v-if="!row.resolved" size="small" type="primary" link @click="doResolve(row.id)">鐟欙絽鍠?/el-button>
+            <el-button v-if="!row.resolved" size="small" type="primary" link @click="doResolve(row.id)">解决</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -48,7 +48,7 @@ import { ref, computed, onMounted } from 'vue'
 import { getAlertList, getAlertStats, resolveAlert } from '@/api/alert'
 import { ElMessage } from 'element-plus'
 
-const levelMap = { P1: '缁毖勨偓?, P2: '娑撱儵鍣?, P3: '娑撯偓閼?, P4: '鐟欏倸鐧? }
+const levelMap = { P1: '紧急', P2: '严重', P3: '一般', P4: '观察' }
 const alerts = ref([])
 const stats = ref({})
 const filterLevel = ref('')
@@ -70,13 +70,13 @@ async function fetchAlerts() {
     const params = filterLevel.value ? { level: filterLevel.value } : {}
     const r = await getAlertList(params)
     alerts.value = r.alerts || []
-  } catch { ElMessage.error('閼惧嘲褰囬崨濠咁劅婢惰精瑙?) }
+  } catch { ElMessage.error('获取告警失败') }
 }
 async function fetchStats() {
   try { const r = await getAlertStats(); stats.value = r.stats || {} } catch {}
 }
 async function doResolve(id) {
-  try { await resolveAlert(id); ElMessage.success('瀹稿弶鐖ｇ拋鎷屝掗崘?); fetchAlerts(); fetchStats() } catch { ElMessage.error('閹垮秳缍旀径杈Е') }
+  try { await resolveAlert(id); ElMessage.success('已标记解决'); fetchAlerts(); fetchStats() } catch { ElMessage.error('操作失败') }
 }
 onMounted(() => { fetchAlerts(); fetchStats() })
 </script>

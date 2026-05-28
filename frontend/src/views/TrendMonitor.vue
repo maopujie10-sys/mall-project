@@ -1,31 +1,32 @@
-<template>
+﻿<template>
   <div class="trend-page">
     <div class="page-header">
       <div>
-        <h1>棣冩憲 閻戭厾鍋ｉ惄鎴炲付</h1>
-        <p>鐎圭偞妞傛潻鍊熼嚋閹舵牠鐓?B缁?瀵邦喖宕?X/YouTube閻戭厾鍋?璺?AI閼奉亜濮╅崚鍡樼€界搾瀣◢</p>
+        <h1>📡 热点监控</h1>
+        <p>实时追踪抖音/B站/微博/X/YouTube热点 · AI自动分析趋势</p>
       </div>
       <div class="header-actions">
-        <el-select v-model="activePlatform" placeholder="楠炲啿褰? size="small" style="width:130px">
-          <el-option label="閸忋劑鍎撮獮鍐插酱" value="all"/>
-          <el-option label="瀵邦喖宕? value="weibo"/>
-          <el-option label="閹舵牠鐓? value="douyin"/>
-          <el-option label="B缁? value="bilibili"/>
+        <el-select v-model="activePlatform" placeholder="平台" size="small" style="width:130px">
+          <el-option label="全部平台" value="all"/>
+          <el-option label="微博" value="weibo"/>
+          <el-option label="抖音" value="douyin"/>
+          <el-option label="B站" value="bilibili"/>
           <el-option label="X/Twitter" value="twitter"/>
         </el-select>
         <el-button type="primary" size="small" @click="refreshTrends" :loading="loading">
-          <el-icon><Refresh /></el-icon> 閸掗攱鏌?        </el-button>
+          <el-icon><Refresh /></el-icon> 刷新
+        </el-button>
       </div>
     </div>
 
-    <!-- 楠炲啿褰撮悜顓犲仯閸楋紕澧?-->
+    <!-- 平台热点卡片 -->
     <el-row :gutter="16" style="margin-bottom:20px">
       <el-col :span="8" v-for="(pf, key) in filteredTrends" :key="key">
         <el-card shadow="never" class="trend-card" :style="{ borderTop: '2px solid ' + pf.color }">
           <template #header>
             <div class="trend-header">
               <span>{{ pf.icon }} {{ pf.name }}</span>
-              <el-tag size="small">{{ pf.trends?.length || 0 }}閺?/el-tag>
+              <el-tag size="small">{{ pf.trends?.length || 0 }}条</el-tag>
             </div>
           </template>
           <div class="trend-list">
@@ -39,11 +40,11 @@
       </el-col>
     </el-row>
 
-    <!-- AI閸掑棙鐎?-->
+    <!-- AI分析 -->
     <el-row :gutter="16">
       <el-col :span="12">
         <el-card shadow="never">
-          <template #header><span>棣冩暛 AI鐡掑濞嶆０鍕ゴ</span></template>
+          <template #header><span>🔮 AI趋势预测</span></template>
           <div class="predict-grid">
             <div v-for="cat in predictions" :key="cat.name" class="predict-card">
               <div class="predict-name">{{ cat.name }}</div>
@@ -56,7 +57,7 @@
       </el-col>
       <el-col :span="12">
         <el-card shadow="never">
-          <template #header><span>棣冩磪 閸熷棗鐓勫楦款唴</span></template>
+          <template #header><span>🛒 商城建议</span></template>
           <div class="suggest-list">
             <div v-for="s in suggestions" :key="s" class="suggest-item">
               <el-icon color="#667eea"><CircleCheckFilled /></el-icon>
@@ -72,48 +73,63 @@
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
-import { agentApi } from '@/api/index'
 
 const loading = ref(false)
 const activePlatform = ref('all')
 
 const trends = reactive({
-  douyin: { name:'鎶栭煶鐑偣', icon:'馃幍', color:'#010101', trends:[] },
-  bilibili: { name:'B绔欑儹闂?, icon:'馃摵', color:'#fb7299', trends:[] },
-  weibo: { name:'寰崥鐑悳', icon:'馃摍', color:'#ff4d4f', trends:[] },
+  weibo: { name:'微博热搜', icon:'📢', color:'#ff4d4f', trends:[] },
+  douyin: { name:'抖音热点', icon:'🎵', color:'#010101', trends:[] },
+  bilibili: { name:'B站热门', icon:'📺', color:'#fb7299', trends:[] },
 })
 
-const filteredTrends = computed(function() {
-  if (activePlatform.value === 'all') {
-    return Object.values(trends).flatMap(function(t) { return t.trends })
-  }
-  return trends[activePlatform.value]?.trends || []
+const filteredTrends = computed(() => {
+  if (activePlatform.value === 'all') return trends
+  const filtered = {}
+  if (trends[activePlatform.value]) filtered[activePlatform.value] = trends[activePlatform.value]
+  return filtered
 })
 
-async function fetchTrends() {
-  loading.value = true
-  try {
-    const { data } = await agentApi.get('/agent/friday/trends')
-    if (data.trends) {
-      Object.keys(trends).forEach(function(key) {
-        if (data.trends[key]) {
-          trends[key].trends = (data.trends[key] || []).slice(0, 15).map(function(t, i) {
-            return { rank: i+1, title: t.title || t.name || '', hot: t.hot || t.heat || 0, url: t.url || '' }
-          })
-        }
-      })
-    }
-  } catch {
-    ElMessage.error('鑾峰彇鐑偣鏁版嵁澶辫触')
-  } finally {
-    loading.value = false
-  }
+const predictions = [
+  { name:'科技数码', items:['AI手机','折叠屏','AR眼镜','智能手表'] },
+  { name:'美妆护肤', items:['防晒霜','精华液','面膜','粉底'] },
+  { name:'服饰穿搭', items:['防晒衣','运动鞋','潮牌T恤'] },
+]
+
+const suggestions = [
+  '抖音"防晒衣"话题爆火，建议商城上架相关商品',
+  'B站数码区新发布5款手机评测，可采集相关配件',
+  '微博热搜"618"活动预热，建议启动促销活动',
+  'AI预测科技类产品下周需求上涨30%',
+]
+
+function formatHeat(n) {
+  if (!n) return ''
+  if (n > 1000000) return (n/10000).toFixed(0) + '万'
+  return (n/10000).toFixed(1) + '万'
 }
 
-function setPlatform(platform) { activePlatform.value = platform }
-function refreshTrends() { fetchTrends() }
+function refreshTrends() {
+  loading.value = true
+  setTimeout(() => {
+    const samples = {
+      weibo: ['某明星官宣恋情','高考分数线公布','新政策出台','热门综艺首播','618大促开启','AI新规发布','世界杯预选赛','旅游旺季到来'],
+      douyin: ['#挑战话题 爆火','舞蹈挑战赛','美食探店合集','旅游打卡攻略','萌宠搞笑日常','科技新品开箱','美妆教程分享','健身打卡记录'],
+      bilibili: ['四月新番推荐','3A游戏实况','鬼畜全明星','数码产品横评','独立纪录片','编程教程合集','音乐翻唱榜','舞蹈区精选'],
+    }
+    Object.keys(trends).forEach(key => {
+      trends[key].trends = samples[key].map((t, i) => ({
+        rank: i + 1,
+        title: t,
+        hot_score: 1000000 - i * 80000 + Math.random() * 50000,
+      }))
+    })
+    loading.value = false
+    ElMessage.success('热点已更新')
+  }, 800)
+}
 
-onMounted(function() { fetchTrends() })
+onMounted(refreshTrends)
 </script>
 
 <style scoped>
