@@ -1,32 +1,83 @@
 {
-  "version": "2.0.0",
-  "primary": {
-    "id": "primary",
-    "main": "tiktook.eu.cc",
-    "weight": 10,
-    "children": [
-      { "host": "www.tiktook.eu.cc", "weight": 3 }
-    ]
-  },
-  "rotation": [
-    { "id": "r1", "main": "chxhx.eu.cc", "weight": 5, "children": [{"host":"www.chxhx.eu.cc","weight":2},{"host":"shop.chxhx.eu.cc","weight":2}] },
-    { "id": "r2", "main": "drrgr.eu.cc", "weight": 5, "children": [{"host":"www.drrgr.eu.cc","weight":2},{"host":"shop.drrgr.eu.cc","weight":2}] },
-    { "id": "r3", "main": "drrimrf.eu.cc", "weight": 5, "children": [{"host":"www.drrimrf.eu.cc","weight":2},{"host":"shop.drrimrf.eu.cc","weight":2}] },
-    { "id": "r4", "main": "drriiu.eu.cc", "weight": 5, "children": [{"host":"www.drriiu.eu.cc","weight":2},{"host":"shop.drriiu.eu.cc","weight":2}] },
-    { "id": "r5", "main": "duomi.eu.cc", "weight": 4, "children": [{"host":"www.duomi.eu.cc","weight":2},{"host":"shop.duomi.eu.cc","weight":2}] },
-    { "id": "r6", "main": "dengruihan.eu.cc", "weight": 4, "children": [{"host":"www.dengruihan.eu.cc","weight":2},{"host":"shop.dengruihan.eu.cc","weight":2}] },
-    { "id": "r7", "main": "yyawzx.eu.cc", "weight": 3, "children": [{"host":"www.yyawzx.eu.cc","weight":2},{"host":"shop.yyawzx.eu.cc","weight":2}] },
-    { "id": "r8", "main": "gamed.eu.cc", "weight": 3, "children": [{"host":"www.gamed.eu.cc","weight":2},{"host":"shop.gamed.eu.cc","weight":2}] }
+  "version": "3.0.0",
+  "groups": [
+    {
+      "id": "g1",
+      "main": "chxhx.eu.cc",
+      "children": [
+        { "host": "www.chxhx.eu.cc" },
+        { "host": "shop.chxhx.eu.cc" },
+        { "host": "mall.chxhx.eu.cc" }
+      ]
+    },
+    {
+      "id": "g2",
+      "main": "drrgr.eu.cc",
+      "children": [
+        { "host": "www.drrgr.eu.cc" },
+        { "host": "shop.drrgr.eu.cc" },
+        { "host": "mall.drrgr.eu.cc" }
+      ]
+    },
+    {
+      "id": "g3",
+      "main": "drrimrf.eu.cc",
+      "children": [
+        { "host": "www.drrimrf.eu.cc" },
+        { "host": "shop.drrimrf.eu.cc" },
+        { "host": "mall.drrimrf.eu.cc" }
+      ]
+    },
+    {
+      "id": "g4",
+      "main": "drriiu.eu.cc",
+      "children": [
+        { "host": "www.drriiu.eu.cc" },
+        { "host": "shop.drriiu.eu.cc" },
+        { "host": "mall.drriiu.eu.cc" }
+      ]
+    },
+    {
+      "id": "g5",
+      "main": "duomi.eu.cc",
+      "children": [
+        { "host": "www.duomi.eu.cc" },
+        { "host": "shop.duomi.eu.cc" },
+        { "host": "mall.duomi.eu.cc" }
+      ]
+    },
+    {
+      "id": "g6",
+      "main": "dengruihan.eu.cc",
+      "children": [
+        { "host": "www.dengruihan.eu.cc" },
+        { "host": "shop.dengruihan.eu.cc" },
+        { "host": "mall.dengruihan.eu.cc" }
+      ]
+    },
+    {
+      "id": "g7",
+      "main": "yyawzx.eu.cc",
+      "children": [
+        { "host": "www.yyawzx.eu.cc" },
+        { "host": "shop.yyawzx.eu.cc" },
+        { "host": "mall.yyawzx.eu.cc" }
+      ]
+    },
+    {
+      "id": "g8",
+      "main": "gamed.eu.cc",
+      "children": [
+        { "host": "www.gamed.eu.cc" },
+        { "host": "shop.gamed.eu.cc" },
+        { "host": "mall.gamed.eu.cc" }
+      ]
+    }
   ],
   "settings": {
     "probeTimeout": 3000,
-    "totalTimeout": 15000,
     "deadTTL": 600000,
-    "retryMax": 3,
-    "preconnectLimit": 3,
-    "enableReporting": false,
-    "reportEndpoint": "",
-    "redirectDelay": 200,
-    "fallbackMode": "list"
+    "maxRetries": 3,
+    "redirectDelay": 200
   }
 }

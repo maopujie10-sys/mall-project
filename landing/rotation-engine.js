@@ -1,88 +1,195 @@
-﻿/**
- * 企业级两级域名轮值引擎 v2.1
- * 主域名优先 + 8轮值降级, 配置从AI后台API拉取
+/**
+ * 企业级两级域名轮值引擎 v3.0
+ * ┌─ 8个主域名组（平等轮值）
+ * │  ├── 组1: chxhx.eu.cc → www/shop/mall.chxhx.eu.cc
+ * │  ├── 组2: drrgr.eu.cc → www/shop/mall.drrgr.eu.cc
+ * │  └── ...
+ * └─ 每组内二级域名池循环轮值
+ *
+ * 逻辑：
+ *  1. 从上次使用的组的下一个开始
+ *  2. 从该组的二级域名池选下一个
+ *  3. 健康探测通过 → 跳转
+ *  4. 当前组挂了 → 标记死亡 → 切下一组
+ *  5. 全部组死亡 → 显示手动选择
  */
 (function(){'use strict';
-const API_URL='/ai/api/rotation/two-level/public-config';
-const STORAGE_KEY='lr_v2';
-const DEAD_TTL=600000;
-const PROBE_TIMEOUT=3000;
-const MAX_RETRIES=3;
-let state={deadDomains:{},groupIndex:0,childIndex:{}};
-let config=null,startTime=Date.now();
+const CONFIG_URL = '/domain-config.json';
+const STORAGE_KEY = 'lr_v3';
+const DEAD_TTL = 600000;
+const PROBE_TIMEOUT = 3000;
+const MAX_RETRIES = 3;
 
-function loadState(){try{const r=localStorage.getItem(STORAGE_KEY);if(r){const p=JSON.parse(r);state={...state,...p};const n=Date.now();for(const[k,v]of Object.entries(state.deadDomains)){if(n-v.time>DEAD_TTL)delete state.deadDomains[k]}}}catch(e){}}
-function saveState(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(state))}catch(e){}}
-function isAlive(d){const dead=state.deadDomains[d];if(!dead)return true;if(Date.now()-dead.time>DEAD_TTL){delete state.deadDomains[d];saveState();return true}return false}
-function markDead(d,r){state.deadDomains[d]={time:Date.now(),reason:r||'unknown'};saveState()}
-function probe(host,timeout){return new Promise(r=>{const img=new Image();const t=setTimeout(()=>{img.src='';r(false)},timeout);img.onload=()=>{clearTimeout(t);r(true)};img.onerror=()=>{clearTimeout(t);r(false)};img.src='https://'+host+'/favicon.ico?_r='+Date.now()})}
+let state = { deadDomains: {}, groupIndex: 0, childIndex: {} };
+let config = null;
 
-function pickChild(group){
-  const alive=group.children.filter(c=>isAlive(c.host));
-  if(!alive.length)return null;
-  const id=group.id||'primary';
-  if(!state.childIndex[id])state.childIndex[id]=0;
-  const idx=state.childIndex[id]%alive.length;
-  const picked=alive[idx];
-  state.childIndex[id]=(idx+1)%alive.length;
-  saveState();
-  return picked;
+// === 状态持久化 ===
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      state.groupIndex = parsed.groupIndex || 0;
+      state.childIndex = parsed.childIndex || {};
+      // 清理过期死亡记录
+      const now = Date.now();
+      for (const [k, v] of Object.entries(parsed.deadDomains || {})) {
+        if (now - v.time < DEAD_TTL) state.deadDomains[k] = v;
+      }
+    }
+  } catch(e) {}
+}
+function saveState() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      groupIndex: state.groupIndex,
+      childIndex: state.childIndex,
+      deadDomains: state.deadDomains
+    }));
+  } catch(e) {}
 }
 
-function pickTarget(){
-  // 1. 主域名优先
-  const p=config.primary;
-  if(p&&isAlive(p.main)){
-    const alive=p.children.filter(c=>isAlive(c.host));
-    if(alive.length>0){const child=pickChild(p);if(child)return child}
+// === 健康检测 ===
+function isAlive(host) {
+  const dead = state.deadDomains[host];
+  if (!dead) return true;
+  if (Date.now() - dead.time > DEAD_TTL) {
+    delete state.deadDomains[host];
+    saveState();
+    return true;
   }
-  // 2. 轮值域名降级(按权重)
-  const rotation=(config.rotation||[]).filter(r=>r.enabled!==false).sort((a,b)=>(b.weight||1)-(a.weight||1));
-  for(const r of rotation){
-    if(!isAlive(r.main))continue;
-    const alive=r.children.filter(c=>isAlive(c.host));
-    if(!alive.length){markDead(r.main,'all_children_dead');continue}
-    const child=pickChild(r);if(child)return child;
+  return false;
+}
+function markDead(host, reason) {
+  state.deadDomains[host] = { time: Date.now(), reason: reason || 'unknown' };
+  saveState();
+}
+
+// === 探测 ===
+function probe(host, timeout) {
+  return new Promise(function(resolve) {
+    var img = new Image();
+    var timer = setTimeout(function() { img.src = ''; resolve(false); }, timeout);
+    img.onload = function() { clearTimeout(timer); resolve(true); };
+    img.onerror = function() { clearTimeout(timer); resolve(false); };
+    img.src = 'https://' + host + '/favicon.ico?_r=' + Date.now();
+  });
+}
+
+// === 核心：两级轮值选目标 ===
+function pickTarget() {
+  var groups = config.groups.filter(function(g) { return g.enabled !== false; });
+  if (!groups.length) return null;
+
+  // 从上次组索引开始，循环尝试所有组
+  for (var i = 0; i < groups.length; i++) {
+    var groupIdx = (state.groupIndex + i) % groups.length;
+    var group = groups[groupIdx];
+
+    // 检查组的主域名是否存活
+    if (!isAlive(group.main)) continue;
+
+    // 筛选存活的二级域名
+    var aliveChildren = group.children.filter(function(c) { return isAlive(c.host); });
+    if (!aliveChildren.length) {
+      markDead(group.main, 'all_children_dead');
+      continue;
+    }
+
+    // 从上次二级索引开始，选下一个
+    var cid = group.id || group.main;
+    if (typeof state.childIndex[cid] === 'undefined') state.childIndex[cid] = 0;
+    var childIdx = state.childIndex[cid] % aliveChildren.length;
+    var picked = aliveChildren[childIdx];
+
+    // 推进索引（下次换下一个二级域名）
+    state.childIndex[cid] = (childIdx + 1) % aliveChildren.length;
+    // 推进组索引（下次从下一组开始）
+    state.groupIndex = (groupIdx + 1) % groups.length;
+    saveState();
+
+    return { group: group, child: picked };
   }
   return null;
 }
 
-function showManualLinks(hosts){
-  const el=document.getElementById('fallback');if(!el)return;
-  document.getElementById('spinner').style.display='none';
-  if(!hosts||!hosts.length){el.innerHTML='<p style=color:#ff4d4f;font-size:13px>所有线路暂不可用</p>';el.style.display='block';return}
-  el.innerHTML='<p style=font-size:12px;color:rgba(255,255,255,.5);margin-bottom:8px>手动选择线路:</p>'+hosts.slice(0,12).map(h=>'<a href=https://'+h.host+'>'+h.host+'</a>').join('');
-  el.style.display='block';
+// === UI ===
+function updateStep(name, status) {
+  var el = document.querySelector('[data-step=' + name + ']');
+  if (el) el.className = 'step ' + status;
 }
-
-function updateStep(name,status){
-  const el=document.querySelector('[data-step='+name+']');
-  if(el)el.className='step '+status;
-}
-
-async function run(){
-  startTime=Date.now();loadState();updateStep('config','active');
-  try{
-    const r=await fetch(API_URL,{cache:'no-store'});config=await r.json();
-    updateStep('config','done');
-  }catch(e){updateStep('config','fail');showManualLinks([]);return}
-
-  for(let retry=0;retry<MAX_RETRIES;retry++){
-    updateStep('group','active');updateStep('child','active');
-    const target=pickTarget();
-    if(!target){updateStep('group','fail');showManualLinks([]);return}
-    updateStep('group','done');updateStep('child','done');
-
-    updateStep('probe','active');
-    const ok=await probe(target.host,PROBE_TIMEOUT);
-    if(ok){updateStep('probe','done');updateStep('redirect','active');
-      document.getElementById('title').textContent='跳转中...';
-      setTimeout(()=>{window.location.replace('https://'+target.host)},200);
-      setTimeout(()=>{if(document.visibilityState==='visible')showManualLinks([target])},5000);
-      return}
-    updateStep('probe','fail');markDead(target.host,'probe_failed');retry++;
+function showManualLinks(targets) {
+  var el = document.getElementById('fallback');
+  if (!el) return;
+  document.getElementById('spinner').style.display = 'none';
+  if (!targets || !targets.length) {
+    el.innerHTML = '<p style="color:#ff4d4f;font-size:13px">⚠️ 所有线路暂不可用</p>';
+    el.style.display = 'block';
+    return;
   }
-  updateStep('redirect','fail');showManualLinks([]);
+  var html = '<p style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:8px">手动选择线路:</p>';
+  targets.slice(0, 12).forEach(function(h) {
+    html += '<a href="https://' + h.host + '" style="display:block;padding:6px 12px;color:#fff;text-decoration:none;background:rgba(255,255,255,.1);border-radius:6px;margin-bottom:4px">' + h.host + '</a>';
+  });
+  el.innerHTML = html;
+  el.style.display = 'block';
 }
-run().catch(()=>showManualLinks([]));
+
+// === 主流程 ===
+async function run() {
+  loadState();
+  updateStep('config', 'active');
+
+  // 加载配置
+  try {
+    var resp = await fetch(CONFIG_URL, { cache: 'no-store' });
+    config = await resp.json();
+    updateStep('config', 'done');
+  } catch(e) {
+    updateStep('config', 'fail');
+    showManualLinks([]);
+    return;
+  }
+
+  // 多轮尝试
+  for (var retry = 0; retry < MAX_RETRIES; retry++) {
+    updateStep('group', 'active');
+    updateStep('child', 'active');
+
+    var target = pickTarget();
+    if (!target) {
+      updateStep('group', 'fail');
+      showManualLinks([]);
+      return;
+    }
+    updateStep('group', 'done');
+    updateStep('child', 'done');
+
+    updateStep('probe', 'active');
+    var ok = await probe(target.child.host, PROBE_TIMEOUT);
+
+    if (ok) {
+      updateStep('probe', 'done');
+      updateStep('redirect', 'active');
+      document.getElementById('title').textContent = '跳转中 → ' + target.child.host;
+      setTimeout(function() {
+        window.location.replace('https://' + target.child.host);
+      }, config.settings.redirectDelay || 200);
+
+      // 兜底：5秒后还没跳转就显示手动链接
+      setTimeout(function() {
+        if (document.visibilityState === 'visible') showManualLinks([target.child]);
+      }, 5000);
+      return;
+    }
+
+    updateStep('probe', 'fail');
+    markDead(target.child.host, 'probe_failed');
+  }
+
+  updateStep('redirect', 'fail');
+  showManualLinks([]);
+}
+
+run().catch(function() { showManualLinks([]); });
 })();
