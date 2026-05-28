@@ -1,4 +1,4 @@
-"""认证模块 — JWT Token + 简单Token 双模式
+﻿"""认证模块 — JWT Token + 简单Token 双模式
 v2: 支持 JWT 过期验证 + 速率限制 + 审计日志"""
 import time
 import hashlib
@@ -17,6 +17,25 @@ JWT_EXPIRE_HOURS = int(os.getenv("JWT_EXPIRE_HOURS", "24"))
 _rate_limits: dict[str, list] = {}  # {token: [timestamps]}
 RATE_LIMIT_MAX = int(os.getenv("RATE_LIMIT_MAX", "60"))  # 每分钟最多请求
 RATE_LIMIT_WINDOW = 60  # 秒
+
+
+# ===== Redis 速率限制(持久化，重启不丢) =====
+_redis_client = None
+
+def _get_redis():
+    """获取 Redis 连接(惰性连接)"""
+    global _redis_client
+    if _redis_client is not None:
+        return _redis_client
+    try:
+        import redis as _r
+        dsn = os.getenv("REDIS_DSN", "redis://localhost:6379/1")
+        _redis_client = _r.from_url(dsn, decode_responses=True)
+        _redis_client.ping()
+        return _redis_client
+    except Exception:
+        _redis_client = False
+        return None
 
 # ===== 审计日志 =====
 _audit_log: list = []
@@ -71,11 +90,22 @@ def verify_jwt(token: str) -> dict | None:
         return None
 
 def check_rate_limit(token: str) -> bool:
-    """检查速率限制，返回是否允许"""
+    """检查速率限制 — Redis 优先(持久化)，内存降级"""
+    r = _get_redis()
+    if r:
+        try:
+            key = f"rate_limit:{token}"
+            current = r.incr(key)
+            if current == 1:
+                r.expire(key, RATE_LIMIT_WINDOW)
+            return current <= RATE_LIMIT_MAX
+        except Exception:
+            pass  # Redis 异常时降级到内存
+
+    # 内存模式(降级)
     now = time.time()
     if token not in _rate_limits:
         _rate_limits[token] = []
-    # 清理过期记录
     _rate_limits[token] = [t for t in _rate_limits[token] if now - t < RATE_LIMIT_WINDOW]
     if len(_rate_limits[token]) >= RATE_LIMIT_MAX:
         return False
@@ -101,7 +131,18 @@ def get_audit_logs(limit: int = 100) -> list:
     return _audit_log[-limit:]
 
 def get_rate_limit_stats() -> dict:
-    """速率限制统计"""
+    """速率限制统计 — Redis模式的近似统计"""
+    r = _get_redis()
+    if r:
+        try:
+            keys = list(r.scan_iter("rate_limit:*"))
+            total = len(keys)
+            blocked = sum(1 for k in keys if int(r.get(k) or 0) >= RATE_LIMIT_MAX)
+            active = total - blocked
+            return {"active_clients": active, "blocked_clients": blocked, "max_per_minute": RATE_LIMIT_MAX, "backend": "redis"}
+        except Exception:
+            pass
+
     now = time.time()
     active = 0
     blocked = 0
@@ -111,7 +152,7 @@ def get_rate_limit_stats() -> dict:
             blocked += 1
         elif recent:
             active += 1
-    return {"active_clients": active, "blocked_clients": blocked, "max_per_minute": RATE_LIMIT_MAX}
+    return {"active_clients": active, "blocked_clients": blocked, "max_per_minute": RATE_LIMIT_MAX, "backend": "memory"}
 
 async def verify_token(request: Request):
     """Token 验证中间件 — 支持 JWT + 简单 Token"""
