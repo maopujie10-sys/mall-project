@@ -16,3 +16,5 @@ frontend/release/
 frontend/.gitignore
 frontend/dist_electron/
 frontend/out/
+
+audit_routes.cjs
