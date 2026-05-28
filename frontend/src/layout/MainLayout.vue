@@ -69,6 +69,44 @@
           <router-link to="/audit" class="nav-item" :class="{ active: isActive('/audit') }"><span class="nav-icon">📋</span><span>审计日志</span></router-link>
           <router-link to="/self-service" class="nav-item" :class="{ active: isActive('/self-service') }"><span class="nav-icon">🔧</span><span>自助服务</span></router-link>
         </div>
+
+        <!-- 商城运营 -->
+        <div class="nav-section">
+          <div class="nav-section-label" v-show="!sidebarCollapsed">商城运营</div>
+          <router-link to="/mall" class="nav-item" :class="{ active: isActive('/mall') }">
+            <span class="nav-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span>
+            <span class="nav-label" v-show="!sidebarCollapsed">商城管理</span>
+          </router-link>
+          <router-link to="/customer" class="nav-item" :class="{ active: isActive('/customer') }">
+            <span class="nav-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
+            <span class="nav-label" v-show="!sidebarCollapsed">客服系统</span>
+          </router-link>
+          <router-link to="/site" class="nav-item" :class="{ active: isActive('/site') }">
+            <span class="nav-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></span>
+            <span class="nav-label" v-show="!sidebarCollapsed">落地页检测</span>
+          </router-link>
+        </div>
+
+        <!-- 域名与运维 -->
+        <div class="nav-section">
+          <div class="nav-section-label" v-show="!sidebarCollapsed">域名与运维</div>
+          <router-link to="/rotation" class="nav-item" :class="{ active: isActive('/rotation') }">
+            <span class="nav-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg></span>
+            <span class="nav-label" v-show="!sidebarCollapsed">域名轮值</span>
+          </router-link>
+          <router-link to="/rollback" class="nav-item" :class="{ active: isActive('/rollback') }">
+            <span class="nav-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg></span>
+            <span class="nav-label" v-show="!sidebarCollapsed">备份回滚</span>
+          </router-link>
+          <router-link to="/alert" class="nav-item" :class="{ active: isActive('/alert') }">
+            <span class="nav-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></span>
+            <span class="nav-label" v-show="!sidebarCollapsed">告警中心</span>
+          </router-link>
+          <router-link to="/security" class="nav-item" :class="{ active: isActive('/security') }">
+            <span class="nav-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span>
+            <span class="nav-label" v-show="!sidebarCollapsed">安全中心</span>
+          </router-link>
+        </div>
         <div class="nav-section">
           <div class="nav-section-label" v-show="!sidebarCollapsed"><span class="sec-icon">🛡️</span> 安全合规</div>
           <router-link to="/security" class="nav-item" :class="{ active: isActive('/security') }"><span class="nav-icon">🛡️</span><span>安全中心</span></router-link>
