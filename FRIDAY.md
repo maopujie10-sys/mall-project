@@ -40,6 +40,11 @@
   - 扩展前端 rotation.js API层（全量检测/手动轮值/权重/历史）
   - 修复前端 RotationPanel.vue 数据字段对齐+添加操作按钮
 
+- 2026-05-28: [归档提交] 商城+轮值系统正式归档 push
+  - commit f1a808e：20文件变更，+2048/-223行
+  - 新增11个商城子面板：Category/Content/CustomerService/DataTable/Finance/Kyc/Marketing/Merchant/Overview/Risk/System
+  - 轮值系统三件套：rotation_panel.py + rotation.js + RotationPanel.vue
+  - 调度器 scheduler.py + mall_tools.py + docker-compose.unified.yml 一并归档
 $1## 🔄 永久规则：asar 文件禁止提交
 - app_patched.asar (154MB) / asar_extract/ 是 Codex 解包临时文件，绝不可提交
 - 每次 git add 之前必须先确认 .gitignore 已包含上述条目
