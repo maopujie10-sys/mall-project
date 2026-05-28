@@ -26,7 +26,7 @@
           <el-option label="default 站点" value="/etc/nginx/sites-enabled/default" />
         </el-select><el-button size="small" @click="fetchConfig" style="margin-left:8px">加载</el-button></template>
         <pre class="code-box">{{ configContent || "点击加载配置" }}</pre>
-      </el-card>
+      </el-card></el-col>
       <el-col :span="12">
         <el-card shadow="never"><template #header>📊 错误统计</template>
           <div v-if="errors?.total" style="margin-bottom:12px">共 {{ errors.total }} 条最近错误</div>
@@ -58,6 +58,7 @@
           <el-button size="small" @click="fetchLogs" style="margin-left:8px">搜索</el-button>
         </template>
         <pre class="code-box" style="max-height:350px">{{ logs || "点击搜索查看日志" }}</pre>
+        </el-card>
       </el-col>
     </el-row>
   </div>
