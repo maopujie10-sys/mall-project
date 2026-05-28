@@ -172,19 +172,22 @@ async def _auto_rotate() -> str:
 
 @router.get("/domains")
 async def get_domains(_=Depends(verify_token)):
-    """获取域名列表（附带实时检测数据）"""
+    """获取域名列表（返回上次检测的缓存数据，实时检测用 /check-all）"""
     await handle_risk("L1", "查看轮值域名列表")
     domains = _get_domains()
-    # 并发补充实时数据，最快速度返回
-    results = await asyncio.gather(*[_enrich_domain(d) for d in domains], return_exceptions=True)
-    enriched = []
-    for i, r in enumerate(results):
-        if isinstance(r, Exception):
-            enriched.append(dict(domains[i]))
-        else:
-            enriched.append(r)
-    state._save()
-    return enriched
+    results = []
+    for d in domains:
+        entry = dict(d)
+        # 用 _check_all 缓存的检测数据（last_check/latency/ip/status_code/ssl_*）
+        if d.get("last_check"):
+            entry["latency_ms"] = d.get("latency", 0)
+            entry["ip_addr"] = d.get("ip", "")
+            entry["http_status"] = d.get("status_code", 0)
+            entry["ssl_days"] = d.get("ssl_days", 0)
+            entry["ssl_expiry"] = d.get("ssl_expiry", "")
+            entry["last_error_msg"] = d.get("last_error", "")
+        results.append(entry)
+    return results
 
 
 class AddDomainRequest(BaseModel):

@@ -16,6 +16,7 @@ RUNBOOKS = {
     "server_health": {"name": "服务器健康检查", "class": ServerHealthRunbook, "risk": "L1"},
     "disk_full": {"name": "磁盘清理", "class": DiskFullRunbook, "risk": "L2"},
     "rotation_check": {"name": "轮值域名巡检", "class": RotationCheckRunbook, "risk": "L1"},
+    "customer_order": {"name": "订单问题排查", "class": CustomerOrderRunbook, "risk": "L1"},
 }
 
 @router.get("/runbooks")
@@ -38,10 +39,11 @@ async def run_runbook(runbook_id: str, user_id: Optional[str] = None, order_id: 
     info = RUNBOOKS[runbook_id]
     await handle_risk(info["risk"], f"自助运维: {info['name']}")
 
+    cls = RUNBOOKS[runbook_id]["class"]
     if runbook_id == "customer_order":
-        rb = CustomerOrderRunbook(user_id=user_id or "", order_id=order_id or "")
+        rb = cls(user_id=user_id or "", order_id=order_id or "")
     else:
-        rb = RUNBOOKS[runbook_id]["class"]()
+        rb = cls()
 
     report = await rb.run()
 

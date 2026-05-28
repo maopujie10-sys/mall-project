@@ -24,6 +24,22 @@ async def list_queue(_=Depends(verify_token)):
     await handle_risk("L1", "查看任务队列")
     return {"tasks": task_queue.list(), "pending": task_queue.pending_count()}
 
+@router.get("/stats")
+async def task_stats(_=Depends(verify_token)):
+    """任务统计概览"""
+    tasks = task_queue.list()
+    total = len(tasks)
+    by_status = {}
+    for t in tasks:
+        s = t.get("status", "unknown")
+        by_status[s] = by_status.get(s, 0) + 1
+    return {
+        "total": total,
+        "pending": task_queue.pending_count(),
+        "by_status": by_status,
+        "locks": task_queue.list_locks() if hasattr(task_queue, 'list_locks') else {},
+    }
+
 @router.get("/queue/{task_id}")
 async def get_task(task_id: str, _=Depends(verify_token)):
     t = task_queue.get(task_id)

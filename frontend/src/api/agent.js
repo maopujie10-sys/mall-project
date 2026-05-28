@@ -21,7 +21,7 @@ export function confirmTask(taskId, approved) {
  * Get current agent tasks / status
  */
 export function getAgentTasks() {
-  return agentApi.get('/agent/tasks')
+  return agentApi.get('/tasks/queue')
 }
 
 /**

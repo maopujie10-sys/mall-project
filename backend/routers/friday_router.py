@@ -123,7 +123,7 @@ async def analyze_image(url: str, _=Depends(verify_token)):
 @router.get("/models")
 async def list_models(_=Depends(verify_token)):
     """列出所有模型"""
-    return {"ok": True, "models": ModelRouter.list_models()}
+    return {"ok": True, "models": await ModelRouter.list_models()}
 
 @router.get("/models/route")
 async def route_model(mode: str = "quality", _=Depends(verify_token)):

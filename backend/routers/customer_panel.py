@@ -39,6 +39,38 @@ async def customer_stats(_=Depends(verify_token)):
     replied = sum(1 for m in msgs if m.get("replied"))
     return {"total": len(msgs), "replied": replied, "pending": len(msgs) - replied}
 
+class ReadRequest(BaseModel):
+    messageId: str
+
+@router.post("/read")
+async def mark_read(req: ReadRequest, _=Depends(verify_token)):
+    for m in _get_messages():
+        if m.get("id") == req.messageId:
+            m["read"] = True
+            state._save()
+            return {"ok": True}
+    return {"ok": False, "error": "消息不存在"}
+
+@router.post("/read-all")
+async def mark_all_read(_=Depends(verify_token)):
+    for m in _get_messages():
+        m["read"] = True
+    state._save()
+    return {"ok": True, "count": len(_get_messages())}
+
+class TransferRequest(BaseModel):
+    messageIds: list
+
+@router.post("/transfer")
+async def transfer_to_human(req: TransferRequest, _=Depends(verify_token)):
+    await handle_risk("L2", f"转人工: {len(req.messageIds)}条消息")
+    for m in _get_messages():
+        if m.get("id") in req.messageIds:
+            m["transferred"] = True
+            m["transferred_at"] = datetime.now().isoformat()
+    state._save()
+    return {"ok": True, "count": len(req.messageIds)}
+
 @router.get("/report")
 async def daily_report(_=Depends(verify_token)):
     await handle_risk("L1", "生成客服日报")
