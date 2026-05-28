@@ -30,7 +30,8 @@ server {
 
     location /rotation-engine.js { expires -1; add_header Cache-Control "no-cache, no-store, must-revalidate"; }
     location /domain-config.json { expires -1; add_header Cache-Control "no-cache, no-store, must-revalidate"; }
-    location = /favicon.ico { expires 1h; }    location / { try_files $uri $uri/ /index.html; }
+    location = /favicon.ico { expires 1h; }
+    location / { try_files $uri $uri/ /index.html; }
 }
 
 # ===== 轮值通配符域名 → Mall 应用 =====
