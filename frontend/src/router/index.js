@@ -43,7 +43,7 @@ const routes = [
       { path: "audit", name: "AuditLog", component: () => import("@/views/AuditLog.vue"), meta: { title: "审计日志" } },
       { path: "files", name: "FileManager", component: () => import("@/views/FileManager.vue"), meta: { title: "文件管理" } },
       { path: "network", name: "NetworkTools", component: () => import("@/views/NetworkTools.vue"), meta: { title: "网络工具" } },
-      { path: "github", name: "GitHubPanel", component: () => import("@/views/GitHubPanel.vue"), meta: { title: "GitHub" } }
+      { path: "github", name: "GitHubPanel", component: () => import("@/views/GitHubPanel.vue"), meta: { title: "GitHub" } },
       { path: "emergency", name: "Emergency", component: () => import("@/views/EmergencyPanel.vue"), meta: { title: "急救面板" } },
       { path: "phone", name: "PhoneAssistant", component: () => import("@/views/PhoneAssistant.vue"), meta: { title: "AI电话助理" } },
       { path: "image-process", name: "ImageProcessor", component: () => import("@/views/ImageProcessor.vue"), meta: { title: "AI商品图" } },
@@ -57,5 +57,6 @@ const routes = [
 
 const router = createRouter({ history: createWebHistory("/ai/"), routes })
 export default router
+
 
 

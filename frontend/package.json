@@ -1,52 +1,53 @@
-{
-  "name": "agent-control-frontend",
-  "private": true,
-  "version": "1.0.0",
-  "type": "module",
-  "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview",
-    "electron:dev": "electron .",
-    "electron:build": "electron-builder",
-    "electron:pack": "set ELECTRON_BUILD=true && npx vite build && npx @electron/packager . FridayAI --platform=win32 --arch=x64 --out=dist_electron --overwrite && echo Exe ready: dist_electron\\FridayAI-win32-x64\\FridayAI.exe"
-  },
-  "dependencies": {
-    "@element-plus/icons-vue": "^2.3.0",
-    "@vue/shared": "^3.5.34",
-    "axios": "^1.6.0",
-    "echarts": "^6.1.0",
-    "element-plus": "^2.14.0",
-    "pinia": "^2.1.0",
-    "three": "^0.170.0",
-    "vue": "^3.5.34",
-    "vue-router": "^4.3.0"
-  },
-  "devDependencies": {
-    "@vitejs/plugin-vue": "^5.0.0",
-    "electron": "^42.3.0",
-    "electron-builder": "^26.8.1",
-    "vite": "^5.4.0",
-    "@electron/packager": "^20.0.0"
-  },
-  "main": "electron/main.cjs",
-  "build": {
-    "directories": {
-      "output": "release"
-    },
-    "productName": "Friday AI OS",
-    "win": {
-      "target": "nsis",
-      "icon": "public/icons/icon-512.png"
-    },
-    "mac": {
-      "target": "dmg",
-      "icon": "public/icons/icon-512.png"
-    },
-    "appId": "com.friday.ai-os",
-    "nsis": {
-      "oneClick": false,
-      "allowToChangeInstallationDirectory": true
-    }
-  }
+﻿{
+    "name":  "agent-control-frontend",
+    "private":  true,
+    "version":  "1.0.0",
+    "type":  "module",
+    "scripts":  {
+                    "dev":  "vite",
+                    "build":  "vite build",
+                    "preview":  "vite preview",
+                    "electron:dev":  "electron .",
+                    "electron:build":  "electron-builder",
+                    "electron:pack":  "set ELECTRON_BUILD=true \u0026\u0026 npx vite build \u0026\u0026 npx @electron/packager . FridayAI --platform=win32 --arch=x64 --out=dist_electron --overwrite \u0026\u0026 echo Exe ready: dist_electron\\FridayAI-win32-x64\\FridayAI.exe"
+                },
+    "dependencies":  {
+                         "@element-plus/icons-vue":  "^2.3.0",
+                         "@vue/shared":  "^3.5.34",
+                         "axios":  "^1.6.0",
+                         "echarts":  "^6.1.0",
+                         "element-plus":  "^2.14.0",
+                         "pinia":  "^2.1.0",
+                         "three":  "^0.170.0",
+                         "vue":  "^3.5.34",
+                         "vue-router":  "^4.3.0",
+                         "vue-i18n":  "^9.13.0"
+                     },
+    "devDependencies":  {
+                            "@vitejs/plugin-vue":  "^5.0.0",
+                            "electron":  "^42.3.0",
+                            "electron-builder":  "^26.8.1",
+                            "vite":  "^5.4.0",
+                            "@electron/packager":  "^20.0.0"
+                        },
+    "main":  "electron/main.cjs",
+    "build":  {
+                  "directories":  {
+                                      "output":  "release"
+                                  },
+                  "productName":  "Friday AI OS",
+                  "win":  {
+                              "target":  "nsis",
+                              "icon":  "public/icons/icon-512.png"
+                          },
+                  "mac":  {
+                              "target":  "dmg",
+                              "icon":  "public/icons/icon-512.png"
+                          },
+                  "appId":  "com.friday.ai-os",
+                  "nsis":  {
+                               "oneClick":  false,
+                               "allowToChangeInstallationDirectory":  true
+                           }
+              }
 }
