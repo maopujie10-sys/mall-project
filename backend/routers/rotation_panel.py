@@ -351,3 +351,127 @@ async def manual_rotate(_=Depends(verify_token)):
     rotated = await _auto_rotate()
     state._save()
     return {"ok": bool(rotated), "rotated_to": rotated or "无可用替补"}
+
+
+
+# ═══════════════════════════════════════
+#  两级轮值配置管理 (1主域名 + 8轮值组)
+# ═══════════════════════════════════════
+
+class RotationConfigRequest(BaseModel):
+    primary: dict | None = None  # { main, weight, children: [{host,weight}] }
+    rotation: list | None = None  # [{ main, weight, children: [{host,weight}] }]
+
+class SubdomainRequest(BaseModel):
+    host: str
+    weight: int = 1
+
+def _get_config():
+    """获取两级轮值配置"""
+    if "rotation_two_level" not in state._data:
+        state._data["rotation_two_level"] = {
+            "primary": {
+                "main": "tiktook.eu.cc", "weight": 10,
+                "children": [
+                    {"host": "shop.tiktook.eu.cc", "weight": 3},
+                    {"host": "mall.tiktook.eu.cc", "weight": 3},
+                    {"host": "store.tiktook.eu.cc", "weight": 2}
+                ]
+            },
+            "rotation": [
+                {"id":"r1","main":"tiktokmall.shop","weight":5,"enabled":True,"children":[{"host":"www.tiktokmall.shop","weight":3},{"host":"shop.tiktokmall.shop","weight":2},{"host":"mall.tiktokmall.shop","weight":2}]},
+                {"id":"r2","main":"tiktokmall.store","weight":5,"enabled":True,"children":[{"host":"www.tiktokmall.store","weight":3},{"host":"shop.tiktokmall.store","weight":2},{"host":"mall.tiktokmall.store","weight":2}]},
+                {"id":"r3","main":"tiktokmall.online","weight":4,"enabled":True,"children":[{"host":"www.tiktokmall.online","weight":3},{"host":"shop.tiktokmall.online","weight":2},{"host":"mall.tiktokmall.online","weight":2}]},
+                {"id":"r4","main":"tiktokmall.live","weight":4,"enabled":True,"children":[{"host":"www.tiktokmall.live","weight":3},{"host":"shop.tiktokmall.live","weight":2},{"host":"mall.tiktokmall.live","weight":2}]},
+                {"id":"r5","main":"tiktokmall.xyz","weight":3,"enabled":True,"children":[{"host":"www.tiktokmall.xyz","weight":3},{"host":"shop.tiktokmall.xyz","weight":2},{"host":"mall.tiktokmall.xyz","weight":2}]},
+                {"id":"r6","main":"tiktokmall.top","weight":3,"enabled":True,"children":[{"host":"www.tiktokmall.top","weight":3},{"host":"shop.tiktokmall.top","weight":2},{"host":"mall.tiktokmall.top","weight":2}]},
+                {"id":"r7","main":"tiktokmall.cloud","weight":2,"enabled":True,"children":[{"host":"www.tiktokmall.cloud","weight":3},{"host":"shop.tiktokmall.cloud","weight":2},{"host":"mall.tiktokmall.cloud","weight":2}]},
+                {"id":"r8","main":"tiktokmall.site","weight":2,"enabled":True,"children":[{"host":"www.tiktokmall.site","weight":3},{"host":"shop.tiktokmall.site","weight":2},{"host":"mall.tiktokmall.site","weight":2}]}
+            ]
+        }
+        state._save()
+    return state._data["rotation_two_level"]
+
+
+@router.get("/two-level/config")
+async def get_rotation_config(_=Depends(verify_token)):
+    """获取两级轮值完整配置"""
+    await handle_risk("L1", "查看轮值配置")
+    config = _get_config()
+    return {"ok": True, "config": config}
+
+
+@router.put("/two-level/config")
+async def update_rotation_config(req: RotationConfigRequest, _=Depends(verify_token)):
+    """更新两级轮值配置"""
+    await handle_risk("L3", "更新轮值配置")
+    config = _get_config()
+    if req.primary:
+        config["primary"] = req.primary
+    if req.rotation:
+        config["rotation"] = req.rotation
+    state._save()
+    return {"ok": True, "config": config}
+
+
+@router.put("/two-level/rotation/{group_id}/toggle")
+async def toggle_rotation_group(group_id: str, _=Depends(verify_token)):
+    """启停轮值域名组"""
+    await handle_risk("L2", f"启停轮值组 {group_id}")
+    config = _get_config()
+    for r in config["rotation"]:
+        if r["id"] == group_id:
+            r["enabled"] = not r.get("enabled", True)
+            state._save()
+            return {"ok": True, "group_id": group_id, "enabled": r["enabled"]}
+    raise HTTPException(404, "轮值组不存在")
+
+
+@router.put("/two-level/rotation/{group_id}/weight")
+async def set_rotation_weight(group_id: str, weight: int, _=Depends(verify_token)):
+    """调整轮值组权重"""
+    await handle_risk("L2", f"调整轮值组权重 {group_id}={weight}")
+    config = _get_config()
+    for r in config["rotation"]:
+        if r["id"] == group_id:
+            r["weight"] = max(1, min(10, weight))
+            state._save()
+            return {"ok": True, "group_id": group_id, "weight": r["weight"]}
+    raise HTTPException(404, "轮值组不存在")
+
+
+@router.post("/two-level/rotation/{group_id}/subdomain")
+async def add_subdomain(group_id: str, req: SubdomainRequest, _=Depends(verify_token)):
+    """给轮值组添加子域名"""
+    await handle_risk("L2", f"添加子域名 {req.host}")
+    config = _get_config()
+    for r in config["rotation"]:
+        if r["id"] == group_id:
+            r["children"].append({"host": req.host, "weight": req.weight})
+            state._save()
+            return {"ok": True, "added": req.host}
+    raise HTTPException(404, "轮值组不存在")
+
+
+@router.delete("/two-level/rotation/{group_id}/subdomain/{host}")
+async def remove_subdomain(group_id: str, host: str, _=Depends(verify_token)):
+    """删除子域名"""
+    await handle_risk("L2", f"删除子域名 {host}")
+    config = _get_config()
+    for r in config["rotation"]:
+        if r["id"] == group_id:
+            r["children"] = [c for c in r["children"] if c["host"] != host]
+            state._save()
+            return {"ok": True, "removed": host}
+    raise HTTPException(404, "轮值组不存在")
+
+
+# 公开端点(落地页用，无需鉴权)
+@router.get("/two-level/public-config")
+async def get_public_config():
+    """公开配置(落地页调用，不含敏感信息)"""
+    config = _get_config()
+    return {
+        "primary": config["primary"],
+        "rotation": [r for r in config["rotation"] if r.get("enabled", True)],
+    }

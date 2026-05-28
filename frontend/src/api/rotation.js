@@ -39,3 +39,29 @@ export function removeDomain(domain) {
 export function getRotationHistory() {
   return agentApi.get("/rotation/history")
 }
+
+
+// ═══ 两级轮值配置管理 ═══
+export function getTwoLevelConfig() {
+  return agentApi.get("/rotation/two-level/config")
+}
+
+export function updateTwoLevelConfig(config) {
+  return agentApi.put("/rotation/two-level/config", config)
+}
+
+export function toggleRotationGroup(groupId) {
+  return agentApi.put("/rotation/two-level/rotation/" + groupId + "/toggle")
+}
+
+export function setRotationWeight(groupId, weight) {
+  return agentApi.put("/rotation/two-level/rotation/" + groupId + "/weight?weight=" + weight)
+}
+
+export function addSubdomain(groupId, host, weight) {
+  return agentApi.post("/rotation/two-level/rotation/" + groupId + "/subdomain", { host, weight })
+}
+
+export function removeSubdomain(groupId, host) {
+  return agentApi.delete("/rotation/two-level/rotation/" + groupId + "/subdomain/" + encodeURIComponent(host))
+}
