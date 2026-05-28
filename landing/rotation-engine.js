@@ -76,38 +76,44 @@ function probe(host, timeout) {
   });
 }
 
-// === 核心：两级轮值选目标 ===
+// === 核心：粘性组轮值 ===
+// 粘在当前组，只轮二级域名；当前组死了才切下一组
 function pickTarget() {
   var groups = config.groups.filter(function(g) { return g.enabled !== false; });
   if (!groups.length) return null;
 
-  // 从上次组索引开始，循环尝试所有组
-  for (var i = 0; i < groups.length; i++) {
-    var groupIdx = (state.groupIndex + i) % groups.length;
+  var tried = 0;
+  while (tried < groups.length) {
+    var groupIdx = state.groupIndex % groups.length;
     var group = groups[groupIdx];
 
-    // 检查组的主域名是否存活
-    if (!isAlive(group.main)) continue;
+    if (!isAlive(group.main)) {
+      // 组死了，标记并切下一组
+      markDead(group.main, 'group_down');
+      state.groupIndex = (groupIdx + 1) % groups.length;
+      tried++;
+      saveState();
+      continue;
+    }
 
     // 筛选存活的二级域名
     var aliveChildren = group.children.filter(function(c) { return isAlive(c.host); });
     if (!aliveChildren.length) {
       markDead(group.main, 'all_children_dead');
+      state.groupIndex = (groupIdx + 1) % groups.length;
+      tried++;
+      saveState();
       continue;
     }
 
-    // 从上次二级索引开始，选下一个
+    // 轮值选取下一个二级域名
     var cid = group.id || group.main;
     if (typeof state.childIndex[cid] === 'undefined') state.childIndex[cid] = 0;
     var childIdx = state.childIndex[cid] % aliveChildren.length;
     var picked = aliveChildren[childIdx];
-
-    // 推进索引（下次换下一个二级域名）
     state.childIndex[cid] = (childIdx + 1) % aliveChildren.length;
-    // 推进组索引（下次从下一组开始）
-    state.groupIndex = (groupIdx + 1) % groups.length;
+    // 组不变（粘住），下次继续用这个组
     saveState();
-
     return { group: group, child: picked };
   }
   return null;
