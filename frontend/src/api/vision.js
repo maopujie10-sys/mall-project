@@ -1,4 +1,4 @@
-﻿import { agentApi } from "./index"
+import { agentApi } from "./index"
 
 // 图片分析（OCR + 物体检测 + 人脸检测）
 export function analyzeImage(imageUrl) {

@@ -1,4 +1,4 @@
-﻿import { agentApi } from './index'
+import { agentApi } from './index'
 export function removeBg(url='', file=null) {
   const fd = new FormData()
   if (url) fd.append('url', url)

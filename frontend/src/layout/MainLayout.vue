@@ -128,11 +128,6 @@
           <router-link to="/order-alert" class="nav-item" :class="{ active: isActive('/order-alert') }"><span class="nav-icon">🔔</span><span>订单预警</span></router-link>
           <router-link to="/plugins" class="nav-item" :class="{ active: isActive('/plugins') }"><span class="nav-icon">🧩</span><span>技能市场</span></router-link>
         </div>
-                </el-dropdown-item>
-              </el-dropdown-menu>
-            <div class="ai-float-widget"><el-button class="ai-float-btn" @click="floatDialog=true" title="AI 助手"><el-icon :size="22"><ChatDotRound /></el-icon></el-button></div>
-<el-dialog v-model="floatDialog" title="💬 AI 助手" width="380" :close-on-click-modal="false" class="float-chat-dialog"><div class="float-chat-body"><div class="float-msg-area" ref="floatMsgRef"><div v-for="(m,i) in floatMessages" :key="i" class="float-msg-row" :class="m.role"><div class="float-msg-text">{{ m.text }}</div></div><div v-if="floatMessages.length===0" style="text-align:center;color:#999;padding:40px 0;font-size:13px">输入问题，AI 帮你解答</div></div><div class="float-input-row"><el-input v-model="floatInput" placeholder="输入问题..." size="small" @keyup.enter="sendFloatMsg" :disabled="floatLoading"><template #append><el-button @click="sendFloatMsg" :loading="floatLoading" :disabled="!floatInput.trim()" size="small">发送</el-button></template></el-input></div></div></el-dialog>
-          </el-dropdown>
         </div>
       </header>
 

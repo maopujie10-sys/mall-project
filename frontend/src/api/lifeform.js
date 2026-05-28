@@ -1,4 +1,4 @@
-﻿import { agentApi } from "./index"
+import { agentApi } from "./index"
 
 export function getLifeformStatus() { return agentApi.get("/agent/lifeform/status") }
 export function getLifeformMood() { return agentApi.get("/agent/lifeform/mood") }

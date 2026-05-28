@@ -1,4 +1,4 @@
-﻿import { agentApi } from './index'
+import { agentApi } from './index'
 
 // 一键生成虚拟数据
 export function generateData(scale = 'medium', target = null) {

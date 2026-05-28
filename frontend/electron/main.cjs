@@ -1,4 +1,4 @@
-﻿// Friday AI OS - Electron Desktop
+// Friday AI OS - Electron Desktop
 const { app, BrowserWindow, Tray, Menu, nativeImage, globalShortcut, ipcMain } = require("electron");
 const path = require("path");
 

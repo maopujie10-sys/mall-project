@@ -1,4 +1,4 @@
-﻿import { agentApi } from './index'
+import { agentApi } from './index'
 
 // 启动采集任务
 export function startScrapeJob(platform, keyword, maxItems = 20, downloadImages = true) {

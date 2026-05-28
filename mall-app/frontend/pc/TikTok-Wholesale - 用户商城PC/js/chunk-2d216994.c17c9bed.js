@@ -1,0 +1,1 @@
+(window.webpackJsonp=window.webpackJsonp||[]).push([["chunk-2d216994"],{c2c2:function(n,c,l){l.r(c),l=l("2877"),l=Object(l.a)({},(function(){return(0,this._self._c)("div",[this._v("download")])}),[],!1,null,null,null),c.default=l.exports}}]);

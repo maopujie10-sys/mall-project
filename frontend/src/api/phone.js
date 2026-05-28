@@ -1,4 +1,4 @@
-﻿import { agentApi } from './index'
+import { agentApi } from './index'
 export function getPhoneStatus() { return agentApi.get('/agent/phone/status') }
 export function getPhoneLogs(page=1) { return agentApi.get('/agent/phone/logs', {params:{page}}) }
 export function getIVRMenu() { return agentApi.get('/agent/phone/ivr/menu') }

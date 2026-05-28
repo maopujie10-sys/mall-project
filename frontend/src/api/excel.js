@@ -1,4 +1,4 @@
-﻿import { agentApi } from './index'
+import { agentApi } from './index'
 export function parseExcel(file) {
   const fd = new FormData()
   fd.append('file', file)

@@ -1,4 +1,4 @@
-﻿self.addEventListener("install", (e) => {
+self.addEventListener("install", (e) => {
   self.skipWaiting()
   e.waitUntil(
     caches.open("friday-v1").then((c) => {

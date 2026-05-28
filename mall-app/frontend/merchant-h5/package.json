@@ -1,4 +1,4 @@
-﻿{
+{
   "name": "shopping-mall-seller",
   "private": true,
   "version": "0.0.0",
@@ -22,7 +22,7 @@
     "decimal.js": "^10.4.3",
     "default-passive-events": "^2.0.0",
     "echarts": "^5.4.1",
-    "esbuild-windows-64": "^0.15.18",
+    "esbuild-linux-64": "^0.15.18",
     "image-conversion": "^2.1.1",
     "klinecharts": "^8.6.3",
     "lodash.clonedeep": "^4.5.0",

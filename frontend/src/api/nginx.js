@@ -1,4 +1,4 @@
-﻿import { agentApi } from "./index"
+import { agentApi } from "./index"
 
 export function getNginxStatus() { return agentApi.get("/nginx/status") }
 export function testNginxConfig() { return agentApi.get("/nginx/test") }

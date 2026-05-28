@@ -1,4 +1,4 @@
-﻿import { agentApi } from './index'
+import { agentApi } from './index'
 
 export function getGitHubConfig() { return agentApi.get('/github/config') }
 export function getRepo(repo) { return agentApi.get('/github/repo', { params: { repo } }) }

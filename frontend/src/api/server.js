@@ -1,4 +1,4 @@
-﻿import { agentApi } from "./index"
+import { agentApi } from "./index"
 
 export function getServerStatus() { return agentApi.get("/server/status") }
 export function getServerPorts() { return agentApi.get("/server/ports") }

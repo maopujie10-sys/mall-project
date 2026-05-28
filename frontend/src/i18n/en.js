@@ -1,4 +1,4 @@
-﻿export default {
+export default {
   app: { title: "Friday AI OS", subtitle: "AI Digital Lifeform" },
   nav: {
     core: "Core", dashboard: "Dashboard", chat: "AI Chat",

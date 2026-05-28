@@ -1,4 +1,4 @@
-﻿import { agentApi } from './index'
+import { agentApi } from './index'
 
 // 获取热点数据
 export function fetchTrends(platform = null) {

@@ -1,4 +1,4 @@
-﻿import { agentApi } from './index'
+import { agentApi } from './index'
 
 // 安全SQL执行
 export function executeSQL(sql, dbName = 'mall_db') {

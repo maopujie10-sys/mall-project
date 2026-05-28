@@ -1,4 +1,4 @@
-﻿import { agentApi } from "./index"
+import { agentApi } from "./index"
 
 export function getDomains() {
   return agentApi.get("/rotation/domains")

@@ -1,4 +1,4 @@
-﻿import { agentApi } from './index'
+import { agentApi } from './index'
 
 // 保存记忆
 export function rememberMemory(content, category = 'general', importance = 1, tags = []) {
