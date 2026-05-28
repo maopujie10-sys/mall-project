@@ -3,7 +3,11 @@
     <canvas ref="canvas" class="brain-canvas"></canvas>
     
     <!-- 覆盖层：信息面板 -->
-    <div class="brain-overlay">
+    <div class="fallback-ui" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:5;background:radial-gradient(ellipse at center,#0d1025,#080b1a)">
+    <h2 style="color:#fff;font-size:22px;margin:16px 0 4px;font-weight:600">Friday AI OS v3.0</h2>
+    <p style="color:rgba(255,255,255,0.45);font-size:13px;margin-bottom:24px">神经网络在线 &middot; 所有系统正常</p>
+</div>
+<div class="brain-overlay">
       <div class="brain-status">
         <span class="pulse-dot active"></span>
         <span>Friday AI OS v3.0</span>
@@ -44,9 +48,9 @@ const selectedAgent = ref(null)
 const detailStyle = ref({})
 const totalAgents = 7
 const activeAgents = ref(7)
-
-let THREE, scene, camera, renderer, clock
-let brainSphere, agentNodes = [], connections = [], particles
+const totalAgents = 7
+const activeAgents = ref(7)
+const fallbackMode = ref(false)
 let animFrameId
 let mouseX = 0, mouseY = 0
 let raycaster, mouse
@@ -74,7 +78,7 @@ async function loadThreeJS() {
 }
 
 async function initScene() {
-  try { THREE = await loadThreeJS() } catch (e) { console.error(e); return }
+  try { THREE = await loadThreeJS() } catch (e) { console.error(e); fallbackMode.value = true; return }
   if (!container.value) return
 
   const w = container.value.clientWidth

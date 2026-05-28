@@ -83,7 +83,6 @@ from routers import (
     nginx_panel, site_check, alert, inspector, task_queue, safety_api,
     mall_scanner, autopilot, ai_factory_router, batch_ops, sql_executor,
     daily_report, self_service, docker_panel, devops_agent_router, memory_router, heal_router,
-)
 
 app.include_router(health.router)
 app.include_router(status.router)
@@ -110,7 +109,6 @@ app.include_router(autopilot.router)
 app.include_router(ai_factory_router.router)
 app.include_router(batch_ops.router)
 app.include_router(sql_executor.router)
-app.include_router(daily_report.router)
 app.include_router(self_service.router)
 app.include_router(docker_panel.router)
 app.include_router(virtual_data_router)
