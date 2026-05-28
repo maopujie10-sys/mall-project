@@ -59,12 +59,12 @@ CREATE TABLE IF NOT EXISTS mall_structure_maps (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     map_id VARCHAR(64) NOT NULL UNIQUE,
     project_path TEXT,
-    frontend_structure JSON,
-    backend_structure JSON,
-    database_schema JSON,
-    api_routes JSON,
-    permission_map JSON,
-    risk_fields JSON,
+    frontend_structure LONGTEXT,
+    backend_structure LONGTEXT,
+    database_schema LONGTEXT,
+    api_routes LONGTEXT,
+    permission_map LONGTEXT,
+    risk_fields LONGTEXT,
     scanned_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     INDEX idx_map_id (map_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -126,35 +126,9 @@ CREATE TABLE IF NOT EXISTS agent_handover_logs (
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- 商城结构地图表
-CREATE TABLE IF NOT EXISTS mall_structure_maps (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    map_id VARCHAR(64) NOT NULL UNIQUE,
-    project_path VARCHAR(512),
-    frontend_structure JSON,
-    backend_structure JSON,
-    database_structure JSON,
-    interface_routes JSON,
-    permission_map JSON,
-    risk_fields JSON,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    INDEX idx_map_id (map_id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
--- 客服 AI 日志表
-CREATE TABLE IF NOT EXISTS customer_ai_logs (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    message_id VARCHAR(64),
-    user_id VARCHAR(64),
-    question TEXT,
-    ai_reply TEXT,
-    question_type VARCHAR(64),
-    risk_level VARCHAR(4) DEFAULT 'L1',
-    escalated TINYINT(1) DEFAULT 0,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    INDEX idx_user_id (user_id),
-    INDEX idx_created (created_at)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+-- ============================================================
+-- 以上为完整建表语句（MySQL 5.6 兼容）
+-- ============================================================
 
 -- 告警记录表
 CREATE TABLE IF NOT EXISTS agent_alerts (

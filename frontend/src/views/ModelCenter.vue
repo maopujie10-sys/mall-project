@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="page-container model-center">
     <div class="page-header">
       <h2>模型中心</h2>
@@ -255,6 +255,8 @@ async function fetchModels() {
 }
 
 onMounted(fetchModels)
+
+</script>
 
 <style scoped>
 .model-center { padding: 24px; }

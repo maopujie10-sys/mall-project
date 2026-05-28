@@ -1,4 +1,4 @@
-﻿"""Agent Chat API — AI 对话路由 v2: Claude + DeepSeek + Ollama + 302AI 多模型"""
+"""Agent Chat API — AI 对话路由 v2: Claude + DeepSeek + Ollama + 302AI 多模型"""
 import httpx, json, re, os
 from datetime import datetime
 from fastapi import APIRouter, Depends
@@ -226,6 +226,12 @@ async def agent_chat(req: ChatRequest, _=Depends(verify_token)):
     state.add_task(name=disp, risk=risk, status="done" if er["success"] else "failed")
     try:
         DigitalLifeform.remember_conversation(req.message, resp[:300])
+    except:
+        pass
+    try:
+        from tools.vector_memory import vector_memory
+        vector_memory.remember("用户: " + req.message[:300], {"role": "user", "tool": tn})
+        vector_memory.remember("AI: " + resp[:300], {"role": "ai", "tool": tn})
     except:
         pass
     return {"task_id": f"t{len(state.tasks)}", "response": resp, "steps": steps, "risk_level": risk, "mode": state.mode}

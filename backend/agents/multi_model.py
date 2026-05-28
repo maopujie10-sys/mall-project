@@ -1,4 +1,4 @@
-﻿"""Multi-Model Router — 多模型智能路由
+"""Multi-Model Router — 多模型智能路由
 支持: Ollama本地(免费) / DeepSeek / Claude / GPT / Gemini"""
 
 import os

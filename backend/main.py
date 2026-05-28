@@ -1,4 +1,4 @@
-﻿"""TikTokMall AI Agent 总控 - FastAPI :9000"""
+"""TikTokMall AI Agent 总控 - FastAPI :9000"""
 import asyncio
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request, HTTPException
@@ -23,7 +23,9 @@ async def lifespan(app: FastAPI):
     try:
         from tools.memory_store import memory_store
         stats = memory_store.get_stats()
-        print(f"[Agent] 持久记忆已加载: {stats["total_conversations"]}段对话, {len(memory_store.get_knowledge_categories())}个知识分类")
+        conv_count = stats["total_conversations"]
+        cat_count = len(memory_store.get_knowledge_categories())
+        print(f"[Agent] 持久记忆已加载: {conv_count}段对话, {cat_count}个知识分类")
     except Exception as e:
         print(f"[Agent] 记忆加载失败(非致命): {e}")
     # 注册内置工具
@@ -34,7 +36,8 @@ async def lifespan(app: FastAPI):
     try:
         from startup import startup_self_check, startup_warmup
         check_result = await startup_self_check()
-        print(f"[Agent] 自检结果: {check_result["summary"]}")
+        summary = check_result["summary"]
+        print(f"[Agent] 自检结果: {summary}")
         await startup_warmup()
     except Exception as e:
         print(f"[Agent] 自检失败(非致命): {e}")
@@ -44,7 +47,8 @@ async def lifespan(app: FastAPI):
     try:
         from tools.memory_sync import MemorySync
         push_result = MemorySync.sync_push()
-        print(f"[Agent] 记忆同步: {"OK" if push_result["success"] else "WARN"}")
+        status = "OK" if push_result["success"] else "WARN"
+        print(f"[Agent] 记忆同步: {status}")
     except Exception as e:
         print(f"[Agent] 记忆同步失败: {e}")
     try:
@@ -175,16 +179,3 @@ async def dashboard():
 @app.get("/agent/health")
 async def agent_health():
     return {"status": "ok", "timestamp": __import__("datetime").datetime.now().isoformat()}
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -44,7 +44,7 @@ async def run_inspection(_=Depends(verify_token)):
         results.append({"name": "待审批任务", "ok": True, "detail": f"{pending}项待处理"})
 
     # 4. 检查备份
-        try:
+    try:
         from routers.rollback_center import _load_backups
         backup_count = len(_load_backups())
     except Exception:

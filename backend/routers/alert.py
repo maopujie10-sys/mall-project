@@ -1,4 +1,4 @@
-"""¸æ¾¯ÖĞĞÄ ¡ª P1~P4 ¸æ¾¯·Ö¼¶/´¥·¢/Í¨Öª"""
+"""å‘Šè­¦ä¸­å¿ƒ â€” P1~P4 å‘Šè­¦åˆ†çº§/è§¦å‘/é€šçŸ¥"""
 from datetime import datetime
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
@@ -10,7 +10,7 @@ import httpx
 
 router = APIRouter(prefix="/alert", tags=["Alert"])
 
-ALERT_LEVELS = {"P1": "½ô¼±", "P2": "ÑÏÖØ", "P3": "Ò»°ã", "P4": "¹Û²ì"}
+ALERT_LEVELS = {"P1": "ç´§æ€¥", "P2": "ä¸¥é‡", "P3": "ä¸€èˆ¬", "P4": "è§‚å¯Ÿ"}
 
 class AlertCreateRequest(BaseModel):
     title: str
@@ -22,7 +22,7 @@ def _get_alerts():
     return state._data.setdefault("alerts", [])
 
 def _send_alert_notification(level: str, title: str, detail: str):
-    """·¢ËÍ¸æ¾¯Í¨Öªµ½ Telegram"""
+    """å‘é€å‘Šè­¦é€šçŸ¥åˆ° Telegram"""
     if not TELEGRAM_BOT_TOKEN or not TELEGRAM_CHAT_ID:
         return
     import asyncio
@@ -31,7 +31,7 @@ def _send_alert_notification(level: str, title: str, detail: str):
         f"{emoji.get(level, '??')} <b>[{level}] TikTokMall</b>\n"
         f"<b>{title}</b>\n"
         f"{detail or '-'}\n"
-        f"<b>Ê±¼ä</b>: {datetime.now().strftime('%H:%M:%S')}"
+        f"<b>æ—¶é—´</b>: {datetime.now().strftime('%H:%M:%S')}"
     )
     async def _send():
         try:
@@ -53,7 +53,7 @@ def _send_alert_notification(level: str, title: str, detail: str):
 
 @router.get("/list")
 async def list_alerts(_=Depends(verify_token), level: str = None):
-    await handle_risk("L1", "²é¿´¸æ¾¯ÁĞ±í")
+    await handle_risk("L1", "æŸ¥çœ‹å‘Šè­¦åˆ—è¡¨")
     alerts = _get_alerts()
     if level:
         alerts = [a for a in alerts if a["level"] == level]
@@ -61,9 +61,9 @@ async def list_alerts(_=Depends(verify_token), level: str = None):
 
 @router.post("/create")
 async def create_alert(req: AlertCreateRequest, _=Depends(verify_token)):
-    await handle_risk("L1", f"´´½¨¸æ¾¯ [{req.level}]", req.title)
+    await handle_risk("L1", f"åˆ›å»ºå‘Šè­¦ [{req.level}]", req.title)
     if req.level not in ALERT_LEVELS:
-        return {"error": f"ÎŞĞ§µÈ¼¶: {req.level}£¬¿ÉÑ¡: {list(ALERT_LEVELS.keys())}"}
+        return {"error": f"æ— æ•ˆç­‰çº§: {req.level}ï¼Œå¯é€‰: {list(ALERT_LEVELS.keys())}"}
 
     alerts = _get_alerts()
     alert = {
@@ -82,14 +82,14 @@ async def create_alert(req: AlertCreateRequest, _=Depends(verify_token)):
         alerts[:] = alerts[:200]
     state._save()
 
-    # P1/P2 ×Ô¶¯·¢Í¨Öª
+    # P1/P2 è‡ªåŠ¨å‘é€šçŸ¥
     if req.level in ("P1", "P2"):
         _send_alert_notification(req.level, req.title, req.detail)
 
-    # P1 ×Ô¶¯ÇĞÈË¹¤½Ó¹Ü
+    # P1 è‡ªåŠ¨åˆ‡äººå·¥æ¥ç®¡
     if req.level == "P1":
         state.mode = "human_control"
-        state.add_emergency("human_control", f"P1¸æ¾¯´¥·¢: {req.title}")
+        state.add_emergency("human_control", f"P1å‘Šè­¦è§¦å‘: {req.title}")
 
     return alert
 
@@ -102,7 +102,7 @@ async def resolve_alert(alert_id: str, _=Depends(verify_token)):
             a["resolved_at"] = datetime.now().strftime("%H:%M:%S")
             state._save()
             return {"resolved": True, "alert_id": alert_id}
-    return {"error": "¸æ¾¯²»´æÔÚ"}
+    return {"error": "å‘Šè­¦ä¸å­˜åœ¨"}
 
 @router.get("/stats")
 async def alert_stats(_=Depends(verify_token)):

@@ -187,8 +187,13 @@ async def get_domains(_=Depends(verify_token)):
     return enriched
 
 
+class AddDomainRequest(BaseModel):
+    domain: str
+    type: str = "轮值"
+
+
 @router.post("/domains")
-async def add_domain(req: "AddDomainRequest", _=Depends(verify_token)):
+async def add_domain(req: AddDomainRequest, _=Depends(verify_token)):
     """添加域名"""
     domains = _get_domains()
     if any(d["domain"] == req.domain for d in domains):
@@ -211,11 +216,6 @@ async def remove_domain(domain: str, _=Depends(verify_token)):
     if len(_get_domains()) == before:
         raise HTTPException(404, "域名不存在")
     return {"domain": domain, "removed": True}
-
-
-class AddDomainRequest(BaseModel):
-    domain: str
-    type: str = "轮值"
 
 
 class ToggleRequest(BaseModel):

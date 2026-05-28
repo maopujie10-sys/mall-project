@@ -1,4 +1,4 @@
-﻿"""APScheduler 定时任务 — 巡检/备份/轮值/客服报告/商城扫描/日记
+"""APScheduler 定时任务 — 巡检/备份/轮值/客服报告/商城扫描/日记
 定时任务清单:
   - 每30分钟 服务器巡检 (CPU/Docker/Nginx/网站)
   - 每日凌晨2点 数据库备份
@@ -21,7 +21,8 @@ scheduler = AsyncIOScheduler()
 
 async def patrol_task():
     """服务器巡检 — CPU/Docker/Nginx/网站"""
-    print(f"[Scheduler] 服务器巡检 {datetime.now().strftime("%H:%M:%S")}")
+    now_str = datetime.now().strftime("%H:%M:%S")
+    print(f"[Scheduler] 服务器巡检 {now_str}")
     try:
         from routers.inspector import run_inspection
         await run_inspection()
@@ -31,7 +32,8 @@ async def patrol_task():
 
 async def backup_task():
     """每日数据库备份"""
-    print(f"[Scheduler] 数据库备份 {datetime.now().strftime("%H:%M:%S")}")
+    now_str = datetime.now().strftime("%H:%M:%S")
+    print(f"[Scheduler] 数据库备份 {now_str}")
     try:
         from routers.rollback_center import _load_backups, _save_backups
         import subprocess, os
@@ -60,7 +62,8 @@ async def backup_task():
 
 async def rotation_check_task():
     """域名轮值检测 + 自动切换"""
-    print(f"[Scheduler] 域名轮值检测 {datetime.now().strftime("%H:%M:%S")}")
+    now_str = datetime.now().strftime("%H:%M:%S")
+    print(f"[Scheduler] 域名轮值检测 {now_str}")
     try:
         from routers.rotation_panel import _check_all
         result = await _check_all()
@@ -73,7 +76,8 @@ async def rotation_check_task():
 
 async def customer_report_task():
     """客服报告生成"""
-    print(f"[Scheduler] 客服报告 {datetime.now().strftime("%H:%M:%S")}")
+    now_str = datetime.now().strftime("%H:%M:%S")
+    print(f"[Scheduler] 客服报告 {now_str}")
     try:
         from routers.customer_panel import _generate_report
         await _generate_report()
@@ -83,7 +87,8 @@ async def customer_report_task():
 
 async def diary_task():
     """每日日记自动生成"""
-    print(f"[Scheduler] 日记生成 {datetime.now().strftime("%H:%M:%S")}")
+    now_str = datetime.now().strftime("%H:%M:%S")
+    print(f"[Scheduler] 日记生成 {now_str}")
     try:
         from services import DiaryService
         journal = DiaryService.generate_daily()
@@ -95,7 +100,8 @@ async def diary_task():
 
 async def mall_scan_task():
     """商城扫描"""
-    print(f"[Scheduler] 商城扫描 {datetime.now().strftime("%H:%M:%S")}")
+    now_str = datetime.now().strftime("%H:%M:%S")
+    print(f"[Scheduler] 商城扫描 {now_str}")
     try:
         from routers.mall_scanner import run_scan
         await run_scan()

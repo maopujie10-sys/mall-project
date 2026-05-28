@@ -1,4 +1,4 @@
-﻿"""AI 商城大脑 API — 商品扫描/运营报告/自动执行"""
+"""AI 商城大脑 API — 商品扫描/运营报告/自动执行"""
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from auth import verify_token
@@ -9,9 +9,10 @@ router = APIRouter(prefix="/agent/mall-brain", tags=["MallBrain"])
 
 class AutoActionRequest(BaseModel):
     dry_run: bool = True  # True=仅预览不执行, False=真实执行
+
 @router.post("/scan")
 async def scan_products(_=Depends(verify_token)):
-    """AI閹殿偅寮块崗銊х彲閸熷棗鎼ч敍灞藉瀻閺嬫劖鐦℃稉顏勬櫌閸濅胶娈戦崑銉ユ倣鎼""
+    """扫描商品并分析健康状态"""
     await handle_risk("L1", "AI 扫描商品")
     products = await MallBrain.scan_products()
     return {
@@ -40,9 +41,9 @@ async def generate_report(_=Depends(verify_token)):
 
 @router.post("/auto")
 async def auto_execute(req: AutoActionRequest, _=Depends(verify_token)):
-    """AI閼奉亜╅幍褑顢戞潻鎰樊閸愬磭鐡閳娑撳鐏﹀璇叉惂/闁插洭娉﹂弬鏉挎惂/鐞涖儱绨辩""
+    """AI自动执行运营建议，dry_run=True时仅预览"""
     risk_level = "L1" if req.dry_run else "L3"
-    await handle_risk(risk_level, f"AI閼奉亜╂潻鎰樊", f"dry_run={req.dry_run}")
+    await handle_risk(risk_level, "AI自动执行运营操作", f"dry_run={req.dry_run}")
     products = await MallBrain.scan_products()
     report = MallBrain.generate_report(products)
     result = await MallBrain.execute_auto_actions(report, dry_run=req.dry_run)
@@ -60,7 +61,7 @@ async def auto_execute(req: AutoActionRequest, _=Depends(verify_token)):
 
 @router.get("/gaps")
 async def category_gaps(_=Depends(verify_token)):
-    """閺屻儳婀呴崫浣鸿缂傚搫褰閳閸濐亙绨洪崫浣鸿闂団偓鐟曚浇藟""
+    """查找品类缺口和热门关键词"""
     await handle_risk("L1", "AI 大脑操作")
     products = await MallBrain.scan_products()
     gaps = MallBrain.find_category_gaps(products)
@@ -83,4 +84,3 @@ async def brain_summary(_=Depends(verify_token)):
         "ready_actions": len(report.auto_actions),
         "next": "等待 AI 自动执行下轮运营操作，或手动触发 /auto 接口执行建议动作",
     }
-
