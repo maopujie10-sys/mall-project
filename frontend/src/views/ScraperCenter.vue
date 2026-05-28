@@ -1,103 +1,102 @@
-﻿<template>
+锘?template>
   <div class="page-container">
     <div class="page-header">
       <div>
-        <h1>馃洅 閲囬泦涓績</h1>
-        <p>澶氬钩鍙版櫤鑳介噰闆?路 鍟嗗搧鏁版嵁瀹屾暣淇濈暀 路 鑷姩涓婁紶鑵捐浜慍OS</p>
+        <h1>棣冩磪 闁插洭娉︽稉顓炵妇</h1>
+        <p>婢舵艾閽╅崣鐗堟閼充粙鍣伴梿?璺?閸熷棗鎼ч弫鐗堝祦鐎瑰本鏆ｆ穱婵堟殌 璺?閼奉亜濮╂稉濠佺炊閼垫崘顔嗘禍鎱峅S</p>
       </div>
       <div class="header-actions">
         <el-button type="primary" @click="showCreateDialog = true">
-          <el-icon><Plus /></el-icon> 鏂板缓閲囬泦浠诲姟
-        </el-button>
+          <el-icon><Plus /></el-icon> 閺傛澘缂撻柌鍥肠娴犺濮?        </el-button>
       </div>
     </div>
 
-    <!-- 閲囬泦骞冲彴鍗＄墖 -->
+    <!-- 闁插洭娉﹂獮鍐插酱閸楋紕澧?-->
     <el-row :gutter="16" style="margin-bottom: 20px;">
       <el-col :span="6" v-for="p in platforms" :key="p.name">
         <el-card shadow="never" class="platform-card" @click="startQuickScrape(p)">
           <div class="pf-icon">{{ p.icon }}</div>
           <div class="pf-name">{{ p.name }}</div>
-          <div class="pf-count">{{ p.count }} 浠跺晢鍝?/div>
-          <div class="pf-rate" :style="{ color: p.rate > 80 ? '#52c41a' : '#faad14' }">鎴愬姛鐜?{{ p.rate }}%</div>
+          <div class="pf-count">{{ p.count }} 娴犺泛鏅㈤崫?/div>
+          <div class="pf-rate" :style="{ color: p.rate > 80 ? '#52c41a' : '#faad14' }">閹存劕濮涢悳?{{ p.rate }}%</div>
         </el-card>
       </el-col>
     </el-row>
 
-    <!-- 閲囬泦浠诲姟鍒楄〃 -->
+    <!-- 闁插洭娉︽禒璇插閸掓銆?-->
     <el-row :gutter="16" style="margin-bottom: 20px;">
       <el-col :span="16">
         <el-card shadow="never">
           <template #header>
             <div class="panel-header">
-              <span>馃搵 閲囬泦浠诲姟</span>
-              <el-button text size="small" @click="refreshJobs">鍒锋柊</el-button>
+              <span>棣冩惖 闁插洭娉︽禒璇插</span>
+              <el-button text size="small" @click="refreshJobs">閸掗攱鏌?/el-button>
             </div>
           </template>
           <el-table :data="jobs" size="small" max-height="350">
-            <el-table-column prop="keyword" label="鍏抽敭璇? min-width="120"/>
-            <el-table-column prop="platform" label="骞冲彴" width="110">
+            <el-table-column prop="keyword" label="閸忔娊鏁拠? min-width="120"/>
+            <el-table-column prop="platform" label="楠炲啿褰? width="110">
               <template #default="{ row }">
                 <el-tag size="small">{{ row.platform }}</el-tag>
               </template>
             </el-table-column>
-            <el-table-column prop="collected" label="宸查噰闆? width="80"/>
-            <el-table-column prop="imported" label="宸插鍏? width="80"/>
-            <el-table-column prop="status" label="鐘舵€? width="100">
+            <el-table-column prop="collected" label="瀹告煡鍣伴梿? width="80"/>
+            <el-table-column prop="imported" label="瀹告彃顕遍崗? width="80"/>
+            <el-table-column prop="status" label="閻樿埖鈧? width="100">
               <template #default="{ row }">
                 <el-tag :type="row.statusType" size="small">{{ row.status }}</el-tag>
               </template>
             </el-table-column>
-            <el-table-column prop="time" label="鏃堕棿" width="140"/>
-            <el-table-column label="鎿嶄綔" width="180">
+            <el-table-column prop="time" label="閺冨爼妫? width="140"/>
+            <el-table-column label="閹垮秳缍? width="180">
               <template #default="{ row }">
-                <el-button text size="small" type="primary" @click="previewProducts(row)">鏌ョ湅</el-button>
-                <el-button text size="small" type="success" v-if="row.status === '宸插畬鎴?" @click="importToMall(row)">瀵煎叆</el-button>
-                <el-button text size="small" type="warning" @click="uploadToCOS(row)">涓婁紶COS</el-button>
+                <el-button text size="small" type="primary" @click="previewProducts(row)">閺屻儳婀?/el-button>
+                <el-button text size="small" type="success" v-if="row.status === '瀹告彃鐣幋?" @click="importToMall(row)">鐎电厧鍙?/el-button>
+                <el-button text size="small" type="warning" @click="uploadToCOS(row)">娑撳﹣绱禖OS</el-button>
               </template>
             </el-table-column>
           </el-table>
         </el-card>
       </el-col>
 
-      <!-- COS鐘舵€?-->
+      <!-- COS閻樿埖鈧?-->
       <el-col :span="8">
         <el-card shadow="never">
-          <template #header><span>鈽侊笍 鑵捐浜慍OS</span></template>
+          <template #header><span>閳戒緤绗?閼垫崘顔嗘禍鎱峅S</span></template>
           <div class="cos-status">
             <div class="cos-item">
-              <span class="cos-label">瀛樺偍妗?/span>
+              <span class="cos-label">鐎涙ê鍋嶅?/span>
               <span class="cos-val">{{ cosConfig.bucket }}</span>
             </div>
             <div class="cos-item">
-              <span class="cos-label">鍦板煙</span>
+              <span class="cos-label">閸︽澘鐓?/span>
               <span class="cos-val">{{ cosConfig.region }}</span>
             </div>
             <div class="cos-item">
-              <span class="cos-label">宸蹭笂浼犲浘鐗?/span>
+              <span class="cos-label">瀹歌弓绗傛导鐘叉禈閻?/span>
               <span class="cos-val highlight">{{ cosStats.uploaded }}</span>
             </div>
             <div class="cos-item">
-              <span class="cos-label">瀛樺偍鐢ㄩ噺</span>
+              <span class="cos-label">鐎涙ê鍋嶉悽銊╁櫤</span>
               <span class="cos-val">{{ cosStats.usage }}</span>
             </div>
             <div class="cos-item">
-              <span class="cos-label">鐘舵€?/span>
-              <el-tag type="success" size="small">宸茶繛鎺?/el-tag>
+              <span class="cos-label">閻樿埖鈧?/span>
+              <el-tag type="success" size="small">瀹歌尪绻涢幒?/el-tag>
             </div>
             <el-divider style="margin:16px 0"/>
-            <el-button type="primary" style="width:100%" @click="testCOS">娴嬭瘯杩炴帴</el-button>
+            <el-button type="primary" style="width:100%" @click="testCOS">濞村鐦潻鐐村复</el-button>
           </div>
         </el-card>
       </el-col>
     </el-row>
 
-    <!-- 閲囬泦鍟嗗搧棰勮 -->
+    <!-- 闁插洭娉﹂崯鍡楁惂妫板嫯顫?-->
     <el-card shadow="never" v-if="previewVisible">
       <template #header>
         <div class="panel-header">
-          <span>馃柤锔?宸查噰闆嗗晢鍝侀瑙?/span>
-          <el-button text size="small" @click="previewVisible = false">鍏抽棴</el-button>
+          <span>棣冩煠閿?瀹告煡鍣伴梿鍡楁櫌閸濅線顣╃憴?/span>
+          <el-button text size="small" @click="previewVisible = false">閸忔娊妫?/el-button>
         </div>
       </template>
       <div class="product-grid">
@@ -108,15 +107,15 @@
             <div class="prod-price">{{ p.price }}</div>
             <div class="prod-source">{{ p.source }}</div>
           </div>
-          <el-tag size="small" :type="p.uploaded ? 'success' : 'info'">{{ p.uploaded ? '宸蹭笂浼? : '寰呬笂浼? }}</el-tag>
+          <el-tag size="small" :type="p.uploaded ? 'success' : 'info'">{{ p.uploaded ? '瀹歌弓绗傛导? : '瀵板懍绗傛导? }}</el-tag>
         </div>
       </div>
     </el-card>
 
-    <!-- 鏂板缓閲囬泦瀵硅瘽妗?-->
-    <el-dialog v-model="showCreateDialog" title="鏂板缓閲囬泦浠诲姟" width="500px">
+    <!-- 閺傛澘缂撻柌鍥肠鐎电鐦藉?-->
+    <el-dialog v-model="showCreateDialog" title="閺傛澘缂撻柌鍥肠娴犺濮? width="500px">
       <el-form label-width="80px">
-        <el-form-item label="骞冲彴">
+        <el-form-item label="楠炲啿褰?>
           <el-select v-model="newJob.platform" style="width:100%">
             <el-option label="eBay" value="eBay"/>
             <el-option label="AliExpress" value="AliExpress"/>
@@ -124,19 +123,19 @@
             <el-option label="1688" value="1688"/>
           </el-select>
         </el-form-item>
-        <el-form-item label="鍏抽敭璇?>
-          <el-input v-model="newJob.keyword" placeholder="濡傦細iPhone 15 鎵嬫満澹?/>
+        <el-form-item label="閸忔娊鏁拠?>
+          <el-input v-model="newJob.keyword" placeholder="婵″偊绱癷Phone 15 閹靛婧€婢?/>
         </el-form-item>
-        <el-form-item label="鏁伴噺">
+        <el-form-item label="閺佷即鍣?>
           <el-input-number v-model="newJob.count" :min="1" :max="500"/>
         </el-form-item>
-        <el-form-item label="鍝佺被">
-          <el-input v-model="newJob.category" placeholder="濡傦細鎵嬫満鏁扮爜"/>
+        <el-form-item label="閸濅胶琚?>
+          <el-input v-model="newJob.category" placeholder="婵″偊绱伴幍瀣簚閺佹壆鐖?/>
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="showCreateDialog = false">鍙栨秷</el-button>
-        <el-button type="primary" @click="createJob">寮€濮嬮噰闆?/el-button>
+        <el-button @click="showCreateDialog = false">閸欐牗绉?/el-button>
+        <el-button type="primary" @click="createJob">瀵偓婵鍣伴梿?/el-button>
       </template>
     </el-dialog>
   </div>
@@ -160,8 +159,8 @@ const newJob = reactive({
 const cosStats = reactive({ uploaded: '0', usage: '0' })
 
 const platforms = ref([
-  { name: 'eBay', icon: '🌐', count: 0, rate: 0 },
-  { name: 'AliExpress', icon: '🛍️', count: 0, rate: 0 },
+  { name: 'eBay', icon: '馃寪', count: 0, rate: 0 },
+  { name: 'AliExpress', icon: '馃泹锔?, count: 0, rate: 0 },
 ])
 
 const jobs = ref([])
@@ -178,12 +177,12 @@ async function fetchJobs() {
         platform: j.platform || '',
         collected: j.found \|\| 0,
         imported: j.uploaded \|\| 0,
-        status: j.status === 'completed' ? '已完成' : j.status === 'running' ? '采集中...' : '排队中...',
+        status: j.status === 'completed' ? '宸插畬鎴? : j.status === 'running' ? '閲囬泦涓?..' : '鎺掗槦涓?..',
         statusType: j.status === 'done' ? 'success' : j.status === 'failed' ? 'danger' : 'warning',
         time: j.created_at || ''
       }
     })
-  } catch { /* 后端未就绪 */ }
+  } catch { /* 鍚庣鏈氨缁?*/ }
   loadingJobs.value = false
 }
 
@@ -192,7 +191,7 @@ async function fetchSources() {
     const { data } = await agentApi.get('/agent/scraper/sources')
     if (data.sources) {
       platforms.value = data.sources.map(function(s) {
-        return { name: s.name || s.id, icon: '🌐', count: 0, rate: s.status === 'ready' ? 90 : 0, id: s.id }
+        return { name: s.name || s.id, icon: '馃寪', count: 0, rate: s.status === 'ready' ? 90 : 0, id: s.id }
       })
     }
   } catch {}
@@ -205,16 +204,16 @@ async function startQuickScrape(platform) {
       keyword: 'trending',
       max_items: 20
     })
-    ElMessage.success('已从 ' + platform.name + ' 开始快速采集')
+    ElMessage.success('宸蹭粠 ' + platform.name + ' 寮€濮嬪揩閫熼噰闆?)
     fetchJobs()
   } catch {
-    ElMessage.error('采集启动失败')
+    ElMessage.error('閲囬泦鍚姩澶辫触')
   }
 }
 
 async function refreshJobs() {
   await fetchJobs()
-  ElMessage.success('任务列表已刷新')
+  ElMessage.success('浠诲姟鍒楄〃宸插埛鏂?)
 }
 
 async function previewProducts(row) {
@@ -224,30 +223,30 @@ async function previewProducts(row) {
     previewProducts_data.value = (data.items || []).slice(0, 10).map(function(p, i) {
       return {
         id: p.id || i + 1,
-        icon: '📦',
-        title: p.title || '商品',
-        price: '¥' + (p.price || 0),
+        icon: '馃摝',
+        title: p.title || '鍟嗗搧',
+        price: '楼' + (p.price || 0),
         source: p.source || '',
         uploaded: !!p.image_url,
         color: '#f6ffed'
       }
     })
   } catch {
-    ElMessage.info('查看任务: ' + row.keyword)
+    ElMessage.info('鏌ョ湅浠诲姟: ' + row.keyword)
   }
 }
 
 async function importToMall(row) {
   try {
     await agentApi.post('/agent/scraper/products/import', { product_ids: [row.id] })
-    ElMessage.success(row.keyword + ' 已导入商城')
+    ElMessage.success(row.keyword + ' 宸插鍏ュ晢鍩?)
   } catch {
-    ElMessage.error('导入失败')
+    ElMessage.error('瀵煎叆澶辫触')
   }
 }
 
 function uploadToCOS(row) {
-  ElMessage.success(row.keyword + ' 的图片已上传COS')
+  ElMessage.success(row.keyword + ' 鐨勫浘鐗囧凡涓婁紶COS')
 }
 
 async function createJob() {
@@ -255,13 +254,13 @@ async function createJob() {
   try {
     await agentApi.post('/agent/scraper/jobs', {
       platform: newJob.platform,
-      keyword: newJob.keyword || '新品',
+      keyword: newJob.keyword || '鏂板搧',
       max_items: newJob.count || 20
     })
-    ElMessage.success('采集任务已创建：' + newJob.platform + ' > ' + newJob.keyword)
+    ElMessage.success('閲囬泦浠诲姟宸插垱寤猴細' + newJob.platform + ' > ' + newJob.keyword)
     fetchJobs()
   } catch {
-    ElMessage.error('创建任务失败')
+    ElMessage.error('鍒涘缓浠诲姟澶辫触')
   }
 }
 

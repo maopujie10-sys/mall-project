@@ -1,50 +1,50 @@
 <template>
   <div class="page-container customer-panel">
     <div class="page-header">
-      <h2>瀹㈡湇绠＄悊闈㈡澘</h2>
-      <p>娑堟伅澶勭悊 路 瀹㈡埛鏈嶅姟 路 鎶曡瘔鐩戞帶</p>
+      <h2>鐎广垺婀囩粻锛勬倞闂堛垺婢?/h2>
+      <p>濞戝牊浼呮径鍕倞 璺?鐎广垺鍩涢張宥呭 璺?閹舵洝鐦旈惄鎴炲付</p>
     </div>
 
-    <!-- 缁熻鍗＄墖 -->
+    <!-- 缂佺喕顓搁崡锛勫 -->
     <el-row :gutter="16" style="margin-bottom: 20px;">
       <el-col :span="6">
         <div class="metric-card">
-          <div class="metric-label">浠婃棩娑堟伅鎬婚噺</div>
+          <div class="metric-label">娴犲﹥妫╁☉鍫熶紖閹鍣?/div>
           <div class="metric-value">{{ stats.totalMessages }}</div>
-          <div class="metric-sub">杈冩槰鏃?{{ stats.messageTrend }}</div>
+          <div class="metric-sub">鏉堝啯妲伴弮?{{ stats.messageTrend }}</div>
         </div>
       </el-col>
       <el-col :span="6">
         <div class="metric-card">
-          <div class="metric-label">娲昏穬浼氳瘽</div>
+          <div class="metric-label">濞叉槒绌导姘崇樈</div>
           <div class="metric-value" style="color: var(--color-primary);">{{ stats.activeConversations }}</div>
-          <div class="metric-sub">鍏朵腑 {{ stats.unreadCount }} 鏉℃湭璇?/div>
+          <div class="metric-sub">閸忔湹鑵?{{ stats.unreadCount }} 閺夆剝婀拠?/div>
         </div>
       </el-col>
       <el-col :span="6">
         <div class="metric-card">
-          <div class="metric-label">骞冲潎鍝嶅簲鏃堕棿</div>
+          <div class="metric-label">楠炲啿娼庨崫宥呯安閺冨爼妫?/div>
           <div class="metric-value" style="color: var(--color-success);">{{ stats.avgResponseTime }}</div>
-          <div class="metric-sub">鐩爣: &lt; 3 鍒嗛挓</div>
+          <div class="metric-sub">閻╊喗鐖? &lt; 3 閸掑棝鎸?/div>
         </div>
       </el-col>
       <el-col :span="6">
         <div class="metric-card">
-          <div class="metric-label">婊℃剰搴?/div>
+          <div class="metric-label">濠娾剝鍓版惔?/div>
           <div class="metric-value" style="color: var(--color-warning);">{{ stats.satisfaction }}%</div>
-          <div class="metric-sub">鍩轰簬 {{ stats.satisfactionCount }} 鏉¤瘎浠?/div>
+          <div class="metric-sub">閸╄桨绨?{{ stats.satisfactionCount }} 閺壜ょ槑娴?/div>
         </div>
       </el-col>
     </el-row>
 
-    <!-- 涓讳綋锛氬乏鍒楄〃 + 鍙冲璇?-->
+    <!-- 娑撹缍嬮敍姘箯閸掓銆?+ 閸欏啿顕拠?-->
     <div class="panel-body">
-      <!-- 宸︿晶瀹㈡埛鍒楄〃 -->
+      <!-- 瀹革缚鏅剁€广垺鍩涢崚妤勩€?-->
       <div class="customer-list-panel">
         <div class="list-header">
           <el-input
             v-model="searchKeyword"
-            placeholder="鎼滅储瀹㈡埛鎴栨秷鎭?.."
+            placeholder="閹兼粎鍌ㄧ€广垺鍩涢幋鏍ㄧХ閹?.."
             :prefix-icon="Search"
             size="default"
             clearable
@@ -52,19 +52,19 @@
         </div>
         <div class="list-filters">
           <el-radio-group v-model="filterType" size="small">
-            <el-radio-button value="all">鍏ㄩ儴</el-radio-button>
-            <el-radio-button value="unread">鏈</el-radio-button>
-            <el-radio-button value="urgent">绱ф€?/el-radio-button>
-            <el-radio-button value="complaint">鎶曡瘔</el-radio-button>
+            <el-radio-button value="all">閸忋劑鍎?/el-radio-button>
+            <el-radio-button value="unread">閺堫亣顕?/el-radio-button>
+            <el-radio-button value="urgent">缁毖勨偓?/el-radio-button>
+            <el-radio-button value="complaint">閹舵洝鐦?/el-radio-button>
           </el-radio-group>
           <div class="list-actions-top">
-            <el-button size="small" text @click="markAllReadHandler">鍏ㄩ儴宸茶</el-button>
+            <el-button size="small" text @click="markAllReadHandler">閸忋劑鍎村鑼额嚢</el-button>
             <el-button
               size="small" text type="warning"
               :disabled="selectedIds.length === 0"
               @click="transferHuman"
             >
-              杞汉宸?({{ selectedIds.length }})
+              鏉烆兛姹夊?({{ selectedIds.length }})
             </el-button>
           </div>
         </div>
@@ -72,7 +72,7 @@
           <div v-if="error" class="error-banner">
             <el-icon color="#ff4d4f"><WarningFilled /></el-icon>
             <span>{{ error }}</span>
-            <el-button size="small" text type="primary" @click="fetchMessages">閲嶈瘯</el-button>
+            <el-button size="small" text type="primary" @click="fetchMessages">闁插秷鐦?/el-button>
           </div>
           <div
             v-for="customer in filteredCustomers"
@@ -102,23 +102,23 @@
               </div>
               <div class="customer-preview">{{ customer.content }}</div>
               <div class="customer-tags">
-                <span v-if="customer.type === 'complaint'" class="complaint-tag">鎶曡瘔</span>
-                <span v-if="customer.type === 'urgent'" class="urgent-tag">绱ф€?/span>
-                <span v-if="customer.type === 'inquiry'" class="inquiry-tag">鍜ㄨ</span>
-                <span v-if="customer.escalated" class="escalated-tag">宸插崌绾?/span>
+                <span v-if="customer.type === 'complaint'" class="complaint-tag">閹舵洝鐦?/span>
+                <span v-if="customer.type === 'urgent'" class="urgent-tag">缁毖勨偓?/span>
+                <span v-if="customer.type === 'inquiry'" class="inquiry-tag">閸溿劏顕?/span>
+                <span v-if="customer.escalated" class="escalated-tag">瀹告彃宕岀痪?/span>
               </div>
             </div>
           </div>
           <div v-if="filteredCustomers.length === 0 && !loading" class="empty-list">
-            <p>鏆傛棤鍖归厤鐨勫鎴锋秷鎭?/p>
+            <p>閺嗗倹妫ら崠褰掑帳閻ㄥ嫬顓归幋閿嬬Х閹?/p>
           </div>
         </div>
       </div>
 
-      <!-- 鍙充晶瀵硅瘽绐楀彛 -->
+      <!-- 閸欏厖鏅剁€电鐦界粣妤€褰?-->
       <div class="conversation-panel" :class="{ 'no-selection': !activeCustomer }">
         <template v-if="activeCustomer">
-          <!-- 瀵硅瘽澶撮儴 -->
+          <!-- 鐎电鐦芥径鎾劥 -->
           <div class="conversation-header">
             <div class="conv-user-info">
               <el-avatar :size="38" :style="{ background: activeCustomer.avatarColor }">
@@ -127,11 +127,11 @@
               <div class="conv-user-detail">
                 <span class="conv-user-name">{{ activeCustomer.sender }}</span>
                 <span class="conv-user-status">
-                  <span class="status-dot online"><span class="dot"></span>鍦ㄧ嚎</span>
+                  <span class="status-dot online"><span class="dot"></span>閸︺劎鍤?/span>
                   <span v-if="activeCustomer.type === 'complaint'" class="complaint-flag">
-                    <el-icon color="#ff4d4f" :size="14"><WarningFilled /></el-icon> 鎶曡瘔
+                    <el-icon color="#ff4d4f" :size="14"><WarningFilled /></el-icon> 閹舵洝鐦?
                   </span>
-                  <span v-if="activeCustomer.type === 'urgent'" class="urgent-flag">绱ф€?/span>
+                  <span v-if="activeCustomer.type === 'urgent'" class="urgent-flag">缁毖勨偓?/span>
                 </span>
               </div>
             </div>
@@ -141,20 +141,20 @@
                 type="danger" size="small" plain
                 @click="flagComplaint(activeCustomer)"
               >
-                <el-icon><WarningFilled /></el-icon> 鏍囪鎶曡瘔
+                <el-icon><WarningFilled /></el-icon> 閺嶅洩顔囬幎鏇＄様
               </el-button>
               <el-button type="warning" size="small" plain @click="escalateToHuman(activeCustomer)">
-                <el-icon><Switch /></el-icon> 杞汉宸?
+                <el-icon><Switch /></el-icon> 鏉烆兛姹夊?
               </el-button>
               <el-button size="small" @click="handleMarkRead(activeCustomer)">
-                <el-icon><Check /></el-icon> 鏍囪宸茶
+                <el-icon><Check /></el-icon> 閺嶅洩顔囧鑼额嚢
               </el-button>
             </div>
           </div>
 
-          <!-- 娑堟伅鍒楄〃 -->
+          <!-- 濞戝牊浼呴崚妤勩€?-->
           <div class="messages-area" ref="messagesArea">
-            <!-- 瀹㈡埛鍘熷娑堟伅 -->
+            <!-- 鐎广垺鍩涢崢鐔奉潗濞戝牊浼?-->
             <div class="message-row msg-left">
               <el-avatar :size="32" :style="{ background: activeCustomer.avatarColor }" class="msg-avatar">
                 {{ activeCustomer.avatar }}
@@ -165,7 +165,7 @@
               </div>
             </div>
 
-            <!-- 鍥炲娑堟伅鍒楄〃 -->
+            <!-- 閸ョ偛顦插☉鍫熶紖閸掓銆?-->
             <template v-for="msg in conversationMessages[activeCustomer.id]" :key="msg.id">
               <div v-if="msg.from === 'system'" class="system-message">{{ msg.text }}</div>
               <div v-else class="message-row" :class="msg.from === 'customer' ? 'msg-left' : 'msg-right'">
@@ -183,14 +183,14 @@
                     <div class="msg-text">{{ msg.text }}</div>
                     <div class="msg-time">{{ msg.time }}</div>
                   </div>
-                  <el-avatar :size="32" style="background: #1552F0;" class="msg-avatar">瀹?/el-avatar>
+                  <el-avatar :size="32" style="background: #1552F0;" class="msg-avatar">鐎?/el-avatar>
                 </template>
               </div>
             </template>
 
-            <!-- AI 鏅鸿兘鍥炲寤鸿 -->
+            <!-- AI 閺呴缚鍏橀崶鐐差槻瀵ら缚顔?-->
             <div v-if="showSmartReplies" class="smart-replies-row">
-              <span class="smart-label">AI 寤鸿鍥炲锛?/span>
+              <span class="smart-label">AI 瀵ら缚顔呴崶鐐差槻閿?/span>
               <span
                 v-for="(reply, idx) in smartReplies"
                 :key="idx"
@@ -202,11 +202,11 @@
             </div>
           </div>
 
-          <!-- 杈撳叆鍖哄煙 -->
+          <!-- 鏉堟挸鍙嗛崠鍝勭厵 -->
           <div class="input-area">
-            <!-- 蹇嵎鍥炲妯℃澘 -->
+            <!-- 韫囶偅宓庨崶鐐差槻濡剝婢?-->
             <div class="quick-templates">
-              <span class="template-label">蹇嵎鍥炲锛?/span>
+              <span class="template-label">韫囶偅宓庨崶鐐差槻閿?/span>
               <template v-for="tpl in quickReplies" :key="tpl.title">
                 <el-popover placement="top" :width="280" trigger="hover" :content="tpl.content">
                   <template #reference>
@@ -221,13 +221,13 @@
               <el-input
                 v-model="replyText"
                 type="textarea" :rows="2"
-                placeholder="杈撳叆鍥炲鍐呭锛屾寜 Enter 鍙戦€?.."
+                placeholder="鏉堟挸鍙嗛崶鐐差槻閸愬懎顔愰敍灞惧瘻 Enter 閸欐垿鈧?.."
                 resize="none"
                 @keydown.enter.exact.prevent="sendReply"
               />
               <div class="input-actions">
                 <el-button type="primary" @click="sendReply" :disabled="!replyText.trim()">
-                  <el-icon><Promotion /></el-icon> 鍙戦€?
+                  <el-icon><Promotion /></el-icon> 閸欐垿鈧?
                 </el-button>
               </div>
             </div>
@@ -241,8 +241,8 @@
               <circle cx="85" cy="45" r="18" fill="#1552F0" opacity="0.1"/>
               <path d="M78 45 L85 52 L92 38" stroke="#1552F0" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
-            <h3>閫夋嫨涓€浣嶅鎴峰紑濮嬪璇?/h3>
-            <p>宸︿晶闈㈡澘鏄剧ず寰呭鐞嗙殑瀹㈡埛娑堟伅</p>
+            <h3>闁瀚ㄦ稉鈧担宥咁吂閹村嘲绱戞慨瀣嚠鐠?/h3>
+            <p>瀹革缚鏅堕棃銏℃緲閺勫墽銇氬鍛槱閻炲棛娈戠€广垺鍩涘☉鍫熶紖</p>
           </div>
         </template>
       </div>
@@ -256,18 +256,18 @@ import { ElMessage, ElMessageBox, ElNotification } from 'element-plus'
 import { Search, Check, Switch, Promotion, WarningFilled } from '@element-plus/icons-vue'
 import { getMessages, markRead, markAllRead, transferToHuman } from '@/api/customer'
 
-// ===== 缁熻鏁版嵁 =====
+// ===== 缂佺喕顓搁弫鐗堝祦 =====
 const stats = reactive({
   totalMessages: 294,
   messageTrend: '+12%',
   activeConversations: 18,
   unreadCount: 7,
-  avgResponseTime: '2.3鍒?,
+  avgResponseTime: '2.3閸?,
   satisfaction: 94.2,
   satisfactionCount: 156,
 })
 
-// ===== API 鏁版嵁 =====
+// ===== API 閺佺増宓?=====
 const selectedIds = ref([])
 const loading = ref(true)
 const error = ref(null)
@@ -282,8 +282,8 @@ async function fetchMessages() {
     if (Array.isArray(data)) {
       messages.splice(0, messages.length, ...data.map((m, i) => ({
         id: m.id || i + 1,
-        sender: m.sender || m.customerName || '鐢ㄦ埛',
-        avatar: m.avatar || (m.sender || '鐢?).charAt(0),
+        sender: m.sender || m.customerName || '閻劍鍩?,
+        avatar: m.avatar || (m.sender || '閻?).charAt(0),
         avatarColor: m.avatarColor || avatarColors[i % avatarColors.length],
         content: m.content || m.message || '',
         time: m.time || '-',
@@ -302,7 +302,7 @@ async function fetchMessages() {
   }
 }
 
-// ===== 绛涢€?=====
+// ===== 缁涙盯鈧?=====
 const searchKeyword = ref('')
 const filterType = ref('all')
 
@@ -325,7 +325,7 @@ const filteredCustomers = computed(() => {
   return result
 })
 
-// ===== 閫夋嫨 =====
+// ===== 闁瀚?=====
 const toggleSelect = (msg) => {
   const idx = selectedIds.value.indexOf(msg.id)
   if (idx > -1) {
@@ -335,13 +335,13 @@ const toggleSelect = (msg) => {
   }
 }
 
-// ===== 鏍囪宸茶 =====
+// ===== 閺嶅洩顔囧鑼额嚢 =====
 const handleMarkRead = async (msg) => {
   try {
     await markRead(msg.id)
     msg.unread = false
     stats.unreadCount = messages.filter(m => m.unread).length
-    ElMessage.success(`宸叉爣璁般€?{msg.sender}銆嶇殑娑堟伅涓哄凡璇籤)
+    ElMessage.success(`瀹稿弶鐖ｇ拋鑸偓?{msg.sender}閵嗗秶娈戝☉鍫熶紖娑撳搫鍑＄拠绫?
   } catch {
     msg.unread = false
     stats.unreadCount = messages.filter(m => m.unread).length
@@ -353,24 +353,24 @@ const markAllReadHandler = async () => {
     await markAllRead()
     messages.forEach((m) => (m.unread = false))
     stats.unreadCount = 0
-    ElMessage.success('宸插叏閮ㄦ爣璁颁负宸茶')
+    ElMessage.success('瀹告彃鍙忛柈銊︾垼鐠侀璐熷鑼额嚢')
   } catch {
     messages.forEach((m) => (m.unread = false))
     stats.unreadCount = 0
   }
 }
 
-// ===== 杞汉宸?=====
+// ===== 鏉烆兛姹夊?=====
 const transferHuman = async () => {
   try {
     await transferToHuman(selectedIds.value)
     messages.forEach(m => {
       if (selectedIds.value.includes(m.id)) m.escalated = true
     })
-    ElMessage.success(`宸插皢 ${selectedIds.value.length} 鏉℃秷鎭浆浜哄伐澶勭悊`)
+    ElMessage.success(`瀹告彃鐨?${selectedIds.value.length} 閺夆剝绉烽幁顖濇祮娴滃搫浼愭径鍕倞`)
     selectedIds.value = []
   } catch {
-    ElMessage.warning('杞汉宸ヨ姹傚凡鎻愪氦')
+    ElMessage.warning('鏉烆兛姹夊銉嚞濮瑰倸鍑￠幓鎰唉')
     messages.forEach(m => {
       if (selectedIds.value.includes(m.id)) m.escalated = true
     })
@@ -378,7 +378,7 @@ const transferHuman = async () => {
   }
 }
 
-// ===== 瀵硅瘽绠＄悊 =====
+// ===== 鐎电鐦界粻锛勬倞 =====
 const activeCustomer = ref(null)
 const replyText = ref('')
 const messagesArea = ref(null)
@@ -386,16 +386,16 @@ const showSmartReplies = ref(false)
 const smartReplies = ref([])
 const conversationMessages = reactive({})
 
-// ===== 蹇嵎鍥炲妯℃澘 =====
+// ===== 韫囶偅宓庨崶鐐差槻濡剝婢?=====
 const quickReplies = [
-  { title: '闂€欒', content: '鎮ㄥソ锛佸緢楂樺叴涓烘偍鏈嶅姟锛岃闂湁浠€涔堝彲浠ュ府鍔╂偍鐨勶紵' },
-  { title: '璇风◢绛?, content: '濂界殑锛屾垜姝ｅ湪涓烘偍鏌ヨ鐩稿叧淇℃伅锛岃绋嶇瓑鐗囧埢銆? },
-  { title: '纭闂', content: '鎰熻阿鎮ㄧ殑鍙嶉锛屾垜宸茬粡璁板綍浜嗘偍鐨勯棶棰橈紝浼氬敖蹇负鎮ㄥ鐞嗐€? },
-  { title: '鑷存瓑', content: '闈炲父鎶辨瓑缁欐偍甯︽潵涓嶄究锛屾垜浠細绔嬪嵆鏍稿疄骞剁粰鎮ㄤ竴涓弧鎰忕殑绛斿銆? },
-  { title: '閫€娆捐鏄?, content: '鎮ㄧ殑閫€娆惧皢鍦?-5涓伐浣滄棩鍐呭師璺繑鍥烇紝璇锋敞鎰忔煡鏀躲€傚鏈夐棶棰樺彲闅忔椂鑱旂郴鎴戜滑銆? },
-  { title: '鍙戣揣杩涘害', content: '鎮ㄧ殑璁㈠崟宸插湪澶勭悊涓紝棰勮鍦?8灏忔椂鍐呭彂璐э紝鍙戣揣鍚庝細鐭俊閫氱煡鎮ㄧ墿娴佸崟鍙枫€? },
-  { title: '鎶曡瘔鍗囩骇', content: '鎮ㄧ殑鎶曡瘔宸茶褰曞苟鍗囩骇鑷充富绠″鐞嗭紝24灏忔椂鍐呬細鏈変笓浜虹數璇濊仈绯绘偍锛岃淇濇寔鐢佃瘽鐣呴€氥€? },
-  { title: '缁撴潫瀵硅瘽', content: '鎰熻阿鎮ㄧ殑鑰愬績绛夊緟锛佸鏋滆繕鏈夊叾浠栭棶棰橈紝闅忔椂鑱旂郴鎴戜滑銆傜鎮ㄧ敓娲绘剦蹇紒' },
+  { title: '闂傤喖鈧瑨顕?, content: '閹劌銈介敍浣哥发妤傛ê鍙存稉鐑樺亶閺堝秴濮熼敍宀冾嚞闂傤喗婀佹禒鈧稊鍫濆讲娴犮儱搴滈崝鈺傚亶閻ㄥ嫸绱? },
+  { title: '鐠囬鈼㈢粵?, content: '婵傜晫娈戦敍灞惧灉濮濓絽婀稉鐑樺亶閺屻儴顕楅惄绋垮彠娣団剝浼呴敍宀冾嚞缁嬪秶鐡戦悧鍥у煝閵? },
+  { title: '绾喛顓婚梻顕€顣?, content: '閹扮喕闃块幃銊ф畱閸欏秹顩敍灞惧灉瀹歌尙绮＄拋鏉跨秿娴滃棙鍋嶉惃鍕６妫版﹫绱濇导姘晼韫囶偂璐熼幃銊ヮ槱閻炲棎鈧? },
+  { title: '閼峰瓨鐡?, content: '闂堢偛鐖堕幎杈ㄧ搼缂佹瑦鍋嶇敮锔芥降娑撳秳绌堕敍灞惧灉娴狀兛绱扮粩瀣祮閺嶇鐤勯獮鍓佺舶閹劋绔存稉顏呭姬閹板繒娈戠粵鏂款槻閵? },
+  { title: '闁偓濞嗘崘顕╅弰?, content: '閹劎娈戦柅鈧▎鎯х殺閸?-5娑擃亜浼愭担婊勬）閸愬懎甯捄顖濈箲閸ョ儑绱濈拠閿嬫暈閹板繑鐓￠弨韬测偓鍌氼洤閺堝妫舵０妯哄讲闂呭繑妞傞懕鏃傞兇閹存垳婊戦妴? },
+  { title: '閸欐垼鎻ｆ潻娑樺', content: '閹劎娈戠拋銏犲礋瀹告彃婀径鍕倞娑擃叏绱濇０鍕吀閸?8鐏忓繑妞傞崘鍛絺鐠愌嶇礉閸欐垼鎻ｉ崥搴濈窗閻厺淇婇柅姘辩叀閹劎澧垮ù浣稿礋閸欐灚鈧? },
+  { title: '閹舵洝鐦旈崡鍥╅獓', content: '閹劎娈戦幎鏇＄様瀹歌尪顔囪ぐ鏇炶嫙閸楀洨楠囬懛鍏呭瘜缁犫€愁槱閻炲棴绱?4鐏忓繑妞傞崘鍛窗閺堝绗撴禍铏规暩鐠囨繆浠堢化缁樺亶閿涘矁顕穱婵囧瘮閻絻鐦介悾鍛粹偓姘モ偓? },
+  { title: '缂佹挻娼€电鐦?, content: '閹扮喕闃块幃銊ф畱閼版劕绺剧粵澶婄窡閿涗礁顩ч弸婊嗙箷閺堝鍙炬禒鏍６妫版﹫绱濋梾蹇旀閼辨梻閮撮幋鎴滄粦閵嗗倻顨㈤幃銊ф晸濞茬粯鍓﹁箛顐磼' },
 ]
 
 const openConversation = (customer) => {
@@ -438,7 +438,7 @@ const sendReply = () => {
   replyText.value = ''
   showSmartReplies.value = false
   nextTick(() => scrollToBottom())
-  ElMessage.success('鍥炲宸插彂閫?)
+  ElMessage.success('閸ョ偛顦插鎻掑絺闁?)
   generateSmartReplies()
 }
 
@@ -452,18 +452,18 @@ const generateSmartReplies = () => {
   if (!c) return
   if (c.type === 'complaint') {
     smartReplies.value = [
-      '鎰熻阿鎮ㄧ殑鍙嶉锛屾垜浠細璁ょ湡瀵瑰緟鎮ㄦ彁鍑虹殑闂銆?,
-      '闈炲父鎶辨瓑锛屾垜宸茶褰曟偍鐨勬儏鍐碉紝浼氭湁涓撲汉璺熻繘澶勭悊銆?,
+      '閹扮喕闃块幃銊ф畱閸欏秹顩敍灞惧灉娴狀兛绱扮拋銈囨埂鐎电懓绶熼幃銊﹀絹閸戣櫣娈戦梻顕€顣介妴?,
+      '闂堢偛鐖堕幎杈ㄧ搼閿涘本鍨滃鑼额唶瑜版洘鍋嶉惃鍕剰閸愮绱濇导姘箒娑撴挷姹夌捄鐔荤箻婢跺嫮鎮婇妴?,
     ]
   } else if (c.type === 'urgent') {
     smartReplies.value = [
-      '濂界殑锛屾垜椹笂涓烘偍鏌ヨ锛岃绋嶇瓑锛?,
-      '姝ｅ湪涓烘偍鍔犳€ュ鐞嗕腑锛岄璁?鍒嗛挓鍐呯粰鎮ㄧ瓟澶嶃€?,
+      '婵傜晫娈戦敍灞惧灉妞诡兛绗傛稉鐑樺亶閺屻儴顕楅敍宀冾嚞缁嬪秶鐡戦敍?,
+      '濮濓絽婀稉鐑樺亶閸旂姵鈧儱顦╅悶鍡曡厬閿涘矂顣╃拋?閸掑棝鎸撻崘鍛舶閹劎鐡熸径宥冣偓?,
     ]
   } else {
     smartReplies.value = [
-      '濂界殑锛屽凡涓烘偍璁板綍銆傝繕鏈夊叾浠栧彲浠ュ府鍔╂偍鐨勫悧锛?,
-      '鎰熻阿鎮ㄧ殑鍜ㄨ锛屽鏈変换浣曠枒闂殢鏃惰仈绯绘垜浠紒',
+      '婵傜晫娈戦敍灞藉嚒娑撶儤鍋嶇拋鏉跨秿閵嗗倽绻曢張澶婂従娴犳牕褰叉禒銉ュ簻閸斺晜鍋嶉惃鍕偋閿?,
+      '閹扮喕闃块幃銊ф畱閸溿劏顕楅敍灞筋洤閺堝鎹㈡担鏇犳瀿闂傤噣娈㈤弮鎯颁粓缁粯鍨滄禒顒婄磼',
     ]
   }
   showSmartReplies.value = true
@@ -471,9 +471,9 @@ const generateSmartReplies = () => {
 
 const escalateToHuman = (customer) => {
   ElMessageBox.confirm(
-    `纭灏嗐€?{customer.sender}銆嶇殑浼氳瘽杞帴鑷充汉宸ュ鏈嶏紵`,
-    '杞汉宸ョ‘璁?,
-    { confirmButtonText: '纭杞帴', cancelButtonText: '鍙栨秷', type: 'warning' }
+    `绾喛顓荤亸鍡愨偓?{customer.sender}閵嗗秶娈戞导姘崇樈鏉烆剚甯撮懛鍏呮眽瀹搞儱顓归張宥忕吹`,
+    '鏉烆兛姹夊銉р€樼拋?,
+    { confirmButtonText: '绾喛顓绘潪顒佸复', cancelButtonText: '閸欐牗绉?, type: 'warning' }
   ).then(() => {
     customer.escalated = true
     if (!conversationMessages[customer.id]) {
@@ -482,12 +482,12 @@ const escalateToHuman = (customer) => {
     conversationMessages[customer.id].push({
       id: Date.now(),
       from: 'system',
-      text: '--- 浼氳瘽宸茶浆鎺ヨ嚦浜哄伐瀹㈡湇锛岃绋嶅€?---',
+      text: '--- 娴兼俺鐦藉鑼舵祮閹恒儴鍤︽禍鍝勪紣鐎广垺婀囬敍宀冾嚞缁嬪秴鈧?---',
       time: new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }),
     })
     ElNotification({
-      title: '宸茶浆鎺ヤ汉宸?,
-      message: `瀹㈡埛銆?{customer.sender}銆嶇殑浼氳瘽宸茶浆鎺ヨ嚦浜哄伐瀹㈡湇闃熷垪`,
+      title: '瀹歌尪娴嗛幒銉ゆ眽瀹?,
+      message: `鐎广垺鍩涢妴?{customer.sender}閵嗗秶娈戞导姘崇樈瀹歌尪娴嗛幒銉ㄥ殾娴滃搫浼愮€广垺婀囬梼鐔峰灙`,
       type: 'warning',
       duration: 4000,
     })
@@ -497,20 +497,20 @@ const escalateToHuman = (customer) => {
 
 const flagComplaint = (customer) => {
   ElMessageBox.confirm(
-    `纭灏嗐€?{customer.sender}銆嶆爣璁颁负鎶曡瘔瀹㈡埛锛熸鎿嶄綔灏嗛€氱煡涓荤銆俙,
-    '鎶曡瘔鏍囪纭',
-    { confirmButtonText: '纭鏍囪', cancelButtonText: '鍙栨秷', type: 'danger' }
+    `绾喛顓荤亸鍡愨偓?{customer.sender}閵嗗秵鐖ｇ拋棰佽礋閹舵洝鐦旂€广垺鍩涢敍鐔割劃閹垮秳缍旂亸鍡涒偓姘辩叀娑撹崵顓搁妴淇?
+    '閹舵洝鐦旈弽鍥唶绾喛顓?,
+    { confirmButtonText: '绾喛顓婚弽鍥唶', cancelButtonText: '閸欐牗绉?, type: 'danger' }
   ).then(() => {
     ElNotification({
-      title: '鎶曡瘔宸叉爣璁?,
-      message: `瀹㈡埛銆?{customer.sender}銆嶅凡琚爣璁颁负鎶曡瘔锛岀骇鍒? L3锛屽凡閫氱煡涓荤澶勭悊`,
+      title: '閹舵洝鐦斿鍙夌垼鐠?,
+      message: `鐎广垺鍩涢妴?{customer.sender}閵嗗秴鍑＄悮顐ｇ垼鐠侀璐熼幎鏇＄様閿涘瞼楠囬崚? L3閿涘苯鍑￠柅姘辩叀娑撹崵顓告径鍕倞`,
       type: 'error',
       duration: 5000,
     })
   }).catch(() => {})
 }
 
-// ===== 鐢熷懡鍛ㄦ湡 =====
+// ===== 閻㈢喎鎳￠崨銊︽埂 =====
 onMounted(() => {
   fetchMessages()
   pollTimer = setInterval(fetchMessages, 15000)
@@ -526,7 +526,7 @@ onUnmounted(() => {
   padding: 20px 24px;
 }
 
-/* ===== 涓讳綋甯冨眬 ===== */
+/* ===== 娑撹缍嬬敮鍐ㄧ湰 ===== */
 .panel-body {
   display: flex;
   gap: 0;
@@ -540,7 +540,7 @@ onUnmounted(() => {
   transition: var(--theme-transition);
 }
 
-/* ===== 宸︿晶瀹㈡埛鍒楄〃 ===== */
+/* ===== 瀹革缚鏅剁€广垺鍩涢崚妤勩€?===== */
 .customer-list-panel {
   width: 380px;
   min-width: 340px;
@@ -706,7 +706,7 @@ onUnmounted(() => {
   font-size: 13px;
 }
 
-/* ===== 鍙充晶瀵硅瘽绐楀彛 ===== */
+/* ===== 閸欏厖鏅剁€电鐦界粣妤€褰?===== */
 .conversation-panel {
   flex: 1;
   display: flex;
@@ -719,7 +719,7 @@ onUnmounted(() => {
   background: var(--bg-page);
 }
 
-/* 瀵硅瘽澶撮儴 */
+/* 鐎电鐦芥径鎾劥 */
 .conversation-header {
   display: flex;
   align-items: center;
@@ -779,7 +779,7 @@ onUnmounted(() => {
   flex-shrink: 0;
 }
 
-/* 娑堟伅鍖哄煙 */
+/* 濞戝牊浼呴崠鍝勭厵 */
 .messages-area {
   flex: 1;
   overflow-y: auto;
@@ -840,7 +840,7 @@ onUnmounted(() => {
   padding: 4px 0;
 }
 
-/* 鏅鸿兘鍥炲寤鸿 */
+/* 閺呴缚鍏橀崶鐐差槻瀵ら缚顔?*/
 .smart-replies-row {
   display: flex;
   flex-wrap: wrap;
@@ -878,7 +878,7 @@ onUnmounted(() => {
   color: #fff;
 }
 
-/* 杈撳叆鍖哄煙 */
+/* 鏉堟挸鍙嗛崠鍝勭厵 */
 .input-area {
   border-top: 1px solid var(--border-color);
   padding: 12px 20px;
@@ -929,7 +929,7 @@ onUnmounted(() => {
   gap: 6px;
 }
 
-/* 绌虹姸鎬?*/
+/* 缁岃櫣濮搁幀?*/
 .no-conversation {
   flex: 1;
   display: flex;

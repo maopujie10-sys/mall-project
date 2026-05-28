@@ -1,40 +1,40 @@
 <template>
   <div class="page-container">
     <div class="page-header">
-      <h2>瀹夊叏璁剧疆</h2>
-      <p>Google 楠岃瘉鍣?路 涓ゆ楠岃瘉</p>
+      <h2>鐎瑰鍙忕拋鍓х枂</h2>
+      <p>Google 妤犲矁鐦夐崳?璺?娑撱倖顒炴宀冪槈</p>
     </div>
 
     <el-row :gutter="16">
       <el-col :span="12">
         <el-card shadow="never">
-          <div class="card-title">Google 楠岃瘉鍣?(TOTP)</div>
+          <div class="card-title">Google 妤犲矁鐦夐崳?(TOTP)</div>
           <div style="padding:20px 0;text-align:center;">
             <template v-if="!setupDone">
               <el-button type="primary" size="large" @click="doSetup" :loading="settingUp">
-                寮€鍚袱姝ラ獙璇?
+                瀵偓閸氼垯琚卞銉╃崣鐠?
               </el-button>
-              <p style="margin-top:12px;color:#999;font-size:13px;">浣跨敤 Google Authenticator 鎴?Authy 淇濇姢鎮ㄧ殑璐︽埛</p>
+              <p style="margin-top:12px;color:#999;font-size:13px;">娴ｈ法鏁?Google Authenticator 閹?Authy 娣囨繃濮㈤幃銊ф畱鐠愶附鍩?/p>
             </template>
             <template v-else>
               <div v-if="qrCode" style="margin-bottom:20px;">
                 <img :src="qrCode" style="width:200px;height:200px;" />
-                <p style="margin:12px 0;font-size:13px;color:#666;">鎵嬪姩杈撳叆瀵嗛挜: <code>{{ secret }}</code></p>
+                <p style="margin:12px 0;font-size:13px;color:#666;">閹靛濮╂潏鎾冲弳鐎靛棝鎸? <code>{{ secret }}</code></p>
               </div>
               <el-form inline style="justify-content:center;">
-                <el-form-item><el-input v-model="code" placeholder="6浣嶉獙璇佺爜" maxlength="6" style="width:140px;" /></el-form-item>
-                <el-form-item><el-button type="primary" @click="doVerify" :loading="verifying">楠岃瘉</el-button></el-form-item>
+                <el-form-item><el-input v-model="code" placeholder="6娴ｅ秹鐛欑拠浣虹垳" maxlength="6" style="width:140px;" /></el-form-item>
+                <el-form-item><el-button type="primary" @click="doVerify" :loading="verifying">妤犲矁鐦?/el-button></el-form-item>
               </el-form>
-              <el-button type="danger" text @click="doReset">閲嶇疆楠岃瘉鍣?/el-button>
+              <el-button type="danger" text @click="doReset">闁插秶鐤嗘宀冪槈閸?/el-button>
             </template>
           </div>
         </el-card>
       </el-col>
       <el-col :span="12">
         <el-card shadow="never">
-          <div class="card-title">鐘舵€?/div>
+          <div class="card-title">閻樿埖鈧?/div>
           <div style="padding:20px 0;">
-            <el-result :icon="verified?'success':'warning'" :title="verified?'宸插惎鐢?:'鏈惎鐢?" :sub-title="verified?'涓ゆ楠岃瘉宸插紑鍚紝鐧诲綍鏃堕渶瑕佽緭鍏ラ獙璇佺爜':'璐︽埛鏈紑鍚袱姝ラ獙璇佷繚鎶?" />
+            <el-result :icon="verified?'success':'warning'" :title="verified?'瀹告彃鎯庨悽?:'閺堫亜鎯庨悽?" :sub-title="verified?'娑撱倖顒炴宀冪槈瀹告彃绱戦崥顖ょ礉閻ц缍嶉弮鍫曟付鐟曚浇绶崗銉╃崣鐠囦胶鐖?:'鐠愶附鍩涢張顏勭磻閸氼垯琚卞銉╃崣鐠囦椒绻氶幎?" />
           </div>
         </el-card>
       </el-col>
@@ -70,20 +70,20 @@ async function doSetup() {
     secret.value = data.secret
     setupDone.value = true
   } catch (e) {
-    ElMessage.error(e.response?.data?.detail || '璁剧疆澶辫触')
+    ElMessage.error(e.response?.data?.detail || '鐠佸墽鐤嗘径杈Е')
   } finally { settingUp.value = false }
 }
 
 async function doVerify() {
-  if (!code.value || code.value.length !== 6) { ElMessage.warning('璇疯緭鍏?浣嶉獙璇佺爜'); return }
+  if (!code.value || code.value.length !== 6) { ElMessage.warning('鐠囩柉绶崗?娴ｅ秹鐛欑拠浣虹垳'); return }
   verifying.value = true
   try {
     await agentApi.post(`/2fa/verify?code=${code.value}`)
     verified.value = true
-    ElMessage.success('涓ゆ楠岃瘉宸插紑鍚?)
+    ElMessage.success('娑撱倖顒炴宀冪槈瀹告彃绱戦崥?)
     code.value = ''
   } catch (e) {
-    ElMessage.error(e.response?.data?.detail || '楠岃瘉鐮佹棤鏁?)
+    ElMessage.error(e.response?.data?.detail || '妤犲矁鐦夐惍浣规￥閺?)
   } finally { verifying.value = false }
 }
 
@@ -91,8 +91,8 @@ async function doReset() {
   try {
     await agentApi.delete('/2fa/reset')
     verified.value = false; setupDone.value = false; qrCode.value = ''; secret.value = ''
-    ElMessage.success('宸查噸缃?)
-  } catch (e) { ElMessage.error('閲嶇疆澶辫触') }
+    ElMessage.success('瀹告煡鍣哥純?)
+  } catch (e) { ElMessage.error('闁插秶鐤嗘径杈Е') }
 }
 
 onMounted(checkStatus)

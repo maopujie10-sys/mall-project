@@ -2,31 +2,30 @@
   <div class="trend-page">
     <div class="page-header">
       <div>
-        <h1>馃摗 鐑偣鐩戞帶</h1>
-        <p>瀹炴椂杩借釜鎶栭煶/B绔?寰崥/X/YouTube鐑偣 路 AI鑷姩鍒嗘瀽瓒嬪娍</p>
+        <h1>棣冩憲 閻戭厾鍋ｉ惄鎴炲付</h1>
+        <p>鐎圭偞妞傛潻鍊熼嚋閹舵牠鐓?B缁?瀵邦喖宕?X/YouTube閻戭厾鍋?璺?AI閼奉亜濮╅崚鍡樼€界搾瀣◢</p>
       </div>
       <div class="header-actions">
-        <el-select v-model="activePlatform" placeholder="骞冲彴" size="small" style="width:130px">
-          <el-option label="鍏ㄩ儴骞冲彴" value="all"/>
-          <el-option label="寰崥" value="weibo"/>
-          <el-option label="鎶栭煶" value="douyin"/>
-          <el-option label="B绔? value="bilibili"/>
+        <el-select v-model="activePlatform" placeholder="楠炲啿褰? size="small" style="width:130px">
+          <el-option label="閸忋劑鍎撮獮鍐插酱" value="all"/>
+          <el-option label="瀵邦喖宕? value="weibo"/>
+          <el-option label="閹舵牠鐓? value="douyin"/>
+          <el-option label="B缁? value="bilibili"/>
           <el-option label="X/Twitter" value="twitter"/>
         </el-select>
         <el-button type="primary" size="small" @click="refreshTrends" :loading="loading">
-          <el-icon><Refresh /></el-icon> 鍒锋柊
-        </el-button>
+          <el-icon><Refresh /></el-icon> 閸掗攱鏌?        </el-button>
       </div>
     </div>
 
-    <!-- 骞冲彴鐑偣鍗＄墖 -->
+    <!-- 楠炲啿褰撮悜顓犲仯閸楋紕澧?-->
     <el-row :gutter="16" style="margin-bottom:20px">
       <el-col :span="8" v-for="(pf, key) in filteredTrends" :key="key">
         <el-card shadow="never" class="trend-card" :style="{ borderTop: '2px solid ' + pf.color }">
           <template #header>
             <div class="trend-header">
               <span>{{ pf.icon }} {{ pf.name }}</span>
-              <el-tag size="small">{{ pf.trends?.length || 0 }}鏉?/el-tag>
+              <el-tag size="small">{{ pf.trends?.length || 0 }}閺?/el-tag>
             </div>
           </template>
           <div class="trend-list">
@@ -40,11 +39,11 @@
       </el-col>
     </el-row>
 
-    <!-- AI鍒嗘瀽 -->
+    <!-- AI閸掑棙鐎?-->
     <el-row :gutter="16">
       <el-col :span="12">
         <el-card shadow="never">
-          <template #header><span>馃敭 AI瓒嬪娍棰勬祴</span></template>
+          <template #header><span>棣冩暛 AI鐡掑濞嶆０鍕ゴ</span></template>
           <div class="predict-grid">
             <div v-for="cat in predictions" :key="cat.name" class="predict-card">
               <div class="predict-name">{{ cat.name }}</div>
@@ -57,7 +56,7 @@
       </el-col>
       <el-col :span="12">
         <el-card shadow="never">
-          <template #header><span>馃洅 鍟嗗煄寤鸿</span></template>
+          <template #header><span>棣冩磪 閸熷棗鐓勫楦款唴</span></template>
           <div class="suggest-list">
             <div v-for="s in suggestions" :key="s" class="suggest-item">
               <el-icon color="#667eea"><CircleCheckFilled /></el-icon>
@@ -79,9 +78,9 @@ const loading = ref(false)
 const activePlatform = ref('all')
 
 const trends = reactive({
-  douyin: { name:'抖音热点', icon:'🎵', color:'#010101', trends:[] },
-  bilibili: { name:'B站热门', icon:'📺', color:'#fb7299', trends:[] },
-  weibo: { name:'微博热搜', icon:'📙', color:'#ff4d4f', trends:[] },
+  douyin: { name:'鎶栭煶鐑偣', icon:'馃幍', color:'#010101', trends:[] },
+  bilibili: { name:'B绔欑儹闂?, icon:'馃摵', color:'#fb7299', trends:[] },
+  weibo: { name:'寰崥鐑悳', icon:'馃摍', color:'#ff4d4f', trends:[] },
 })
 
 const filteredTrends = computed(function() {
@@ -105,7 +104,7 @@ async function fetchTrends() {
       })
     }
   } catch {
-    ElMessage.error('获取热点数据失败')
+    ElMessage.error('鑾峰彇鐑偣鏁版嵁澶辫触')
   } finally {
     loading.value = false
   }

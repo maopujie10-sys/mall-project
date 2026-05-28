@@ -1,10 +1,10 @@
-﻿<template>
+锘?template>
   <div class="chat-page">
-    <!-- 左侧：任务步骤 -->
+    <!-- 宸︿晶锛氫换鍔℃楠?-->
     <div class="chat-sidebar">
       <div class="sidebar-header">
         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/></svg>
-        <span>任务进度</span>
+        <span>浠诲姟杩涘害</span>
         <span class="task-count" v-if="steps.length">{{ steps.length }}</span>
       </div>
       <div class="step-list">
@@ -24,24 +24,24 @@
       </div>
       <div v-if="steps.length === 0" class="sidebar-empty">
         <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="#d9d9d9" stroke-width="1.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-        <p>等待任务</p>
-        <span>在下方输入指令</span>
+        <p>绛夊緟浠诲姟</p>
+        <span>鍦ㄤ笅鏂硅緭鍏ユ寚浠?/span>
       </div>
     </div>
 
-    <!-- 右侧：对话区 -->
+    <!-- 鍙充晶锛氬璇濆尯 -->
     <div class="chat-main">
       <div class="chat-header">
         <div class="ch-left">
           <span class="mode-badge" :class="currentMode">{{ modeLabel }}</span>
-          <span class="chat-title">AI Agent 对话</span>
+          <span class="chat-title">AI Agent 瀵硅瘽</span>
         </div>
         <div class="ch-right">
-          <el-button text size="small" @click="clearChat">清空</el-button>
-          <el-button :type="continuousMode?'success':'info'" text size="small" @click="toggleContinuousMode">{{continuousMode?'连续':'单次'}}</el-button>
-        <el-button text size="small" @click="speakLastResponse">播放</el-button>
+          <el-button text size="small" @click="clearChat">娓呯┖</el-button>
+          <el-button :type="continuousMode?'success':'info'" text size="small" @click="toggleContinuousMode">{{continuousMode?'杩炵画':'鍗曟'}}</el-button>
+        <el-button text size="small" @click="speakLastResponse">鎾斁</el-button>
         <el-button type="danger" text size="small" @click="$router.push('/emergency')">
-            <el-icon><WarningFilled /></el-icon> 急救
+            <el-icon><WarningFilled /></el-icon> 鎬ユ晳
           </el-button>
         </div>
       </div>
@@ -59,17 +59,17 @@
               </svg>
             </div>
           </div>
-          <h3>AI MallBrain 对话</h3>
-          <p>输入中文指令，AI 自动分析并执行</p>
+          <h3>AI MallBrain 瀵硅瘽</h3>
+          <p>杈撳叆涓枃鎸囦护锛孉I 鑷姩鍒嗘瀽骞舵墽琛?/p>
           <div class="quick-cmds">
             <div v-for="q in quickCommands" :key="q" class="quick-chip" @click="sendMessage(q)">{{ q }}</div>
           </div>
           <div class="capability-hints">
-            <span class="hint-tag">🛒 采集商品</span>
-            <span class="hint-tag">👥 生成数据</span>
-            <span class="hint-tag">🧠 AI运维</span>
-            <span class="hint-tag">📈 进化报告</span>
-            <span class="hint-tag">💾 创建备份</span>
+            <span class="hint-tag">馃洅 閲囬泦鍟嗗搧</span>
+            <span class="hint-tag">馃懃 鐢熸垚鏁版嵁</span>
+            <span class="hint-tag">馃 AI杩愮淮</span>
+            <span class="hint-tag">馃搱 杩涘寲鎶ュ憡</span>
+            <span class="hint-tag">馃捑 鍒涘缓澶囦唤</span>
           </div>
         </div>
 
@@ -81,7 +81,7 @@
           </div>
           <div class="msg-body">
             <div class="msg-header">
-              <span class="msg-role">{{ msg.role === 'user' ? '你' : 'AI Agent' }}</span>
+              <span class="msg-role">{{ msg.role === 'user' ? '浣? : 'AI Agent' }}</span>
               <span v-if="msg.risk" class="risk-badge" :class="msg.risk">{{ msg.risk }}</span>
               <span class="msg-time">{{ msg.time }}</span>
             </div>
@@ -93,11 +93,11 @@
                 <span class="step-detail">{{ s.detail }}</span>
               </div>
             </div>
-            <!-- 确认按钮 -->
+            <!-- 纭鎸夐挳 -->
             <div v-if="msg.needConfirm" class="confirm-bar">
-              <el-button type="success" @click="confirmAction(msg, true)">✓ 确认执行</el-button>
-              <el-button type="danger" @click="confirmAction(msg, false)">✗ 拒绝</el-button>
-              <el-button @click="$router.push('/emergency')">转人工接管</el-button>
+              <el-button type="success" @click="confirmAction(msg, true)">鉁?纭鎵ц</el-button>
+              <el-button type="danger" @click="confirmAction(msg, false)">鉁?鎷掔粷</el-button>
+              <el-button @click="$router.push('/emergency')">杞汉宸ユ帴绠?/el-button>
             </div>
           </div>
         </div>
@@ -109,7 +109,7 @@
 </template>
 
 <script setup>
-﻿import { ref, nextTick, onMounted, watch } from "vue"
+锘縤mport { ref, nextTick, onMounted, watch } from "vue"
 import { useAgentStore } from "@/stores/agent"
 import { useSystemStore } from "@/stores/system"
 import SuperInput from "@/components/SuperInput.vue"
@@ -342,7 +342,7 @@ watch(continuousMode, function(val) {
 <style scoped>
 .chat-page { display: flex; height: calc(100vh - 52px); }
 
-/* 左侧 */
+/* 宸︿晶 */
 .chat-sidebar {
   width: 240px; min-width: 240px;
   background: var(--bg-card); border-right: 1px solid var(--border-color);
@@ -374,7 +374,7 @@ watch(continuousMode, function(val) {
 .sidebar-empty p { font-size: 13px; margin: 0; }
 .sidebar-empty span { font-size: 11px; }
 
-/* 右侧 */
+/* 鍙充晶 */
 .chat-main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
 .chat-header {
   height: 48px; display: flex; align-items: center; justify-content: space-between;

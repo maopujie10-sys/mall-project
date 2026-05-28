@@ -8,3 +8,4 @@ replace_asar.bat
 __pycache__/
 .env
 package-lock.json
+backups/

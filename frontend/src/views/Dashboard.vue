@@ -2,20 +2,20 @@
   <div class="dashboard">
     <div class="page-header">
       <div>
-        <h1>AI MallBrain 总控台</h1>
-        <p>全自动商城运维中枢 · 实时监控 · 智能决策</p>
+        <h1>AI MallBrain 鎬绘帶鍙?/h1>
+        <p>鍏ㄨ嚜鍔ㄥ晢鍩庤繍缁翠腑鏋?路 瀹炴椂鐩戞帶 路 鏅鸿兘鍐崇瓥</p>
       </div>
       <div class="header-actions">
         <el-button type="primary" @click="$router.push('/chat')">
-          <el-icon><ChatDotRound /></el-icon> AI 对话
+          <el-icon><ChatDotRound /></el-icon> AI 瀵硅瘽
         </el-button>
         <el-button @click="refreshAll" :loading="loading">
-          <el-icon><Refresh /></el-icon> 刷新
+          <el-icon><Refresh /></el-icon> 鍒锋柊
         </el-button>
       </div>
     </div>
 
-    <!-- 核心指标 -->
+    <!-- 鏍稿績鎸囨爣 -->
     <div class="stats-row">
       <div class="stat-card">
         <div class="stat-icon" style="background: rgba(102,126,234,0.12); color: #667eea;">
@@ -23,9 +23,9 @@
         </div>
         <div class="stat-info">
           <div class="stat-value">{{ stats.aiStatus }}</div>
-          <div class="stat-label">AI 大脑状态</div>
+          <div class="stat-label">AI 澶ц剳鐘舵€?/div>
         </div>
-        <div class="stat-trend up">运行中</div>
+        <div class="stat-trend up">杩愯涓?/div>
       </div>
 
       <div class="stat-card">
@@ -34,9 +34,9 @@
         </div>
         <div class="stat-info">
           <div class="stat-value">{{ stats.mallHealth }}%</div>
-          <div class="stat-label">商城健康度</div>
+          <div class="stat-label">鍟嗗煄鍋ュ悍搴?/div>
         </div>
-        <div class="stat-trend up">良好</div>
+        <div class="stat-trend up">鑹ソ</div>
       </div>
 
       <div class="stat-card">
@@ -45,9 +45,9 @@
         </div>
         <div class="stat-info">
           <div class="stat-value">{{ stats.todayActions }}</div>
-          <div class="stat-label">今日AI行动</div>
+          <div class="stat-label">浠婃棩AI琛屽姩</div>
         </div>
-        <div class="stat-trend up">活跃</div>
+        <div class="stat-trend up">娲昏穬</div>
       </div>
 
       <div class="stat-card">
@@ -56,39 +56,39 @@
         </div>
         <div class="stat-info">
           <div class="stat-value">{{ stats.memoryItems }}</div>
-          <div class="stat-label">长期记忆条数</div>
+          <div class="stat-label">闀挎湡璁板繂鏉℃暟</div>
         </div>
-        <div class="stat-trend up">积累中</div>
+        <div class="stat-trend up">绉疮涓?/div>
       </div>
     </div>
 
-    <!-- 图表行 -->
+    <!-- 鍥捐〃琛?-->
     <el-row :gutter="16" style="margin-bottom: 20px;">
-      <!-- 商城健康概览 -->
+      <!-- 鍟嗗煄鍋ュ悍姒傝 -->
       <el-col :span="12">
         <el-card shadow="never" class="panel-card">
           <template #header>
             <div class="panel-header">
-              <span>🛒 商城健康概览</span>
-              <el-button text size="small" type="primary" @click="$router.push('/ai-brain')">详情 →</el-button>
+              <span>馃洅 鍟嗗煄鍋ュ悍姒傝</span>
+              <el-button text size="small" type="primary" @click="$router.push('/ai-brain')">璇︽儏 鈫?/el-button>
             </div>
           </template>
           <div class="health-grid">
             <div class="health-item hot">
               <div class="health-count">{{ health.hot }}</div>
-              <div class="health-tag">🔥 热销</div>
+              <div class="health-tag">馃敟 鐑攢</div>
             </div>
             <div class="health-item normal">
               <div class="health-count">{{ health.warm }}</div>
-              <div class="health-tag">✅ 正常</div>
+              <div class="health-tag">鉁?姝ｅ父</div>
             </div>
             <div class="health-item cold">
               <div class="health-count">{{ health.cold }}</div>
-              <div class="health-tag">❄️ 冷门</div>
+              <div class="health-tag">鉂勶笍 鍐烽棬</div>
             </div>
             <div class="health-item dead">
               <div class="health-count">{{ health.dead }}</div>
-              <div class="health-tag">💀 死品</div>
+              <div class="health-tag">馃拃 姝诲搧</div>
             </div>
           </div>
           <div class="health-bar">
@@ -100,35 +100,35 @@
         </el-card>
       </el-col>
 
-      <!-- AI 进化曲线 -->
+      <!-- AI 杩涘寲鏇茬嚎 -->
       <el-col :span="12">
         <el-card shadow="never" class="panel-card">
           <template #header>
             <div class="panel-header">
-              <span>🧬 AI 自我进化</span>
-              <el-button text size="small" type="primary" @click="$router.push('/evolution')">详情 →</el-button>
+              <span>馃К AI 鑷垜杩涘寲</span>
+              <el-button text size="small" type="primary" @click="$router.push('/evolution')">璇︽儏 鈫?/el-button>
             </div>
           </template>
           <div class="evo-stats">
             <div class="evo-item">
               <div class="evo-value" style="color: #52c41a;">{{ evolution.successRate }}%</div>
-              <div class="evo-label">30天成功率</div>
+              <div class="evo-label">30澶╂垚鍔熺巼</div>
             </div>
             <div class="evo-item">
               <div class="evo-value" style="color: #667eea;">{{ evolution.learnedItems }}</div>
-              <div class="evo-label">已学知识</div>
+              <div class="evo-label">宸插鐭ヨ瘑</div>
             </div>
             <div class="evo-item">
               <div class="evo-value" style="color: #faad14;">{{ evolution.corrections }}</div>
-              <div class="evo-label">用户纠正</div>
+              <div class="evo-label">鐢ㄦ埛绾犳</div>
             </div>
             <div class="evo-item">
               <div class="evo-value" style="color: #764ba2;">{{ evolution.trend }}</div>
-              <div class="evo-label">进化趋势</div>
+              <div class="evo-label">杩涘寲瓒嬪娍</div>
             </div>
           </div>
           <div class="evo-bar-container">
-            <div class="evo-bar-label">学习进度</div>
+            <div class="evo-bar-label">瀛︿範杩涘害</div>
             <div class="evo-bar-track">
               <div class="evo-bar-fill" :style="{ width: evolution.learnedPercent + '%' }"></div>
             </div>
@@ -138,19 +138,19 @@
       </el-col>
     </el-row>
 
-    <!-- 底部行 -->
+    <!-- 搴曢儴琛?-->
     <el-row :gutter="16">
-      <!-- 最近活动 -->
+      <!-- 鏈€杩戞椿鍔?-->
       <el-col :span="14">
         <el-card shadow="never" class="panel-card">
           <template #header>
             <div class="panel-header">
-              <span>📋 最近活动</span>
-              <el-button text size="small" @click="refreshAll">刷新</el-button>
+              <span>馃搵 鏈€杩戞椿鍔?/span>
+              <el-button text size="small" @click="refreshAll">鍒锋柊</el-button>
             </div>
           </template>
           <div class="activity-list">
-            <div v-if="activities.length === 0" class="empty-state">暂无活动记录</div>
+            <div v-if="activities.length === 0" class="empty-state">鏆傛棤娲诲姩璁板綍</div>
             <div v-for="act in activities" :key="act.id" class="activity-item">
               <div class="act-icon" :class="act.type">
                 <span>{{ act.icon }}</span>
@@ -166,42 +166,42 @@
         </el-card>
       </el-col>
 
-      <!-- 快捷操作 -->
+      <!-- 蹇嵎鎿嶄綔 -->
       <el-col :span="10">
         <el-card shadow="never" class="panel-card">
           <template #header>
-            <span>⚡ 快捷操作</span>
+            <span>鈿?蹇嵎鎿嶄綔</span>
           </template>
           <div class="quick-grid">
             <div class="quick-card" @click="$router.push('/scraper')">
-              <div class="qc-icon" style="background: rgba(102,126,234,0.12);">🛒</div>
-              <div class="qc-label">采集商品</div>
-              <div class="qc-desc">从多平台抓取</div>
+              <div class="qc-icon" style="background: rgba(102,126,234,0.12);">馃洅</div>
+              <div class="qc-label">閲囬泦鍟嗗搧</div>
+              <div class="qc-desc">浠庡骞冲彴鎶撳彇</div>
             </div>
             <div class="quick-card" @click="$router.push('/virtual')">
-              <div class="qc-icon" style="background: rgba(82,196,26,0.12);">👥</div>
-              <div class="qc-label">生成数据</div>
-              <div class="qc-desc">一键造数据</div>
+              <div class="qc-icon" style="background: rgba(82,196,26,0.12);">馃懃</div>
+              <div class="qc-label">鐢熸垚鏁版嵁</div>
+              <div class="qc-desc">涓€閿€犳暟鎹?/div>
             </div>
             <div class="quick-card" @click="$router.push('/ai-brain')">
-              <div class="qc-icon" style="background: rgba(250,173,20,0.12);">🧠</div>
-              <div class="qc-label">AI运维</div>
-              <div class="qc-desc">自动管理商城</div>
+              <div class="qc-icon" style="background: rgba(250,173,20,0.12);">馃</div>
+              <div class="qc-label">AI杩愮淮</div>
+              <div class="qc-desc">鑷姩绠＄悊鍟嗗煄</div>
             </div>
             <div class="quick-card" @click="$router.push('/evolution')">
-              <div class="qc-icon" style="background: rgba(118,75,162,0.12);">📈</div>
-              <div class="qc-label">进化报告</div>
-              <div class="qc-desc">AI学得如何</div>
+              <div class="qc-icon" style="background: rgba(118,75,162,0.12);">馃搱</div>
+              <div class="qc-label">杩涘寲鎶ュ憡</div>
+              <div class="qc-desc">AI瀛﹀緱濡備綍</div>
             </div>
             <div class="quick-card" @click="quickBackup">
-              <div class="qc-icon" style="background: rgba(24,144,255,0.12);">💾</div>
-              <div class="qc-label">创建备份</div>
-              <div class="qc-desc">安全第一</div>
+              <div class="qc-icon" style="background: rgba(24,144,255,0.12);">馃捑</div>
+              <div class="qc-label">鍒涘缓澶囦唤</div>
+              <div class="qc-desc">瀹夊叏绗竴</div>
             </div>
             <div class="quick-card" @click="$router.push('/chat')">
-              <div class="qc-icon" style="background: rgba(255,77,79,0.12);">💬</div>
-              <div class="qc-label">AI对话</div>
-              <div class="qc-desc">问AI任何事</div>
+              <div class="qc-icon" style="background: rgba(255,77,79,0.12);">馃挰</div>
+              <div class="qc-label">AI瀵硅瘽</div>
+              <div class="qc-desc">闂瓵I浠讳綍浜?/div>
             </div>
           </div>
         </el-card>
@@ -219,7 +219,7 @@ const loading = ref(false)
 let pollTimer = null
 
 const stats = reactive({
-  aiStatus: '检测中...',
+  aiStatus: '妫€娴嬩腑...',
   mallHealth: 0,
   todayActions: 0,
   memoryItems: 0,
@@ -237,7 +237,7 @@ const evolution = reactive({
   successRate: 0,
   learnedItems: 0,
   corrections: 0,
-  trend: '加载中...',
+  trend: '鍔犺浇涓?..',
 })
 
 const activities = ref([])
@@ -250,8 +250,8 @@ function healthPercent(type) {
 async function fetchStatus() {
   try {
     const { data } = await agentApi.get('/status')
-    stats.aiStatus = data.mall_app === 'healthy' ? '在线' : '异常'
-  } catch { stats.aiStatus = '未知' }
+    stats.aiStatus = data.mall_app === 'healthy' ? '鍦ㄧ嚎' : '寮傚父'
+  } catch { stats.aiStatus = '鏈煡' }
 }
 
 async function fetchMallHealth() {
@@ -265,41 +265,40 @@ async function fetchMallHealth() {
     health.total = data.total || (health.hot + health.warm + health.cold + health.dead)
     const ok = health.hot + health.warm
     stats.mallHealth = health.total ? Math.round(ok / health.total * 100) : 0
-  } catch { /* 后端可能未就绪 */ }
+  } catch { /* 鍚庣鍙兘鏈氨缁?*/ }
 }
 
 async function fetchEvolution() {
   try {
     const { data } = await agentApi.get('/agent/evolution/stats')
     evolution.successRate = data.success_rate_7d || 0
-    evolution.trend = evolution.successRate > 70 ? '↗ 提升中' : '→ 稳定'
+    evolution.trend = evolution.successRate > 70 ? '鈫?鎻愬崌涓? : '鈫?绋冲畾'
     const kb = await agentApi.get('/agent/evolution/knowledge')
     evolution.learnedItems = (kb.data?.knowledge || []).length
     const corr = await agentApi.get('/agent/evolution/corrections')
     evolution.corrections = (corr.data?.corrections || []).length
-  } catch { /* 后端可能未就绪 */ }
+  } catch { /* 鍚庣鍙兘鏈氨缁?*/ }
 }
 
 async function fetchActivities() {
   try {
     const acts = []
-    // 获取最近备份
-    try {
+    // 鑾峰彇鏈€杩戝浠?    try {
       const { data: bu } = await agentApi.get('/rollback/backups')
-      if (bu?.length) acts.push({ icon: '💾', type: 'backup', title: '最近备份', detail: bu[0].name || '备份', time: bu[0].created_at?.slice(11,16) || '', status: '成功' })
+      if (bu?.length) acts.push({ icon: '馃捑', type: 'backup', title: '鏈€杩戝浠?, detail: bu[0].name || '澶囦唤', time: bu[0].created_at?.slice(11,16) || '', status: '鎴愬姛' })
     } catch {}
-    // 获取最近巡检
+    // 鑾峰彇鏈€杩戝贰妫€
     try {
       const { data: ins } = await agentApi.get('/inspector/history')
-      if (ins?.length) acts.push({ icon: '🔍', type: 'evo', title: '最近巡检', detail: '多端点巡检完成', time: ins[0].time || '', status: '完成' })
+      if (ins?.length) acts.push({ icon: '馃攳', type: 'evo', title: '鏈€杩戝贰妫€', detail: '澶氱鐐瑰贰妫€瀹屾垚', time: ins[0].time || '', status: '瀹屾垚' })
     } catch {}
-    // 获取系统模式
+    // 鑾峰彇绯荤粺妯″紡
     try {
       const { data: mode } = await agentApi.get('/system/mode')
-      acts.push({ icon: '⚙️', type: 'brain', title: '系统模式', detail: '当前: ' + (mode?.mode || 'ai_control'), time: '', status: '正常' })
+      acts.push({ icon: '鈿欙笍', type: 'brain', title: '绯荤粺妯″紡', detail: '褰撳墠: ' + (mode?.mode || 'ai_control'), time: '', status: '姝ｅ父' })
     } catch {}
     if (acts.length === 0) {
-      acts.push({ icon: '✅', type: 'evo', title: '系统就绪', detail: 'AI Agent 正常运行中', time: new Date().toTimeString().slice(0,5), status: '正常' })
+      acts.push({ icon: '鉁?, type: 'evo', title: '绯荤粺灏辩华', detail: 'AI Agent 姝ｅ父杩愯涓?, time: new Date().toTimeString().slice(0,5), status: '姝ｅ父' })
     }
     activities.value = acts
   } catch {}
@@ -318,10 +317,10 @@ async function refreshAll() {
 
 async function quickBackup() {
   try {
-    await agentApi.post('/rollback/backups', { name: '手动备份_' + new Date().toISOString().slice(0,10), type: 'manual', target: 'database' })
-    ElMessage.success('备份任务已提交')
+    await agentApi.post('/rollback/backups', { name: '鎵嬪姩澶囦唤_' + new Date().toISOString().slice(0,10), type: 'manual', target: 'database' })
+    ElMessage.success('澶囦唤浠诲姟宸叉彁浜?)
   } catch {
-    ElMessage.error('备份失败，请检查后端服务')
+    ElMessage.error('澶囦唤澶辫触锛岃妫€鏌ュ悗绔湇鍔?)
   }
 }
 
@@ -348,7 +347,7 @@ onUnmounted(() => {
 .page-header p { font-size: 13px; color: var(--text-muted); margin: 0; }
 .header-actions { display: flex; gap: 8px; }
 
-/* 核心指标 */
+/* 鏍稿績鎸囨爣 */
 .stats-row {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -378,7 +377,7 @@ onUnmounted(() => {
 .stat-trend { font-size: 11px; padding: 2px 8px; border-radius: 8px; font-weight: 500; }
 .stat-trend.up { background: rgba(82,196,26,0.1); color: #52c41a; }
 
-/* 面板 */
+/* 闈㈡澘 */
 .panel-card {
   border-radius: 12px;
   border: 1px solid var(--border-color);
@@ -392,7 +391,7 @@ onUnmounted(() => {
   font-size: 14px;
 }
 
-/* 健康度网格 */
+/* 鍋ュ悍搴︾綉鏍?*/
 .health-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -424,7 +423,7 @@ onUnmounted(() => {
 .bar-seg.cold { background: #1890ff; }
 .bar-seg.dead { background: #d9d9d9; }
 
-/* 进化统计 */
+/* 杩涘寲缁熻 */
 .evo-stats {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -456,7 +455,7 @@ onUnmounted(() => {
 }
 .evo-pct { font-size: 12px; font-weight: 600; color: var(--text-primary); }
 
-/* 活动列表 */
+/* 娲诲姩鍒楄〃 */
 .activity-list { display: flex; flex-direction: column; }
 .empty-state { text-align: center; padding: 40px; color: var(--text-muted); font-size: 13px; }
 .activity-item {
@@ -483,7 +482,7 @@ onUnmounted(() => {
 .act-detail { font-size: 12px; color: var(--text-muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .act-time { font-size: 11px; color: var(--text-muted); white-space: nowrap; }
 
-/* 快捷操作 */
+/* 蹇嵎鎿嶄綔 */
 .quick-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);

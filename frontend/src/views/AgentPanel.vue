@@ -43,13 +43,13 @@ import { agentApi } from '@/api/index'
 import { ElMessage } from 'element-plus'
 
 const agentDescriptions = {
-  master: '总控调度 · 拆解任务 · 分配Agent',
-  code: '代码编写 · Bug修复 · 接口生成',
-  devops: '服务器管理 · Docker · Nginx · 部署',
-  vision: '图片识别 · 视频分析 · OCR',
-  trend: '热点监控 · 舆情分析 · 趋势预测',
-  memory: '长期记忆 · 知识检索 · 经验学习',
-  heal: '异常检测 · 自动修复 · 服务恢复',
+  master: '鎬绘帶璋冨害 路 鎷嗚В浠诲姟 路 鍒嗛厤Agent',
+  code: '浠ｇ爜缂栧啓 路 Bug淇 路 鎺ュ彛鐢熸垚',
+  devops: '鏈嶅姟鍣ㄧ鐞?路 Docker 路 Nginx 路 閮ㄧ讲',
+  vision: '鍥剧墖璇嗗埆 路 瑙嗛鍒嗘瀽 路 OCR',
+  trend: '鐑偣鐩戞帶 路 鑸嗘儏鍒嗘瀽 路 瓒嬪娍棰勬祴',
+  memory: '闀挎湡璁板繂 路 鐭ヨ瘑妫€绱?路 缁忛獙瀛︿範',
+  heal: '寮傚父妫€娴?路 鑷姩淇 路 鏈嶅姟鎭㈠',
 }
 
 const agentColors = {
@@ -67,7 +67,7 @@ async function fetchAgents() {
         return {
           id: a.id || a.name,
           name: a.display_name || a.name || '',
-          icon: '🤖',
+          icon: '馃',
           status: a.status || 'active',
           tasks: a.tasks || 0,
           successRate: a.success_rate || 0,
@@ -76,9 +76,8 @@ async function fetchAgents() {
       })
     }
   } catch {
-    // Fallback: use local descriptions
     agents.value = Object.keys(agentDescriptions).map(function(id) {
-      return { id, name: id.charAt(0).toUpperCase()+id.slice(1)+' Agent', icon:'🤖', status:'active', tasks:0, successRate:0, color:agentColors[id]||'#667eea' }
+      return { id, name: id.charAt(0).toUpperCase()+id.slice(1)+' Agent', icon:'馃', status:'active', tasks:0, successRate:0, color:agentColors[id]||'#667eea' }
     })
   }
 }

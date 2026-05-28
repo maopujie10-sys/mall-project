@@ -1,14 +1,14 @@
-﻿<template>
+锘?template>
   <div class="mall-admin-panel">
     <div class="page-header">
-      <h2>商城总后台管理</h2>
+      <h2>鍟嗗煄鎬诲悗鍙扮鐞?/h2>
       <div class="header-actions">
-        <el-button size="small" @click="scanAll" :loading="scanning">一键扫描</el-button>
-        <el-button size="small" type="primary" @click="aiBrainScan" :loading="brainLoading">AI大脑分析</el-button>
+        <el-button size="small" @click="scanAll" :loading="scanning">涓€閿壂鎻?/el-button>
+        <el-button size="small" type="primary" @click="aiBrainScan" :loading="brainLoading">AI澶ц剳鍒嗘瀽</el-button>
       </div>
     </div>
 
-    <!-- KPI 指标卡 -->
+    <!-- KPI 鎸囨爣鍗?-->
     <el-row :gutter="12" class="kpi-row">
       <el-col :span="4" v-for="k in kpis" :key="k.label">
         <div class="kpi-card" :style="{ background: k.bg }">
@@ -18,61 +18,61 @@
       </el-col>
     </el-row>
 
-    <!-- Tab 导航 -->
+    <!-- Tab 瀵艰埅 -->
     <el-tabs v-model="activeTab" type="border-card" class="mall-tabs">
-      <el-tab-pane label="总览" name="overview">
+      <el-tab-pane label="鎬昏" name="overview">
         <OverviewPanel :stats="stats" :endpoints="endpoints" :scanHistory="scanHistory" :aiSummary="aiSummary" @scan="scanAll" @brain="aiBrainScan" />
       </el-tab-pane>
 
-      <el-tab-pane label="商品" name="products">
-        <DataTablePanel title="商品管理" :columns="productColumns" :fetch="getProductList" :onDelete="deleteProduct" :onAudit="auditProduct" searchPlaceholder="搜索商品名称/ID" />
+      <el-tab-pane label="鍟嗗搧" name="products">
+        <DataTablePanel title="鍟嗗搧绠＄悊" :columns="productColumns" :fetch="getProductList" :onDelete="deleteProduct" :onAudit="auditProduct" searchPlaceholder="鎼滅储鍟嗗搧鍚嶇О/ID" />
       </el-tab-pane>
 
-      <el-tab-pane label="订单" name="orders">
-        <DataTablePanel title="订单管理" :columns="orderColumns" :fetch="getOrderList" :onDetail="getOrderDetail" :onRefund="forceRefund" :onLogs="getOrderLogs" searchPlaceholder="搜索订单号/用户" />
+      <el-tab-pane label="璁㈠崟" name="orders">
+        <DataTablePanel title="璁㈠崟绠＄悊" :columns="orderColumns" :fetch="getOrderList" :onDetail="getOrderDetail" :onRefund="forceRefund" :onLogs="getOrderLogs" searchPlaceholder="鎼滅储璁㈠崟鍙?鐢ㄦ埛" />
       </el-tab-pane>
 
-      <el-tab-pane label="用户" name="users">
-        <DataTablePanel title="用户管理" :columns="userColumns" :fetch="getUserList" :onStatus="updateUserStatus" :onBalance="adjustUserBalance" searchPlaceholder="搜索用户名/手机号" />
+      <el-tab-pane label="鐢ㄦ埛" name="users">
+        <DataTablePanel title="鐢ㄦ埛绠＄悊" :columns="userColumns" :fetch="getUserList" :onStatus="updateUserStatus" :onBalance="adjustUserBalance" searchPlaceholder="鎼滅储鐢ㄦ埛鍚?鎵嬫満鍙? />
       </el-tab-pane>
 
-      <el-tab-pane label="分类" name="categories">
+      <el-tab-pane label="鍒嗙被" name="categories">
         <CategoryPanel />
       </el-tab-pane>
 
-      <el-tab-pane label="财务" name="finance">
+      <el-tab-pane label="璐㈠姟" name="finance">
         <FinancePanel />
       </el-tab-pane>
 
-      <el-tab-pane label="物流" name="logistics">
-        <DataTablePanel title="物流管理" :columns="logisticsColumns" :fetch="fetchLogistics" :onTrace="getLogisticsTrace" searchPlaceholder="输入订单ID查询物流" />
+      <el-tab-pane label="鐗╂祦" name="logistics">
+        <DataTablePanel title="鐗╂祦绠＄悊" :columns="logisticsColumns" :fetch="fetchLogistics" :onTrace="getLogisticsTrace" searchPlaceholder="杈撳叆璁㈠崟ID鏌ヨ鐗╂祦" />
       </el-tab-pane>
 
-      <el-tab-pane label="认证" name="kyc">
+      <el-tab-pane label="璁よ瘉" name="kyc">
         <KycPanel />
       </el-tab-pane>
 
-      <el-tab-pane label="商家" name="merchants">
+      <el-tab-pane label="鍟嗗" name="merchants">
         <MerchantPanel />
       </el-tab-pane>
 
-      <el-tab-pane label="内容" name="content">
+      <el-tab-pane label="鍐呭" name="content">
         <ContentPanel />
       </el-tab-pane>
 
-      <el-tab-pane label="客服" name="service">
+      <el-tab-pane label="瀹㈡湇" name="service">
         <CustomerServicePanel />
       </el-tab-pane>
 
-      <el-tab-pane label="风控" name="risk">
+      <el-tab-pane label="椋庢帶" name="risk">
         <RiskPanel />
       </el-tab-pane>
 
-      <el-tab-pane label="营销" name="marketing">
+      <el-tab-pane label="钀ラ攢" name="marketing">
         <MarketingPanel />
       </el-tab-pane>
 
-      <el-tab-pane label="系统" name="system">
+      <el-tab-pane label="绯荤粺" name="system">
         <SystemPanel />
       </el-tab-pane>
     </el-tabs>
@@ -103,40 +103,40 @@ const endpoints = ref([])
 const scanHistory = ref([])
 const aiSummary = ref({})
 const kpis = ref([
-  { label: '商品总数', value: 0, bg: 'linear-gradient(135deg,#409eff,#337ecc)' },
-  { label: '订单总数', value: 0, bg: 'linear-gradient(135deg,#67c23a,#529b2e)' },
-  { label: '用户总数', value: 0, bg: 'linear-gradient(135deg,#e6a23c,#cf9236)' },
-  { label: '商家总数', value: 0, bg: 'linear-gradient(135deg,#f56c6c,#c45656)' },
-  { label: '待审核', value: 0, bg: 'linear-gradient(135deg,#909399,#73767a)' },
-  { label: '今日订单', value: 0, bg: 'linear-gradient(135deg,#8b5cf6,#7c3aed)' },
+  { label: '鍟嗗搧鎬绘暟', value: 0, bg: 'linear-gradient(135deg,#409eff,#337ecc)' },
+  { label: '璁㈠崟鎬绘暟', value: 0, bg: 'linear-gradient(135deg,#67c23a,#529b2e)' },
+  { label: '鐢ㄦ埛鎬绘暟', value: 0, bg: 'linear-gradient(135deg,#e6a23c,#cf9236)' },
+  { label: '鍟嗗鎬绘暟', value: 0, bg: 'linear-gradient(135deg,#f56c6c,#c45656)' },
+  { label: '寰呭鏍?, value: 0, bg: 'linear-gradient(135deg,#909399,#73767a)' },
+  { label: '浠婃棩璁㈠崟', value: 0, bg: 'linear-gradient(135deg,#8b5cf6,#7c3aed)' },
 ])
 
 const productColumns = [
   { prop: 'id', label: 'ID', width: 80 },
-  { prop: 'title', label: '商品名称' },
-  { prop: 'price', label: '价格', width: 100 },
-  { prop: 'stock', label: '库存', width: 80 },
-  { prop: 'status', label: '状态', width: 80 },
+  { prop: 'title', label: '鍟嗗搧鍚嶇О' },
+  { prop: 'price', label: '浠锋牸', width: 100 },
+  { prop: 'stock', label: '搴撳瓨', width: 80 },
+  { prop: 'status', label: '鐘舵€?, width: 80 },
 ]
 const orderColumns = [
-  { prop: 'order_id', label: '订单号', width: 180 },
-  { prop: 'user_name', label: '用户名', width: 100 },
-  { prop: 'total', label: '金额', width: 100 },
-  { prop: 'status', label: '状态', width: 80 },
-  { prop: 'create_time', label: '时间', width: 160 },
+  { prop: 'order_id', label: '璁㈠崟鍙?, width: 180 },
+  { prop: 'user_name', label: '鐢ㄦ埛鍚?, width: 100 },
+  { prop: 'total', label: '閲戦', width: 100 },
+  { prop: 'status', label: '鐘舵€?, width: 80 },
+  { prop: 'create_time', label: '鏃堕棿', width: 160 },
 ]
 const userColumns = [
   { prop: 'id', label: 'ID', width: 80 },
-  { prop: 'username', label: '用户名', width: 120 },
-  { prop: 'phone', label: '手机号', width: 130 },
-  { prop: 'balance', label: '余额', width: 100 },
-  { prop: 'status', label: '状态', width: 80 },
+  { prop: 'username', label: '鐢ㄦ埛鍚?, width: 120 },
+  { prop: 'phone', label: '鎵嬫満鍙?, width: 130 },
+  { prop: 'balance', label: '浣欓', width: 100 },
+  { prop: 'status', label: '鐘舵€?, width: 80 },
 ]
 const logisticsColumns = [
-  { prop: 'order_id', label: '订单ID', width: 180 },
-  { prop: 'carrier', label: '快递公司', width: 120 },
-  { prop: 'tracking_no', label: '运单号', width: 150 },
-  { prop: 'status', label: '状态', width: 100 },
+  { prop: 'order_id', label: '璁㈠崟ID', width: 180 },
+  { prop: 'carrier', label: '蹇€掑叕鍙?, width: 120 },
+  { prop: 'tracking_no', label: '杩愬崟鍙?, width: 150 },
+  { prop: 'status', label: '鐘舵€?, width: 100 },
 ]
 
 async function fetchLogistics(params) {
@@ -169,8 +169,8 @@ async function scanAll() {
   try {
     const r = await mallApi.scanStructure()
     endpoints.value = Object.entries(r.status || {}).map(([k, v]) => ({ name: k, ...v }))
-    ElMessage.success(`扫描完成: ${r.summary}`)
-  } catch { ElMessage.error('扫描失败') }
+    ElMessage.success(`鎵弿瀹屾垚: ${r.summary}`)
+  } catch { ElMessage.error('鎵弿澶辫触') }
   scanning.value = false
 }
 
@@ -179,8 +179,8 @@ async function aiBrainScan() {
   try {
     const r = await mallApi.mallBrainScan()
     aiSummary.value = r
-    ElMessage.success('AI分析完成')
-  } catch { ElMessage.error('AI分析失败') }
+    ElMessage.success('AI鍒嗘瀽瀹屾垚')
+  } catch { ElMessage.error('AI鍒嗘瀽澶辫触') }
   brainLoading.value = false
 }
 

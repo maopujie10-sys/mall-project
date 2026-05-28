@@ -1,6 +1,6 @@
 <template>
   <div class="self-service">
-    <h2>鑷姪杩愮淮</h2>
+    <h2>閼奉亜濮潻鎰樊</h2>
     <el-row :gutter="16">
       <el-col :span="8" v-for="rb in runbooks" :key="rb.id">
         <el-card shadow="never" class="rb-card" :class="{ running: runningId === rb.id }">
@@ -11,26 +11,26 @@
             </div>
           </template>
           <el-button type="primary" @click="run(rb.id)" :loading="runningId === rb.id" :disabled="runningId">
-            {{ runningId === rb.id ? '鎵ц涓?..' : '涓€閿墽琛? }}
+            {{ runningId === rb.id ? '閹笛嗩攽娑?..' : '娑撯偓闁款喗澧界悰? }}
           </el-button>
         </el-card>
       </el-col>
     </el-row>
 
-    <!-- 瀹㈡湇璁㈠崟鏌ヨ -->
+    <!-- 鐎广垺婀囩拋銏犲礋閺屻儴顕?-->
     <el-card shadow="never" style="margin-top:16px">
-      <template #header>瀹㈡湇璁㈠崟鏌ヨ</template>
-      <el-input v-model="queryUserId" placeholder="鐢ㄦ埛ID" style="width:200px;margin-right:8px" />
-      <el-input v-model="queryOrderId" placeholder="璁㈠崟ID" style="width:200px;margin-right:8px" />
-      <el-button type="primary" @click="runCustomerQuery" :loading="queryLoading">鏌ヨ</el-button>
+      <template #header>鐎广垺婀囩拋銏犲礋閺屻儴顕?/template>
+      <el-input v-model="queryUserId" placeholder="閻劍鍩汭D" style="width:200px;margin-right:8px" />
+      <el-input v-model="queryOrderId" placeholder="鐠併垹宕烮D" style="width:200px;margin-right:8px" />
+      <el-button type="primary" @click="runCustomerQuery" :loading="queryLoading">閺屻儴顕?/el-button>
     </el-card>
 
-    <!-- 鎵ц缁撴灉 -->
+    <!-- 閹笛嗩攽缂佹挻鐏?-->
     <el-card v-if="report" shadow="never" style="margin-top:16px">
       <template #header>
-        <span>鎵ц鎶ュ憡</span>
+        <span>閹笛嗩攽閹躲儱鎲?/span>
         <el-tag :type="report.all_passed ? 'success' : 'danger'" size="small" style="margin-left:8px">
-          {{ report.all_passed ? '鍏ㄩ儴閫氳繃' : `${report.failed} 椤瑰紓甯竊 }}
+          {{ report.all_passed ? '閸忋劑鍎撮柅姘崇箖' : `${report.failed} 妞ょ懓绱撶敮绔?}}
         </el-tag>
       </template>
       <el-timeline>
@@ -43,8 +43,8 @@
           <p v-if="s.evidence" style="font-size:12px;color:#999">{{ s.evidence }}</p>
         </el-timeline-item>
       </el-timeline>
-      <el-alert v-if="!report.all_passed" title="妫€娴嬪埌寮傚父" :description="report.summary" type="warning" show-icon style="margin-top:12px" />
-      <el-alert v-else title="涓€鍒囨甯? :description="report.summary" type="success" show-icon style="margin-top:12px" />
+      <el-alert v-if="!report.all_passed" title="濡偓濞村鍩屽鍌氱埗" :description="report.summary" type="warning" show-icon style="margin-top:12px" />
+      <el-alert v-else title="娑撯偓閸掑洦顒滅敮? :description="report.summary" type="success" show-icon style="margin-top:12px" />
     </el-card>
   </div>
 </template>
@@ -65,7 +65,7 @@ async function fetchRunbooks() {
   try {
     const r = await agentApi.get('/self-service/runbooks')
     runbooks.value = r.runbooks || []
-  } catch { ElMessage.error('鑾峰彇鍦烘櫙鍒楄〃澶辫触') }
+  } catch { ElMessage.error('閼惧嘲褰囬崷鐑樻珯閸掓銆冩径杈Е') }
 }
 
 async function run(id) {
@@ -74,11 +74,11 @@ async function run(id) {
   try {
     report.value = await agentApi.post(`/self-service/run/${id}`)
     if (report.value.all_passed) {
-      ElMessage.success('鎵€鏈夋鏌ラ€氳繃 鉁?)
+      ElMessage.success('閹碘偓閺堝顥呴弻銉┾偓姘崇箖 閴?)
     } else {
-      ElMessage.warning(`${report.value.failed} 椤瑰紓甯革紝璇锋煡鐪嬫姤鍛奰)
+      ElMessage.warning(`${report.value.failed} 妞ょ懓绱撶敮闈╃礉鐠囬攱鐓￠惇瀣Г閸涘グ)
     }
-  } catch { ElMessage.error('鎵ц澶辫触') }
+  } catch { ElMessage.error('閹笛嗩攽婢惰精瑙?) }
   runningId.value = ''
 }
 
@@ -90,7 +90,7 @@ async function runCustomerQuery() {
     if (queryUserId.value) params.user_id = queryUserId.value
     if (queryOrderId.value) params.order_id = queryOrderId.value
     report.value = await agentApi.post('/self-service/run/customer_order', params)
-  } catch { ElMessage.error('鏌ヨ澶辫触') }
+  } catch { ElMessage.error('閺屻儴顕楁径杈Е') }
   queryLoading.value = false
 }
 
