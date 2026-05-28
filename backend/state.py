@@ -5,7 +5,8 @@ import sqlite3
 from datetime import datetime
 from typing import Optional
 
-STATE_FILE = os.path.join(os.path.dirname(__file__), "agent_state.json")
+_BASE = os.getenv("APP_STATE_DIR", os.path.dirname(os.path.abspath(__file__)))
+STATE_FILE = os.path.join(_BASE, "agent_state.json")
 
 # ===== 全局 key 上限控制 =====
 KEY_LIMITS = {
@@ -36,7 +37,7 @@ _db_conn = None
 
 
 def _get_db_path():
-    return os.path.join(os.path.dirname(__file__), "agent_state.db")
+    return os.path.join(_BASE, "agent_state.db")
 
 
 class _AgentState:
@@ -240,4 +241,6 @@ class _AgentState:
 
 
 state = _AgentState()
+
+
 

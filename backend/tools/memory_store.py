@@ -6,7 +6,7 @@ import os
 from datetime import datetime
 from typing import Optional
 
-MEMORY_DB = os.path.join(os.path.dirname(__file__), "..", "memory_store.db")
+MEMORY_DB = os.path.join(os.getenv("APP_MEMORY_DIR", os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "memory")), "memory_store.db")
 
 
 class MemoryStore:
@@ -165,3 +165,4 @@ class MemoryStore:
 
 # 全局单例
 memory_store = MemoryStore()
+

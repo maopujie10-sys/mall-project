@@ -22,7 +22,7 @@ class PlaywrightAgent:
     _browser = None
     _context = None
     _semaphore = asyncio.Semaphore(2)  # 最多2个并发浏览器操作
-    SCREENSHOT_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "screenshots")
+    SCREENSHOT_DIR = os.path.join(os.getenv("APP_DATA_DIR", os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data")), "screenshots")
     SCREENSHOT_MAX_AGE_HOURS = 1  # 截图保留1小时
 
     @staticmethod
@@ -145,3 +145,4 @@ class PlaywrightAgent:
             "links": "a[href]", "images": "img[src]",
         })
         return result
+

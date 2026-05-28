@@ -41,8 +41,8 @@ class Memory:
 class MemoryAgent:
     """Memory Agent — 数字大脑的海马体"""
 
-    MEMORY_DIR = "memory"
-    MEMORY_FILE = "memory/agent_memory.json"
+    MEMORY_DIR = os.getenv("APP_MEMORY_DIR", "memory")
+    MEMORY_FILE = os.path.join(MemoryAgent.MEMORY_DIR, "agent_memory.json")
 
     @staticmethod
     def _ensure_dir():
@@ -254,3 +254,5 @@ class MemoryAgent:
             "habits": habits[:20],
             "frequent_topics": MemoryAgent._get_top_tags(result.get("memories", []), 10),
         }
+
+
