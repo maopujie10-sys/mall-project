@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="auto-reply"><div class="page-header"><h2>🤖 客服自动回复</h2><p>规则引擎 · AI智能回复 · 转人工 · 多轮对话</p>
     <div class="header-stats"><el-statistic title="总回复" :value="stats.total_replies" /><el-statistic title="规则匹配" :value="stats.rule_matched" /><el-statistic title="AI回复" :value="stats.ai_replied" /><el-statistic title="自动率" :value="stats.auto_rate" suffix="%" /></div>
   </div>

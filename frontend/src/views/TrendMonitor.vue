@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="trend-page">
     <div class="page-header">
       <div>

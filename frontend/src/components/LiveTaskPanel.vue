@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="task-panel">
     <div class="tp-header">
       <span class="tp-title">Live Tasks</span>

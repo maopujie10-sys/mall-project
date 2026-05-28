@@ -1,4 +1,4 @@
-﻿export default {
+export default {
         order: {
             cancel: 'Kanselahin ang order',
             payment: 'magbayad ngayon',

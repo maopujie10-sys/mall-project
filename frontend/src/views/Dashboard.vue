@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="dashboard">
     <div class="page-header">
       <h2>📊 系统仪表盘</h2>

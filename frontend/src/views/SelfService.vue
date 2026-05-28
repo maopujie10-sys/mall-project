@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="self-service">
     <h2>自助运维</h2>
     <el-row :gutter="16">

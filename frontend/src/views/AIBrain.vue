@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="page-container">
   <!-- 3D神经网络可视化 -->
   <el-card shadow="never" style="margin-bottom:24px;overflow:hidden;border-radius:12px">

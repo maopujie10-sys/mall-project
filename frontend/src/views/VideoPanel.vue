@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="page-container video-panel">
     <div class="page-header"><h2>视频分析</h2><p>视频理解 · 字幕提取 · 内容分析 · 热点研判</p></div>
 

@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="order-alert"><div class="page-header"><h2>🔔 订单异常预警</h2><p>退款突增 · 库存告急 · 物流延迟 · 销售额暴跌 → 自动电话通知</p>
     <div class="header-stats"><el-statistic title="总预警" :value="stats.total" /><el-statistic title="P0紧急" :value="stats.P0" /><el-statistic title="P1重要" :value="stats.P1" /><el-statistic title="今日" :value="stats.today" /><el-statistic title="解决率" :value="stats.resolution_rate" suffix="%" /></div>
   </div>

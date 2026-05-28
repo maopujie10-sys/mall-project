@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="nginx-panel">
     <div class="page-header"><h1>🔧 Nginx 管理</h1><p>进程监控 · 配置管理 · 站点管理 · 日志分析 · SSL</p></div>
     <el-row :gutter="16" style="margin-bottom:20px">

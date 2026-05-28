@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="multilang"><div class="page-header"><h2>🌍 多语言商品发布</h2><p>一键翻译中/英/日/韩 → 多平台同步上架</p></div>
     <el-row :gutter="16">
       <el-col :span="16">

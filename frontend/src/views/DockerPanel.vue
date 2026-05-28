@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="docker-panel">
     <div class="page-header">
       <h1>🐳 Docker 管理</h1>

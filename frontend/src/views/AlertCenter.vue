@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="alert-center">
     <h2>告警中心</h2>
     <el-row :gutter="16" class="stats-row">

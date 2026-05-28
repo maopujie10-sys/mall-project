@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="audit-page">
     <div class="page-header">
       <h2>📋 审计日志</h2>

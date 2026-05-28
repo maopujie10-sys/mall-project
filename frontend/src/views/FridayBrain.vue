@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="lifeform-dashboard">
     <!-- 顶部状态 -->
     <div class="lf-header">

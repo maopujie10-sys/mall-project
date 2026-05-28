@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="page-container ocr-panel">
     <div class="page-header"><h2>OCR 识别</h2><p>图片文字识别 · 表格提取 · 多语言支持 · 批量处理</p></div>
 

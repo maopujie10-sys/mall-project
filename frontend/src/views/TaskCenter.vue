@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="page-container task-center">
     <div class="page-header"><h2>自动任务</h2><p>Cron定时 · 事件触发 · 失败重试 · 执行日志</p></div>
 

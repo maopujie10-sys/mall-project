@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="ai-console">
     <!-- 顶部状态栏 -->
     <div class="console-topbar">

@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="batch-upload"><div class="page-header"><h2>📋 Excel批量上架</h2><p>从Excel/CSV导入 → 自动分类/定价 → 一键上架</p></div>
     <el-row :gutter="16">
       <el-col :span="10">

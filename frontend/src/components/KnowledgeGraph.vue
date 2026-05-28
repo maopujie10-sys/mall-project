@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div ref="container" class="kg-container">
     <div class="kg-overlay">
       <span class="kg-info">🕸️ {{ nodeCount }} 个记忆节点 · {{ edgeCount }} 条关联</span>

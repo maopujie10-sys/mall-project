@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="phone-assistant">
     <div class="page-header">
       <h2>📱 AI电话助理</h2>

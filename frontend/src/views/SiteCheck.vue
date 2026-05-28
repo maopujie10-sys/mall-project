@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="site-check">
     <h2>网站访问检测</h2>
     <el-row :gutter="16">

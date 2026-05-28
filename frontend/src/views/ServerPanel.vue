@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="server-panel">
     <div class="page-header"><h1>🖥️ 服务器管理</h1><p>AI自动内存治理 · 进程管理 · 磁盘清理 · 趋势预测</p></div>
     <!-- 状态卡片 -->

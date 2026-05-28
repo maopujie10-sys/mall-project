@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="net-tools">
     <div class="page-header"><h2>🌐 网络工具</h2><p>Ping · DNS · 端口扫描 · HTTP检查 · 路由追踪</p></div>
 

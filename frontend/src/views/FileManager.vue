@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="file-manager">
     <div class="page-header">
       <h2>📁 文件管理器</h2>

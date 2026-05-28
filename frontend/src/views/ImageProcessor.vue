@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="img-processor"><div class="page-header"><h2>🖼️ AI商品图处理</h2><p>去背景 · 水印 · 批量裁剪 · 展示图生成</p></div>
     <el-tabs v-model="tab">
       <el-tab-pane label="🎨 去背景" name="bg">

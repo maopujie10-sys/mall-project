@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="gh-panel">
     <div class="page-header">
       <div><h2>🐙 GitHub MCP</h2><p>仓库管理 / Issues / PRs / Actions / 提交</p></div>
