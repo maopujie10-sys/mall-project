@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="trend-page">
     <div class="page-header">
       <div>
@@ -85,11 +85,10 @@ const trends = reactive({
   youtube: { name:"YouTube热门", icon:"▶️", color:"#ff0000", trends:[] },
   twitter: { name:"X/Twitter趋势", icon:"🐦", color:"#1da1f2", trends:[] },
   google: { name:"Google Trends", icon:"🔍", color:"#4285f4", trends:[] },
-  if (activePlatform.value === 'all') return trends
-  const filtered = {}
-  if (trends[activePlatform.value]) filtered[activePlatform.value] = trends[activePlatform.value]
-  return filtered
+
 })
+
+const filteredTrends = computed(() => { if (activePlatform.value === 'all') return trends; const f = {}; if (trends[activePlatform.value]) f[activePlatform.value] = trends[activePlatform.value]; return f })
 
 const predictions = ref([])
 const suggestions = ref([])
