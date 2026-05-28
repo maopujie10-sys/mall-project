@@ -1,0 +1,16 @@
+{
+  "id": "price-monitor",
+  "name": "📊 竞品价格监控",
+  "version": "1.1.0",
+  "desc": "自动采集竞品价格变动，价格异常时推送微信/邮件告警",
+  "author": "Friday官方",
+  "category": "商城",
+  "tags": [
+    "price",
+    "monitor",
+    "alert"
+  ],
+  "entry": "main.py",
+  "dependencies": [],
+  "readme": "安装后在AI对话输入「监控竞品 [商品名]」"
+}

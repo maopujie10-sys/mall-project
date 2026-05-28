@@ -1,5 +1,6 @@
 ﻿"""安全执行器 — SSH/subprocess + 命令白名单/黑名单"""
 import subprocess
+import os
 import shlex
 from typing import Optional
 
@@ -162,9 +163,9 @@ async def execute_db(sql: str, db_name: str = "mall") -> dict:
 
     sql_upper = sql.strip().upper()
     if sql_upper.startswith("SELECT") or sql_upper.startswith("SHOW") or sql_upper.startswith("DESCRIBE"):
-        cmd = f'mysql -h {MALL_DB_HOST} -P {MALL_DB_PORT} -u {MALL_DB_USER} -p{MALL_DB_PASSWORD} {db_name} -e "{sql}" --table 2>&1'
+        cmd = f'MYSQL_PWD={MALL_DB_PASSWORD} mysql -h {MALL_DB_HOST} -P {MALL_DB_PORT} -u {MALL_DB_USER} {db_name} -e "{sql}" --table 2>&1'
     else:
-        cmd = f'mysql -h {MALL_DB_HOST} -P {MALL_DB_PORT} -u {MALL_DB_USER} -p{MALL_DB_PASSWORD} {db_name} -e "{sql}" 2>&1'
+        cmd = f'MYSQL_PWD={MALL_DB_PASSWORD} mysql -h {MALL_DB_HOST} -P {MALL_DB_PORT} -u {MALL_DB_USER} {db_name} -e "{sql}" 2>&1'
 
     try:
         result = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=30)

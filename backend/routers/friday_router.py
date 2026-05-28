@@ -254,7 +254,7 @@ async def test_broadcast(message: str = "Friday AI OS 在线", _=Depends(verify_
 @router.get("/vision/ocr")
 async def vision_ocr(image_url: str = Query(...), _=Depends(verify_token)):
     """OCR 文字识别"""
-    return await VisionAgent.ocr_recognize(url)
+    return await VisionAgent.ocr_recognize(image_url)
 
 @router.get("/vision/video")
 async def vision_video(video_url: str = Query(...), _=Depends(verify_token)):

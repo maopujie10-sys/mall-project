@@ -1,4 +1,4 @@
-{
+﻿{
     "name": "shop",
     "version": "0.1.2",
     "private": true,
@@ -6,22 +6,9 @@
         "serve": "vue-cli-service serve",
         "dev": "vue-cli-service serve",
         "build": "vue-cli-service build",
-        "build:Argos": "vue-cli-service build --mode Argos",
-        "build:Inchoi": "vue-cli-service build --mode Inchoi",
-        "build:Hive": "vue-cli-service build --mode Hive",
-        "build:FamilyShop": "vue-cli-service build --mode FamilyShop",
-        "build:TikTokMall": "vue-cli-service build --mode TikTokMall",
-        "build:Shop2u": "vue-cli-service build --mode Shop2u",
-        "build:GreenMall": "vue-cli-service build --mode GreenMall",
-        "build:SM-wholesaleShop": "vue-cli-service build --mode SM-wholesaleShop",
-        "build:ArgosShop": "vue-cli-service build --mode ArgosShop",
-        "build:Iceland": "vue-cli-service build --mode Iceland",
-        "build:INTOverstock": "vue-cli-service build --mode INTOverstock",
         "build:TikTok-Wholesale": "vue-cli-service build --mode TikTok-Wholesale",
-        "build:AntMall": "vue-cli-service build --mode AntMall",
-        "build:all": "pnpm build && pnpm build:Argos && pnpm build:Inchoi && pnpm build:Hive && pnpm build:FamilyShop && pnpm build:TikTokMall && pnpm build:Shop2u && pnpm build:GreenMall && pnpm build:SM-wholesaleShop && pnpm build:ArgosShop && pnpm build:Iceland && pnpm build:INTOverstock && pnpm build:TikTok-Wholesale && pnpm build:AntMall",
         "lint": "vue-cli-service lint",
-        "git": "git add . && git commit -m 'update' && git push"
+        "git": "git add . && git commit -m \u0027update\u0027 && git push"
     },
     "dependencies": {
         "@babel/preset-env": "^7.24.6",

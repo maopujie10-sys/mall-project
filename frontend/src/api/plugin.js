@@ -1,31 +1,50 @@
-﻿import { agentApi } from './index'
+import { agentApi } from './index'
 
-// 获取插件列表
+// ===== 内置技能市场 =====
 export function listPlugins() {
   return agentApi.get('/agent/plugins')
 }
-
-// 安装插件
-export function installPlugin(pluginId, source = 'marketplace') {
-  return agentApi.post('/agent/plugins/install', { plugin_id: pluginId, source })
+export function getMarketplace() {
+  return agentApi.get('/agent/plugins/marketplace')
 }
-
-// 卸载插件
+export function installPlugin(pluginId) {
+  return agentApi.post('/agent/plugins/install', { plugin_id: pluginId })
+}
 export function uninstallPlugin(pluginId) {
   return agentApi.post('/agent/plugins/uninstall', { plugin_id: pluginId })
 }
-
-// 启用/禁用插件
 export function togglePlugin(pluginId, enabled) {
   return agentApi.post('/agent/plugins/toggle', { plugin_id: pluginId, enabled })
 }
-
-// 获取插件配置
-export function getPluginConfig(pluginId) {
-  return agentApi.get('/agent/plugins/config', { params: { plugin_id: pluginId } })
+export function getPluginCategories() {
+  return agentApi.get('/agent/plugins/categories')
 }
 
-// 更新插件配置
-export function updatePluginConfig(pluginId, config) {
-  return agentApi.post('/agent/plugins/config', { plugin_id: pluginId, config })
+// ===== 社区技能市场 =====
+export function getCommunitySkills(params) {
+  return agentApi.get('/agent/plugins/community', { params })
+}
+export function installCommunitySkill(skillId) {
+  return agentApi.post('/agent/plugins/community/install', { skill_id: skillId })
+}
+
+// ===== 技能包分发系统 =====
+export function publishSkill(file) {
+  const form = new FormData()
+  form.append('file', file)
+  return agentApi.post('/agent/plugins/publish', form, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  })
+}
+export function publishSkillFromUrl(url) {
+  return agentApi.post('/agent/plugins/publish', { download_url: url })
+}
+export function getInstalledPackages() {
+  return agentApi.get('/agent/plugins/installed/packages')
+}
+export function uninstallSkillPackage(skillId) {
+  return agentApi.post('/agent/plugins/uninstall/' + skillId)
+}
+export function getSkillReadme(skillId) {
+  return agentApi.get('/agent/plugins/installed/' + skillId + '/readme')
 }

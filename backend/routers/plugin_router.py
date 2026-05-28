@@ -1,4 +1,4 @@
-﻿"""技能市场 API — 技能注册/下载/安装/卸载/配置 v2（30+真实技能）"""
+"""技能市场 API — 技能注册/下载/安装/卸载/配置 v2（30+真实技能）"""
 from fastapi import APIRouter, Depends, HTTPException
 from auth import verify_token
 from risk import handle_risk
@@ -182,3 +182,246 @@ def _register_tools(plugin_id: str, skill: dict):
                 risk_level="L1",
                 category=skill["category"],
             ))
+
+# ===== 技能包分发系统 =====
+import os, json, tempfile
+from tools.skill_loader import install_from_zip, uninstall, list_installed, create_skill_package
+
+# 社区技能市场（示例技能包，用户可发布自己的）
+# 实际部署时可改为从远程仓库拉取
+COMMUNITY_SKILLS = [
+    {
+        "id": "seo-optimizer",
+        "name": "🔍 SEO优化器",
+        "version": "1.0.0",
+        "desc": "自动分析商品页面SEO，生成优化建议，提升搜索引擎排名",
+        "author": "Friday社区",
+        "category": "商城",
+        "stars": 78,
+        "downloads": 340,
+        "tags": ["seo","optimize","rank"],
+        "updated_at": "2026-05-28",
+        "size_kb": 45,
+        "readme": "安装后在AI对话中输入「SEO分析 [商品ID]」即可使用"
+    },
+    {
+        "id": "price-predictor",
+        "name": "📈 价格预测",
+        "version": "0.9.0",
+        "desc": "基于历史数据和市场趋势，AI预测商品最优定价策略",
+        "author": "Friday社区",
+        "category": "商城",
+        "stars": 82,
+        "downloads": 510,
+        "tags": ["price","predict","strategy"],
+        "updated_at": "2026-05-27",
+        "size_kb": 62,
+        "readme": "安装后输入「价格预测 [商品ID]」即可使用"
+    },
+    {
+        "id": "wechat-push",
+        "name": "💬 微信推送",
+        "version": "1.2.0",
+        "desc": "订单状态变更/库存预警/系统告警实时推送企业微信",
+        "author": "Friday社区",
+        "category": "通知",
+        "stars": 90,
+        "downloads": 1280,
+        "tags": ["wechat","push","alert"],
+        "updated_at": "2026-05-25",
+        "size_kb": 28,
+        "readme": "需在.env配置WECOM_WEBHOOK，安装后自动注册通知渠道"
+    },
+    {
+        "id": "log-analyzer",
+        "name": "📋 日志分析器",
+        "version": "1.1.0",
+        "desc": "智能分析Nginx/MySQL/Python日志，自动发现异常和性能瓶颈",
+        "author": "Friday社区",
+        "category": "开发",
+        "stars": 74,
+        "downloads": 290,
+        "tags": ["log","analyze","debug"],
+        "updated_at": "2026-05-20",
+        "size_kb": 38,
+        "readme": "安装后在AI对话中输入「分析日志 [类型] [行数]」"
+    },
+    {
+        "id": "auto-translator",
+        "name": "🌍 AI翻译官",
+        "version": "1.0.0",
+        "desc": "批量翻译商品标题/描述到50+语言，保留SEO关键词",
+        "author": "Friday社区",
+        "category": "工具",
+        "stars": 86,
+        "downloads": 760,
+        "tags": ["translate","i18n","seo"],
+        "updated_at": "2026-05-18",
+        "size_kb": 52,
+        "readme": "安装后在AI对话中输入「翻译 [商品ID] 到 [语言]」"
+    },
+    {
+        "id": "screenshot-bot",
+        "name": "📸 截图机器人",
+        "version": "1.0.0",
+        "desc": "定时截取网页/竞品页面快照，监控页面变更",
+        "author": "Friday社区",
+        "category": "工具",
+        "stars": 71,
+        "downloads": 210,
+        "tags": ["screenshot","monitor","change"],
+        "updated_at": "2026-05-15",
+        "size_kb": 35,
+        "readme": "安装后输入「截图监控 [URL] 每小时」"
+    },
+]
+
+# ==== GitHub Market ====
+import os,json,httpx
+_GITHUB_REPO=os.getenv("GITHUB_SKILLS_REPO","")
+_GITHUB_TOKEN=os.getenv("GITHUB_TOKEN","")
+async def _fetch_github_skills():
+    if not _GITHUB_REPO: return []
+    url=_GITHUB_REPO.rstrip("/")+"/index.json"
+    headers={"User-Agent":"Friday-AI-OS"}
+    if _GITHUB_TOKEN: headers["Authorization"]=f"token {_GITHUB_TOKEN}"
+    try:
+        async with httpx.AsyncClient(timeout=10) as cl:
+            r=await cl.get(url,headers=headers)
+            if r.status_code==200: return r.json()
+    except: pass
+    return []
+async def _fetch_local_skills():
+    import os as _os
+    ld=_os.path.join(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))),"..","..","scripts","friday-skills")
+    ip=_os.path.join(ld,"index.json")
+    if _os.path.exists(ip):
+        try:
+            with open(ip,"r",encoding="utf-8") as f: return json.load(f)
+        except: pass
+    return []
+
+@router.get("/community")
+async def community_skills(category:""="",search:""="",_=Depends(verify_token)):
+    await handle_risk("L1","Browse community")
+    skills=await _fetch_github_skills()
+    if not skills: skills=await _fetch_local_skills()
+    from tools.skill_loader import list_installed
+    installed=list_installed()
+    installed_ids={p.get("id") for p in installed}
+    res=[]
+    for s in skills:
+        if category and s.get("category")!=category: continue
+        if search and search.lower() not in s.get("name","").lower() and search.lower() not in s.get("desc","").lower(): continue
+        item=dict(s);item["installed"]=s.get("id") in installed_ids
+        if _GITHUB_REPO:
+            repo=_GITHUB_REPO.replace("/contents/","/raw/main/")
+            item["download_url"]=f"{repo}{s.get("path","")}.zip"
+        res.append(item)
+    return {"ok":True,"skills":res,"count":len(res),"installed_ids":list(installed_ids)}
+
+@router.post("/community/install")
+async def install_community_skill(skill_id:str,_=Depends(verify_token)):
+    await handle_risk("L2",f"Install {skill_id}")
+    skills=await _fetch_github_skills()
+    if not skills: skills=await _fetch_local_skills()
+    skill=next((s for s in skills if s["id"]==skill_id),None)
+    if not skill: raise HTTPException(404,"Skill not found: "+skill_id)
+    from tools.skill_loader import list_installed
+    if any(p.get("id")==skill_id for p in list_installed()):
+        return {"ok":True,"skill_id":skill_id,"status":"already_installed"}
+    import tempfile,zipfile
+    tmp=tempfile.NamedTemporaryFile(delete=False,suffix=".zip");tp=tmp.name;tmp.close()
+    try:
+        downloaded=False
+        if _GITHUB_REPO:
+            try:
+                repo=_GITHUB_REPO.replace("/contents/","/raw/main/")
+                zu=f"{repo}{skill.get("path","")}.zip"
+                async with httpx.AsyncClient(timeout=30) as cl:
+                    r=await cl.get(zu,headers={"User-Agent":"Friday-AI-OS"})
+                    if r.status_code==200:
+                        with open(tp,"wb") as f: f.write(r.content)
+                        downloaded=True
+            except: pass
+        if not downloaded:
+            import os as _os2
+            ld=_os2.path.join(_os2.path.dirname(__file__),"..","..","scripts","friday-skills",skill.get("path",""))
+            mp=_os2.path.join(ld,"skill.json")
+            if not _os2.path.exists(mp):
+                return {"ok":False,"error":"Skill package not available"}
+            with zipfile.ZipFile(tp,"w",zipfile.ZIP_DEFLATED) as zf:
+                zf.write(mp,"skill.json")
+                mn=_os2.path.join(ld,"main.py")
+                if _os2.path.exists(mn): zf.write(mn,"main.py")
+        from tools.skill_loader import install_from_zip
+        result=await install_from_zip(tp,source="community")
+        if result.get("ok"):
+            return {"ok":True,"skill_id":skill_id,"status":"installed","manifest":result.get("manifest")}
+        return {"ok":False,"error":result.get("error","Install failed")}
+    except Exception as e:
+        return {"ok":False,"error":f"Install failed: {str(e)}"}
+    finally:
+        try: os.unlink(tp)
+        
+
+@router.post("/publish")
+async def publish_skill(file: bytes = None, download_url: str = "", _=Depends(verify_token)):
+    """发布技能（上传 ZIP 包或从 URL 下载）"""
+    await handle_risk("L2", "发布技能")
+    import tempfile
+
+    if file:
+        tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".zip")
+        tmp.write(file)
+        tmp_path = tmp.name
+        tmp.close()
+    elif download_url:
+        import httpx
+        tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".zip")
+        tmp_path = tmp.name
+        tmp.close()
+        try:
+            async with httpx.AsyncClient(timeout=60) as c:
+                r = await c.get(download_url)
+                with open(tmp_path, "wb") as f:
+                    f.write(r.content)
+        except Exception as e:
+            os.unlink(tmp_path)
+            return {"ok": False, "error": f"下载失败: {str(e)}"}
+    else:
+        return {"ok": False, "error": "请上传 ZIP 文件或提供下载 URL"}
+
+    try:
+        result = await install_from_zip(tmp_path, source="upload")
+        return result
+    finally:
+        try: os.unlink(tmp_path)
+        except: pass
+
+
+@router.get("/installed/packages")
+async def installed_packages(_=Depends(verify_token)):
+    """已安装的技能包列表（区别于内置技能）"""
+    await handle_risk("L1", "查看已安装技能包")
+    skills = list_installed()
+    return {"ok": True, "skills": skills, "count": len(skills)}
+
+
+@router.post("/uninstall/{skill_id}")
+async def uninstall_skill_package(skill_id: str, _=Depends(verify_token)):
+    """卸载已安装的技能包"""
+    await handle_risk("L2", f"卸载技能包 {skill_id}")
+    result = await uninstall(skill_id)
+    return result
+
+
+@router.get("/installed/{skill_id}/readme")
+async def skill_readme(skill_id: str, _=Depends(verify_token)):
+    """获取已安装技能的 README"""
+    from tools.skill_loader import get_manifest
+    manifest = get_manifest(skill_id)
+    if not manifest:
+        raise HTTPException(404, "技能未安装")
+    readme = manifest.get("readme", "暂无说明文档")
+    return {"ok": True, "skill_id": skill_id, "readme": readme}

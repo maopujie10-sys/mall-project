@@ -22,7 +22,7 @@ EMOJI = {"info": "??", "warn": "??", "error": "??", "critical": "??"}
 
 async def send_telegram(message: str, level: str) -> dict:
     if not TELEGRAM_BOT_TOKEN or not TELEGRAM_CHAT_ID:
-        return {"sent": False, "error": "Telegram δ����"}
+        return {"sent": False, "error": "Telegram 未配置"}
     emoji = EMOJI.get(level, "??")
     text = f"{emoji} <b>TikTokMall</b>\n{message}"
     try:
@@ -37,7 +37,7 @@ async def send_telegram(message: str, level: str) -> dict:
 
 async def send_email(message: str, level: str) -> dict:
     if not SMTP_HOST or not SMTP_TO:
-        return {"sent": False, "error": "�ʼ�δ����"}
+        return {"sent": False, "error": "邮件未配置"}
     import smtplib
     from email.message import EmailMessage
     try:
@@ -57,7 +57,7 @@ async def send_email(message: str, level: str) -> dict:
 
 async def send_dingtalk(message: str, level: str) -> dict:
     if not DINGTALK_WEBHOOK:
-        return {"sent": False, "error": "����δ����"}
+        return {"sent": False, "error": "钉钉未配置"}
     try:
         async with httpx.AsyncClient(timeout=10) as c:
             r = await c.post(DINGTALK_WEBHOOK, json={"msgtype": "text", "text": {"content": f"[{level}] TikTokMall\n{message}"}})
@@ -67,7 +67,7 @@ async def send_dingtalk(message: str, level: str) -> dict:
 
 async def send_wecom(message: str, level: str) -> dict:
     if not WECOM_WEBHOOK:
-        return {"sent": False, "error": "��ҵ΢��δ����"}
+        return {"sent": False, "error": "企业微信未配置"}
     try:
         async with httpx.AsyncClient(timeout=10) as c:
             r = await c.post(WECOM_WEBHOOK, json={"msgtype": "text", "text": {"content": f"[{level}] TikTokMall\n{message}"}})

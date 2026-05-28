@@ -191,3 +191,23 @@
 
 
 
+
+### [品牌统一] 全项目统一 TikTok-Wholesale
+- \mall-app/frontend/\ 4个项目：h5/pc/merchant/merchant-h5 全部统一为 TikTok-Wholesale 唯一品牌
+- 删除：h5 18个多余品牌资产目录、pc 17个多余.env、merchant-h5 20个多余.env
+- 删除：merchant merchantConfig 16个多余品牌配置目录
+- 修改：h5/pc .env.production 和 .env.development → TikTok-Wholesale
+- 修改：merchant settings.js → TikTok-Wholesale
+- 精简：h5/pc/merchant-h5 package.json 构建命令（只保留 TikTok-Wholesale 相关）
+
+### [PWA] 4个项目全部加上PWA支持
+- \mall-app/frontend/h5/pc/merchant/merchant-h5\ 全部添加：manifest.json + service-worker.js + SVG图标 + robots.txt + .gitattributes
+- \mall-app/frontend/unified-pwa/\ 新建：统一PWA壳（PWA模式显示Tab栏，浏览器模式跳转商城）
+
+### [备份]
+- 备份路径: \ackups/mall-frontend-bak-20260529-010153/\
+- 包含清理前的完整品牌模板集（如需恢复可从这里取）
+
+### [待部署注意]
+- h5 vue.config.js outputDir 含中文，部署时确认路径
+- h5 .env.production BASE_URL 被注释，需取消注释

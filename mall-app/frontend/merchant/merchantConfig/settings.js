@@ -1,5 +1,5 @@
 module.exports = {
-  projectTitle: 'Argos',
+  projectTitle: 'TikTok-Wholesale',
   //
   baseUrl: 'http://localhost/wap/',
   // baseUrl: 'https://www.argosshops.com/wap/',

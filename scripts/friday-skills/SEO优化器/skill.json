@@ -1,0 +1,16 @@
+{
+  "id": "seo-optimizer",
+  "name": "🔍 SEO优化器",
+  "version": "1.0.0",
+  "desc": "自动分析商品页面SEO，生成标题/描述/关键词优化建议，提升搜索排名",
+  "author": "Friday官方",
+  "category": "商城",
+  "tags": [
+    "seo",
+    "optimize",
+    "rank"
+  ],
+  "entry": "main.py",
+  "dependencies": [],
+  "readme": "安装后在AI对话输入「SEO分析 [商品ID]」"
+}
