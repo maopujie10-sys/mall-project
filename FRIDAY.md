@@ -41,7 +41,15 @@
   - 修复前端 RotationPanel.vue 数据字段对齐+添加操作按钮
 
 - 2026-05-28: [归档提交] 商城+轮值系统正式归档 push
-  - commit f1a808e：20文件变更，+2048/-223行
+  - 
+- 2026-05-28: [重构] 采集系统eBay真实API对接 + 全量修复前后端
+  - eBayAdapter 从HTML爬虫→真实eBay Finding API + Shopping API（Sandbox/Production双环境）
+  - 后端补 DELETE /jobs + GET /cos-status 端点
+  - 修复 scraper.js 路由：import路径/products/import、listScrapedProducts参数page/size
+  - 修复 ScraperCenter.vue：fetchJobs字段映射(found/uploaded)、previewProducts读items、uploadToCOS接真实API
+  - 修复 VirtualData.vue：generateAll函数名、runGenerate/generateAll接真实API、仪表盘接dashboard
+  - 新增 frontend/src/api/virtual.js API层
+  - memory/ebay-api-keys.md 密钥配置文档（真密钥在.env，Git不追踪）commit f1a808e：20文件变更，+2048/-223行
   - 新增11个商城子面板：Category/Content/CustomerService/DataTable/Finance/Kyc/Marketing/Merchant/Overview/Risk/System
   - 轮值系统三件套：rotation_panel.py + rotation.js + RotationPanel.vue
   - 调度器 scheduler.py + mall_tools.py + docker-compose.unified.yml 一并归档
