@@ -1,5 +1,5 @@
-<templa
-      <div class="sidebar-overlay" :class="{show:mobileMenuOpen}" @click="mobileMenuOpen=false"></div>te>
+<template>
+      <div class="sidebar-overlay" :class="{show:mobileMenuOpen}" @click="mobileMenuOpen=false"></div>
   <div class="app-shell" :class="{ collapsed: sidebarCollapsed, dark: theme.isDark.value }">
     <!-- Electron 窗口标题栏 -->
     <header v-if="isElectron" class="electron-titlebar">
@@ -132,7 +132,6 @@
               </el-dropdown-menu>
             <div class="ai-float-widget"><el-button class="ai-float-btn" @click="floatDialog=true" title="AI 助手"><el-icon :size="22"><ChatDotRound /></el-icon></el-button></div>
 <el-dialog v-model="floatDialog" title="💬 AI 助手" width="380" :close-on-click-modal="false" class="float-chat-dialog"><div class="float-chat-body"><div class="float-msg-area" ref="floatMsgRef"><div v-for="(m,i) in floatMessages" :key="i" class="float-msg-row" :class="m.role"><div class="float-msg-text">{{ m.text }}</div></div><div v-if="floatMessages.length===0" style="text-align:center;color:#999;padding:40px 0;font-size:13px">输入问题，AI 帮你解答</div></div><div class="float-input-row"><el-input v-model="floatInput" placeholder="输入问题..." size="small" @keyup.enter="sendFloatMsg" :disabled="floatLoading"><template #append><el-button @click="sendFloatMsg" :loading="floatLoading" :disabled="!floatInput.trim()" size="small">发送</el-button></template></el-input></div></div></el-dialog>
-</template>
           </el-dropdown>
         </div>
       </header>
