@@ -1004,6 +1004,11 @@ def _job_progress(job_id: str, update: dict):
         jobs[job_id].update(update)
     state._save()
 
+import asyncio
+
+_scraper_lock = asyncio.Lock()
+_SCRAPE_TIMEOUT = 30  # 每个HTTP请求超时
+
 class ScraperEngine:
     """商品采集引擎"""
 

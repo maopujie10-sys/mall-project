@@ -19,14 +19,39 @@ router = APIRouter(prefix="/agent/friday", tags=["Friday AI OS"])
 # ===== WebSocket =====
 @router.websocket("/ws")
 async def friday_websocket(ws: WebSocket):
+    """WebSocket入口 — 先验证Token再建立连接"""
     client_id = "friday-console"
+    # 首次消息必须是Token验证
+    try:
+        token_data = await ws.receive_text()
+        try:
+            payload = json.loads(token_data)
+            token = payload.get("token", "")
+        except:
+            token = token_data
+        from auth import verify_jwt, AGENT_TOKEN
+        authed = False
+        if token.startswith("eyJ"):
+            authed = verify_jwt(token) is not None
+        elif token == AGENT_TOKEN:
+            authed = True
+        if not authed:
+            await ws.send_text(json.dumps({"type": "error", "message": "认证失败"}))
+            await ws.close()
+            return
+        await ws.send_text(json.dumps({"type": "auth_ok"}))
+    except:
+        await ws.close()
+        return
     await ws_manager.connect(ws, client_id)
     try:
         while True:
             data = await ws.receive_text()
-            # 心跳保持
-            if data == "ping":
-                await ws.send_text('{"type":"pong"}')
+            if data == "ping" or data == "pong":
+                # 更新心跳时间
+                if client_id in ws_manager.connections:
+                    ws_manager.connections[client_id]["last_heartbeat"] = __import__("time").time()
+                continue
     except WebSocketDisconnect:
         await ws_manager.disconnect(ws, client_id)
 
@@ -267,6 +292,7 @@ async def model_status(_=Depends(verify_token)):
     models = ModelRouter.list_models()
     current = getattr(state, "current_model", None)
     return {"ok": True, "models": models, "current": current}
+
 
 
 

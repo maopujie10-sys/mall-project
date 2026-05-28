@@ -9,7 +9,7 @@ from datetime import datetime
         """OCR 文字识别 — 从图片中提取文字"""
         try:
             import base64, httpx
-            async with httpx.AsyncClient(timeout=30) as c:
+            async with VisionAgent._get_client() as c:
                 if image_url.startswith("http"):
                     r = await c.get(image_url)
                     img_b64 = base64.b64encode(r.content).decode()
@@ -52,7 +52,7 @@ from datetime import datetime
         """物体检测 — 识别图片中的主要物体"""
         try:
             import httpx, base64
-            async with httpx.AsyncClient(timeout=30) as c:
+            async with VisionAgent._get_client() as c:
                 if image_url.startswith("http"):
                     r=await c.get(image_url);img_b64=base64.b64encode(r.content).decode()
                 else:
@@ -89,8 +89,8 @@ from datetime import datetime
                     with open(fp,"rb") as f:
                         img_b64=base64.b64encode(f.read()).decode()
                     try:
-                        async with httpx.AsyncClient(timeout=10) as c:
-                            resp=await c.post("https://api.imagga.com/v2/tags",auth=(os.getenv("IMAGGA_API_KEY", "").split(":") if ":" in os.getenv("IMAGGA_API_KEY", "") else ("", "")),data={"image_base64":img_b64})
+                        async with VisionAgent._get_client() as c:
+                resp = await c.post("https://api.imagga.com/v2/tags",auth=(os.getenv("IMAGGA_API_KEY", "").split(":") if ":" in os.getenv("IMAGGA_API_KEY", "") else ("", "")),data={"image_base64":img_b64})
                             tags=resp.json().get("result",{}).get("tags",[])[:5] if resp.status_code==200 else []
                     except:
                         tags=[]
@@ -116,7 +116,7 @@ from datetime import datetime
         """人脸检测 — 检测图片中的人脸数量"""
         try:
             import httpx, base64
-            async with httpx.AsyncClient(timeout=30) as c:
+            async with VisionAgent._get_client() as c:
                 if image_url.startswith("http"):
                     r=await c.get(image_url);img_b64=base64.b64encode(r.content).decode()
                 else:
@@ -130,7 +130,21 @@ from datetime import datetime
             pass
         return {"ok":True,"face_count":0,"note":"人脸检测API未配置"}
 
+import asyncio
+
+_vision_semaphore = asyncio.Semaphore(3)  # 最多3个并发Vision请求
+
 class VisionAgent:
+    _http_client = None
+
+    @staticmethod
+    def _get_client():
+        if VisionAgent._http_client is None:
+            import httpx
+            limits = httpx.Limits(max_keepalive_connections=5, max_connections=10)
+            VisionAgent._http_client = httpx.AsyncClient(timeout=30, limits=limits)
+        return VisionAgent._http_client
+
     """视觉Agent — 多模态内容理解"""
 
     @staticmethod
@@ -185,5 +199,9 @@ class VisionAgent:
             "specifications": ["规格1", "规格2"],
             "category": "推测品类",
         }
+
+
+
+
 
 

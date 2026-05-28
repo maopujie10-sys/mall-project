@@ -91,8 +91,8 @@ async def execute(cmd_str: str, timeout: int = 30) -> dict:
         )
         return {
             "success": result.returncode == 0,
-            "stdout": result.stdout[-3000:],
-            "stderr": result.stderr[-1000:],
+            "stdout": result.stdout[-50000:],
+            "stderr": result.stderr[-10000:],
             "exit_code": result.returncode,
         }
     except subprocess.TimeoutExpired:
@@ -141,8 +141,8 @@ async def execute_ssh(
         )
         return {
             "success": result.returncode == 0,
-            "stdout": result.stdout[-3000:],
-            "stderr": result.stderr[-1000:],
+            "stdout": result.stdout[-50000:],
+            "stderr": result.stderr[-10000:],
             "exit_code": result.returncode,
         }
     except subprocess.TimeoutExpired:
@@ -170,11 +170,12 @@ async def execute_db(sql: str, db_name: str = "mall") -> dict:
         result = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=30)
         return {
             "success": result.returncode == 0,
-            "stdout": result.stdout[-3000:],
-            "stderr": result.stderr[-1000:],
+            "stdout": result.stdout[-50000:],
+            "stderr": result.stderr[-10000:],
             "exit_code": result.returncode,
         }
     except subprocess.TimeoutExpired:
         return {"success": False, "stdout": "", "stderr": "数据库查询超时", "exit_code": -1}
     except Exception as e:
         return {"success": False, "stdout": "", "stderr": str(e), "exit_code": -1}
+

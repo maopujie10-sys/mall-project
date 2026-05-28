@@ -10,7 +10,9 @@ from fastapi import Request, HTTPException
 from config import AGENT_TOKEN
 
 # ===== JWT 配置 =====
-JWT_SECRET = os.getenv("JWT_SECRET", AGENT_TOKEN or "friday-ai-os-secret")
+import secrets as _secrets
+_DEFAULT_SECRET = _secrets.token_hex(32)  # 每次启动随机生成，防止硬编码
+JWT_SECRET = os.getenv("JWT_SECRET", _DEFAULT_SECRET)
 JWT_EXPIRE_HOURS = int(os.getenv("JWT_EXPIRE_HOURS", "24"))
 
 # ===== 速率限制 =====

@@ -27,6 +27,17 @@ class ModelConfig:
     is_local: bool = False  # 本地模型无需API Key
 
 
+import httpx as _httpx
+
+_model_client = None
+
+def _get_model_client():
+    global _model_client
+    if _model_client is None:
+        limits = _httpx.Limits(max_keepalive_connections=10, max_connections=20)
+        _model_client = _httpx.AsyncClient(timeout=30, limits=limits)
+    return _model_client
+
 class ModelRouter:
     """多模型智能路由器 — 本地优先 + 云端降级"""
 
@@ -59,9 +70,9 @@ class ModelRouter:
     async def _check_ollama() -> bool:
         """检测 Ollama 是否在线"""
         try:
-            async with httpx.AsyncClient(timeout=3) as client:
-                r = await client.get(ModelRouter.OLLAMA_HOST + "/api/tags")
-                return r.status_code == 200
+            client = _get_model_client()
+            r = await client.get(ModelRouter.OLLAMA_HOST + "/api/tags")
+            return r.status_code == 200
         except Exception:
             return False
 
@@ -133,16 +144,16 @@ class ModelRouter:
         }
 
         try:
-            async with httpx.AsyncClient(timeout=120) as client:
-                r = await client.post(
-                    cfg.api_base + "/chat/completions",
-                    json=payload,
-                    headers=headers,
-                )
-                if r.status_code != 200:
-                    return {"error": f"{cfg.provider} 返回 {r.status_code}: {r.text[:200]}"}
-                data = r.json()
-                return {
+            client = _get_model_client()
+            r = await client.post(
+            cfg.api_base + "/chat/completions",
+            json=payload,
+            headers=headers,
+            )
+            if r.status_code != 200:
+            return {"error": f"{cfg.provider} 返回 {r.status_code}: {r.text[:200]}"}
+            data = r.json()
+            return {
                     "model": model_id,
                     "provider": cfg.provider,
                     "content": data["choices"][0]["message"]["content"],
@@ -170,3 +181,4 @@ class FridayModes:
     @classmethod
     def list_modes(cls):
         return [{"id": k, **v} for k, v in cls.MODES.items()]
+
