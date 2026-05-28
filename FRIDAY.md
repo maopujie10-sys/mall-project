@@ -43,7 +43,15 @@
 - 2026-05-28: [归档提交] 商城+轮值系统正式归档 push
   - 
 - 2026-05-28: [重构] 采集系统eBay真实API对接 + 全量修复前后端
-  - eBayAdapter 从HTML爬虫→真实eBay Finding API + Shopping API（Sandbox/Production双环境）
+  - 
+- 2026-05-28: [重构] 采集系统双引擎：官方API + 反反爬HTML 双模运行
+  - eBay → 保留官方 Finding API + Shopping API 正规采集
+  - 其余6平台 → 企业级 AntiScrapEngine 反反爬引擎
+  - 反反爬核心：15个多地区UA轮换、智能延迟(模拟人类浏览)、指数退避重试、403/429拦截检测自动换IP、会话指纹轮换
+  - 新增5个平台适配器：Amazon/Wish/Shopee/Lazada/TikTok Shop — 共7平台全覆盖
+  - BaseScrapeAdapter 基类统一反反爬能力：safe_request/smart_delay/extract_images/_parse_price
+  - Shopee 双模(API优先+HTML降级)、TikTok双入口(卖家中心+视频搜索)
+  - 后端 sources API 更新为7平台完整信息卡片eBayAdapter 从HTML爬虫→真实eBay Finding API + Shopping API（Sandbox/Production双环境）
   - 后端补 DELETE /jobs + GET /cos-status 端点
   - 修复 scraper.js 路由：import路径/products/import、listScrapedProducts参数page/size
   - 修复 ScraperCenter.vue：fetchJobs字段映射(found/uploaded)、previewProducts读items、uploadToCOS接真实API
