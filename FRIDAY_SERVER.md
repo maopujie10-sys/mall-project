@@ -15,7 +15,7 @@
 6. 客服自动回复 + 轮值域名监控
 
 ## 最近改动
-- 2026-05-28: [AI面板部署] 服务器端Docker部署完成。修复19个文件编码/语法错误（BOM、GBK乱码、f-string、Pydantic前向引用、重复导入覆盖）。新增docker-compose.ai.yml（2容器：ai-agent host网络+ai-frontend）。Nginx代理/ai/→5173 /ai/api/→9000。验证通过：https://tiktook.eu.cc/ai/ 200 OK。
+- 2026-05-28: [落地页] 域名轮值落地页部署到根域名。landing/ → /opt/landing，Nginx根路径改为轮值入口("正在连接最优线路"→健康检测→自动跳转)。/api/rotation/ 代理到AI后端公开端点。8个轮值域名组(tiktokmall.shop/.store/.online/.live/.xyz/.top/.cloud/.site)，主域名tiktook.eu.cc优先。MainLayout侧边栏补全商城管理/客服/落地页检测/域名轮值/备份回滚/告警/安全入口。
 - 2026-05-28: [全量审计] 电脑端完成商城后台整合审计：后端113端点代理36个Controller全部注册，前端14个标签页全部对接真实API，修复物流面板Mock→真实接口。三层路由对齐无遗漏。
 - 2026-05-28: [商城全量对接] Agent代理全部51个商城Controller, 113个API端点, 前端全功能管理面板上线, 客服系统完整对接
 - 2026-05-28: [域名轮值重写] 电脑端完成域名轮值系统重写：真实健康检测+SSL检测+自动轮值切换+权重调度，每天9点/21点两次自动巡检，新增手动轮值和全量检测API
