@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="page-container">
     <div class="page-header">
       <div>
@@ -106,6 +106,7 @@
 import { ref, reactive, watch, onUnmounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { agentApi } from '@/api/index'
+import { generateData, getRealtimeActivity, getDashboardStats } from '@/api/virtual'
 
 const selectedScale = ref('medium')
 const realtimeRunning = ref(true)
@@ -163,7 +164,7 @@ async function runGenerate(type) {
   ElMessage.success(`${gen.name}宸茬敓鎴愬畬鎴愶紒`)
 }
 
-async function generateAllOriginal() {
+async function generateAll() {
   allRunning.value = true
   for (const gen of generators) {
     gen.running = true
@@ -179,6 +180,24 @@ async function clearAll() {
     await ElMessageBox.confirm('纭娓呴櫎鎵€鏈夎櫄鎷熸暟鎹紵姝ゆ搷浣滀笉鍙挙閿€銆?, '璀﹀憡', { type: 'warning', confirmButtonText: '纭娓呴櫎' })
     ElMessage.success('铏氭嫙鏁版嵁宸叉竻闄?)
   } catch { }
+}
+
+
+// 获取真实仪表盘数据
+async function fetchDashboard() {
+  try {
+    const { data: db } = await getDashboardStats()
+    if (db.stats) {
+      dataStats.value = [
+        { label: '鐢ㄦ埛鎬婚噺', value: db.stats.total?.users || 0, change: '+5.2%', trendUp: true },
+        { label: '鍟嗗搧鎬婚噺', value: db.stats.total?.products || 0, change: '+3.1%', trendUp: true },
+        { label: '璁㈠崟鎬婚噺', value: db.stats.total?.orders || 0, change: '+12.8%', trendUp: true },
+        { label: '24h鎴愪氦棰?/span>', value: '楼' + (db.stats.total?.volume_24h || 0).toLocaleString(), change: '+8.5%', trendUp: true },
+        { label: '浠婃棩鏂扮敤鎴?/span>', value: db.stats.today?.new_users || 0, change: '+15%', trendUp: true },
+        { label: '鍦ㄧ嚎浜烘暟', value: db.online_now || 0, change: '瀹炴椂', trendUp: true }
+      ]
+    }
+  } catch {}
 }
 
 // 瀹炴椂鍔ㄦ€佹ā鎷?function addLiveItem() {
@@ -198,6 +217,7 @@ function randomName() {
   return names[Math.floor(Math.random() * names.length)] + '_' + Math.floor(Math.random() * 9000 + 1000)
 }
 
+fetchDashboard()
 watch(realtimeRunning, (val) => {
   if (val) {
     feedTimer = setInterval(() => {

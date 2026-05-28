@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="page-container">
     <div class="page-header">
       <div>
@@ -176,8 +176,8 @@ async function fetchJobs() {
         id: j.job_id || j.id,
         keyword: j.keyword || '',
         platform: j.platform || '',
-        collected: j.collected || j.items_found || 0,
-        imported: j.imported || 0,
+        collected: j.found \|\| 0,
+        imported: j.uploaded \|\| 0,
         status: j.status === 'completed' ? '已完成' : j.status === 'running' ? '采集中...' : '排队中...',
         statusType: j.status === 'completed' ? 'success' : j.status === 'running' ? 'warning' : 'info',
         time: j.created_at || ''
@@ -221,7 +221,7 @@ async function previewProducts(row) {
   previewVisible.value = true
   try {
     const { data } = await agentApi.get('/agent/scraper/products')
-    previewProducts_data.value = (data.products || []).slice(0, 10).map(function(p, i) {
+    previewProducts_data.value = (data.items || []).slice(0, 10).map(function(p, i) {
       return {
         id: p.id || i + 1,
         icon: '📦',
@@ -268,7 +268,19 @@ async function createJob() {
 onMounted(function() {
   fetchJobs()
   fetchSources()
-})
+}
+
+
+async function fetchCOSStatus() {
+  try {
+    const { data } = await agentApi.get('/agent/scraper/cos-status')
+    if (data.status) {
+      cosConfig.value = { bucket: data.status.bucket || 'N/A', region: data.status.region || 'N/A' }
+      cosStats.value = { uploaded: data.status.uploaded || 0, usage: data.status.usage || '0 MB' }
+    }
+  } catch {}
+}
+  fetchCOSStatus())
 </script>
 
 <style scoped>

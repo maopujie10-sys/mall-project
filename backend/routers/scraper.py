@@ -1,4 +1,4 @@
-"""全量商品采集 API — 搜索/提取/下载/上传COS/导入商城"""
+﻿"""全量商品采集 API — 搜索/提取/下载/上传COS/导入商城"""
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
 from typing import Optional
@@ -77,6 +77,18 @@ async def upload_product_images(product_id: str, _=Depends(verify_token)):
     """手动重新上传某个产品的图片"""
     await handle_risk("L2", "重新上传产品图片", product_id)
     return {"product_id": product_id, "status": "queued"}
+
+
+@router.get("/cos-status")
+async def cos_status(_=Depends(verify_token)):
+    """查看 COS 上传状态"""
+    await handle_risk("L1", "查看COS状态")
+    from tools.cloud_storage import get_cos_status as _cos
+    try:
+        status = await _cos() if callable(_cos) else {"status": "未连接", "bucket": "N/A", "region": "N/A", "uploaded": 0, "usage": "0 MB"}
+        return {"ok": True, "status": status}
+    except:
+        return {"ok": True, "status": {"status": "未连接", "bucket": "N/A", "region": "N/A", "uploaded": 0, "usage": "0 MB"}}
 
 @router.get("/sources")
 async def list_sources(_=Depends(verify_token)):

@@ -21,13 +21,13 @@ export function deleteScrapeJob(jobId) {
 }
 
 // 获取采集到的商品列表
-export function listScrapedProducts(platform = null, limit = 50) {
-  return agentApi.get('/agent/scraper/products', { params: { platform, limit } })
+export function listScrapedProducts(page = 1, size = 20, status = null) {
+  return agentApi.get('/agent/scraper/products', { params: { page, size, status } })
 }
 
 // 导入商品到商城
 export function importProducts(productIds) {
-  return agentApi.post('/agent/scraper/import', { product_ids: productIds })
+  return agentApi.post('/agent/scraper/products/import', { product_ids: productIds })
 }
 
 // COS 上传状态

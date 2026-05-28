@@ -1,4 +1,4 @@
-"""企业级全量商品采集引擎 — 多平台/规格提取/SKU/OSS上传/去重"""
+﻿"""企业级全量商品采集引擎 — 多平台/规格提取/SKU/OSS上传/去重"""
 import os
 import re
 import json
@@ -109,126 +109,145 @@ async def download_and_upload(url: str, product_id: str, index: int, session: ht
 # ═══════════════════════════════════════
 
 class eBayAdapter:
-    """eBay 采集适配器"""
+    """eBay 真实API采集适配器 — Finding API + Shopping API"""
     name = "ebay"
-    search_url = "https://www.ebay.com/sch/i.html?_nkw={keyword}&_ipg=60"
+
+    def __init__(self):
+        self.app_id = os.getenv("EBAY_SANDBOX_APP_ID", os.getenv("EBAY_PRODUCTION_APP_ID", ""))
+        self.dev_id = os.getenv("EBAY_DEV_ID", "")
+        self.use_sandbox = bool(os.getenv("EBAY_SANDBOX_APP_ID"))
+        if self.use_sandbox:
+            self.finding_url = "https://svcs.sandbox.ebay.com/services/search/FindingService/v1"
+            self.shopping_url = "https://open.api.sandbox.ebay.com/shopping"
+        else:
+            self.finding_url = "https://svcs.ebay.com/services/search/FindingService/v1"
+            self.shopping_url = "https://open.api.ebay.com/shopping"
+        self._search_cache = {}
 
     async def search(self, keyword: str, max_pages: int = 3, session: httpx.AsyncClient = None) -> list[str]:
-        urls = []
+        """eBay Finding API 搜索，返回 itemId 列表"""
+        item_ids = []
         close_session = session is None
         if close_session:
-            session = httpx.AsyncClient(timeout=20, follow_redirects=True)
-
-        for page in range(1, max_pages + 1):
-            url = self.search_url.format(keyword=quote_plus(keyword))
-            if page > 1:
-                url += f"&_pgn={page}"
-            try:
-                r = await session.get(url, headers={"User-Agent": random_ua()})
-                soup = BeautifulSoup(r.text, "html.parser")
-                for link in soup.select("a.s-item__link"):
-                    href = link.get("href", "")
-                    if "/itm/" in href and href not in urls:
-                        urls.append(href)
-                        if len(urls) >= 50:
-                            break
-                await polite_delay()
-            except Exception:
-                continue
-            if len(urls) >= 50:
-                break
-
-        return urls
-
-    async def extract_product(self, url: str, session: httpx.AsyncClient = None) -> Optional[ScrapedProduct]:
+            session = httpx.AsyncClient(timeout=20)
         try:
-            close_session = session is None
-            if close_session:
-                session = httpx.AsyncClient(timeout=20, follow_redirects=True)
+            entries = min(50, max_pages * 20)
+            params = {
+                "OPERATION-NAME": "findItemsByKeywords",
+                "SERVICE-VERSION": "1.0.0",
+                "SECURITY-APPNAME": self.app_id,
+                "RESPONSE-DATA-FORMAT": "JSON",
+                "keywords": keyword,
+                "paginationInput.entriesPerPage": str(entries),
+            }
+            r = await session.get(self.finding_url, params=params, headers={"User-Agent": random_ua()})
+            data = r.json()
+            search_result = data.get("findItemsByKeywordsResponse", [{}])[0].get("searchResult", [{}])[0]
+            items = search_result.get("item", [])
+            for item in items:
+                iid = item.get("itemId", [""])[0]
+                if iid:
+                    item_ids.append(iid)
+            self._search_cache = {it.get("itemId", [""])[0]: it for it in items if it.get("itemId")}
+        except Exception as e:
+            print(f"[eBay API] 搜索失败: {e}")
+        if close_session:
+            await session.aclose()
+        return item_ids
 
-            r = await session.get(url, headers={"User-Agent": random_ua()})
-            soup = BeautifulSoup(r.text, "html.parser")
+    async def extract_product(self, item_id: str, session: httpx.AsyncClient = None) -> Optional[ScrapedProduct]:
+        """eBay Shopping API GetSingleItem 获取商品详情"""
+        close_session = session is None
+        if close_session:
+            session = httpx.AsyncClient(timeout=20)
+        try:
+            cached = self._search_cache.get(item_id, {})
+            params = {
+                "callname": "GetSingleItem",
+                "responseencoding": "JSON",
+                "appid": self.app_id,
+                "siteid": "0",
+                "version": "967",
+                "ItemID": item_id,
+                "IncludeSelector": "Description,ItemSpecifics,Details",
+            }
+            r = await session.get(self.shopping_url, params=params, headers={"User-Agent": random_ua()})
+            data = r.json()
+            item = data.get("Item", {})
 
-            # 标题
-            title = ""
-            title_el = soup.select_one("h1.it-ttl") or soup.select_one("h1.x-item-title__mainTitle span")
-            if title_el:
-                title = title_el.get_text(strip=True)
+            title = item.get("Title", "") or cached.get("title", [""])[0]
+            current_price = item.get("CurrentPrice", {}) or cached.get("sellingStatus", [{}])[0].get("currentPrice", [{}])[0]
+            try:
+                price_usd = float(current_price.get("Value", 0) or current_price.get("value", 0))
+            except:
+                price_usd = 0.0
+            price = round(price_usd * 7.2, 2)
+            org_price = round(price * 1.15, 2)
 
-            # 价格
-            price = 0.0
-            price_el = soup.select_one(".x-price-primary span.ux-textspans") or soup.select_one("span.ux-textspans")
-            if price_el:
-                price_text = price_el.get_text(strip=True).replace("US $", "").replace(",", "")
+            images = []
+            picture_urls = item.get("PictureURL", [])
+            if not picture_urls:
+                gallery = cached.get("galleryURL", [""])[0]
+                if gallery:
+                    picture_urls = [gallery]
+            for img_url in (picture_urls if isinstance(picture_urls, list) else [picture_urls]):
+                if img_url and img_url not in images:
+                    images.append(img_url)
+
+            source_url = item.get("ViewItemURLForNaturalSearch", "") or cached.get("viewItemURL", [""])[0]
+
+            specs = []
+            for nv in item.get("ItemSpecifics", {}).get("NameValueList", []):
+                name = nv.get("Name", "")
+                vals = nv.get("Value", [])
+                if isinstance(vals, str):
+                    vals = [vals]
+                if name and vals:
+                    specs.append({"name": name, "values": vals})
+
+            category = []
+            primary_cat = item.get("PrimaryCategoryName", "")
+            if primary_cat:
+                category.append(primary_cat)
+
+            description = item.get("Description", "")
+            if isinstance(description, str) and len(description) > 500:
+                description = description[:500]
+
+            brand = ""
+            for nv in item.get("ItemSpecifics", {}).get("NameValueList", []):
+                if nv.get("Name", "").lower() == "brand":
+                    vals = nv.get("Value", [])
+                    brand = vals[0] if isinstance(vals, list) and vals else str(vals)
+                    break
+
+            sales = 0
+            qty_sold = item.get("QuantitySold", 0)
+            if qty_sold:
                 try:
-                    price = float(price_text) * 7.2
+                    sales = int(qty_sold)
                 except:
                     pass
 
-            # 原价
-            org_price = 0.0
-            org_el = soup.select_one(".x-price-approx__price span.ux-textspans") or soup.select_one("span.ux-textspans--STRIKETHROUGH")
-            if org_el:
-                org_text = org_el.get_text(strip=True).replace("US $", "").replace(",", "")
-                try:
-                    org_price = float(org_text) * 7.2
-                except:
-                    org_price = price * 1.3
-
-            # 图片
-            images = []
-            for img in soup.select("img"):
-                src = img.get("src", "") or img.get("data-src", "")
-                if src and any(x in src.lower() for x in (".jpg", ".png", ".webp", "img.ebay", "i.ebayimg")):
-                    full = urljoin(url, src)
-                    if full not in images and "sprite" not in full and "icon" not in full:
-                        images.append(full)
-
-            # 规格 - eBay比较难提取，靠item specifics
-            specs = []
-            for row in soup.select("div.ux-layout-section__row"):
-                label_el = row.select_one(".ux-labels-values__labels")
-                val_el = row.select_one(".ux-labels-values__values")
-                if label_el and val_el:
-                    name = label_el.get_text(strip=True).rstrip(":")
-                    vals = [v.strip() for v in val_el.get_text(strip=True).split(",") if v.strip()]
-                    if name and vals:
-                        specs.append({"name": name, "values": vals})
-
-            # 分类
-            category = []
-            for cat in soup.select("nav.breadcrumbs a, li.breadcrumb a"):
-                cat_text = cat.get_text(strip=True)
-                if cat_text and cat_text not in ("eBay", "Home"):
-                    category.append(cat_text)
-
-            # 销量/评价
-            sales = 0
-            rating = 0.0
-            sold_el = soup.select_one(".d-item-condition span, .vi-qtyS-hot-red")
-            if sold_el:
-                nums = re.findall(r'\d+', sold_el.get_text())
-                if nums:
-                    sales = int(nums[0])
-
             return ScrapedProduct(
                 platform="ebay",
-                source_url=url,
+                source_url=source_url or f"https://www.ebay.com/itm/{item_id}",
                 title=title,
                 price=price,
                 original_price=org_price,
                 currency="CNY",
                 images=images[:20],
                 specs=specs,
+                description=description,
                 category_path=category,
-                brand="",
+                brand=brand,
                 sales_count=sales,
-                rating=rating,
+                rating=0.0,
                 crawled_at=datetime.now().isoformat()
             )
         except Exception as e:
+            print(f"[eBay API] 提取失败 ({item_id}): {e}")
             return None
-
 class AliexpressAdapter:
     """速卖通采集适配器"""
     name = "aliexpress"
