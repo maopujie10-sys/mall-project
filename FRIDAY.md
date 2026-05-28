@@ -36,6 +36,18 @@
   - 新增 _auto_rotate() 自动轮值逻辑（按权重+健康度选最优域名）
   - 修复 scheduler.py 调用 _check_all（之前调用不存在的方法，静默失败）
   - 新增每日9点+21点两次自动轮值检测
+- 2026-05-28: [最终审计归档] 全项目端到端审计完成，准备服务器部署
+  - 后端35路由模块+267端点，Python导入链无循环引用，config.py 53变量对齐.env.example
+  - 前端29页面全注册，Vue API层全部对齐，SelfService补注册路由
+  - 3D大脑(FridayBrain)按钮接真实API+Agent数据从后端拉取
+  - 反反爬引擎7平台(eBay/Amazon/AliExpress/Wish/Shopee/Lazada/TikTok)完整
+  - 虚拟数据9生成器+6端点全部接前端真实API
+  - Ollama免费本地模型接入Multi-Model Router(3模型)，全模式本地优先
+  - 速率限制Redis持久化(base:rate_limit)，Redis不可用自动降级内存
+  - Claude模型名更新claude-3-5-sonnet-20241022
+  - PWA manifest+sw.js+192/512图标完整，Electron main+preload+打包配置完整
+  - Docker 7服务编排+Nginx 3 upstream对齐，logs/mall-dist目录已创建
+  - install.sh+install.bat一键安装+INSTALL.md含部署注意事项
   - 清除 mall_tools.py 中重复的轮值代理路由
   - 扩展前端 rotation.js API层（全量检测/手动轮值/权重/历史）
   - 修复前端 RotationPanel.vue 数据字段对齐+添加操作按钮
