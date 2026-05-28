@@ -3,7 +3,7 @@
  * 主域名优先 + 8轮值降级, 配置从AI后台API拉取
  */
 (function(){'use strict';
-const API_URL='/api/rotation/two-level/public-config';
+const API_URL='/ai/api/rotation/two-level/public-config';
 const STORAGE_KEY='lr_v2';
 const DEAD_TTL=600000;
 const PROBE_TIMEOUT=3000;
