@@ -15,6 +15,14 @@
 6. 客服自动回复 + 轮值域名监控
 
 ## 最近改动
+- 2026-05-29: [路由修复] 轮值域名目标路径404→302重定向映射
+  - 问题: 轮值引擎跳转到 /home、/login、/merchantSettled，Tomcat不识别这些路径返回404
+  - 修复: landing.conf 轮值HTTPS server block新增3条location重定向:
+    - /home → 302 /pc/ (商城首页SPA)
+    - /login → 302 /pc/ (登录是SPA内部路由)
+    - /merchantSettled → 302 /seller/ (商家入驻SPA)
+  - deploy-rotation.sh 同步更新: 修正nginx路径为/usr/local/nginx/，加入路径映射
+  - SSL证书已知限制: Let's Encrypt证书覆盖9个主域名+www子域名，不覆盖随机前缀子域名(shop/buy/mall等)→浏览器会报SSL警告，需后续申请通配符证书
 - 2026-05-29: [部署+修复] 落地页+商家H5部署+轮值域名全量替换+ZooKeeper恢复
   - 落地页: landing/* → /opt/landing/，nginx location = / 指向轮值引擎入口
   - 商家H5: merchant-h5/dist/test/* → /opt/tomcat8/webapps/www/，nginx /www/ 路由
