@@ -130,7 +130,6 @@
         </div>
       </nav>
       </aside>
-      <<button class=mobile-menu-btn @click=mobileMenuOpen=!mobileMenuOpen>H</button>main class="content-area">
 <button class="mobile-menu-btn" @click="mobileMenuOpen=!mobileMenuOpen">H</button>
 <main class="content-area">
         <router-view v-slot="{ Component }">
