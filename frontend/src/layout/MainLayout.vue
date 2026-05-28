@@ -152,6 +152,7 @@ const theme = useThemeStore()
 const { currentMode, modeLabel } = storeToRefs(system)
 
 const sidebarCollapsed = ref(false)
+const mobileMenuOpen = ref(false)
 
 const currentTitle = computed(() => route.meta?.title || '')
 const currentRoute = computed(() => route.path)
@@ -369,3 +370,29 @@ async function sendFloatMsg() {
 
 
 
+
+/* 📱 手机底部导航 */
+.mobile-bottom-nav {
+  display: none;
+  position: fixed; bottom: 0; left: 0; right: 0;
+  height: 60px; background: var(--bg-card);
+  border-top: 1px solid var(--border-color);
+  z-index: 9997;
+  justify-content: space-around;
+  align-items: center;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.mb-item {
+  display: flex; flex-direction: column;
+  align-items: center; gap: 2px;
+  text-decoration: none; color: var(--text-muted);
+  font-size: 10px; padding: 4px 8px;
+  border-radius: 8px; transition: all 0.15s;
+}
+.mb-item .router-link-active,
+.mb-item.active { color: #667eea; }
+.mb-item span:first-child { font-size: 20px; }
+@media (max-width: 768px) {
+  .mobile-bottom-nav { display: flex; }
+  .content-area { padding-bottom: 70px; }
+}

@@ -1,4 +1,8 @@
-﻿### [新增] 六大生产级功能 — AI电话助理/商品图处理/多语言发布/Excel上架/自动回复/订单预警
+﻿### [改造] 手机端响应式布局 + AI文案多语言支持
+- 'frontend/src/layout/MainLayout.vue': 添加手机端hamburger按钮、侧栏遮罩层、底部5项快捷导航（大脑/对话/总览/服务器/商城）
+- 'backend/routers/copy_router.py': 重写多语言生成引擎，支持14种语言（中/英/日/韩/泰/越/马来/印尼/西/法/德/葡/阿/俄），优先调用AI模型
+
+### [新增] 六大生产级功能 — AI电话助理/商品图处理/多语言发布/Excel上架/自动回复/订单预警
 - 'backend/routers/phone_router.py': AI电话助理（IVR菜单/模拟来电/转人工/统计）
 - 'backend/routers/image_router.py': AI商品图处理（去背景/水印/批量/remove.bg集成）
 - 'backend/routers/translate_router.py': 多语言商品发布（7种语言/5个平台）
@@ -176,6 +180,7 @@
 ### [修复] main.py 导入清理
 - 去除重复导入、修复缺失括号语法错误
 - 所有 6 个模型端点唯一无重复
+
 
 
 
