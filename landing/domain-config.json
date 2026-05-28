@@ -1,50 +1,91 @@
 {
-  "version": "3.2.0",
   "groups": [
     {
-      "id": "g1",
+      "main": "tiktook.eu.cc",
+      "enabled": true,
+      "children": [
+        "shop.tiktook.eu.cc",
+        "mall.tiktook.eu.cc",
+        "store.tiktook.eu.cc"
+      ]
+    },
+    {
       "main": "chxhx.eu.cc",
-      "pool": ["shop","mall","store","buy","go","my","www","app","web","vip","hot","new","best","top","pro","max","plus","hub","zone","now"]
+      "enabled": true,
+      "children": [
+        "shop.chxhx.eu.cc",
+        "mall.chxhx.eu.cc",
+        "store.chxhx.eu.cc"
+      ]
     },
     {
-      "id": "g2",
       "main": "drrgr.eu.cc",
-      "pool": ["shop","mall","store","buy","go","my","www","app","web","vip","hot","new","best","top","pro","max","plus","hub","zone","now"]
+      "enabled": true,
+      "children": [
+        "shop.drrgr.eu.cc",
+        "mall.drrgr.eu.cc",
+        "store.drrgr.eu.cc"
+      ]
     },
     {
-      "id": "g3",
       "main": "drrimrf.eu.cc",
-      "pool": ["shop","mall","store","buy","go","my","www","app","web","vip","hot","new","best","top","pro","max","plus","hub","zone","now"]
+      "enabled": true,
+      "children": [
+        "shop.drrimrf.eu.cc",
+        "mall.drrimrf.eu.cc",
+        "store.drrimrf.eu.cc"
+      ]
     },
     {
-      "id": "g4",
       "main": "drriiu.eu.cc",
-      "pool": ["shop","mall","store","buy","go","my","www","app","web","vip","hot","new","best","top","pro","max","plus","hub","zone","now"]
+      "enabled": true,
+      "children": [
+        "shop.drriiu.eu.cc",
+        "mall.drriiu.eu.cc",
+        "store.drriiu.eu.cc"
+      ]
     },
     {
-      "id": "g5",
       "main": "duomi.eu.cc",
-      "pool": ["shop","mall","store","buy","go","my","www","app","web","vip","hot","new","best","top","pro","max","plus","hub","zone","now"]
+      "enabled": true,
+      "children": [
+        "shop.duomi.eu.cc",
+        "mall.duomi.eu.cc",
+        "store.duomi.eu.cc"
+      ]
     },
     {
-      "id": "g6",
       "main": "dengruihan.eu.cc",
-      "pool": ["shop","mall","store","buy","go","my","www","app","web","vip","hot","new","best","top","pro","max","plus","hub","zone","now"]
+      "enabled": true,
+      "children": [
+        "shop.dengruihan.eu.cc",
+        "mall.dengruihan.eu.cc",
+        "store.dengruihan.eu.cc"
+      ]
     },
     {
-      "id": "g7",
       "main": "yyawzx.eu.cc",
-      "pool": ["shop","mall","store","buy","go","my","www","app","web","vip","hot","new","best","top","pro","max","plus","hub","zone","now"]
+      "enabled": true,
+      "children": [
+        "shop.yyawzx.eu.cc",
+        "mall.yyawzx.eu.cc",
+        "store.yyawzx.eu.cc"
+      ]
     },
     {
-      "id": "g8",
       "main": "gamed.eu.cc",
-      "pool": ["shop","mall","store","buy","go","my","www","app","web","vip","hot","new","best","top","pro","max","plus","hub","zone","now"]
+      "enabled": true,
+      "children": [
+        "shop.gamed.eu.cc",
+        "mall.gamed.eu.cc",
+        "store.gamed.eu.cc"
+      ]
     }
   ],
   "settings": {
-    "probeTimeout": 3000,
-    "deadTTL": 600000,
-    "maxRetries": 3
+    "healthCheckTimeout": 5000,
+    "switchOnFail": true,
+    "retryDeadAfter": 600000,
+    "stickyGroup": false
   }
 }

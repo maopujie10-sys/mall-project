@@ -2,66 +2,216 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="robots" content="noindex,nofollow">
-<meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
-<meta http-equiv="Pragma" content="no-cache">
-<meta http-equiv="Expires" content="0">
-<title>TikTokMall · 正在连接</title>
-<link rel="dns-prefetch" href="//chxhx.eu.cc">
-<link rel="dns-prefetch" href="//drrgr.eu.cc">
-<link rel="preconnect" href="//tiktook.eu.cc" crossorigin>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>正在跳转...</title>
 <style>
-  :root { --bg:#080b1a; --primary:#667eea; --text:rgba(255,255,255,0.87); --muted:rgba(255,255,255,0.45); }
-  *{margin:0;padding:0;box-sizing:border-box}
-  body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:24px}
-  .container{text-align:center;max-width:420px}
-  .logo{font-size:48px;margin-bottom:16px}
-  .spinner{display:none;width:44px;height:44px;margin:0 auto 24px;position:relative}
-  .spinner::before,.spinner::after{content:'';position:absolute;border-radius:50%}
-  .spinner::before{inset:0;border:3px solid rgba(102,126,234,.15);border-top-color:var(--primary);animation:spin .8s linear infinite}
-  .spinner::after{inset:8px;border:2px solid rgba(102,126,234,.1);border-bottom-color:rgba(118,75,162,.6);animation:spin 1.2s linear infinite reverse}
-  @keyframes spin{to{transform:rotate(360deg)}}
-  h1{font-size:18px;font-weight:600;margin-bottom:20px;letter-spacing:.5px}
-  .steps{font-size:12px;color:var(--muted);line-height:1.8;margin-bottom:24px}
-  .step{display:flex;align-items:center;justify-content:center;gap:6px;opacity:.5;transition:opacity .3s}
-  .step.active{opacity:1;color:var(--primary)}
-  .step.done{opacity:.7;color:#52c41a}
-  .step.fail{opacity:1;color:#ff4d4f}
-  .jump-btn{display:block;width:100%;padding:14px 24px;background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;border:none;border-radius:10px;font-size:16px;font-weight:600;cursor:pointer;transition:transform .15s,box-shadow .15s;letter-spacing:1px}
-  .jump-btn:hover{transform:scale(1.02);box-shadow:0 4px 20px rgba(102,126,234,.4)}
-    .target-info{display:none;font-size:12px;color:var(--muted);margin-top:10px}
-  .target-info.show{display:block}
-  .fallback{display:none;margin-top:20px;padding-top:20px;border-top:1px solid rgba(255,255,255,.06)}
-  .fallback a{display:block;padding:10px 16px;margin:6px 0;border:1px solid rgba(255,255,255,.08);border-radius:8px;color:var(--text);text-decoration:none;font-size:13px;transition:all .15s}
-  .fallback a:hover{border-color:var(--primary);background:rgba(102,126,234,.08)}
-  .timer{font-size:11px;color:var(--muted);margin-top:16px}
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #080b1a;
+    color: #fff;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    display: flex; align-items: center; justify-content: center;
+    height: 100vh; text-align: center;
+  }
+  .loader { animation: spin 1s linear infinite; width: 40px; height: 40px;
+    border: 3px solid rgba(102,126,234,0.2); border-top-color: #667eea;
+    border-radius: 50%; margin: 0 auto 20px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .status { font-size: 14px; color: rgba(255,255,255,0.6); margin-top: 10px; }
+  .error { color: #ff4d4f; margin-top: 20px; font-size: 13px; display: none; }
+  .retry { margin-top: 16px; padding: 8px 24px; border: 1px solid #667eea;
+    color: #667eea; background: transparent; border-radius: 6px; cursor: pointer;
+    font-size: 13px; display: none; }
 
-.action-btns{display:flex;flex-direction:column;gap:10px;margin-bottom:20px}
-.action-btns .jump-btn.primary{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;font-weight:600;box-shadow:0 4px 16px rgba(102,126,234,.25)}
-.action-btns .jump-btn.primary:hover{box-shadow:0 6px 24px rgba(102,126,234,.4)}
+  .btn-group { margin-top: 30px; display: flex; flex-direction: column; gap: 10px; }
+  .btn { display: block; width: 100%; padding: 14px 24px; border: 1px solid rgba(102,126,234,0.3); border-radius: 10px; background: rgba(102,126,234,0.08); color: #fff; font-size: 16px; cursor: pointer; transition: all 0.2s; letter-spacing: 1px; }
+  .btn:hover { background: rgba(102,126,234,0.18); border-color: #667eea; }
+  .btn.primary { background: linear-gradient(135deg,#667eea,#764ba2); border: none; font-weight: 600; }
+  .btn.primary:hover { box-shadow: 0 4px 20px rgba(102,126,234,0.4); }
+  .btn:disabled { opacity: 0.5; pointer-events: none; }
+  .loader.hide { display: none; }
 </style>
 </head>
 <body>
-<div class="container">
-  <div class="logo">&#x1F310;</div>
-  <div class="spinner" id="spinner"></div>
-  <h1 id="title">TikTokMall 全球批发商城</h1>
-  <div class="steps" id="steps">
-    <div class="step active" data-step="config"><span>&#x25CF;</span> 加载配置</div>
-    <div class="step" data-step="group"><span>&#x25CB;</span> 选择域名组</div>
-    <div class="step" data-step="child"><span>&#x25CB;</span> 分配子域名</div>
-    <div class="step" data-step="probe"><span>&#x25CB;</span> 健康检测</div>
+<div>
+  <div class="loader hide" id="loader"></div>
+  <div id="msg">TikTokMall 全球批发商城</div>
+  <div class="status" id="detail"></div>
+  <div class="error" id="err"></div>
+  <div class="btn-group" id="btns">
+    <button class="btn primary" onclick="doJump('/home')">&#x1F6D2; 进入商城</button>
+    <button class="btn" onclick="doJump('/login')">&#x1F464; 用户登录</button>
+    <button class="btn" onclick="doJump('/merchantSettled')">&#x1F3EA; 商家入驻</button>
   </div>
-  <div class="action-btns">
-  <button class="jump-btn primary" onclick="doJump('/home')">&#x1F6D2; 进入商城</button>
-  <button class="jump-btn" onclick="doJump('/login')">&#x1F464; 用户登录</button>
-  <button class="jump-btn" onclick="doJump('/merchantSettled')">&#x1F3EA; 商家入驻</button>
+  <button class="retry" id="retryBtn" onclick="location.reload()">重新尝试</button>
 </div>
-  <div class="target-info" id="targetInfo"></div>
-  <div class="fallback" id="fallback"></div>
-  <div class="timer" id="timer"></div>
-</div>
-<script src="./rotation-engine.js"></script>
+
+<script>
+// ═══════════════════════════════════════
+//  两级域名轮值引擎 — 独立落地页
+// ═══════════════════════════════════════
+
+const CONFIG_URL = './domain-config.json';
+const STORAGE_KEY = 'landing_rotation';
+const DEAD_TTL = 10 * 60 * 1000; // 死域名冷却 10 分钟
+
+let config = null;
+let state = null;
+
+// 读取本地状态
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : { deadDomains: {}, groupIndex: 0, childIndex: {} };
+  } catch { return { deadDomains: {}, groupIndex: 0, childIndex: {} }; }
+}
+
+function saveState() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
+// 主域名是否存活
+function isGroupAlive(group) {
+  if (!group.enabled) return false;
+  const dead = state.deadDomains[group.main];
+  if (!dead) return true;
+  // 超过冷却时间，复活
+  if (Date.now() - dead.time > DEAD_TTL) {
+    delete state.deadDomains[group.main];
+    saveState();
+    return true;
+  }
+  return false;
+}
+
+// 子域名是否存活
+function isChildAlive(child) {
+  const dead = state.deadDomains[child];
+  if (!dead) return true;
+  if (Date.now() - dead.time > DEAD_TTL) {
+    delete state.deadDomains[child];
+    saveState();
+    return true;
+  }
+  return false;
+}
+
+// 选一个可用的主域名组
+function pickGroup() {
+  const groups = config.groups;
+  const startIdx = state.groupIndex % groups.length;
+  
+  for (let i = 0; i < groups.length; i++) {
+    const idx = (startIdx + i) % groups.length;
+    const g = groups[idx];
+    // 检查组内是否还有活着的子域名
+    const aliveChildren = g.children.filter(c => isChildAlive(c));
+    if (isGroupAlive(g) && aliveChildren.length > 0) {
+      state.groupIndex = idx;
+      saveState();
+      return { group: g, children: aliveChildren };
+    }
+  }
+  return null;
+}
+
+// 从子域名池轮流取一个
+function pickChild(group) {
+  const children = group.children;
+  if (!state.childIndex[group.main]) {
+    state.childIndex[group.main] = 0;
+  }
+  const startIdx = state.childIndex[group.main] % children.length;
+  
+  for (let i = 0; i < children.length; i++) {
+    const idx = (startIdx + i) % children.length;
+    const child = children[idx];
+    if (isChildAlive(child)) {
+      state.childIndex[group.main] = (idx + 1) % children.length;
+      saveState();
+      return child;
+    }
+  }
+  return null;
+}
+
+// 标记域名死亡
+function markDead(domain) {
+  state.deadDomains[domain] = { time: Date.now(), reason: '连接失败' };
+  saveState();
+}
+
+// 健康检测
+function healthCheck(url) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    const timeout = setTimeout(() => { img.src = ''; resolve(false); }, 5000);
+    img.onload = () => { clearTimeout(timeout); resolve(true); };
+    img.onerror = () => { clearTimeout(timeout); resolve(false); };
+    img.src = url + '/favicon.ico?' + Date.now();
+  });
+}
+
+// 主流程
+async function doJump(targetPath) {
+  state = loadState();
+
+  // 加载配置
+  try {
+    const r = await fetch(CONFIG_URL);
+    config = await r.json();
+  } catch (e) {
+    showError('配置加载失败');
+    return;
+  }
+
+  // 第一级：选主域名组
+  const pick = pickGroup();
+  if (!pick) {
+    showError('所有域名组暂不可用，请稍后重试');
+    return;
+  }
+
+  document.getElementById('loader').classList.remove('hide'); document.getElementById('btns').style.display='none'; document.getElementById('msg').textContent='正在选择最优线路...'; document.getElementById('detail').textContent =
+    '主域名组: ' + pick.group.main;
+
+  // 第二级：选子域名
+  const child = pickChild(pick);
+  if (!child) {
+    // 该组所有子域名都死了，标记整组死亡，重试
+    markDead(pick.group.main);
+    return doJump(targetPath);
+  }
+
+  const targetUrl = 'https://' + child + (targetPath || '/home');
+  document.getElementById('detail').textContent =
+    '主域名组: ' + pick.group.main + ' → ' + child;
+
+  // 健康检测
+  const alive = await healthCheck(targetUrl);
+  if (!alive) {
+    markDead(child);
+    // 检查是否全组死亡
+    const aliveChildren = pick.group.children.filter(c => isChildAlive(c));
+    if (aliveChildren.length === 0) {
+      markDead(pick.group.main);
+    }
+    return doJump(targetPath);
+  }
+
+  // 跳转
+  document.getElementById('msg').textContent = '线路就绪，正在跳转...'; document.getElementById('loader').classList.add('hide');
+  setTimeout(() => { window.location.href = targetUrl; }, 300);
+}
+
+function showError(msg) {
+  document.getElementById('err').style.display = 'block';
+  document.getElementById('err').textContent = msg;
+  document.getElementById('retryBtn').style.display = 'inline-block';
+  document.getElementById('loader').classList.add('hide'); document.getElementById('btns').style.display='flex';
+  document.getElementById('msg').textContent = '跳转失败';
+}
+
+</script>
 </body>
 </html>
