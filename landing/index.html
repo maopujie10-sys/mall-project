@@ -1,0 +1,205 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>正在跳转...</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #080b1a;
+    color: #fff;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    display: flex; align-items: center; justify-content: center;
+    height: 100vh; text-align: center;
+  }
+  .loader { animation: spin 1s linear infinite; width: 40px; height: 40px;
+    border: 3px solid rgba(102,126,234,0.2); border-top-color: #667eea;
+    border-radius: 50%; margin: 0 auto 20px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .status { font-size: 14px; color: rgba(255,255,255,0.6); margin-top: 10px; }
+  .error { color: #ff4d4f; margin-top: 20px; font-size: 13px; display: none; }
+  .retry { margin-top: 16px; padding: 8px 24px; border: 1px solid #667eea;
+    color: #667eea; background: transparent; border-radius: 6px; cursor: pointer;
+    font-size: 13px; display: none; }
+</style>
+</head>
+<body>
+<div>
+  <div class="loader"></div>
+  <div id="msg">正在选择最优线路...</div>
+  <div class="status" id="detail"></div>
+  <div class="error" id="err"></div>
+  <button class="retry" id="retryBtn" onclick="location.reload()">重新尝试</button>
+</div>
+
+<script>
+// ═══════════════════════════════════════
+//  两级域名轮值引擎 — 独立落地页
+// ═══════════════════════════════════════
+
+const CONFIG_URL = './domain-config.json';
+const STORAGE_KEY = 'landing_rotation';
+const DEAD_TTL = 10 * 60 * 1000; // 死域名冷却 10 分钟
+
+let config = null;
+let state = null;
+
+// 读取本地状态
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : { deadDomains: {}, groupIndex: 0, childIndex: {} };
+  } catch { return { deadDomains: {}, groupIndex: 0, childIndex: {} }; }
+}
+
+function saveState() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
+// 主域名是否存活
+function isGroupAlive(group) {
+  if (!group.enabled) return false;
+  const dead = state.deadDomains[group.main];
+  if (!dead) return true;
+  // 超过冷却时间，复活
+  if (Date.now() - dead.time > DEAD_TTL) {
+    delete state.deadDomains[group.main];
+    saveState();
+    return true;
+  }
+  return false;
+}
+
+// 子域名是否存活
+function isChildAlive(child) {
+  const dead = state.deadDomains[child];
+  if (!dead) return true;
+  if (Date.now() - dead.time > DEAD_TTL) {
+    delete state.deadDomains[child];
+    saveState();
+    return true;
+  }
+  return false;
+}
+
+// 选一个可用的主域名组
+function pickGroup() {
+  const groups = config.groups;
+  const startIdx = state.groupIndex % groups.length;
+  
+  for (let i = 0; i < groups.length; i++) {
+    const idx = (startIdx + i) % groups.length;
+    const g = groups[idx];
+    // 检查组内是否还有活着的子域名
+    const aliveChildren = g.children.filter(c => isChildAlive(c));
+    if (isGroupAlive(g) && aliveChildren.length > 0) {
+      state.groupIndex = idx;
+      saveState();
+      return { group: g, children: aliveChildren };
+    }
+  }
+  return null;
+}
+
+// 从子域名池轮流取一个
+function pickChild(group) {
+  const children = group.children;
+  if (!state.childIndex[group.main]) {
+    state.childIndex[group.main] = 0;
+  }
+  const startIdx = state.childIndex[group.main] % children.length;
+  
+  for (let i = 0; i < children.length; i++) {
+    const idx = (startIdx + i) % children.length;
+    const child = children[idx];
+    if (isChildAlive(child)) {
+      state.childIndex[group.main] = (idx + 1) % children.length;
+      saveState();
+      return child;
+    }
+  }
+  return null;
+}
+
+// 标记域名死亡
+function markDead(domain) {
+  state.deadDomains[domain] = { time: Date.now(), reason: '连接失败' };
+  saveState();
+}
+
+// 健康检测
+function healthCheck(url) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    const timeout = setTimeout(() => { img.src = ''; resolve(false); }, 5000);
+    img.onload = () => { clearTimeout(timeout); resolve(true); };
+    img.onerror = () => { clearTimeout(timeout); resolve(false); };
+    img.src = url + '/favicon.ico?' + Date.now();
+  });
+}
+
+// 主流程
+async function run() {
+  state = loadState();
+
+  // 加载配置
+  try {
+    const r = await fetch(CONFIG_URL);
+    config = await r.json();
+  } catch (e) {
+    showError('配置加载失败');
+    return;
+  }
+
+  // 第一级：选主域名组
+  const pick = pickGroup();
+  if (!pick) {
+    showError('所有域名组暂不可用，请稍后重试');
+    return;
+  }
+
+  document.getElementById('detail').textContent =
+    '主域名组: ' + pick.group.main;
+
+  // 第二级：选子域名
+  const child = pickChild(pick);
+  if (!child) {
+    // 该组所有子域名都死了，标记整组死亡，重试
+    markDead(pick.group.main);
+    return run();
+  }
+
+  const targetUrl = 'https://' + child;
+  document.getElementById('detail').textContent =
+    '主域名组: ' + pick.group.main + ' → ' + child;
+
+  // 健康检测
+  const alive = await healthCheck(targetUrl);
+  if (!alive) {
+    markDead(child);
+    // 检查是否全组死亡
+    const aliveChildren = pick.group.children.filter(c => isChildAlive(c));
+    if (aliveChildren.length === 0) {
+      markDead(pick.group.main);
+    }
+    return run();
+  }
+
+  // 跳转
+  document.getElementById('msg').textContent = '线路就绪，正在跳转...';
+  setTimeout(() => { window.location.href = targetUrl; }, 300);
+}
+
+function showError(msg) {
+  document.getElementById('err').style.display = 'block';
+  document.getElementById('err').textContent = msg;
+  document.getElementById('retryBtn').style.display = 'inline-block';
+  document.querySelector('.loader').style.display = 'none';
+  document.getElementById('msg').textContent = '跳转失败';
+}
+
+run();
+</script>
+</body>
+</html>
