@@ -196,7 +196,7 @@ async def vision_faces(image_url: str, _=Depends(verify_token)):
     return await VisionAgent.detect_faces(image_url)
 
 @router.post("/vision/upload")
-async def vision_upload(file: bytes = None, url: str = ""):
+async def vision_upload(file: bytes = None, url: str = "", _=Depends(verify_token)):
     """上传图片并分析（支持文件上传或URL）"""
     if url:
         return await VisionAgent.analyze_image(image_url=url)
@@ -224,18 +224,30 @@ async def switch_model(model_id: str, _=Depends(verify_token)):
 
 @router.post("/models/test")
 async def test_model(model_id: str, _=Depends(verify_token)):
-    """测试模型响应速度"""
+    """测试模型响应速度 — 直接API调用测试"""
+    import time, httpx
     model = ModelRouter.get_model(model_id)
     if not model:
         return {"ok": False, "error": f"模型 {model_id} 不存在"}
-    import time
     start = time.time()
     try:
-        result = await model.test()
-        latency = int((time.time() - start) * 1000)
-        return {"ok": True, "model_id": model_id, "latency_ms": latency, "status": "ok"}
+        api_base = model.api_base if hasattr(model, 'api_base') else "https://api.openai.com/v1"
+        api_key_env = model.api_key_env if hasattr(model, 'api_key_env') else ""
+        api_key = __import__("os").environ.get(api_key_env, "")
+        if not api_key and not model.is_local:
+            return {"ok": False, "error": f"模型 {model_id} 的API密钥未配置 ({api_key_env})"}
+        async with httpx.AsyncClient(timeout=15) as c:
+            if model.is_local:
+                r = await c.post(f"{api_base}/chat/completions",
+                    json={"model": model.model_name, "messages":[{"role":"user","content":"ping"}], "max_tokens":5})
+            else:
+                r = await c.post(f"{api_base}/chat/completions",
+                    headers={"Authorization": f"Bearer {api_key}"},
+                    json={"model": model.model_name, "messages":[{"role":"user","content":"ping"}], "max_tokens":5})
+            latency = int((time.time() - start) * 1000)
+            return {"ok": True, "model_id": model_id, "latency_ms": latency, "status": "ok" if r.status_code < 500 else "error", "code": r.status_code}
     except Exception as e:
-        return {"ok": False, "model_id": model_id, "error": str(e)}
+        return {"ok": False, "model_id": model_id, "latency_ms": int((time.time()-start)*1000), "error": str(e)}
 
 @router.post("/models/compare")
 async def compare_models(model_ids: list[str], _=Depends(verify_token)):
@@ -255,6 +267,8 @@ async def model_status(_=Depends(verify_token)):
     models = ModelRouter.list_models()
     current = getattr(state, "current_model", None)
     return {"ok": True, "models": models, "current": current}
+
+
 
 
 

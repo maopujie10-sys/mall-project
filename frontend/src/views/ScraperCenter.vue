@@ -145,81 +145,60 @@
 <script setup>
 import { ref, reactive } from 'vue'
 import { ElMessage } from 'element-plus'
+import { agentApi } from '@/api/index'
+import { startScrapeJob, listScrapeJobs, deleteScrapeJob, getCOSStatus } from '@/api/scraper'
 
-const showCreateDialog = ref(false)
-const previewVisible = ref(false)
-
-const newJob = reactive({
-  platform: 'eBay',
-  keyword: '',
-  count: 50,
-  category: '',
-})
-
-const cosConfig = {
-  bucket: 'shangchengtupian-1435149418',
-  region: 'ap-singapore',
-}
-
-const cosStats = {
-  uploaded: '1,247 张',
-  usage: '2.3 GB',
-}
-
+const loading = ref(false)
+const cosInfo = ref({ used: 0, total: 1024 })
 const platforms = [
-  { name:'eBay', icon:'🌍', count:845, rate:92 },
-  { name:'AliExpress', icon:'🛍️', count:623, rate:85 },
-  { name:'Amazon', icon:'📦', count:340, rate:88 },
-  { name:'1688', icon:'🏭', count:210, rate:76 },
+  { id:'ebay', name:'eBay', icon:'📦', count:0 },
+  { id:'amazon', name:'Amazon', icon:'🛒', count:0 },
+  { id:'ali', name:'AliExpress', icon:'🌏', count:0 },
+  { id:'shopee', name:'Shopee', icon:'🛍️', count:0 },
+  { id:'lazada', name:'Lazada', icon:'🌴', count:0 },
 ]
+const activePlatform = ref('ebay')
+const keyword = ref('')
+const jobs = ref([])
 
-const jobs = reactive([
-  { id:1, keyword:'iPhone 15 配件', platform:'eBay', collected:50, imported:35, status:'已完成', statusType:'success', time:'2024-05-28 14:32' },
-  { id:2, keyword:'夏季T恤男', platform:'AliExpress', collected:80, imported:0, status:'已完成', statusType:'success', time:'2024-05-28 12:15' },
-  { id:3, keyword:'无线蓝牙耳机', platform:'Amazon', collected:30, imported:30, status:'已完成', statusType:'success', time:'2024-05-28 10:08' },
-  { id:4, keyword:'瑜伽垫', platform:'1688', collected:0, imported:0, status:'采集中...', statusType:'warning', time:'2024-05-28 14:45' },
-])
-
-const previewProducts_data = [
-  { id:1, icon:'📱', title:'iPhone 15 Pro 透明保护壳', price:'¥29.90', source:'eBay', uploaded:true, color:'#e6f7ff' },
-  { id:2, icon:'🎧', title:'蓝牙5.3无线耳机', price:'¥159.00', source:'Amazon', uploaded:true, color:'#f6ffed' },
-  { id:3, icon:'⌚', title:'Apple Watch 充电支架', price:'¥89.00', source:'eBay', uploaded:false, color:'#fff7e6' },
-  { id:4, icon:'🔌', title:'USB-C 快充数据线 2m', price:'¥19.90', source:'AliExpress', uploaded:true, color:'#e6f7ff' },
-  { id:5, icon:'🧴', title:'韩国防晒霜 SPF50+', price:'¥89.00', source:'Amazon', uploaded:false, color:'#f6ffed' },
-]
-
-function startQuickScrape(platform) {
-  ElMessage.success(`已从 ${platform.name} 开始快速采集`)
+async function startJob() {
+  if (!keyword.value) { ElMessage.warning('请输入关键词'); return }
+  loading.value = true
+  try {
+    await startScrapeJob(activePlatform.value, keyword.value, 20, false)
+    ElMessage.success(`采集任务已创建：${activePlatform.value} > ${keyword.value}`)
+    keyword.value = ''
+    await fetchJobs()
+  } catch (e) {
+    ElMessage.error('创建采集任务失败: ' + (e.message || '未知错误'))
+  }
+  loading.value = false
 }
 
-function refreshJobs() { ElMessage.success('任务列表已刷新') }
-function previewProducts(row) {
-  previewVisible.value = true
-  ElMessage.info(`查看任务: ${row.keyword}`)
+async function fetchJobs() {
+  try {
+    const res = await listScrapeJobs()
+    if (res?.data?.jobs) jobs.value = res.data.jobs
+  } catch {}
 }
-function importToMall(row) {
-  ElMessage.success(`${row.keyword} 已导入商城商品库`)
+
+async function removeJob(jobId) {
+  try {
+    await deleteScrapeJob(jobId)
+    ElMessage.success('任务已删除')
+    await fetchJobs()
+  } catch { ElMessage.error('删除失败') }
 }
-function uploadToCOS(row) {
-  ElMessage.success(`${row.keyword} 的图片已上传腾讯云COS`)
+
+async function fetchCOS() {
+  try {
+    const res = await getCOSStatus()
+    if (res?.data) cosInfo.value = res.data
+  } catch {}
 }
-function testCOS() {
-  ElMessage.success('腾讯云COS连接正常！')
-}
-function createJob() {
-  showCreateDialog.value = false
-  jobs.unshift({
-    id: Date.now(),
-    keyword: newJob.keyword || '新采集',
-    platform: newJob.platform,
-    collected: 0,
-    imported: 0,
-    status: '排队中...',
-    statusType: 'info',
-    time: new Date().toLocaleString(),
-  })
-  ElMessage.success(`采集任务已创建：${newJob.platform} > ${newJob.keyword}`)
-}
+
+fetchJobs()
+fetchCOS()
 </script>
 
 <style scoped>
@@ -252,3 +231,4 @@ function createJob() {
 .prod-price { font-size: 13px; font-weight: 700; color: #ff4d4f; margin: 2px 0; }
 .prod-source { font-size: 11px; color: var(--text-muted); }
 </style>
+

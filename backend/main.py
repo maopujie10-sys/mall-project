@@ -1,4 +1,4 @@
-"""TikTokMall AI Agent 总控 - FastAPI :9000"""
+﻿"""TikTokMall AI Agent 总控 - FastAPI :9000"""
 import asyncio
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request, HTTPException
@@ -74,6 +74,8 @@ from routers.friday_router import router as friday_router
 from routers.devops_agent_router import router as devops_router
 from routers.memory_router import router as memory_router
 from routers.heal_router import router as heal_router
+from routers.github_router import router as github_router
+from routers.plugin_router import router as plugin_router
 from routers import (
     health, status, restart, virtual, security, scraper, notify,
     agent_chat, system_mode, server_panel, rotation_panel, rollback_center,
@@ -118,6 +120,8 @@ app.include_router(friday_router)
 app.include_router(devops_router)
 app.include_router(memory_router)
 app.include_router(heal_router)
+app.include_router(plugin_router)
+app.include_router(github_router)
 
 # 内嵌HTML仪表盘
 @app.get("/agent", include_in_schema=False)
@@ -129,5 +133,7 @@ async def dashboard():
 @app.get("/agent/health")
 async def agent_health():
     return {"status": "ok", "timestamp": __import__("datetime").datetime.now().isoformat()}
+
+
 
 

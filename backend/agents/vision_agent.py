@@ -58,14 +58,14 @@ from datetime import datetime
                 else:
                     with open(image_url,"rb") as f:img_b64=base64.b64encode(f.read()).decode()
                 resp=await c.post("https://api.imagga.com/v2/tags",
-                    auth=("acc_",""),data={"image_base64":img_b64})
+                    auth=(os.getenv("IMAGGA_API_KEY", "").split(":") if ":" in os.getenv("IMAGGA_API_KEY", "") else ("", "")),data={"image_base64":img_b64})
                 if resp.status_code==200:
                     tags=resp.json().get("result",{}).get("tags",[])
                     objects=[{"name":t["tag"]["en"],"confidence":t["confidence"]} for t in tags[:10]]
                     return {"ok":True,"objects":objects}
-        except:
-            pass
-        return {"ok":True,"objects":[],"note":"物体识别API未配置，返回空"}
+        except Exception as e:
+            return {"ok":False,"objects":[],"error":f"物体识别API调用失败: {str(e)[:100]}","note":"请配置Imagga API密钥或安装本地模型"}
+        return {"ok":False,"objects":[],"error":"物体识别API未配置","note":"请配置Imagga API密钥"}
 
     @staticmethod
     async def analyze_video_frames(video_url, frame_interval=5):
@@ -90,7 +90,7 @@ from datetime import datetime
                         img_b64=base64.b64encode(f.read()).decode()
                     try:
                         async with httpx.AsyncClient(timeout=10) as c:
-                            resp=await c.post("https://api.imagga.com/v2/tags",auth=("acc_",""),data={"image_base64":img_b64})
+                            resp=await c.post("https://api.imagga.com/v2/tags",auth=(os.getenv("IMAGGA_API_KEY", "").split(":") if ":" in os.getenv("IMAGGA_API_KEY", "") else ("", "")),data={"image_base64":img_b64})
                             tags=resp.json().get("result",{}).get("tags",[])[:5] if resp.status_code==200 else []
                     except:
                         tags=[]
@@ -122,7 +122,7 @@ from datetime import datetime
                 else:
                     with open(image_url,"rb") as f:img_b64=base64.b64encode(f.read()).decode()
                 resp=await c.post("https://api.imagga.com/v2/faces/detections",
-                    auth=("acc_",""),data={"image_base64":img_b64})
+                    auth=(os.getenv("IMAGGA_API_KEY", "").split(":") if ":" in os.getenv("IMAGGA_API_KEY", "") else ("", "")),data={"image_base64":img_b64})
                 if resp.status_code==200:
                     faces=resp.json().get("result",{}).get("faces",[])
                     return {"ok":True,"face_count":len(faces),"faces":faces[:5]}
@@ -185,3 +185,5 @@ class VisionAgent:
             "specifications": ["规格1", "规格2"],
             "category": "推测品类",
         }
+
+

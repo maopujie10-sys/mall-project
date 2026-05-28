@@ -1,4 +1,4 @@
-"""Agent Chat API 閳?婢舵碍膩閸ㄥ娅ら懗鍊熺熅閻?v2: Claude + DeepSeek + Ollama 娑撳绱╅幙?""
+﻿"""Agent Chat API 閳?婢舵碍膩閸ㄥ娅ら懗鍊熺熅閻?v2: Claude + DeepSeek + Ollama 娑撳绱╅幙?""
 import httpx, json, re, os
 from datetime import datetime
 from fastapi import APIRouter, Depends
@@ -32,11 +32,21 @@ DEEPSEEK_KEY = os.getenv("DEEPSEEK_API_KEY", "")
 OPENAI_KEY = os.getenv("OPENAI_API_KEY", "")
 
 async def call_ai(messages, model=None):
+    """婢舵碍膩閸ㄥ娅ら懗鍊熺熅閻? Ollama > DeepSeek > Claude > OpenAI (all keys empty = keyword fallback)"""
+    # 所有AI密钥为空时返回None，让主逻辑走关键词匹配
+    if not any([os.getenv("DEEPSEEK_API_KEY"), os.getenv("OPENAI_API_KEY"), CLAUDE_API_KEY]):
+        try:
+            async with httpx.AsyncClient(timeout=5) as c:
+                r = await c.get(f"{OLLAMA_URL}/api/tags")
+                if r.status_code != 200:
+                    return None  # Ollama也不可用，走关键词匹配
+        except:
+            return None  # 所有AI不可用
     """婢舵碍膩閸ㄥ娅ら懗鍊熺熅閻? Ollama > DeepSeek > Claude > OpenAI"""
     model = model or CLAUDE_MODEL
     results = []
 
-    # 1. Ollama 閺堫剙婀村Ο鈥崇€?(娴兼ê鍘涢敍灞藉帳鐠?
+    # 1. Ollama 本地模型(免费优先)
     try:
         async with httpx.AsyncClient(timeout=60) as c:
             # 閺嬪嫬缂?Ollama 閺嶇厧绱￠惃鍕Х閹?            ollama_messages = []
@@ -99,115 +109,17 @@ async def call_ai(messages, model=None):
     if results:
         print(f"[AI] 閹碘偓閺堝膩閸ㄥ銇戠拹? {'; '.join(results)}")
     return None
-
 async def execute_tool(tool_name, params=None):
+    """统一通过 registry 执行所有工具"""
+    from tools.registry import registry as _reg
     params = params or {}
-    res = {"tool": tool_name, "success": False, "data": None, "error": ""}
-    try:
-        if tool_name == "server.status":
-            import psutil as _ps
-            res["data"] = {"cpu": f"{_ps.cpu_percent(0.3)}%", "mem": f"{_ps.virtual_memory().percent}%",
-                           "disk": f"{_ps.disk_usage('/').percent}%"}
-            res["success"] = True
-        elif tool_name == "docker.list":
-            from executor import execute
-            r = await execute("docker ps --format '{{.Names}}: {{.Status}}' 2>/dev/null || echo no-docker")
-            res["data"] = {"containers": r["stdout"].strip()}; res["success"] = True
-        elif tool_name == "nginx.status":
-            from executor import execute
-            r = await execute("pgrep -a nginx 2>/dev/null || echo unknown")
-            res["data"] = {"nginx": r["stdout"][:200]}; res["success"] = True
-        elif tool_name == "site.check":
-            u = params.get("url", MALL_BASE_URL)
-            async with httpx.AsyncClient(timeout=10, follow_redirects=True) as c:
-                r = await c.get(u if "http" in u else f"https://{u}")
-                res["data"] = {"url": u, "status": r.status_code, "ok": r.status_code < 500}; res["success"] = True
-        elif tool_name == "backup.list":
-            from routers.rollback_center import _load_backups
-            bu = _load_backups(); res["data"] = {"backups": bu[-10:], "count": len(bu)}; res["success"] = True
-        elif tool_name == "system.mode":
-            res["data"] = {"mode": state.mode, "pending": len(state.pending_approvals)}; res["success"] = True
-        elif tool_name == "rotation.check":
-            ds = state._data.get("rotation_domains", [])
-            res["data"] = {"domains": [d["domain"] for d in ds[:10]], "count": len(ds)}; res["success"] = True
-        elif tool_name == "mall.products":
-            async with httpx.AsyncClient(timeout=10) as c:
-                r = await c.get(f"{MALL_BASE_URL}/api/products?page=1&size=10")
-                res["data"] = r.json() if r.status_code < 500 else {}; res["success"] = r.status_code < 500
-        elif tool_name == "evolution.report":
-            from tools.evolution import EvolutionEngine
-            res["data"] = EvolutionEngine.evolve_report(); res["success"] = True
-        elif tool_name == "mallbrain.scan":
-            from tools.autopilot_mall import MallBrain
-            ps = await MallBrain.scan_products()
-            res["data"] = {"total": len(ps), "hot": sum(1 for p in ps if p.status == "hot"),
-                           "dead": sum(1 for p in ps if p.status == "dead")}; res["success"] = True
-        elif tool_name == "inspector.run":
-            async with httpx.AsyncClient(timeout=10) as c:
-                r = await c.get(f"{MALL_BASE_URL}/agent/health")
-                res["data"] = {"mall": "ok" if r.status_code == 200 else "down"}; res["success"] = True
-        elif "playwright" in tool_name:
-            from agents.playwright_agent import PlaywrightAgent
-            if tool_name == "playwright.screenshot":
-                er = await PlaywrightAgent.screenshot(params.get("url", MALL_BASE_URL))
-                res["data"] = er; res["success"] = er.get("ok", False)
-            elif tool_name == "playwright.scrape":
-                er = await PlaywrightAgent.scrape_page(params.get("url", MALL_BASE_URL))
-                res["data"] = er; res["success"] = er.get("ok", False)
-            elif tool_name == "playwright.search":
-                er = await PlaywrightAgent.search_and_scrape(params.get("keyword", ""), params.get("site", "ebay"))
-                res["data"] = er; res["success"] = er.get("ok", False)
-            elif tool_name == "playwright.form":
-                res["data"] = {"status": "pending_approval"}; res["success"] = True
-        # ===== 閺傛澘顤? 鐠佹澘绻傞幖婊呭偍 =====
-        elif tool_name == "memory.search":
-            query = params.get("query", params.get("message", ""))
-            memories = DigitalLifeform.search_memory(query, 10)
-            res["data"] = {"memories": [{"role": m["role"], "content": m["content"][:100], "time": m["time"]} for m in memories]}; res["success"] = True
-        elif tool_name == "memory.topics":
-            topics = DigitalLifeform.recall_by_topic(params.get("topic", "閺堝秴濮熼崳?), 10)
-            res["data"] = {"topics": [{"content": t["content"][:100]} for t in topics]}; res["success"] = True
-        elif tool_name == "memory.stats":
-            from tools.memory_store import memory_store
-            res["data"] = memory_store.get_stats(); res["success"] = True
-        elif tool_name == "knowledge.recall":
-            from tools.memory_store import memory_store
-            kb = memory_store.get_knowledge(params.get("category", ""))
-            res["data"] = {"knowledge": kb, "count": len(kb)}; res["success"] = True
-        elif tool_name == "knowledge.learn":
-            from tools.memory_store import memory_store
-            memory_store.set_knowledge(
-                params.get("category", "闁氨鏁?), params.get("key", ""),
-                params.get("value", ""), params.get("confidence", 0.7))
-            res["data"] = {"learned": True}; res["success"] = True
-        else:
-            res["data"] = {"mode": state.mode, "tasks": len(state.tasks)}; res["success"] = True
-    except Exception as e:
-        res["error"] = str(e)
-    return res
-
-INTENT_RULES = [
-    (["server", "cpu", "mem", "disk"], "server.status", "L1"),
-    (["docker", "container"], "docker.list", "L1"),
-    (["nginx"], "nginx.status", "L1"),
-    (["site", "check", "down"], "site.check", "L1"),
-    (["mode", "system"], "system.mode", "L1"),
-    (["backup"], "backup.list", "L1"),
-    (["rotation", "domain"], "rotation.check", "L1"),
-    (["product", "mall"], "mall.products", "L1"),
-    (["evolution", "success"], "evolution.report", "L1"),
-    (["scan", "health", "hot", "dead"], "mallbrain.scan", "L1"),
-    (["inspect", "patrol"], "inspector.run", "L1"),
-    (["鐠佹澘绻?, "閸ョ偛绻?, "鐠侀缍?], "memory.search", "L1"),
-    (["閻儴鐦?, "鐎涳缚绡?, "鐎涳缚绱?], "knowledge.recall", "L1"),
-]
-
-def _match(msg):
-    m = msg.lower()
-    for kw, t, r in INTENT_RULES:
-        for k in kw:
-            if k in m: return t, r
-    return "server.status", "L1"
+    result = await _reg.execute(tool_name, **params)
+    return {
+        "tool": tool_name,
+        "success": result.get("ok", False),
+        "data": result.get("result"),
+        "error": result.get("error", ""),
+    }
 
 @router.get("/models/status")
 async def model_status():
@@ -311,3 +223,5 @@ async def confirm_task(req: ConfirmRequest, _=Depends(verify_token)):
 async def agent_handover(req: HandoverRequest, _=Depends(verify_token)):
     state.mode = "human_control"
     return {"ok": True, "mode": "human_control", "reason": req.reason}
+
+

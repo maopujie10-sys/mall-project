@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="page-container task-center">
     <div class="page-header"><h2>自动任务</h2><p>Cron定时 · 事件触发 · 失败重试 · 执行日志</p></div>
 
@@ -69,7 +69,13 @@ import { ElMessage } from 'element-plus'
 import { agentApi } from '@/api/index'
 const tasks = ref([]); const loading = ref(false)
 async function fetchTasks() { loading.value = true; try { const { data } = await agentApi.get('/tasks/queue'); tasks.value = data.tasks || [] } catch {} finally { loading.value = false } }
-function cancelTask(id) { ElMessage.success('任务已取消') }
+async function cancelTask(id) {
+  try {
+    await agentApi.post('/tasks/queue/' + id + '/cancel')
+    ElMessage.success('任务已取消')
+    fetchTasks()
+  } catch { ElMessage.error('取消失败') }
+}
 onMounted(function() { fetchTasks() })
 </script>
 
