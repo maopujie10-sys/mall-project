@@ -121,7 +121,7 @@ ROTATION_DOMAINS = [
 FLAG_ROUTES = {
     "pc": "/home",      # 用户商城
     "spc": "/seller/",   # 卖家中心
-    "ldy": "/partner",   # 合作伙伴
+    "ldy": "/partner",`n    "admin": "/seller/",`n    "admin": "/seller/",   # 合作伙伴
 }
 
 @app.get("/api/r")
