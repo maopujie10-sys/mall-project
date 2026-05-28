@@ -170,4 +170,67 @@ docker-compose -f docker-compose.unified.yml up -d --build
 
 ---
 
+
+---
+
+## ⚠️ 部署前必读
+
+### 商城前端构建
+docker-compose 需要已构建的商城前端文件：
+\\\ash
+cd mall-app/frontend/pc && npm install && npm run build
+cd mall-app/frontend/h5 && npm install && npm run build
+\\\
+构建产物会输出到 mall-frontend-pc/dist/ 和 mall-frontend-h5/dist/。
+
+### 免费 AI (可选)
+安装 Ollama 本地模型，API 费用永久为零：
+\\\ash
+# 安装 Ollama → https://ollama.com
+ollama pull qwen2.5:7b
+ollama pull deepseek-r1:7b
+\\\
+路由器自动检测 Ollama 在线状态，在线则优先使用免费模型。
+
+### .env 必填项
+\\\ash
+cp .env.example .env
+# 必须修改以下项：
+#   AGENT_TOKEN          — AI Agent 认证令牌
+#   MYSQL_ROOT_PASSWORD  — 数据库密码
+#   EBAY_SANDBOX_APP_ID  — eBay 采集密钥(可选)
+#   EBAY_SANDBOX_CERT_ID — eBay 采集密钥(可选)
+\\\
+
+### 首次启动顺序
+\\\ash
+# 1. 先启动数据库(等待30秒初始化)
+docker-compose -f docker-compose.unified.yml up -d mysql redis
+
+# 2. 再启动全部服务
+docker-compose -f docker-compose.unified.yml up -d
+
+# 3. 查看日志确认无报错
+docker-compose -f docker-compose.unified.yml logs -f ai-agent
+\\\
+
+### Electron 桌面版
+\\\ash
+cd frontend
+npm install
+npm run electron:build  # 打包 .exe (Windows) / .dmg (macOS)
+\\\
+输出在 rontend/release/ 目录。
+
+### PWA 移动端
+手机浏览器访问 http://你的IP/ai/ → 添加到桌面 → 独立运行。
+
+### 已知限制
+- eBay Sandbox 返回测试数据，生产环境需切换 Production 密钥
+- Ollama 7B 模型回复速度约 5-20 秒(纯CPU)，有 GPU 可秒出
+- 采集系统除 eBay 外均为 HTML 爬虫，目标网站改版需更新 CSS 选择器
+- 速率限制默认内存模式，重启丢失计数(有 Redis 则自动切换持久化)
+
+---
+
 *Friday AI OS v4.0 · 超级AI数字生命体*
