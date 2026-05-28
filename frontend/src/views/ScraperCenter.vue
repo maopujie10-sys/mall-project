@@ -179,7 +179,7 @@ async function fetchJobs() {
         collected: j.found \|\| 0,
         imported: j.uploaded \|\| 0,
         status: j.status === 'completed' ? '已完成' : j.status === 'running' ? '采集中...' : '排队中...',
-        statusType: j.status === 'completed' ? 'success' : j.status === 'running' ? 'warning' : 'info',
+        statusType: j.status === 'done' ? 'success' : j.status === 'failed' ? 'danger' : 'warning',
         time: j.created_at || ''
       }
     })

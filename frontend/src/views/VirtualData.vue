@@ -159,20 +159,24 @@ async function runGenerate(type) {
   const gen = generators.find(g => g.key === type)
   if (!gen || gen.running) return
   gen.running = true
-  await new Promise(r => setTimeout(r, 1500))
+  try {
+    const { data } = await generateData(selectedScale.value, type)
+    ElMessage.success(gen.name + `生成完成! ` + JSON.stringify(data.stats))
+  } catch {
+    ElMessage.error(gen.name + `生成失败`)
+  }
   gen.running = false
-  ElMessage.success(`${gen.name}宸茬敓鎴愬畬鎴愶紒`)
 }
 
 async function generateAll() {
   allRunning.value = true
-  for (const gen of generators) {
-    gen.running = true
-    await new Promise(r => setTimeout(r, 800))
-    gen.running = false
+  try {
+    const { data } = await generateData(selectedScale.value)
+    ElMessage.success('馃殌 鍏ㄩ噺铏氭嫙鏁版嵁鐢熸垚瀹屾瘯锛佸晢鍩庣幇鍦ㄧ湅璧锋潵鍍忕湡瀹炲ぇ骞冲彴浜嗭紒')
+  } catch {
+    ElMessage.error('生成失败')
   }
   allRunning.value = false
-  ElMessage.success('馃殌 鍏ㄩ噺铏氭嫙鏁版嵁鐢熸垚瀹屾瘯锛佸晢鍩庣幇鍦ㄧ湅璧锋潵鍍忕湡瀹炲ぇ骞冲彴浜嗭紒')
 }
 
 async function clearAll() {

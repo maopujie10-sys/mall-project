@@ -54,6 +54,19 @@ async def get_job(job_id: str, _=Depends(verify_token)):
         raise HTTPException(404, "任务不存在")
     return {"job": job}
 
+@router.delete("/jobs/{job_id}")
+async def delete_job(job_id: str, _=Depends(verify_token)):
+    """删除采集任务"""
+    await handle_risk("L1", "删除采集任务", job_id)
+    from tools.scraper_engine import _get_jobs
+    jobs = _get_jobs()
+    if job_id not in jobs:
+        raise HTTPException(404, "任务不存在")
+    del jobs[job_id]
+    from state import state
+    state._save()
+    return {"ok": True, "deleted": job_id}
+
 @router.get("/products")
 async def list_products(
     _=Depends(verify_token),
@@ -96,7 +109,12 @@ async def list_sources(_=Depends(verify_token)):
     await handle_risk("L1", "查看采集平台")
     return {
         "sources": [
-            {"id": "ebay", "name": "eBay 全球站", "type": "search", "status": "ready"},
-            {"id": "aliexpress", "name": "AliExpress 速卖通", "type": "search", "status": "ready"},
+            {"id": "ebay",     "name": "eBay 全球站",       "type": "api",   "status": "ready"},
+            {"id": "amazon",   "name": "Amazon 全球站",     "type": "scrape","status": "ready"},
+            {"id": "aliexpress","name": "AliExpress 速卖通", "type": "scrape","status": "ready"},
+            {"id": "shopee",   "name": "Shopee 虾皮",       "type": "hybrid","status": "ready"},
+            {"id": "lazada",   "name": "Lazada 来赞达",     "type": "scrape","status": "ready"},
+            {"id": "wish",     "name": "Wish 全球站",       "type": "scrape","status": "ready"},
+            {"id": "tiktok",   "name": "TikTok Shop",       "type": "scrape","status": "ready"},
         ]
     }
