@@ -129,11 +129,10 @@
           <router-link to="/plugins" class="nav-item" :class="{ active: isActive('/plugins') }"><span class="nav-icon">🧩</span><span>技能市场</span></router-link>
         </div>
       </nav>
-        </div>
-      </header>
-
+      </aside>
       <<button class=mobile-menu-btn @click=mobileMenuOpen=!mobileMenuOpen>H</button>main class="content-area">
-        <router-view v-slot="{ Component }">
+<button class="mobile-menu-btn" @click="mobileMenuOpen=!mobileMenuOpen">H</button>
+<main class="content-area">
           <transition name="page-fade" mode="out-in">
             <component :is="Component" />
           </transition>
