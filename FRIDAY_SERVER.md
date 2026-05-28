@@ -1,6 +1,6 @@
 ﻿# 🖥️ Friday AI OS — 服务器端 AI 记忆
 
-> 最后更新: 2026-05-28 | 运行环境: server
+> 最后更新: 2026-05-29 | 运行环境: server
 
 ## 🧬 当前人格
 - 类型: 均衡型 · 全面发展
@@ -15,6 +15,16 @@
 6. 客服自动回复 + 轮值域名监控
 
 ## 最近改动
+- 2026-05-29: [部署+修复] 落地页+商家H5部署+轮值域名全量替换+ZooKeeper恢复
+  - 落地页: landing/* → /opt/landing/，nginx location = / 指向轮值引擎入口
+  - 商家H5: merchant-h5/dist/test/* → /opt/tomcat8/webapps/www/，nginx /www/ 路由
+  - 轮值域名: 8个假tiktokmall.*域名替换为9个真实.eu.cc域名(chxhx/drrgr/drrimrf/drriiu/duomi/dengruihan/yyawzx/gamed)
+  - nginx: server_name 更新为37个域名(9组×4子域名)，HTTP+HTTPS均已更新，valid_referers改为 ~\.eu\.cc$
+  - ZooKeeper: 数据文件损坏(/var/lib/zookeeper/version-2 txid不兼容)→清理重启，现在standalone模式正常运行
+  - favicon.ico: 生成36字节合法ICO文件→/opt/landing/favicon.ico，nginx location = /favicon.ico 指向此文件，轮值引擎健康探测通过
+  - AI后端: rotation_panel.py _get_domains()函数定义丢失→补回，docker cp+restart使配置生效
+  - API: /rotation/two-level/public-config 返回正确9个域名配置
+  - 全9域名SSL已覆盖(certbot证书包含全部.eu.cc域名)，全6路由HTTP 200
 - 2026-05-28: [全量暴力测试] 商城前台PC(26路由)+WAP(23路由)+WWW+Seller+Admin全量测试通过。商品图片全量COS零S3死链。matashop2.svg创建修复favicon 404。
 - 2026-05-28: [API修复×6] rotation/domains超时(改缓存)、friday/models/status 500(缺await)、task_queue补/stats端点、customer_panel补read/read-all/transfer端点、self_service注册customer_order、前端task.js/customer.js路径修正
 - 2026-05-28: [磁盘清理] 97%→70%，释放13GB: Docker构建缓存4.7G、SQL压缩2.8G、旧备份1.9G、npm/playwright 1.5G、系统日志450M、临时文件等
