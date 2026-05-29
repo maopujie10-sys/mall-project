@@ -14,13 +14,58 @@
     <FloatingNav />
     <FloatingAI />
     <nav class="mobile-bottom-nav">
-      <router-link to="/friday" class="mb-item"><span>a</span><span>Brain</span></router-link>
-      <router-link to="/chat" class="mb-item"><span>b</span><span>Chat</span></router-link>
+      <router-link to="/friday" class="mb-item"><span>🧠</span><span>大脑</span></router-link>
+      <router-link to="/chat" class="mb-item"><span>💬</span><span>对话</span></router-link>
+      <router-link to="/dashboard" class="mb-item"><span>📊</span><span>总览</span></router-link>
+      <router-link to="/server" class="mb-item"><span>🖥️</span><span>服务器</span></router-link>
+      <router-link to="/mall" class="mb-item"><span>🏬</span><span>商城</span></router-link>
     </nav>
   </div>
 </template>
 
-<script setup></script>
+<script setup>
+import { ref, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
+import { useSystemStore } from '@/stores/system'
+import NeuralNetwork3D from '@/components/NeuralNetwork3D.vue'
+import FloatingNav from '@/components/FloatingNav.vue'
+import FloatingAI from '@/components/FloatingAI.vue'
+
+const route = useRoute()
+const systemStore = useSystemStore()
+const brainActive = ref(false)
+const brainThinking = ref(false)
+const brainSpeaking = ref(false)
+const brainPulse = ref(false)
+
+async function autoLogin() {
+  const token = localStorage.getItem('agent_token')
+  if (token) return token
+  try {
+    const res = await fetch('/agent/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: 'admin', password: 'admin123' })
+    })
+    if (res.ok) {
+      const data = await res.json()
+      if (data.access_token) {
+        localStorage.setItem('agent_token', data.access_token)
+        localStorage.setItem('friday_token', data.access_token)
+      }
+    }
+  } catch (e) {}
+}
+
+onMounted(async () => {
+  await autoLogin()
+  systemStore.fetchStatus()
+  window.addEventListener('brain:active', (e) => { brainActive.value = e.detail })
+  window.addEventListener('brain:thinking', (e) => { brainThinking.value = e.detail })
+  window.addEventListener('brain:speaking', () => { brainSpeaking.value = true; setTimeout(() => { brainSpeaking.value = false }, 2000) })
+  window.addEventListener('brain:pulse', () => { brainPulse.value = true; setTimeout(() => { brainPulse.value = false }, 600) })
+})
+</script>
 <style>
 /* ===== 科幻全屏布局 ===== */
 .sci-fi-shell {
@@ -74,19 +119,6 @@
 @media (max-width: 768px) {
   .mobile-bottom-nav { display: flex; }
   .content-overlay { bottom: 60px; }
-}
-
-/* 3D大脑联动脉冲 */
-.neural-bg.brain-active {
-  filter: brightness(1.15) saturate(1.2);
-  transition: filter 0.5s ease;
-}
-.neural-bg.brain-pulse {
-  animation: brainShock 0.6s ease-out;
-}
-@keyframes brainShock {
-  0% { filter: brightness(2) saturate(2); transform: scale(1.02); }
-  100% { filter: brightness(1.15) saturate(1.2); transform: scale(1); }
 }
 
 /* 3D大脑联动脉冲 */
