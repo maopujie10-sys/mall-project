@@ -132,6 +132,7 @@ const categories = reactive([
       { to: 'audit', icon: '📋', label: '审计日志' },
       { to: 'security-scan', icon: '🛡️', label: '安全扫描' },
       { to: 'capabilities', icon: '🔧', label: 'AI能力状态' },
+      { to: 'key-manager', icon: '🔑', label: 'API Key管理' },
     ]
   }
 ])

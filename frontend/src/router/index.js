@@ -70,6 +70,7 @@ const routes = [
       { path: "ab-test", name: "ABTestPanel", component: () => import("@/views/ABTestPanel.vue"), meta: { title: "A/B测试" } },
       { path: "security-scan", name: "SecurityScan", component: () => import("@/views/SecurityScan.vue"), meta: { title: "安全扫描" } },
       { path: 'capabilities', name: 'Capabilities', component: () => import('@/views/Capabilities.vue'), meta: { title: 'AI能力状态' } },
+      { path: 'key-manager', name: 'KeyManager', component: () => import('@/views/KeyManager.vue'), meta: { title: 'API Key管理' } },
     ],
   },
 ]

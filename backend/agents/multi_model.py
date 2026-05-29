@@ -133,7 +133,8 @@ class ModelRouter:
 
         headers = {"Content-Type": "application/json"}
         if not cfg.is_local:
-            api_key = os.getenv(cfg.api_key_env, "")
+            from tools.key_manager import key_manager
+            api_key = key_manager.get_value(cfg.api_key_env) or os.getenv(cfg.api_key_env, '')
             if not api_key:
                 return {"error": f"{cfg.provider} API Key 未配置"}
             headers["Authorization"] = f"Bearer {api_key}"
