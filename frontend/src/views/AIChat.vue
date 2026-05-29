@@ -246,37 +246,59 @@ async function sendMessage() {
   loading.value = true
 
   try {
-    const r = await agentApi.post('/agent/chat', { message: text })
-    const fullText = r.response || r.reply || r.message || '执行完毕'
-    const steps = r.steps || []
-    const needConfirm = r.need_confirm || false
-    const risk = r.risk_level || ''
-
-    // 添加AI消息，先显示打字效果
-    const msgIdx = messages.value.length
-    messages.value.push({
-      role: 'ai', text: fullText, displayText: '', time: now(),
-      typing: true, steps, needConfirm, risk,
-      result: steps.length ? JSON.stringify(steps, null, 2) : '',
+    // 流式对话 (SSE)
+    const token = localStorage.getItem('agentToken') || ''
+    const response = await fetch('/agent/chat/stream', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Agent-Token': token },
+      body: JSON.stringify({ message: text })
     })
 
-    // 打字机效果：逐字显示
-    let charIdx = 0
-    const typeInterval = setInterval(() => {
-      if (charIdx < fullText.length) {
-        messages.value[msgIdx].displayText = fullText.substring(0, charIdx + 1)
-        charIdx++
-        scrollBottom()
-      } else {
-        clearInterval(typeInterval)
-        messages.value[msgIdx].typing = false
-        messages.value[msgIdx].displayText = fullText
-      }
-    }, 30) // 每30ms一个字
+    const msgIdx = messages.value.length
+    messages.value.push({
+      role: 'ai', text: '', displayText: '', time: now(),
+      typing: true, steps: [], needConfirm: false, risk: '',
+      result: ''
+    })
 
+    const reader = response.body.getReader()
+    const decoder = new TextDecoder()
+    let fullText = ''
+
+    while (true) {
+      const { done, value } = await reader.read()
+      if (done) break
+      const chunk = decoder.decode(value, { stream: true })
+      const lines = chunk.split('\n')
+      for (const line of lines) {
+        if (line.startsWith('data: ')) {
+          const data = line.slice(6)
+          if (data === '[DONE]') break
+          try {
+            const parsed = JSON.parse(data)
+            if (parsed.token) {
+              fullText += parsed.token
+              messages.value[msgIdx].displayText = fullText
+              messages.value[msgIdx].text = fullText
+              scrollBottom()
+            }
+          } catch(e) {}
+        }
+      }
+    }
+    messages.value[msgIdx].typing = false
     fetchTasks()
   } catch (e) {
-    messages.value.push({ role: 'ai', text: '❌ ' + (e.response?.data?.detail || e.message), time: now() })
+    // 流式失败回退到普通API
+    try {
+      const r = await agentApi.post('/agent/chat', { message: text })
+      const fullText = r.response || r.reply || r.message || '执行完毕'
+      const msgIdx = messages.value.length
+      messages.value.push({ role: 'ai', text: fullText, displayText: fullText, time: now(), typing: false, steps: r.steps||[], needConfirm: r.need_confirm||false, risk: r.risk_level||'', result: '' })
+      fetchTasks()
+    } catch(e2) {
+      messages.value.push({ role: 'ai', text: '❌ ' + (e2.response?.data?.detail || e2.message), time: now() })
+    }
   }
   loading.value = false
   scrollBottom()

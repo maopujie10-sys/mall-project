@@ -186,6 +186,81 @@ async def model_status():
         pass
     return {"ok": True, "engines": status}
 
+
+# === 流式对话 (SSE) ===
+from fastapi.responses import StreamingResponse
+import json as _json
+
+async def _stream_ollama(messages):
+    """Ollama 流式"""
+    async with httpx.AsyncClient(timeout=120) as c:
+        ollama_msgs = []
+        for m in messages:
+            if m["role"] == "system":
+                ollama_msgs.append({"role": "system", "content": m["content"]})
+            else:
+                ollama_msgs.append({"role": "user", "content": m["content"]})
+        async with c.stream("POST", f"{OLLAMA_URL}/api/chat",
+            json={"model": OLLAMA_MODEL, "messages": ollama_msgs, "stream": True}) as r:
+            async for line in r.aiter_lines():
+                if line:
+                    try:
+                        chunk = _json.loads(line)
+                        token = chunk.get("message", {}).get("content", "")
+                        if token:
+                            yield f"data: {_json.dumps({'token': token})}\n\n"
+                    except:
+                        pass
+            yield "data: [DONE]\n\n"
+
+async def _stream_openai(messages, api_key, base_url="https://api.openai.com/v1", model="gpt-4o-mini"):
+    """OpenAI兼容流式 (DeepSeek/302AI/OpenAI)"""
+    async with httpx.AsyncClient(timeout=120) as c:
+        async with c.stream("POST", f"{base_url}/chat/completions",
+            headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
+            json={"model": model, "messages": messages, "stream": True, "max_tokens": 2048}) as r:
+            async for line in r.aiter_lines():
+                if line and line.startswith("data: "):
+                    data = line[6:]
+                    if data == "[DONE]":
+                        yield "data: [DONE]\n\n"
+                        break
+                    try:
+                        chunk = _json.loads(data)
+                        delta = chunk.get("choices", [{}])[0].get("delta", {})
+                        token = delta.get("content", "")
+                        if token:
+                            yield f"data: {_json.dumps({'token': token})}\n\n"
+                    except:
+                        pass
+
+@router.post("/chat/stream")
+async def agent_chat_stream(req: ChatRequest, _=Depends(verify_token)):
+    """AI流式对话 (SSE)"""
+    tools = registry.list_all()
+    tl = "\n".join([f"- {t.name}: {t.display_name}" for t in tools[:50]])
+    msgs = [
+        {"role": "system", "content": SYSTEM_PROMPT + "\n\nTools:\n" + tl},
+        {"role": "user", "content": req.message}
+    ]
+    
+    async def generate():
+        try:
+            # 优先 DeepSeek 流式
+            if DEEPSEEK_KEY:
+                async for chunk in _stream_openai(msgs, DEEPSEEK_KEY, "https://api.deepseek.com/v1", "deepseek-chat"):
+                    yield chunk
+                return
+            # 其次 Ollama 流式
+            async for chunk in _stream_ollama(msgs):
+                yield chunk
+        except Exception as e:
+            yield f"data: {_json.dumps({'error': str(e)[:100]})}\n\n"
+            yield "data: [DONE]\n\n"
+    
+    return StreamingResponse(generate(), media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
+
 @router.post("/chat")
 async def agent_chat(req: ChatRequest, _=Depends(verify_token)):
     """AI对话主入口"""

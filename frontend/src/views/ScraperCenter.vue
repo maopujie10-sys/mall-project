@@ -118,10 +118,15 @@
       <el-form label-width="80px">
         <el-form-item label="平台">
           <el-select v-model="newJob.platform" style="width:100%">
-            <el-option label="eBay" value="eBay"/>
-            <el-option label="AliExpress" value="AliExpress"/>
-            <el-option label="Amazon" value="Amazon"/>
-            <el-option label="1688" value="1688"/>
+            <el-option label="eBay" value="ebay"/>
+            <el-option label="AliExpress" value="aliexpress"/>
+            <el-option label="Amazon" value="amazon"/>
+            <el-option label="Wish" value="wish"/>
+            <el-option label="Shopee" value="shopee"/>
+            <el-option label="Lazada" value="lazada"/>
+            <el-option label="TikTok Shop" value="tiktok"/>
+            <el-option label="淘宝/天猫" value="taobao"/>
+            <el-option label="1688阿里巴巴" value="alibaba1688"/>
           </el-select>
         </el-form-item>
         <el-form-item label="关键词">

@@ -1028,6 +1028,147 @@ class TikTokShopAdapter(BaseScrapeAdapter):
 
 
 # ═══════════════════════════════════════
+#  淘宝适配器
+# ═══════════════════════════════════════
+
+class TaobaoAdapter(BaseScrapeAdapter):
+    """淘宝/天猫 — 反反爬增强版"""
+    name = "taobao"
+    
+    def __init__(self):
+        super().__init__("taobao", "taobao.com")
+    
+    async def search(self, keyword: str, max_pages: int = 3, session: httpx.AsyncClient = None) -> list[str]:
+        urls = []
+        close_session = session is None
+        if close_session:
+            session = httpx.AsyncClient(timeout=25, follow_redirects=True)
+        for page in range(1, min(max_pages + 1, 5)):
+            s_param = 44 * (page - 1)
+            url = f"https://s.taobao.com/search?q={quote_plus(keyword)}&s={s_param}"
+            r = await self._safe_get(session, url, keyword, is_search=True)
+            if not r:
+                continue
+            soup = BeautifulSoup(r.text, "html.parser")
+            for link in soup.select("a[href*='item.taobao.com'], a[href*='detail.tmall.com']"):
+                href = link.get("href", "")
+                if "item.taobao.com" in href or "detail.tmall.com" in href:
+                    full = urljoin("https://item.taobao.com", href.split("?")[0])
+                    if full not in urls:
+                        urls.append(full)
+            await self._delay(is_search=True)
+        if close_session:
+            await session.aclose()
+        return urls
+    
+    async def extract_product(self, url: str, session: httpx.AsyncClient = None) -> Optional[ScrapedProduct]:
+        close_session = session is None
+        if close_session:
+            session = httpx.AsyncClient(timeout=25, follow_redirects=True)
+        try:
+            r = await self._safe_get(session, url, max_retries=2)
+            if not r:
+                return None
+            soup = BeautifulSoup(r.text, "html.parser")
+            title = ""
+            title_el = soup.select_one("h1") or soup.select_one("[class*='tb-main-title']") or soup.select_one("[class*='ItemTitle']")
+            if title_el:
+                title = title_el.get_text(strip=True)
+            price = 0.0
+            price_el = soup.select_one("[class*='tb-rmb-num']") or soup.select_one("[class*='price']") or soup.select_one("em[class*='price']")
+            if price_el:
+                price = self._parse_price(price_el.get_text(strip=True))
+            org_price = 0.0
+            org_el = soup.select_one("[class*='original-price']") or soup.select_one("[class*='origin-price']")
+            if org_el:
+                org_price = self._parse_price(org_el.get_text(strip=True))
+            images = self._extract_images(soup, url)
+            sales = 0
+            sold_el = soup.select_one("[class*='sale-count']") or soup.select_one("[class*='sell-counter']") or soup.select_one("[class*='sold']")
+            if sold_el:
+                nums = re.findall(r'\d[\d,]*', sold_el.get_text())
+                if nums:
+                    sales = int(nums[0].replace(",", ""))
+            return ScrapedProduct(
+                platform="taobao", source_url=url, title=title,
+                price=price, original_price=org_price, currency="CNY",
+                images=images, sales_count=sales, crawled_at=datetime.now().isoformat()
+            )
+        except Exception:
+            return None
+
+
+# ═══════════════════════════════════════
+#  1688阿里巴巴适配器
+# ═══════════════════════════════════════
+
+class Alibaba1688Adapter(BaseScrapeAdapter):
+    """1688阿里巴巴 — 反反爬增强版"""
+    name = "alibaba1688"
+    
+    def __init__(self):
+        super().__init__("alibaba1688", "1688.com")
+    
+    async def search(self, keyword: str, max_pages: int = 3, session: httpx.AsyncClient = None) -> list[str]:
+        urls = []
+        close_session = session is None
+        if close_session:
+            session = httpx.AsyncClient(timeout=25, follow_redirects=True)
+        for page in range(1, min(max_pages + 1, 5)):
+            url = f"https://s.1688.com/selloffer/offer_search.htm?keywords={quote_plus(keyword)}&beginPage={page}"
+            r = await self._safe_get(session, url, keyword, is_search=True)
+            if not r:
+                continue
+            soup = BeautifulSoup(r.text, "html.parser")
+            for link in soup.select("a[href*='detail.1688.com']"):
+                href = link.get("href", "")
+                if "detail.1688.com" in href:
+                    full = urljoin("https://detail.1688.com", href.split("?")[0])
+                    if full not in urls:
+                        urls.append(full)
+            await self._delay(is_search=True)
+        if close_session:
+            await session.aclose()
+        return urls
+    
+    async def extract_product(self, url: str, session: httpx.AsyncClient = None) -> Optional[ScrapedProduct]:
+        close_session = session is None
+        if close_session:
+            session = httpx.AsyncClient(timeout=25, follow_redirects=True)
+        try:
+            r = await self._safe_get(session, url, max_retries=2)
+            if not r:
+                return None
+            soup = BeautifulSoup(r.text, "html.parser")
+            title = ""
+            title_el = soup.select_one("h1") or soup.select_one("[class*='offer-title']") or soup.select_one("[class*='product-title']")
+            if title_el:
+                title = title_el.get_text(strip=True)
+            price = 0.0
+            price_el = soup.select_one("[class*='price-original']") or soup.select_one("[class*='offer-price']") or soup.select_one("span[class*='price']")
+            if price_el:
+                price = self._parse_price(price_el.get_text(strip=True))
+            org_price = 0.0
+            org_el = soup.select_one("[class*='origin-price']") or soup.select_one("[class*='market-price']")
+            if org_el:
+                org_price = self._parse_price(org_el.get_text(strip=True))
+            images = self._extract_images(soup, url)
+            sales = 0
+            sold_el = soup.select_one("[class*='sale-count']") or soup.select_one("[class*='sold-num']") or soup.select_one("[class*='trade-num']")
+            if sold_el:
+                nums = re.findall(r'\d[\d,]*', sold_el.get_text())
+                if nums:
+                    sales = int(nums[0].replace(",", ""))
+            return ScrapedProduct(
+                platform="alibaba1688", source_url=url, title=title,
+                price=price, original_price=org_price, currency="CNY",
+                images=images, sales_count=sales, crawled_at=datetime.now().isoformat()
+            )
+        except Exception:
+            return None
+
+
+# ═══════════════════════════════════════
 #  采集引擎
 # ═══════════════════════════════════════
 
@@ -1039,6 +1180,8 @@ ADAPTERS = {
     "shopee": ShopeeAdapter(),        # 反反爬(API优先)
     "lazada": LazadaAdapter(),        # 反反爬
     "tiktok": TikTokShopAdapter(),    # 反反爬
+    "taobao": TaobaoAdapter(),          # 反反爬
+    "alibaba1688": Alibaba1688Adapter(), # 反反爬
 }
 
 PRIORITY_SOURCES = [
@@ -1049,6 +1192,8 @@ PRIORITY_SOURCES = [
     "wish",      # 反反爬 — 低价爆款
     "lazada",    # 反反爬 — 东南亚老二
     "tiktok",   # 反反爬 — 海外抖音电商新贵
+    "taobao",     # 反反爬 — 中国最大C2C
+    "alibaba1688", # 反反爬 — 中国最大B2B批发
 ]
 
 def _get_jobs():

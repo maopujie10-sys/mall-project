@@ -1,161 +1,209 @@
 ﻿<template>
   <div class="trend-page">
     <div class="page-header">
-      <div>
-        <h1>📡 热点监控</h1>
-        <p>实时追踪抖音/B站/微博/X/YouTube热点 · AI自动分析趋势</p>
-      </div>
-      <div class="header-actions">
-        <el-select v-model="activePlatform" placeholder="平台" size="small" style="width:130px">
-          <el-option label="全部平台" value="all"/>
-          <el-option label="微博" value="weibo"/>
-          <el-option label="抖音" value="douyin"/>
-          <el-option label="B站" value="bilibili"/>
-          <el-option label="X/Twitter" value="twitter"/>
-        </el-select>
-        <el-button type="primary" size="small" @click="refreshTrends" :loading="loading">
-          <el-icon><Refresh /></el-icon> 刷新
-        </el-button>
-      </div>
+      <div><h1>📡 竞品监控</h1><p>价格变动告警 · 促销追踪 · 趋势分析 · 新品发现</p></div>
+      <el-button type="primary" @click="showAddDialog = true">+ 添加竞品</el-button>
     </div>
 
-    <!-- 平台热点卡片 -->
+    <!-- 统计概要 -->
     <el-row :gutter="16" style="margin-bottom:20px">
-      <el-col :span="8" v-for="(pf, key) in filteredTrends" :key="key">
-        <el-card shadow="never" class="trend-card" :style="{ borderTop: '2px solid ' + pf.color }">
-          <template #header>
-            <div class="trend-header">
-              <span>{{ pf.icon }} {{ pf.name }}</span>
-              <el-tag size="small">{{ pf.trends?.length || 0 }}条</el-tag>
-            </div>
-          </template>
-          <div class="trend-list">
-            <div v-for="t in (pf.trends || []).slice(0, 8)" :key="t.rank" class="trend-item">
-              <span class="trend-rank" :class="{ top3: t.rank <= 3 }">{{ t.rank }}</span>
-              <span class="trend-title">{{ t.title }}</span>
-              <span class="trend-heat">{{ formatHeat(t.hot_score) }}</span>
-            </div>
-          </div>
-        </el-card>
+      <el-col :span="4" v-for="c in summaryCards" :key="c.label">
+        <el-card shadow="never" class="sm-card"><div class="sm-val">{{ c.value }}</div><div class="sm-lbl">{{ c.label }}</div></el-card>
       </el-col>
     </el-row>
 
-    <!-- AI分析 -->
+    <!-- 竞品列表 -->
+    <el-card shadow="never" style="margin-bottom:20px">
+      <template #header>📋 监控列表 ({{ tracks.length }})</template>
+      <el-table :data="tracks" size="small">
+        <el-table-column prop="product" label="商品名" min-width="150"/>
+        <el-table-column prop="platform" label="平台" width="100"/>
+        <el-table-column label="当前价" width="120">
+          <template #default="{row}">
+            <span v-if="row.price_history && row.price_history.length">
+              {{ row.price_history[row.price_history.length-1].price }} {{ row.price_history[row.price_history.length-1].currency || 'USD' }}
+            </span>
+            <span v-else>-</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="目标价" width="100"><template #default="{row}">{{ row.target_price || '-' }}</template></el-table-column>
+        <el-table-column label="变动" width="80">
+          <template #default="{row}">
+            <el-tag v-if="row.lastChange" :type="row.lastChange>0?'danger':'success'" size="small">{{ row.lastChange }}%</el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="告警" width="80"><template #default="{row}">{{ (row.alerts||[]).length }}</template></el-table-column>
+        <el-table-column label="促销" width="80"><template #default="{row}">{{ (row.promotions||[]).length }}</template></el-table-column>
+        <el-table-column label="操作" width="200">
+          <template #default="{row}">
+            <el-button size="small" link @click="showPriceDialog(row)">💰记录价格</el-button>
+            <el-button size="small" link @click="showPromoDialog(row)">🎉记录促销</el-button>
+            <el-button size="small" link type="danger" @click="doRemove(row.id)">删除</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+    </el-card>
+
+    <!-- 价格趋势 -->
+    <el-card shadow="never" style="margin-bottom:20px" v-if="trends.length">
+      <template #header>📈 价格趋势</template>
+      <el-table :data="trends" size="small">
+        <el-table-column prop="product" label="商品"/>
+        <el-table-column prop="platform" label="平台" width="100"/>
+        <el-table-column prop="first_price" label="初始价" width="100"/>
+        <el-table-column prop="last_price" label="最新价" width="100"/>
+        <el-table-column label="变动" width="100">
+          <template #default="{row}">
+            <el-tag :type="row.trend==='up'?'danger':row.trend==='down'?'success':''" size="small">{{ row.change_pct }}%</el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="趋势" width="80">
+          <template #default="{row}">{{ row.trend==='up'?'📈上涨':row.trend==='down'?'📉下跌':'➡️平稳' }}</template>
+        </el-table-column>
+      </el-table>
+    </el-card>
+
+    <!-- 价格告警 + 促销 -->
     <el-row :gutter="16">
       <el-col :span="12">
         <el-card shadow="never">
-          <template #header><span>🔮 AI趋势预测</span></template>
-          <div class="predict-grid">
-            <div v-for="cat in predictions" :key="cat.name" class="predict-card">
-              <div class="predict-name">{{ cat.name }}</div>
-              <div class="predict-items">
-                <el-tag v-for="item in cat.items" :key="item" size="small" class="predict-tag">{{ item }}</el-tag>
-              </div>
-            </div>
-          </div>
+          <template #header>⚠️ 价格告警 (近7天)</template>
+          <el-timeline v-if="alerts.length">
+            <el-timeline-item v-for="a in alerts.slice(-10).reverse()" :key="a.time" :timestamp="a.time?.substr(0,16)" :type="a.severity==='P1'?'danger':'warning'">
+              {{ a.product }}: {{ a.from }}→{{ a.to }} ({{ a.change_pct }}%)
+            </el-timeline-item>
+          </el-timeline>
+          <el-empty v-else description="无告警"/>
         </el-card>
       </el-col>
       <el-col :span="12">
         <el-card shadow="never">
-          <template #header><span>🛒 商城建议</span></template>
-          <div class="suggest-list">
-            <div v-for="s in suggestions" :key="s" class="suggest-item">
-              <el-icon color="#667eea"><CircleCheckFilled /></el-icon>
-              <span>{{ s }}</span>
-            </div>
-          </div>
+          <template #header>🎉 活跃促销</template>
+          <el-timeline v-if="promos.length">
+            <el-timeline-item v-for="p in promos.slice(-10).reverse()" :key="p.time" :timestamp="p.time?.substr(0,16)">
+              {{ p.product }}: {{ p.title }} <el-tag v-if="p.discount" size="small">{{ p.discount }}</el-tag>
+            </el-timeline-item>
+          </el-timeline>
+          <el-empty v-else description="无促销"/>
         </el-card>
       </el-col>
     </el-row>
+
+    <!-- 添加竞品对话框 -->
+    <el-dialog v-model="showAddDialog" title="添加竞品监控" width="450px">
+      <el-form label-width="80px">
+        <el-form-item label="商品名称"><el-input v-model="addForm.product_name"/></el-form-item>
+        <el-form-item label="平台"><el-select v-model="addForm.platform" style="width:100%">
+          <el-option label="eBay" value="ebay"/><el-option label="Amazon" value="amazon"/>
+          <el-option label="AliExpress" value="aliexpress"/><el-option label="Shopee" value="shopee"/>
+          <el-option label="淘宝" value="taobao"/><el-option label="1688" value="alibaba1688"/>
+        </el-select></el-form-item>
+        <el-form-item label="商品链接"><el-input v-model="addForm.url"/></el-form-item>
+        <el-form-item label="目标价格"><el-input-number v-model="addForm.target_price" :min="0"/></el-form-item>
+        <el-form-item label="分类"><el-input v-model="addForm.category"/></el-form-item>
+      </el-form>
+      <template #footer><el-button @click="showAddDialog=false">取消</el-button><el-button type="primary" @click="doAdd">添加</el-button></template>
+    </el-dialog>
+
+    <!-- 记录价格对话框 -->
+    <el-dialog v-model="showPriceDlg" :title="'记录价格: '+priceForm.product" width="350px">
+      <el-form label-width="80px">
+        <el-form-item label="价格"><el-input-number v-model="priceForm.price" :min="0" :precision="2"/></el-form-item>
+        <el-form-item label="币种"><el-select v-model="priceForm.currency"><el-option label="USD" value="USD"/><el-option label="CNY" value="CNY"/></el-select></el-form-item>
+      </el-form>
+      <template #footer><el-button @click="showPriceDlg=false">取消</el-button><el-button type="primary" @click="doRecordPrice">记录</el-button></template>
+    </el-dialog>
+
+    <!-- 记录促销对话框 -->
+    <el-dialog v-model="showPromoDlg" :title="'记录促销: '+promoForm.product" width="400px">
+      <el-form label-width="80px">
+        <el-form-item label="标题"><el-input v-model="promoForm.title"/></el-form-item>
+        <el-form-item label="折扣"><el-input v-model="promoForm.discount" placeholder="如: 30% OFF"/></el-form-item>
+      </el-form>
+      <template #footer><el-button @click="showPromoDlg=false">取消</el-button><el-button type="primary" @click="doRecordPromo">记录</el-button></template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
-import { agentApi } from '@/api/index'
+import { addTrack, listTracks, removeTrack, recordPrice, recordPromotion, getPriceAlerts, getPriceTrends, getActivePromotions, getCompetitorSummary } from '@/api/competitor'
 
-const loading = ref(false)
-const activePlatform = ref('all')
+const tracks = ref([])
+const alerts = ref([])
+const trends = ref([])
+const promos = ref([])
+const summary = ref({})
+const showAddDialog = ref(false)
+const showPriceDlg = ref(false)
+const showPromoDlg = ref(false)
 
-const trends = reactive({
-  weibo: { name:'微博热搜', icon:'📢', color:'#ff4d4f', trends:[] },
-  douyin: { name:'抖音热点', icon:'🎵', color:'#010101', trends:[] },
-  bilibili: { name:'B站热门', icon:'📺', color:'#fb7299', trends:[] },
-  youtube: { name:"YouTube热门", icon:"▶️", color:"#ff0000", trends:[] },
-  twitter: { name:"X/Twitter趋势", icon:"🐦", color:"#1da1f2", trends:[] },
-  google: { name:"Google Trends", icon:"🔍", color:"#4285f4", trends:[] },
+const addForm = ref({ product_name:'', platform:'ebay', url:'', target_price:0, category:'' })
+const priceForm = ref({ trackId:'', product:'', price:0, currency:'USD' })
+const promoForm = ref({ trackId:'', product:'', title:'', discount:'' })
 
-})
+const summaryCards = computed(() => [
+  { label:'监控总数', value: summary.value.total_tracks || 0 },
+  { label:'活跃', value: summary.value.active_tracks || 0 },
+  { label:'价格变动(7d)', value: summary.value.price_changes_7d || 0 },
+  { label:'总告警', value: summary.value.total_alerts || 0 },
+  { label:'总促销', value: summary.value.total_promotions || 0 },
+  { label:'平台数', value: Object.keys(summary.value.by_platform||{}).length || 0 },
+])
 
-const filteredTrends = computed(() => { if (activePlatform.value === 'all') return trends; const f = {}; if (trends[activePlatform.value]) f[activePlatform.value] = trends[activePlatform.value]; return f })
-
-const predictions = ref([])
-const suggestions = ref([])
-
-function formatHeat(n) {
-  if (!n) return ''
-  if (n > 1000000) return (n/10000).toFixed(0) + '万'
-  return (n/10000).toFixed(1) + '万'
-}
-
-async function refreshTrends() {
-  loading.value = true
+async function loadAll() {
   try {
-    const res = await agentApi.get('/agent/friday/trends')
-    if (res?.data?.ok && res?.data?.trends) {
-      Object.keys(trends).forEach(key => {
-        if (res.data.trends[key]) {
-          trends[key].trends = res.data.trends[key].map((t, i) => ({
-            rank: i + 1,
-            title: t.title || t.name || '',
-            hot_score: t.hot_score || t.heat || 0,
-          }))
-        }
-      })
-    }
-    // 获取预测数据
-    const predRes = await agentApi.get('/agent/friday/trends/predict', { params: { category: '科技' } })
-    if (predRes?.data?.ok && predRes?.data?.predictions) {
-      predictions.value = [{ name:'AI预测', items: predRes.data.predictions.slice(0, 6) }]
-    } else {
-      predictions.value = []
-    }
-    ElMessage.success('热点已更新')
-  } catch {
-    ElMessage.error('获取热点数据失败')
-  }
-  loading.value = false
+    const [t, a, tr, p, s] = await Promise.all([
+      listTracks(), getPriceAlerts(7), getPriceTrends(), getActivePromotions(), getCompetitorSummary()
+    ])
+    tracks.value = (t.data.tracks || []).map(trk => {
+      const h = trk.price_history || []
+      const last = h.length >= 2 ? h[h.length-1] : null
+      const prev = h.length >= 2 ? h[h.length-2] : null
+      return { ...trk, lastChange: last && prev && prev.price ? ((last.price - prev.price) / prev.price * 100).toFixed(1) : null }
+    })
+    alerts.value = a.data.alerts || []
+    trends.value = tr.data.trends || []
+    promos.value = p.data.promotions || []
+    summary.value = s.data || {}
+  } catch(e) {}
 }
 
-onMounted(refreshTrends)
+async function doAdd() {
+  try {
+    await addTrack(addForm.value.product_name, addForm.value.platform, addForm.value.url, addForm.value.target_price, addForm.value.category)
+    ElMessage.success('已添加')
+    showAddDialog.value = false
+    addForm.value = { product_name:'', platform:'ebay', url:'', target_price:0, category:'' }
+    loadAll()
+  } catch(e) { ElMessage.error('添加失败') }
+}
+
+async function doRemove(id) {
+  try { await removeTrack(id); ElMessage.success('已删除'); loadAll() } catch(e) { ElMessage.error('删除失败') }
+}
+
+function showPriceDialog(row) { priceForm.value = { trackId: row.id, product: row.product, price: 0, currency: 'USD' }; showPriceDlg.value = true }
+function showPromoDialog(row) { promoForm.value = { trackId: row.id, product: row.product, title: '', discount: '' }; showPromoDlg.value = true }
+
+async function doRecordPrice() {
+  try { await recordPrice(priceForm.value.trackId, priceForm.value.price, priceForm.value.currency); ElMessage.success('已记录'); showPriceDlg.value = false; loadAll() } catch(e) { ElMessage.error('记录失败') }
+}
+
+async function doRecordPromo() {
+  try { await recordPromotion(promoForm.value.trackId, promoForm.value.title, promoForm.value.discount); ElMessage.success('已记录'); showPromoDlg.value = false; loadAll() } catch(e) { ElMessage.error('记录失败') }
+}
+
+onMounted(() => loadAll())
 </script>
 
 <style scoped>
-.trend-page { padding: 24px; }
-.page-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; }
-.page-header h1 { font-size: 20px; margin: 0 0 4px; color: var(--text-primary); }
-.page-header p { font-size: 13px; color: var(--text-muted); margin: 0; }
-.header-actions { display: flex; gap: 8px; }
-
-.trend-card { border-radius: 12px; }
-.trend-header { display: flex; justify-content: space-between; align-items: center; font-weight: 600; font-size: 14px; }
-
-.trend-list { display: flex; flex-direction: column; gap: 2px; }
-.trend-item { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border-color); font-size: 13px; }
-.trend-item:last-child { border-bottom: none; }
-.trend-rank { width: 22px; text-align: center; font-weight: 700; color: var(--text-muted); font-size: 12px; flex-shrink: 0; }
-.trend-rank.top3 { color: #ff4d4f; }
-.trend-title { flex: 1; color: var(--text-secondary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.trend-heat { font-size: 11px; color: var(--text-muted); white-space: nowrap; }
-
-.predict-grid { display: flex; flex-direction: column; gap: 16px; }
-.predict-card { }
-.predict-name { font-size: 13px; font-weight: 600; color: var(--text-primary); margin-bottom: 8px; }
-.predict-items { display: flex; gap: 6px; flex-wrap: wrap; }
-.predict-tag { cursor: default; }
-
-.suggest-list { display: flex; flex-direction: column; gap: 10px; }
-.suggest-item { display: flex; align-items: flex-start; gap: 8px; font-size: 13px; color: var(--text-secondary); line-height: 1.5; }
+.trend-page { padding: 0; }
+.page-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
+.page-header h1 { font-size: 22px; margin: 0 0 4px; }
+.page-header p { color: var(--text-muted); font-size: 13px; margin: 0; }
+.sm-card { text-align: center; }
+.sm-card .sm-val { font-size: 24px; font-weight: 700; color: #1677ff; }
+.sm-card .sm-lbl { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
 </style>
-

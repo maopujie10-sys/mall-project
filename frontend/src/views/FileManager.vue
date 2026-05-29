@@ -30,7 +30,39 @@
               {{ row.name }}
             </span>
           </span>
-        </template>
+        
+
+    <!-- 归档管理 -->
+    <el-divider/>
+    <div class="section-header"><h3>📦 归档管理</h3><el-button size="small" type="primary" @click="showArchiveDialog=true">+ 新建归档</el-button></div>
+    
+    <el-row :gutter="16" style="margin-bottom:16px">
+      <el-col :span="6" v-for="s in archiveStorage" :key="s.label">
+        <el-card shadow="never" class="stat-tiny"><div class="stat-tiny-val">{{ s.value }}</div><div class="stat-tiny-lbl">{{ s.label }}</div></el-card>
+      </el-col>
+    </el-row>
+
+    <el-table :data="archives" size="small" v-if="archives.length">
+      <el-table-column prop="id" label="ID" width="140"/>
+      <el-table-column prop="name" label="文件名" min-width="200"/>
+      <el-table-column prop="size_mb" label="大小(MB)" width="100"/>
+      <el-table-column prop="created_at" label="时间" width="170"/>
+      <el-table-column label="状态" width="80"><template #default="{row}"><el-tag :type="row.file_exists?'success':'danger'" size="small">{{ row.file_exists?'存在':'已删除' }}</el-tag></template></el-table-column>
+      <el-table-column label="操作" width="100"><template #default="{row}"><el-button size="small" link type="danger" @click="doDeleteArchive(row.id)">删除</el-button></template></el-table-column>
+    </el-table>
+
+    <!-- 新建归档对话框 -->
+    <el-dialog v-model="showArchiveDialog" title="新建归档" width="500px">
+      <el-form label-width="80px">
+        <el-form-item label="目标"><el-checkbox-group v-model="archiveTargets">
+          <el-checkbox v-for="t in archiveTargetList" :key="t.id" :value="t.id" :disabled="!t.exists">{{ t.name }} <small style="color:var(--text-muted)">({{ t.size }})</small></el-checkbox>
+        </el-checkbox-group></el-form-item>
+        <el-form-item label="备注"><el-input v-model="archiveNote" placeholder="可选：归档说明"/></el-form-item>
+        <el-form-item label="推送GitHub"><el-switch v-model="archivePushGithub"/></el-form-item>
+      </el-form>
+      <template #footer><el-button @click="showArchiveDialog=false">取消</el-button><el-button type="primary" :loading="archiveLoading" @click="doCreateArchive">创建归档</el-button></template>
+    </el-dialog>
+</template>
       </el-table-column>
       <el-table-column prop="size" label="大小" width="120">
         <template #default="{row}">{{ row.is_dir ? "-" : formatSize(row.size) }}</template>
@@ -49,6 +81,7 @@
 </template>
 
 <script setup>
+import { createArchive, listArchives, deleteArchive, getArchiveStorage, listArchiveTargets } from '@/api/archive'
 import { ref, computed, onMounted } from "vue"
 import { ElMessage, ElMessageBox } from "element-plus"
 import { agentApi } from "@/api"
@@ -56,6 +89,15 @@ import { agentApi } from "@/api"
 const currentPath = ref("/")
 const entries = ref([])
 const loading = ref(false)
+// 归档
+const archives = ref([])
+const archiveTargetList = ref([])
+const archiveTargets = ref(['memory'])
+const archiveNote = ref('')
+const archivePushGithub = ref(false)
+const showArchiveDialog = ref(false)
+const archiveLoading = ref(false)
+const archiveStorage = ref([])
 
 const pathParts = computed(() => {
   const parts = currentPath.value.replace(/\\/g, "/").split("/").filter(Boolean)

@@ -116,5 +116,7 @@ async def list_sources(_=Depends(verify_token)):
             {"id": "lazada",   "name": "Lazada 来赞达",     "type": "scrape","status": "ready"},
             {"id": "wish",     "name": "Wish 全球站",       "type": "scrape","status": "ready"},
             {"id": "tiktok",   "name": "TikTok Shop",       "type": "scrape","status": "ready"},
+            {"id": "taobao",  "name": "淘宝/天猫",          "type": "scrape","status": "ready"},
+            {"id": "alibaba1688","name": "1688阿里巴巴",     "type": "scrape","status": "ready"},
         ]
     }

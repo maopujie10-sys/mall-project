@@ -97,6 +97,10 @@ from routers.knowledge_router import router as knowledge_router
 from routers.competitor_router import router as competitor_router
 from routers.plugin_router import router as plugin_router
 from routers.ssl_router import router as ssl_router
+from routers.scheduler_api import router as scheduler_api_router
+from routers.weekly_report import router as weekly_report_router
+from routers.log_manager import router as log_manager_router
+from routers.archive_router import router as archive_router
 from routers.db_router import router as db_router
 from routers.audit_router import router as audit_router
 from routers.network_router import router as network_router
@@ -165,6 +169,10 @@ app.include_router(devops_agent_router.router)
 app.include_router(memory_router.router)
 app.include_router(heal_router.router)
 app.include_router(ssl_router)
+app.include_router(scheduler_api_router)
+app.include_router(weekly_report_router)
+app.include_router(log_manager_router)
+app.include_router(archive_router)
 app.include_router(db_router)
 app.include_router(audit_router)
 app.include_router(network_router)
