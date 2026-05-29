@@ -300,7 +300,7 @@ class DigitalLifeform:
         if dream:
             cycle_result["dream"] = dream
 
-                cls._persist_state()  # 持久化经验
+        cls._persist_state()  # 持久化经验
         logger.info(f"周期#{cls._cycle_count}: {len(actions)}个行动, 心情{cls._mood_score:.1%}")
         return cycle_result
 
@@ -310,7 +310,7 @@ class DigitalLifeform:
         interval = max(interval_seconds, 60)
         if cls._running:
             return {"status": "already_running"}
-                cls._running = True
+        cls._running = True
         restored = cls._load_persisted_state()  # 恢复经验
         if not restored:
             cls._cycle_count = 0

@@ -39,7 +39,7 @@ async def lifespan(app: FastAPI):
         check_result = await startup_self_check()
         summary = check_result["summary"]
         print(f"[Agent] 自检结果: {summary}")
-                await startup_warmup()
+        await startup_warmup()
 
     # Dashboard实时指标推送
     async def push_metrics_loop():

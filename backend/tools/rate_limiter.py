@@ -11,7 +11,7 @@ RATE_LIMITS = {
     "/report": (10, 60),             # 报告: 10次/分钟
     "/agent/logs": (20, 60),         # 日志: 20次/分钟
     "/agent/competitor": (30, 60),   # 竞品: 30次/分钟
-    "default": (100, 60),            # 默认: 100次/分钟
+    "default": (600, 60),            # 默认: 600次/分钟
 }
 
 # 令牌桶存储: {ip: {path: (tokens, last_refill_time)}}
@@ -26,11 +26,16 @@ def _get_limit(path: str):
 
 async def rate_limit_middleware(request: Request, call_next):
     """FastAPI限流中间件"""
-    # 跳过健康检查
-    if request.url.path in ("/health", "/", "/docs", "/openapi.json"):
+    # 跳过健康检查和静态资源
+    if request.url.path in ("/health", "/", "/docs", "/openapi.json", "/agent/health", "/agent/health/simple"):
         return await call_next(request)
-    
-    client_ip = request.client.host if request.client else "unknown"
+
+    # 读取真实客户端IP (Nginx反向代理后)
+    client_ip = request.headers.get("X-Forwarded-For", "").split(",")[0].strip()
+    if not client_ip:
+        client_ip = request.headers.get("X-Real-IP", "")
+    if not client_ip:
+        client_ip = request.client.host if request.client else "unknown"
     path = request.url.path
     
     max_tokens, window = _get_limit(path)

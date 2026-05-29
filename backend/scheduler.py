@@ -170,7 +170,7 @@ async def daily_report_task():
             try:
                 from routers.weekly_report import router as wr
                 # 生成并推送
-                await push_weekly_report({"summary": f"本周健康分{score}, CPU{cpu}%, 内存{mem.percent}%, 订单{len(state._data.get("orders",[]))}"})
+                await push_weekly_report({"summary": f"本周健康分{score}, CPU{cpu}%, 内存{mem.percent}%, 订单{len(state._data.get('orders',[]))}"})
             except Exception as e:
                 logger.info(f"周报推送跳过: {e}")
     except Exception as e:
