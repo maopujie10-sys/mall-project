@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <!-- 全局悬浮AI助手 — 文字+语音+视频全集成 -->
   <div class="floating-ai" :class="{ 'chat-open': chatOpen, 'chat-expanded': chatExpanded, 'video-mode': videoActive }">
     <!-- ====== 悬浮按钮 ====== -->
@@ -244,7 +244,41 @@ function onDragUp() {
   document.ontouchend = null
   setTimeout(() => { isDragging = false }, 50)
 }
-function startPanelDrag(e) {}
+function startPanelDrag(e) {
+  e.preventDefault()
+  panelDragging = true
+  panelStartX = e.touches ? e.touches[0].clientX : e.clientX
+  panelStartY = e.touches ? e.touches[0].clientY : e.clientY
+  const panel = document.querySelector('.ai-chat-panel')
+  if (panel) {
+    const rect = panel.getBoundingClientRect()
+    panelPos.x = rect.left; panelPos.y = rect.top
+  }
+  document.onmousemove = onPanelDragMove
+  document.onmouseup = onPanelDragUp
+  document.ontouchmove = onPanelDragMove
+  document.ontouchend = onPanelDragUp
+}
+function onPanelDragMove(ev) {
+  if (!panelDragging) return
+  const cx = ev.touches ? ev.touches[0].clientX : ev.clientX
+  const cy = ev.touches ? ev.touches[0].clientY : ev.clientY
+  const dx = cx - panelStartX, dy = cy - panelStartY
+  const panel = document.querySelector('.ai-chat-panel')
+  if (panel) {
+    panel.style.left = (panelPos.x + dx) + 'px'
+    panel.style.top = (panelPos.y + dy) + 'px'
+    panel.style.right = 'auto'
+    panel.style.bottom = 'auto'
+  }
+}
+function onPanelDragUp() {
+  panelDragging = false
+  document.onmousemove = null
+  document.onmouseup = null
+  document.ontouchmove = null
+  document.ontouchend = null
+}
 
 // === 语音合成 (TTS) ===
 function initSpeechSynth() {
@@ -377,7 +411,7 @@ async function sendMessage() {
     })
     if (res.ok) {
       const data = await res.json()
-      const reply = data.reply || data.message || '收到，正在处理...'
+      const reply = data.response || data.reply || data.message || '收到，正在处理...'
       messages.value.push({ role: 'assistant', content: reply, time: new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }) }); window.dispatchEvent(new CustomEvent('brain:speaking', {detail:reply})); setTimeout(() => window.dispatchEvent(new CustomEvent('brain:thinking', {detail:false})), 500)
       // 语音通话模式下自动朗读
       if (voiceCallActive.value) { speakText(reply) }

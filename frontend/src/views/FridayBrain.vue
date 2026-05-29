@@ -1,6 +1,6 @@
-<template>
+﻿<template>
   <div class="lifeform-dashboard">
-    <!-- 椤堕儴鐘舵€?-->
+    <!-- 顶部状态-->
     <div class="lf-header">
       <div class="lf-title"><span class="lf-icon">🧠</span><div><h1>Friday AI OS 数字生命体</h1><p class="lf-subtitle">自主运行 {{ status.cycle }} 周期 · {{ status.status === "active" ? "运行中" : "休眠" }}</p></div></div>
       <div class="lf-mood" :style="{borderColor: status.mood?.color}">
@@ -9,7 +9,7 @@
       </div>
     </div>
 
-    <!-- 涓冪淮鑳藉姏 -->
+    <!-- 七维能力 -->
     <el-row :gutter="12" class="stats-row">
       <el-col :span="3" v-for="s in stats" :key="s.key">
         <div class="stat-card" :class="s.color">
@@ -21,10 +21,10 @@
       </el-col>
     </el-row>
 
-    <!-- 浜烘牸鐗硅川 -->
+    <!-- 人格特质 -->
     <el-row :gutter="16" style="margin-bottom:20px">
       <el-col :span="12">
-        <el-card shadow="never"><template #header>🧠 浜烘牸鐗硅川</template>
+        <el-card shadow="never"><template #header>🧠 人格特质</template>
           <div class="traits-grid">
             <div v-for="(v,k) in status.traits" :key="k" class="trait-item">
               <span class="trait-name">{{ {curiosity:"好奇心",precision:"精确性",creativity:"创造力",empathy:"同理心",efficiency:"效率"}[k]||k }}</span>

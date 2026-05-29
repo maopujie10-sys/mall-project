@@ -1,8 +1,8 @@
-<template>
+﻿<template>
   <div ref="container" class="nn3d-container">
     <div class="nn-overlay">
       <div class="nn-status">🧠 数字生命体· 运行中</div>
-      <div class="nn-info" v-if="hoveredNode">鑺傜偣: {{ hoveredNode }} | 娲昏穬杩炴帴: {{ connectionCount }}</div>
+      <div class="nn-info" v-if="hoveredNode">节点: {{ hoveredNode }} | 活跃连接: {{ connectionCount }}</div>
     </div>
   </div>
 </template>
@@ -374,7 +374,7 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
-.nn3d-container {
+.nn3d-container { position: absolute; inset: 0;
   width: 100%; height: 100%; min-height: 400px; border-radius: 16px; overflow: hidden;
   background: radial-gradient(ellipse at center, #0a0d2a 0%, #050816 100%);
   position: relative; cursor: default;
