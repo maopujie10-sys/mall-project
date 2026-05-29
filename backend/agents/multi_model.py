@@ -123,8 +123,10 @@ class ModelRouter:
         return models
 
     @staticmethod
-    async def chat(model_id: str, messages: list, **kwargs) -> dict:
-        """统一聊天接口 — 支持 Ollama(OpenAI兼容) 和云端 API"""
+    async def chat(model_id: str = None, messages: list = None, **kwargs) -> dict:
+        """统一聊天接口 — 支持 Ollama(OpenAI兼容) 和云端 API。model_id为None时自动选最佳模型"""
+        if model_id is None or messages is None:
+            return await cls.smart_chat(messages or [], **kwargs)
         cfg = ModelRouter.MODELS.get(model_id)
         if not cfg:
             return {"error": f"未知模型: {model_id}"}

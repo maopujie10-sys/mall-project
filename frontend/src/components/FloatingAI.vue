@@ -381,7 +381,8 @@ async function sendMessage() {
 
   try {
     const token = localStorage.getItem('agent_token') || localStorage.getItem('friday_token') || 'kWs4N6GiD4vtjnuHV31r14m6HPpKttBSI35lFnpiI90'
-    const res = await fetch('/agent/chat', {
+    window.dispatchEvent(new CustomEvent('brain:thinking', { detail: true }))
+      const res = await fetch('/agent/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-Agent-Token': token || 'friday-agent-token', 'Authorization': token ? `Bearer ${token}` : '' },
       body: JSON.stringify({ message: text || '[发送了文件]', files: files.map(f=>({name:f.name,size:f.size,type:f.type})), mode: 'chat' }),

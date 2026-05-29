@@ -434,6 +434,7 @@ onMounted(() => {
   container.value.addEventListener("mousemove", onMouseMove)
   container.value.addEventListener("click", onClick)
   container.value.addEventListener("dblclick", () => { window.dispatchEvent(new CustomEvent('brain:openChat')) })
+  window.addEventListener('brain:thinking', (e) => { window._brainThinking = e.detail !== false })
   window.addEventListener('brain:speaking', () => { window._brainSpeaking = true; setTimeout(() => { window._brainSpeaking = false }, 2000) })
 })
 onBeforeUnmount(() => {

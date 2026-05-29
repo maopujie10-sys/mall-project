@@ -130,7 +130,7 @@ class MemoryStore:
             return [{"action": r[0], "result": r[1], "feedback": r[2], "learned": r[3], "time": r[4]} for r in rows]
 
     # ===== 知识库 =====
-    def set_knowledge(self, category: str, key: str, value: str, confidence: float = 0.5):
+    def set_knowledge(self, category: str, key: str = '', value: str = '', confidence: float = 0.5):
         """存储一条知识"""
         with sqlite3.connect(MEMORY_DB) as conn:
             conn.execute(

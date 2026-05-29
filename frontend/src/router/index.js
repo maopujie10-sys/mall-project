@@ -69,6 +69,7 @@ const routes = [
       { path: "memory-sync", name: "MemorySync", component: () => import("@/views/MemorySync.vue"), meta: { title: "跨平台记忆" } },
       { path: "ab-test", name: "ABTestPanel", component: () => import("@/views/ABTestPanel.vue"), meta: { title: "A/B测试" } },
       { path: "security-scan", name: "SecurityScan", component: () => import("@/views/SecurityScan.vue"), meta: { title: "安全扫描" } },
+      { path: 'capabilities', name: 'Capabilities', component: () => import('@/views/Capabilities.vue'), meta: { title: 'AI能力状态' } },
     ],
   },
 ]
