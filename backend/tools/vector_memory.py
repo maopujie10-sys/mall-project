@@ -87,3 +87,22 @@ class VectorMemory:
         return [{"id": m["id"], "text": m["text"], "metadata": m.get("metadata", {}),
                  "score": round(s, 3), "created_at": m.get("created_at", "")}
                 for m, s in scored[:limit] if s > 0.3]
+
+
+def _save_vectors():
+    from tools.memory_store import memory_store
+    import json
+    try:
+        data = {"index": getattr(VectorMemory,"_index",{}) if hasattr(VectorMemory,"_index") else {}}
+        memory_store.set_knowledge("vector_index", "", json.dumps({k:len(v) for k,v in data.get("index",{}).items()}, ensure_ascii=False))
+    except: pass
+def _load_vectors():
+    from tools.memory_store import memory_store
+    import json
+    try:
+        raw = memory_store.get_knowledge("vector_index")
+        if raw and isinstance(raw,list) and raw:
+            d = json.loads(raw[0][2] if isinstance(raw[0],tuple) else str(raw[0]))
+    except: pass
+try: _load_vectors()
+except: pass

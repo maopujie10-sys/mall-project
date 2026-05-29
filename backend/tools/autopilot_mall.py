@@ -274,3 +274,22 @@ async def daily_health_check():
     }
     state._save()
     return report
+
+# 持久化
+def _save_state():
+    from tools.memory_store import memory_store
+    import json
+    try:
+        memory_store.set_knowledge("autopilot_state", "", json.dumps({"last_run": getattr(AutopilotMall,"_last_run",0)}, ensure_ascii=False))
+    except: pass
+def _load_state():
+    from tools.memory_store import memory_store
+    import json
+    try:
+        data = memory_store.get_knowledge("autopilot_state")
+        if data and isinstance(data, list) and data:
+            d = json.loads(data[0][2] if isinstance(data[0],tuple) else str(data[0]))
+            AutopilotMall._last_run = d.get("last_run", 0)
+    except: pass
+try: _load_state()
+except: pass

@@ -235,3 +235,24 @@ class MemorySync:
             "memory_files": memory_files,
             "git_result": result,
         }
+
+
+def _save_sync():
+    from tools.memory_store import memory_store
+    import json
+    try:
+        data = {"last_push": getattr(MemorySync,"_last_push",0), "last_pull": getattr(MemorySync,"_last_pull",0)}
+        memory_store.set_knowledge("memory_sync_state", "", json.dumps(data))
+    except: pass
+def _load_sync():
+    from tools.memory_store import memory_store
+    import json
+    try:
+        raw = memory_store.get_knowledge("memory_sync_state")
+        if raw and isinstance(raw,list) and raw:
+            d = json.loads(raw[0][2] if isinstance(raw[0],tuple) else str(raw[0]))
+            MemorySync._last_push = d.get("last_push",0)
+            MemorySync._last_pull = d.get("last_pull",0)
+    except: pass
+try: _load_sync()
+except: pass

@@ -430,3 +430,22 @@ class VirtualDataEngine:
             "online_now": random.randint(50, 500),
             "updated_at": now.strftime("%Y-%m-%d %H:%M:%S"),
         }
+
+def _save_virtual():
+    from tools.memory_store import memory_store
+    import json
+    try:
+        data = {"users": getattr(VirtualDataGenerator,"_generated_users",0) if hasattr(VirtualDataGenerator,"_generated_users") else 0}
+        memory_store.set_knowledge("virtual_state", "", json.dumps(data))
+    except: pass
+def _load_virtual():
+    from tools.memory_store import memory_store
+    import json
+    try:
+        raw = memory_store.get_knowledge("virtual_state")
+        if raw and isinstance(raw,list) and raw:
+            d = json.loads(raw[0][2] if isinstance(raw[0],tuple) else str(raw[0]))
+            if hasattr(VirtualDataGenerator,"_generated_users"): VirtualDataGenerator._generated_users = d.get("users",0)
+    except: pass
+try: _load_virtual()
+except: pass

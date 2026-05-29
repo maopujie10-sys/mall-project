@@ -454,3 +454,23 @@ def _suggest_next_steps(personality: dict, recent_stats) -> list:
     steps.append("📋 查看今日AI日记：GET /agent/friday/journal")
     steps.append("🧬 查看AI人格画像：GET /agent/friday/personality")
     return steps
+
+
+def _save_personality():
+    from tools.memory_store import memory_store
+    import json
+    try:
+        data = {"traits": getattr(MemoryPersonality,"_traits",{}), "history": getattr(MemoryPersonality,"_interactions",[])[-100:]}
+        memory_store.set_knowledge("personality_data", "", json.dumps(data, ensure_ascii=False, default=str))
+    except: pass
+def _load_personality():
+    from tools.memory_store import memory_store
+    import json
+    try:
+        raw = memory_store.get_knowledge("personality_data")
+        if raw and isinstance(raw,list) and raw:
+            d = json.loads(raw[0][2] if isinstance(raw[0],tuple) else str(raw[0]))
+            if hasattr(MemoryPersonality,"_traits"): MemoryPersonality._traits.update(d.get("traits",{}))
+    except: pass
+try: _load_personality()
+except: pass

@@ -108,3 +108,23 @@ class PhoneAlert:
     def get_history(limit: int = 20) -> list:
         """告警历史"""
         return state._data.get("phone_alert_logs", [])[:limit]
+
+
+def _save_phone():
+    from tools.memory_store import memory_store
+    import json
+    try:
+        data = {"calls": getattr(PhoneAlert,"_call_log",[])[-100:], "alerts": getattr(PhoneAlert,"_alert_history",[])[-50:]}
+        memory_store.set_knowledge("phone_data", "", json.dumps(data, ensure_ascii=False, default=str))
+    except: pass
+def _load_phone():
+    from tools.memory_store import memory_store
+    import json
+    try:
+        raw = memory_store.get_knowledge("phone_data")
+        if raw and isinstance(raw,list) and raw:
+            d = json.loads(raw[0][2] if isinstance(raw[0],tuple) else str(raw[0]))
+            if hasattr(PhoneAlert,"_call_log"): PhoneAlert._call_log = d.get("calls",[])
+    except: pass
+try: _load_phone()
+except: pass

@@ -293,3 +293,23 @@ class EvolutionEngine:
             "success",
             f"total={total} dead={dead} hot={hot}"
         )
+
+def _save_evolution():
+    from tools.memory_store import memory_store
+    import json
+    try:
+        data = {"metrics": getattr(EvolutionTracker,"_metrics",{}), "reports": getattr(EvolutionTracker,"_reports",[])[-20:]}
+        memory_store.set_knowledge("evolution_data", "", json.dumps(data, ensure_ascii=False, default=str))
+    except: pass
+def _load_evolution():
+    from tools.memory_store import memory_store
+    import json
+    try:
+        raw = memory_store.get_knowledge("evolution_data")
+        if raw and isinstance(raw,list) and raw:
+            d = json.loads(raw[0][2] if isinstance(raw[0],tuple) else str(raw[0]))
+            if hasattr(EvolutionTracker,"_metrics"): EvolutionTracker._metrics.update(d.get("metrics",{}))
+            if hasattr(EvolutionTracker,"_reports"): EvolutionTracker._reports = d.get("reports",[])
+    except: pass
+try: _load_evolution()
+except: pass
