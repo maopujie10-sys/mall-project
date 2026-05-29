@@ -28,20 +28,14 @@
           <div class="header-left">
             <div class="ai-avatar-small"><div class="avatar-holo"></div>AI</div>
             <div>
-              <div class="header-title">{{ videoActive ? '视频通话' : 'Friday AI 助手' }}</div>
-              <div class="header-status">{{ videoActive ? '通话中...' : (voiceActive ? '🎤 语音聆听中...' : '在线 · 随时为您服务') }}</div>
+              <div class="header-title">{{ voiceActive ? '🎤 聆听中' : (voiceCallActive ? '🔊 朗读中' : 'Friday AI 助手') }}</div>
+              <div class="header-status">{{ voiceActive ? '🎤 正在听你说话...' : (voiceCallActive ? '🔊 自动朗读回复' : '在线 · 随时为您服务') }}</div>
             </div>
           </div>
           <div class="header-actions">
-            <!-- 语音通话 -->
-            <button class="header-btn" @click="toggleVoiceCall" :title="voiceCallActive ? '挂断语音' : '语音通话'" :class="{ active: voiceCallActive }">
-              {{ voiceCallActive ? '📞' : '📞' }}
-            </button>
-            <!-- 视频通话 -->
-            <button class="header-btn" @click="toggleVideoCall" :title="videoActive ? '关闭视频' : '视频通话'" :class="{ active: videoActive }">
-              {{ videoActive ? '📹' : '📹' }}
-            </button>
-            <button class="header-btn" @click="toggleExpand" :title="chatExpanded ? '缩小' : '扩大'">
+                        <button class="header-btn" @click="toggleVoiceInput" :title="voiceActive ? '停止语音' : '语音输入'" :class="{ active: voiceActive }">🎤</button>
+            <button class="header-btn" @click="toggleVoiceCall" :title="voiceCallActive ? '关闭朗读' : '朗读回复'" :class="{ active: voiceCallActive }">🔊</button>
+                        <button class="header-btn" @click="toggleExpand" :title="chatExpanded ? '缩小' : '扩大'">
               {{ chatExpanded ? '⊟' : '⊞' }}
             </button>
             <button class="header-btn" @click="minimizeChat" title="最小化">−</button>
@@ -49,27 +43,8 @@
           </div>
         </div>
 
-        <!-- ====== 视频区域 ====== -->
-        <div v-if="videoActive" class="video-area">
-          <div class="video-remote">
-            <video ref="remoteVideo" autoplay playsinline class="video-main"></video>
-            <div class="video-overlay" v-if="!videoConnected">
-              <div class="connect-spinner"></div>
-              <p>正在连接...</p>
-            </div>
-          </div>
-          <div class="video-local">
-            <video ref="localVideo" autoplay playsinline muted class="video-thumb"></video>
-          </div>
-          <div class="video-controls">
-            <button @click="toggleMic" :class="{ muted: micMuted }">{{ micMuted ? '🔇' : '🎙️' }}</button>
-            <button @click="toggleCamera" :class="{ muted: cameraOff }">{{ cameraOff ? '📷❌' : '📷' }}</button>
-            <button @click="endVideoCall" class="end-call-btn">🔴 挂断</button>
-          </div>
-        </div>
-
-        <!-- ====== 消息区 ====== -->
-        <div v-if="!videoActive" class="chat-messages" ref="msgList"><canvas ref="matrixCanvas" class="matrix-bg"></canvas>
+                <!-- ====== 消息区 ====== -->
+        <div class="chat-messages" ref="msgList"><canvas ref="matrixCanvas" class="matrix-bg"></canvas>
           <div v-if="messages.length === 0" class="empty-chat">
             <div class="empty-icon">🤖</div>
             <p>你好！我是 Friday AI 助手</p>
@@ -395,7 +370,7 @@ function stopVideoCall() {
 // === 消息 ===
 async function sendMessage() {
   const text = inputText.value.trim(); const files = [...attachments.value]; processingStatus.value = detectTask(text); startStepAnimation()
-  if (!text || loading.value) return
+  if ((!text && !files.length) || loading.value) return
   stopVoiceInput()
 
   const now = new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
@@ -409,7 +384,7 @@ async function sendMessage() {
     const res = await fetch('/agent/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-Agent-Token': token || 'friday-agent-token', 'Authorization': token ? `Bearer ${token}` : '' },
-      body: JSON.stringify({ message: text, mode: 'chat' }),
+      body: JSON.stringify({ message: text || '[发送了文件]', files: files.map(f=>({name:f.name,size:f.size,type:f.type})), mode: 'chat' }),
     })
     if (res.ok) {
       const data = await res.json()
