@@ -320,6 +320,30 @@ class DigitalLifeform:
             if len(cls._insights) > 50: cls._insights = cls._insights[-50:]
         return dream
 
+    # ===== API 查询方法 =====
+    @classmethod
+    def get_lifeform_status(cls) -> dict:
+        return {
+            "running": cls._running,
+            "cycle": cls._cycle_count,
+            "mood": round(cls._mood_score, 2),
+            "wisdom": round(cls._wisdom, 1),
+            "personality": cls._personality,
+            "insights_count": len(cls._insights),
+            "dream_count": len(cls._dream_log),
+            "last_reflection": getattr(cls, "_last_reflection", ""),
+        }
+
+    @classmethod
+    def get_mood(cls) -> dict:
+        moods = [(0.8, "积极"), (0.6, "平静"), (0.4, "低落"), (0.2, "忧虑")]
+        label = next((m[1] for m in moods if cls._mood_score >= m[0]), "疲惫")
+        return {"score": round(cls._mood_score, 2), "label": label, "wisdom": round(cls._wisdom, 1)}
+
+    @classmethod
+    def generate_insights(cls) -> list:
+        return cls._insights[-10:] if cls._insights else [{"title": "系统启动", "detail": "数字生命体正在觉醒", "type": "system", "icon": "🌟", "priority": 1, "time": datetime.now().isoformat()}]
+
     # ===== 主循环 =====
     @classmethod
     def _adaptive_interval(cls, base: int, health: float) -> int:
