@@ -63,10 +63,10 @@ async def run_check(_=Depends(verify_token)):
             try:
                 from tools.phone_alert import PhoneAlert
                 await PhoneAlert.send_alert(issue["level"], issue["title"], issue["detail"])
+            except: pass
             try:
                 from tools.phone_alert import WeChatAlert
                 await WeChatAlert.send(issue["title"], issue["detail"], issue["level"])
-            except: pass
             except: pass
     state._save()
     return {"ok": True, "checked": True, "issues_found": len(issues), "issues": issues}

@@ -114,7 +114,7 @@ class DigitalLifeform:
         return insights
 
     # ===== 主动行动系统 =====
-        @classmethod
+    @classmethod
     async def proactive_actions(cls):
         """智能内存治理：4级阈值自动响应"""
         if state.mode == "human_control": return []

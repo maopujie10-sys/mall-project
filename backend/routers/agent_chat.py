@@ -191,9 +191,10 @@ async def agent_chat(req: ChatRequest, _=Depends(verify_token)):
     """AI对话主入口"""
     tools = registry.list_all()
     tl = "\n".join([f"- {t.name}: {t.display_name} [{t.risk_level}]" for t in tools[:50]])
+    json_tpl = '{"intent":"...","tool":"...","reasoning":"...","risk":"L1"}'
     msgs = [
         {"role": "system", "content": SYSTEM_PROMPT + "\n\nTools:\n" + tl},
-        {"role": "user", "content": f"User: {req.message}\nReply JSON: {\"intent\":\"...\",\"tool\":\"...\",\"reasoning\":\"...\",\"risk\":\"L1\"}"}
+        {"role": "user", "content": f"User: {req.message}\nReply JSON: {json_tpl}"}
     ]
     ai = await call_ai(msgs)
     tn, risk = None, "L1"

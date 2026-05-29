@@ -94,7 +94,8 @@ async def nginx_log_search(keyword: str = "", type: str = "error", lines: int = 
     await handle_risk("L1", "搜索Nginx日志", keyword[:50])
     path = "/var/log/nginx/access.log" if type == "access" else "/var/log/nginx/error.log"
     if keyword:
-        result = await execute(f"grep -i '{keyword.replace(chr(39), chr(39)+'\\'+chr(39))}' {path} | tail -n {lines}")
+        escaped_keyword = keyword.replace("'", "'\\''")
+        result = await execute(f"grep -i '{escaped_keyword}' {path} | tail -n {lines}")
     else:
         result = await execute(f"tail -n {lines} {path}")
     return {"type": type, "keyword": keyword, "content": result["stdout"][:5000], "lines": len(result["stdout"].strip().split("\n")) if result["stdout"].strip() else 0}

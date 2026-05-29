@@ -242,7 +242,6 @@ class AntiScrapEngine:
                 r = await session.get(
                     url,
                     headers=headers,
-                    proxy=proxy,
                     timeout=25,
                     follow_redirects=True
                 )
@@ -621,54 +620,114 @@ class AmazonAdapter(BaseScrapeAdapter):
         close_session = session is None
         if close_session:
             session = httpx.AsyncClient(timeout=25, follow_redirects=True)
-        
+
         try:
             r = await self._safe_get(session, url, max_retries=2)
             if not r:
                 return None
-            
+
             soup = BeautifulSoup(r.text, "html.parser")
-            
+
             title = ""
             title_el = soup.select_one("#productTitle")
             if title_el:
                 title = title_el.get_text(strip=True)
-            
+
             price = 0.0
-            price_el = (soup.select_one(".a-price .a-offscreen") or 
+            price_el = (soup.select_one(".a-price .a-offscreen") or
                        soup.select_one("#priceblock_ourprice") or
                        soup.select_one(".a-price-whole"))
             if price_el:
                 price = self._parse_price(price_el.get_text(strip=True))
-            
+
             org_price = 0.0
             org_el = soup.select_one(".basisPrice .a-offscreen") or soup.select_one("#listPrice")
             if org_el:
                 org_price = self._parse_price(org_el.get_text(strip=True))
-            
+
             images = self._extract_images(soup, url)
-            # Amazon 特色: data-old-hires
             for img in soup.select("img[data-old-hires]"):
                 hires = img.get("data-old-hires", "")
                 if hires and hires not in images:
                     images.insert(0, hires)
-            
+
             brand = ""
             brand_el = soup.select_one("#bylineInfo")
             if brand_el:
                 brand = brand_el.get_text(strip=True).replace("Brand:", "").replace("品牌:", "").strip()
-            
+            if not brand:
+                brand_el = soup.select_one("[data-feature-name='bylineInfo']")
+                if brand_el:
+                    brand = brand_el.get_text(strip=True)
+
             rating = 0.0
             rating_el = soup.select_one("#acrPopover .a-icon-alt") or soup.select_one("[data-hook='rating-out-of-text']")
             if rating_el:
                 nums = re.findall(r'[\d.]+', rating_el.get_text(strip=True))
                 if nums:
                     rating = float(nums[0])
-            
+
+            rating_count = 0
+            rc_el = soup.select_one("#acrCustomerReviewText")
+            if rc_el:
+                rc_nums = re.findall(r'[\d,]+', rc_el.get_text(strip=True))
+                if rc_nums:
+                    rating_count = int(rc_nums[0].replace(",", ""))
+
+            # 品类路径
+            category_path = []
+            for bc in soup.select("#wayfinding-breadcrumbs_feature_div a, #breadcrumb_feature_div a"):
+                cat_name = bc.get_text(strip=True)
+                if cat_name and cat_name not in category_path:
+                    category_path.append(cat_name)
+
+            # 描述 — 优先A+内容，其次普通描述
+            description = ""
+            desc_el = soup.select_one("#productDescription p") or soup.select_one("#productDescription")
+            if not desc_el:
+                desc_el = soup.select_one("#aplus_feature_div") or soup.select_one("#aplus")
+            if desc_el:
+                description = desc_el.get_text("\n", strip=True)[:5000]
+            if not description:
+                feature_bullets = soup.select("#feature-bullets li:not(.aok-hidden)")
+                if feature_bullets:
+                    description = "\n".join(li.get_text(strip=True) for li in feature_bullets[:20])
+
+            # SKU规格 — 从变体选择器提取
+            specs = []
+            skus = []
+            for var_sel in soup.select("select[id*='native_dropdown'] option, .a-native-dropdown option"):
+                val = var_sel.get_text(strip=True)
+                name = var_sel.find_parent("select").get("data-a-native-class", "") or var_sel.find_parent("select").get("name", "")
+                if val and val != "-1" and val != "Select":
+                    if not specs:
+                        specs.append(SpecItem(name=name or "规格", values=[val]))
+                    else:
+                        specs[0].values.append(val)
+            # 从尺寸/颜色选择器补充
+            for dim_name in ["color_name", "size_name", "style_name"]:
+                dim_el = soup.select_one(f"#variation_{dim_name} .selection, [id*='{dim_name}']")
+                if dim_el:
+                    dim_val = dim_el.get_text(strip=True)
+                    if dim_val and not any(s.name == dim_name for s in specs):
+                        opts = [o.get_text(strip=True) for o in soup.select(f"[id*='{dim_name}'] li, [id*='{dim_name}'] option") if o.get_text(strip=True)]
+                        specs.append(SpecItem(name=dim_name, values=opts if opts else [dim_val]))
+
+            # 销量估算
+            sales_count = 0
+            sales_el = soup.select_one("#social-proofing-faceout-title-tk_bought, [data-csa-c-content-id*='bought']")
+            if sales_el:
+                s_nums = re.findall(r'[\d,]+', sales_el.get_text(strip=True))
+                if s_nums:
+                    sales_count = int(s_nums[0].replace(",", ""))
+
             return ScrapedProduct(
                 platform="amazon", source_url=url, title=title, brand=brand,
                 price=price, original_price=org_price, currency="CNY",
-                images=images, rating=rating, crawled_at=datetime.now().isoformat()
+                images=images, specs=specs, skus=skus,
+                description=description, category_path=category_path,
+                rating=rating, rating_count=rating_count,
+                sales_count=sales_count, crawled_at=datetime.now().isoformat()
             )
         except Exception:
             return None
@@ -1053,22 +1112,33 @@ class ScraperEngine:
 
     @staticmethod
     def import_to_mall(product_ids: list[str]) -> dict:
+        """真实导入：写入MySQL商城表，直接上架"""
+        from tools.mall_importer import import_product
         products = _get_products()
-        count = 0
+        results = {"imported": 0, "skipped": 0, "failed": 0, "details": []}
         for pid in product_ids:
             for p in products:
                 if p.get("id") == pid:
-                    p["status"] = "importing"
-                    count += 1
+                    result = import_product(p)
+                    if result.get("ok"):
+                        p["status"] = "imported"
+                        results["imported"] += 1
+                    elif result.get("duplicate"):
+                        p["status"] = "duplicate"
+                        results["skipped"] += 1
+                    else:
+                        p["status"] = "failed"
+                        results["failed"] += 1
+                    results["details"].append(result)
         state._save()
-        return {"imported": count, "status": "pending_mall_api_call"}
+        return results
 
 async def _do_scrape(job_id: str, platform: str, keyword: str, max_items: int, download_images: bool):
-    """后台执行采集任务"""
+    """后台执行采集任务 + 自动导入上架"""
     adapter = ADAPTERS.get(platform, ADAPTERS["ebay"])
     _job_progress(job_id, {"status": "searching"})
 
-    async with httpx.AsyncClient(timeout=20, follow_redirects=True) as session:
+    async with httpx.AsyncClient(timeout=20, follow_redirects=True, verify=False) as session:
         urls = await adapter.search(keyword, max_pages=2, session=session)
         _job_progress(job_id, {"status": "extracting", "total": len(urls), "found": 0})
 
@@ -1084,26 +1154,47 @@ async def _do_scrape(job_id: str, platform: str, keyword: str, max_items: int, d
         if download_images:
             _job_progress(job_id, {"status": "uploading"})
             for p in products:
+                # 优先尝试COS上传，失败则用源URL
                 uploaded = []
                 for idx, img_url in enumerate(p.images[:8]):
                     cos_url = await download_and_upload(img_url, p.id, idx, session)
                     if cos_url:
                         uploaded.append(cos_url)
-                    if len(uploaded) >= 5:
+                    elif img_url:
+                        uploaded.append(img_url)
+                    if len(uploaded) >= 8:
                         break
                 p.cos_images = uploaded
                 p.status = "uploaded"
 
+        # 自动导入上架
+        if products:
+            _job_progress(job_id, {"status": "importing"})
+            from tools.mall_importer import import_batch
+            product_dicts = [p.to_dict() for p in products if p.cos_images]
+            import_result = import_batch(product_dicts)
+            _job_progress(job_id, {
+                "status": "done",
+                "uploaded": sum(1 for p in products if p.cos_images),
+                "failed": sum(1 for p in products if not p.cos_images),
+                "imported": import_result["imported"],
+                "skipped_duplicate": import_result["skipped_duplicate"],
+                "import_failed": import_result["failed"],
+                "products": [p.to_dict() for p in products]
+            })
+        else:
+            _job_progress(job_id, {
+                "status": "done",
+                "uploaded": 0,
+                "failed": 0,
+                "imported": 0,
+                "products": []
+            })
+
+        # 同步到内存状态
         all_products = _get_products()
         for p in products:
             all_products.insert(0, p.to_dict())
         if len(all_products) > 500:
             all_products[:] = all_products[:500]
         state._save()
-
-        _job_progress(job_id, {
-            "status": "done",
-            "uploaded": sum(1 for p in products if p.cos_images),
-            "failed": sum(1 for p in products if not p.cos_images),
-            "products": [p.to_dict() for p in products]
-        })

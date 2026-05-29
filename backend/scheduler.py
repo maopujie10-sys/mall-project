@@ -112,7 +112,7 @@ async def mall_scan_task():
 
 async def ssl_renew_check_task():
     """SSL证书到期检查 + 自动续签"""
-    print(f"[Scheduler] SSL证书检查 {datetime.now().strftime("%H:%M:%S")}")
+    print(f"[Scheduler] SSL证书检查 {datetime.now().strftime('%H:%M:%S')}")
     try:
         from routers.ssl_router import _cert_valid, _issue
         from routers.rotation_panel import _get_domains

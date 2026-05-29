@@ -302,7 +302,7 @@ async def _fetch_local_skills():
     return []
 
 @router.get("/community")
-async def community_skills(category:""="",search:""="",_=Depends(verify_token)):
+async def community_skills(category: str = "", search: str = "", _=Depends(verify_token)):
     await handle_risk("L1","Browse community")
     skills=await _fetch_github_skills()
     if not skills: skills=await _fetch_local_skills()
@@ -316,7 +316,7 @@ async def community_skills(category:""="",search:""="",_=Depends(verify_token)):
         item=dict(s);item["installed"]=s.get("id") in installed_ids
         if _GITHUB_REPO:
             repo=_GITHUB_REPO.replace("/contents/","/raw/main/")
-            item["download_url"]=f"{repo}{s.get("path","")}.zip"
+            item["download_url"]=f"{repo}{s.get('path','')}.zip"
         res.append(item)
     return {"ok":True,"skills":res,"count":len(res),"installed_ids":list(installed_ids)}
 
@@ -337,7 +337,7 @@ async def install_community_skill(skill_id:str,_=Depends(verify_token)):
         if _GITHUB_REPO:
             try:
                 repo=_GITHUB_REPO.replace("/contents/","/raw/main/")
-                zu=f"{repo}{skill.get("path","")}.zip"
+                zu=f"{repo}{skill.get('path','')}.zip"
                 async with httpx.AsyncClient(timeout=30) as cl:
                     r=await cl.get(zu,headers={"User-Agent":"Friday-AI-OS"})
                     if r.status_code==200:
@@ -363,7 +363,7 @@ async def install_community_skill(skill_id:str,_=Depends(verify_token)):
         return {"ok":False,"error":f"Install failed: {str(e)}"}
     finally:
         try: os.unlink(tp)
-        
+        except: pass
 
 @router.post("/publish")
 async def publish_skill(file: bytes = None, download_url: str = "", _=Depends(verify_token)):

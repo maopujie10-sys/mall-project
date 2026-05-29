@@ -52,7 +52,7 @@ class _AgentState:
         self._load()
         self._ensure_limits()
 
-    def _ensure_limits:
+    def _ensure_limits(self):
         """强制所有key不超限（已知key按KEY_LIMITS，未知key默认上限1000）"""
         for key in list(self._data.keys()):
             val = self._data[key]

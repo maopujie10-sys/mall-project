@@ -145,7 +145,7 @@ async def test_model_speed(model_id: str, _=Depends(verify_token)):
     start = __import__("time").time()
     try:
         resp = await ModelRouter.route(
-            prompt="你好，请回复"hello"测试响应速度",
+            prompt='你好，请回复"hello"测试响应速度',
             model_id=model_id or None
         )
         elapsed = round(__import__("time").time() - start, 2)
@@ -162,7 +162,7 @@ async def compare_models(model_ids: list[str], _=Depends(verify_token)):
     for mid in model_ids[:3]:  # 最多比3个
         start = __import__("time").time()
         try:
-            resp = await ModelRouter.route(prompt="回复"hello world"", model_id=mid)
+            resp = await ModelRouter.route(prompt='回复"hello world"', model_id=mid)
             elapsed = round(__import__("time").time() - start, 2)
             results.append({"model_id": mid, "latency_ms": round(elapsed * 1000), "ok": True})
         except Exception as e:
