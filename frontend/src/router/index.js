@@ -33,6 +33,9 @@ const routes = [
       { path: "ocr", name: "OcrPanel", component: () => import("@/views/OcrPanel.vue"), meta: { title: "OCR识别" } },
       { path: "plugins", name: "PluginCenter", component: () => import("@/views/PluginCenter.vue"), meta: { title: "插件系统" } },
       { path: "tasks", name: "TaskCenter", component: () => import("@/views/TaskCenter.vue"), meta: { title: "自动任务" } },
+      { path: "self-healing", name: "SelfHealing", component: () => import("@/views/SelfHealing.vue"), meta: { title: "异常自愈" } },
+      { path: "weekly-report", name: "WeeklyReport", component: () => import("@/views/WeeklyReport.vue"), meta: { title: "运营周报" } },
+      { path: "log-viewer", name: "LogViewer", component: () => import("@/views/LogViewer.vue"), meta: { title: "日志中心" } },
       { path: "self-service", name: "SelfService", component: () => import("@/views/SelfService.vue"), meta: { title: "自助服务" } },
 
       { path: "alert", name: "AlertCenter", component: () => import("@/views/AlertCenter.vue"), meta: { title: "告警中心" } },

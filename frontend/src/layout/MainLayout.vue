@@ -58,6 +58,7 @@
         </div>
         <div class="nav-section">
           <div class="nav-section-label" v-show="!sidebarCollapsed"><span class="sec-icon">🛠️</span> 系统运维</div>
+          <router-link to="/self-healing" class="nav-item" :class="{ active: isActive('/self-healing') }"><span class="nav-icon">🩺</span><span>异常自愈</span></router-link>
           <router-link to="/server" class="nav-item" :class="{ active: isActive('/server') }"><span class="nav-icon">🖥️</span><span>服务器</span></router-link>
           <router-link to="/docker" class="nav-item" :class="{ active: isActive('/docker') }"><span class="nav-icon">🐳</span><span>Docker</span></router-link>
           <router-link to="/nginx" class="nav-item" :class="{ active: isActive('/nginx') }"><span class="nav-icon">🔧</span><span>Nginx</span></router-link>
@@ -114,8 +115,10 @@
         </div>
         <div class="nav-section">
           <div class="nav-section-label" v-show="!sidebarCollapsed"><span class="sec-icon">📊</span> 监控与数据</div>
+          <router-link to="/weekly-report" class="nav-item" :class="{ active: isActive('/weekly-report') }"><span class="nav-icon">📊</span><span>运营周报</span></router-link>
           <router-link to="/tasks" class="nav-item" :class="{ active: isActive('/tasks') }"><span class="nav-icon">📋</span><span>任务中心</span></router-link>
           <router-link to="/database" class="nav-item" :class="{ active: isActive('/database') }"><span class="nav-icon">🗄️</span><span>数据库</span></router-link>
+          <router-link to="/log-viewer" class="nav-item" :class="{ active: isActive('/log-viewer') }"><span class="nav-icon">📋</span><span>日志中心</span></router-link>
           <router-link to="/scraper" class="nav-item" :class="{ active: isActive('/scraper') }"><span class="nav-icon">🕷️</span><span>采集中心</span></router-link>
         </div>
         <div class="nav-section">
