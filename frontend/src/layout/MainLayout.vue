@@ -13,13 +13,6 @@
     </div>
     <FloatingNav />
     <FloatingAI />
-    <nav class="mobile-bottom-nav">
-      <router-link to="/friday" class="mb-item"><span>🧠</span><span>大脑</span></router-link>
-      <router-link to="/chat" class="mb-item"><span>💬</span><span>对话</span></router-link>
-      <router-link to="/dashboard" class="mb-item"><span>📊</span><span>总览</span></router-link>
-      <router-link to="/server" class="mb-item"><span>🖥️</span><span>服务器</span></router-link>
-      <router-link to="/mall" class="mb-item"><span>🏬</span><span>商城</span></router-link>
-    </nav>
   </div>
 </template>
 
@@ -96,30 +89,9 @@ onMounted(async () => {
 .page-fade-enter-from { opacity: 0; transform: translateY(10px); }
 .page-fade-leave-to { opacity: 0; transform: translateY(-10px); }
 
-/* 手机底部导航 */
-.mobile-bottom-nav {
-  display: none;
-  position: fixed; bottom: 0; left: 0; right: 0;
-  z-index: 2000;
-  background: rgba(10,10,30,0.9);
-  backdrop-filter: blur(20px);
-  border-top: 1px solid rgba(102,126,234,0.2);
-  padding: 6px 0 env(safe-area-inset-bottom);
-  justify-content: space-around;
-}
-.mb-item {
-  display: flex; flex-direction: column; align-items: center; gap: 2px;
-  text-decoration: none; color: rgba(255,255,255,0.5);
-  padding: 4px 12px; border-radius: 8px; transition: all 0.2s;
-  font-size: 10px;
-}
-.mb-item span:first-child { font-size: 18px; }
-.mb-item:hover, .mb-item.router-link-active { color: #667eea; }
 
-@media (max-width: 768px) {
-  .mobile-bottom-nav { display: flex; }
-  .content-overlay { bottom: 60px; }
-}
+
+
 
 /* 3D大脑联动脉冲 */
 .neural-bg.brain-active {
