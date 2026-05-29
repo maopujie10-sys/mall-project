@@ -263,17 +263,13 @@ async def run(ppk=5):
     import httpx, random, hashlib
     from tools.scraper_engine import download_and_upload
 
-    # 配置eBay API密钥
-    os.environ.setdefault("EBAY_PRODUCTION_APP_ID", "xiangjik-wode-PRD-31836c410-f08421d0")
-    os.environ.setdefault("EBAY_DEV_ID", "835cbbd1-c1c7-4ebb-8f8e-9928d4057b4b")
-
     _log(f"===== 全品类采集 启动 =====")
     _log(f"品类数: {len(SUBCAT_KEYWORDS)} | 关键词数: {TOTAL} | 每品类目标: {ppk}")
     _log(f"搜索间隔: {SEARCH_DELAY_BASE}s(自适应) | 产品延迟: {PRODUCT_DELAY}s | 并发: {CONCURRENCY}")
 
     stats = {"cats": 0, "kws": 0, "found": 0, "imported": 0, "skipped": 0, "failed": 0}
     amazon_adapter = ADAPTERS["amazon"]
-    ebay_adapter = ADAPTERS.get("ebay")
+    ebay_adapter = ADAPTERS.get("ebay_html")
     search_delay = SEARCH_DELAY_BASE
 
     async with httpx.AsyncClient(timeout=30, follow_redirects=True, verify=False) as session:

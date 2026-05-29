@@ -478,6 +478,167 @@ class eBayAdapter:
         results = await asyncio.gather(*tasks, return_exceptions=True)
         return [r for r in results if r is not None and not isinstance(r, Exception) and r.title and r.images]
 
+
+class EbayHtmlAdapter:
+    """eBay HTML网页采集 — curl_cffi TLS指纹绕过反爬"""
+    name = "ebay_html"
+
+    EBAY_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+    EBAY_HEADERS = {
+        "User-Agent": EBAY_UA,
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Language": "en-US,en;q=0.9",
+    }
+
+    def __init__(self):
+        self._session = None
+
+    def _get_session(self):
+        if self._session is None:
+            from curl_cffi import requests as curl_requests
+            self._session = curl_requests.Session()
+            self._session.get("https://www.ebay.com",
+                headers=self.EBAY_HEADERS, impersonate="chrome124")
+        return self._session
+
+    def _sync_search(self, keyword: str) -> list[str]:
+        s = self._get_session()
+        url = f"https://www.ebay.com/sch/i.html?_nkw={quote_plus(keyword)}&LH_BIN=1"
+        r = s.get(url, headers=self.EBAY_HEADERS, impersonate="chrome124")
+        if r.status_code != 200:
+            return []
+        soup = BeautifulSoup(r.text, "lxml")
+        item_ids = set()
+        for a in soup.select("a"):
+            m = re.search(r'/itm/(\d{10,13})', a.get("href", ""))
+            if m:
+                item_ids.add(m.group(1))
+        return list(item_ids)
+
+    async def search(self, keyword: str, max_pages: int = 1, session=None) -> list[str]:
+        return await asyncio.to_thread(self._sync_search, keyword)
+
+    def _sync_extract(self, item_id: str):
+        import json as _json
+        s = self._get_session()
+        url = f"https://www.ebay.com/itm/{item_id}"
+        r = s.get(url, headers=self.EBAY_HEADERS, impersonate="chrome124")
+        if r.status_code != 200:
+            return None
+
+        soup = BeautifulSoup(r.text, "lxml")
+
+        # 标题
+        title = ""
+        h1 = soup.select_one("h1")
+        if h1:
+            title = h1.get_text(strip=True)
+        if not title:
+            title_el = soup.select_one(".it-ttl") or soup.select_one("#itemTitle")
+            title = title_el.get_text(strip=True) if title_el else ""
+
+        # 价格 — 优先JSON-LD
+        price = 0.0
+        org_price = 0.0
+        for script in soup.select("script[type='application/ld+json']"):
+            try:
+                data = _json.loads(script.string)
+                if isinstance(data, dict) and "offers" in data:
+                    offers = data["offers"]
+                    if isinstance(offers, dict):
+                        p = float(offers.get("price", 0) or 0)
+                        if p > 0:
+                            price = round(p * 7.2, 2)
+                    break
+            except Exception:
+                continue
+        if price == 0:
+            price_el = soup.select_one("[itemprop='price']") or soup.select_one(".x-price-primary")
+            if price_el:
+                txt = price_el.get("content", "") or price_el.get_text(strip=True)
+                nums = re.findall(r'[\d.]+', txt)
+                if nums:
+                    price = round(float(nums[0]) * 7.2, 2)
+
+        # 图片
+        images = set()
+        for img in soup.select("img"):
+            src = img.get("src", "") or img.get("data-src", "") or img.get("data-original-src", "")
+            if "ebayimg" in src.lower() or "i.ebayimg" in src:
+                clean = re.sub(r's-l\d+', 's-l1600', src.split("?")[0])
+                ext = os.path.splitext(urlparse(clean).path)[1].lower().split("?")[0]
+                if ext in (".jpg", ".jpeg", ".png", ".webp"):
+                    images.add(clean)
+        images = list(images)[:20]
+
+        # 规格
+        specs = []
+        spec_rows = soup.select(".ux-labels-values") or soup.select(".ux-layout-section__row")
+        for row in spec_rows:
+            labels = row.select(".ux-labels-values__labels") or row.select(".ux-textspans")
+            vals = row.select(".ux-labels-values__values") or row.select(".ux-textspans--SECONDARY")
+            if labels and vals:
+                name = " ".join(l.get_text(strip=True) for l in labels)[:100]
+                value = " ".join(v.get_text(strip=True) for v in vals)[:200]
+                if name and value and len(name) < 80 and len(value) < 200:
+                    specs.append({"name": name, "values": [value]})
+
+        # 品牌
+        brand = ""
+        for row in spec_rows:
+            txt = row.get_text(" ", strip=True).lower()
+            if txt.startswith("brand"):
+                vals = row.select(".ux-labels-values__values")
+                if vals:
+                    brand = vals[0].get_text(strip=True)[:100]
+                    break
+
+        # 描述
+        description = ""
+        desc_iframe = soup.select_one("#desc_ifr") or soup.select_one("iframe[title*='description']")
+        if desc_iframe:
+            desc_src = desc_iframe.get("src", "")
+            if desc_src:
+                if desc_src.startswith("//"):
+                    desc_src = "https:" + desc_src
+                try:
+                    desc_r = s.get(desc_src, headers={"User-Agent": random.choice(USER_AGENTS)},
+                                   impersonate="chrome124")
+                    if desc_r.status_code == 200:
+                        desc_soup = BeautifulSoup(desc_r.text, "lxml")
+                        description = desc_soup.get_text("\n", strip=True)[:5000]
+                except Exception:
+                    pass
+        if not description:
+            desc_div = soup.select_one("#viTabs_0_is") or soup.select_one("[class*='item-description']")
+            if desc_div:
+                description = desc_div.get_text("\n", strip=True)[:5000]
+
+        soup.decompose()
+        del soup
+
+        return ScrapedProduct(
+            platform="ebay", source_url=url, title=title, brand=brand,
+            price=price, original_price=org_price, currency="CNY",
+            images=images[:20], specs=specs, description=description,
+            category_path=[], crawled_at=datetime.now().isoformat()
+        )
+
+    async def extract_product(self, item_id: str, session=None):
+        return await asyncio.to_thread(self._sync_extract, item_id)
+
+    async def extract_concurrent(self, item_ids: list[str], session=None, concurrency: int = 3) -> list:
+        sem = asyncio.Semaphore(concurrency)
+
+        async def _one(iid):
+            async with sem:
+                return await self.extract_product(iid)
+
+        tasks = [_one(iid) for iid in item_ids]
+        results = await asyncio.gather(*tasks, return_exceptions=True)
+        return [r for r in results if r is not None and not isinstance(r, Exception) and r.title and r.images]
+
+
 class BaseScrapeAdapter:
     """反反爬采集基类 — 所有 HTML 爬虫适配器继承此类"""
     
@@ -1312,6 +1473,7 @@ class Alibaba1688Adapter(BaseScrapeAdapter):
 
 ADAPTERS = {
     "ebay": eBayAdapter(),           # 官方API
+    "ebay_html": EbayHtmlAdapter(),  # HTML采集(curl_cffi TLS绕过)
     "aliexpress": AliExpressAdapter(), # 反反爬
     "amazon": AmazonAdapter(),        # 反反爬
     "wish": WishAdapter(),            # 反反爬
