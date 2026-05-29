@@ -1,15 +1,15 @@
 <template>
       <div class="sidebar-overlay" :class="{show:mobileMenuOpen}" @click="mobileMenuOpen=false"></div>
   <div class="app-shell" :class="{ collapsed: sidebarCollapsed, dark: theme.isDark.value }">
-    <!-- Electron 窗口标题栏 -->
+    <!-- Electron 绐楀彛鏍囬鏍?-->
     <header v-if="isElectron" class="electron-titlebar">
       <div class="titlebar-drag">
-        <span class="titlebar-text">🎯 Friday AI OS</span>
+        <span class="titlebar-text">馃幆 Friday AI OS</span>
       </div>
       <div class="titlebar-actions">
-        <button class="tb-btn" @click="minimizeWin" title="最小化">─</button>
-        <button class="tb-btn" @click="maximizeWin" title="最大化">□</button>
-        <button class="tb-btn tb-close" @click="closeWin" title="关闭">✕</button>
+        <button class="tb-btn" @click="minimizeWin" title="鏈€灏忓寲">鈹€</button>
+        <button class="tb-btn" @click="maximizeWin" title="鏈€澶у寲">鈻?/button>
+        <button class="tb-btn tb-close" @click="closeWin" title="鍏抽棴">鉁?/button>
       </div>
     </header>
     <aside class="sidebar" :class="{'mobile-open':mobileMenuOpen}">
@@ -33,7 +33,7 @@
         </div>
         <div class="brand-text" v-show="!sidebarCollapsed">
           <span class="brand-title">Friday AI OS</span>
-          <span class="brand-sub">超级AI数字生命体</span>
+          <span class="brand-sub">瓒呯骇AI鏁板瓧鐢熷懡浣?/span>
         </div>
       </div>
 
@@ -106,8 +106,8 @@
       </main>
     </div>
     <nav class=mobile-bottom-nav><router-link to=/friday class=mb-item><span>B</span><span>Brain</span></router-link><router-link to=/chat class=mb-item><span>C</span><span>Chat</span></router-link><router-link to=/dashboard class=mb-item><span>D</span><span>Dash</span></router-link><router-link to=/server class=mb-item><span>S</span><span>Server</span></router-link><router-link to=/mall class=mb-item><span>M</span><span>Mall</span></router-link></nav><LiveTaskPanel />
-    <el-dialog v-model="emergencyVisible" title="🚨 急救面板" width="520px" top="8vh"><EmergencyPanel :embedded="true" /></el-dialog>
-    <!-- 全局 AI 浮动图标 -->
+    <el-dialog v-model="emergencyVisible" title="馃毃 鎬ユ晳闈㈡澘" width="520px" top="8vh"><EmergencyPanel :embedded="true" /></el-dialog>
+    <!-- 鍏ㄥ眬 AI 娴姩鍥炬爣 -->
 </template>
 
 <script setup>
@@ -118,7 +118,7 @@ const tokenInput = ref(localStorage.getItem('agent_token') || '')
 function saveToken() {
   localStorage.setItem('agent_token', tokenInput.value)
   tokenDialogVisible.value = false
-  ElMessage.success('Token 已保存')
+  ElMessage.success('Token 宸蹭繚瀛?)
 }
 
 import { ref, computed, onMounted, onUnmounted } from 'vue'
@@ -171,9 +171,9 @@ async function sendFloatMsg() {
   try {
     const {agentApi} = await import("@/api")
     const r = await agentApi.post("/agent/chat",{message:text})
-    floatMessages.value.push({role:"ai",text:r.response||r.reply||r.message||"收到"})
+    floatMessages.value.push({role:"ai",text:r.response||r.reply||r.message||"鏀跺埌"})
   } catch(e) {
-    floatMessages.value.push({role:"ai",text:"连接失败: "+(e.message||"")})
+    floatMessages.value.push({role:"ai",text:"杩炴帴澶辫触: "+(e.message||"")})
   }
   floatLoading.value = false
   setTimeout(()=>{if(floatMsgRef.value)floatMsgRef.value.scrollTop=floatMsgRef.value.scrollHeight},100)
@@ -288,7 +288,7 @@ async function sendFloatMsg() {
 .page-fade-enter-active, .page-fade-leave-active { transition: opacity 0.2s; }
 .page-fade-enter-from, .page-fade-leave-to { opacity: 0; }
 
-/* Electron 标题栏 */
+/* Electron 鏍囬鏍?*/
 .electron-titlebar {
   position: fixed; top: 0; left: 0; right: 0; height: 32px;
   display: flex; align-items: center; justify-content: space-between;
@@ -312,7 +312,7 @@ async function sendFloatMsg() {
 .sidebar { height: calc(100vh - 32px); top: 32px; }
 .main-area { height: calc(100vh - 32px); overflow-y: auto; }
 
-/* 通知面板 */
+/* 閫氱煡闈㈡澘 */
 .notif-item { display: flex; gap: 10px; padding: 10px; border-radius: 6px; cursor: pointer; transition: background 0.15s; margin-bottom: 4px; }
 .notif-item:hover { background: #f5f5f5; }
 .notif-item.unread { background: #e6f7ff; }
@@ -324,7 +324,7 @@ async function sendFloatMsg() {
 
 
 
-/* 📱 响应式：手机 */
+/* 馃摫 鍝嶅簲寮忥細鎵嬫満 */
 @media (max-width: 768px) {
   .sidebar { position: fixed !important; left: -260px !important; top: 0 !important; height: 100vh !important; z-index: 9999 !important; transition: left 0.3s !important; }
   .sidebar.mobile-open { left: 0 !important; }
@@ -360,7 +360,7 @@ async function sendFloatMsg() {
 
 
 
-/* 📱 手机底部导航 */
+/* 馃摫 鎵嬫満搴曢儴瀵艰埅 */
 .mobile-bottom-nav {
   display: none;
   position: fixed; bottom: 0; left: 0; right: 0;
