@@ -33,8 +33,8 @@ async def reply_message(req: ReplyRequest, _=Depends(verify_token)):
             return {"ok": True, "message_id": req.message_id}
     return {"ok": False, "error": "消息不存在"}
 
-@router.get("/stats")
-async def customer_stats(_=Depends(verify_token)):
+@router.get("/messages/stats")
+async def customer_message_stats(_=Depends(verify_token)):
     msgs = _get_messages()
     replied = sum(1 for m in msgs if m.get("replied"))
     return {"total": len(msgs), "replied": replied, "pending": len(msgs) - replied}
