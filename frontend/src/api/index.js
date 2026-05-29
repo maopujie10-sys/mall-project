@@ -3,7 +3,7 @@ import { ElMessage } from 'element-plus'
 
 // 从 localStorage 读取 Token
 function getToken() {
-  return localStorage.getItem('agent_token') || ''
+  return localStorage.getItem('agent_token') || localStorage.getItem('friday_token') || ''
 }
 
 function unwrapResponse(response) {

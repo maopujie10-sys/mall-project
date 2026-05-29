@@ -369,7 +369,7 @@ async function sendMessage() {
   await nextTick(); scrollBottom()
 
   try {
-    const token = localStorage.getItem('friday_token') || ''
+    const token = localStorage.getItem('agent_token') || localStorage.getItem('friday_token') || ''
     const res = await fetch('/agent/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-Agent-Token': token || 'friday-agent-token', 'Authorization': token ? `Bearer ${token}` : '' },

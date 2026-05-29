@@ -60,7 +60,32 @@ const brainThinking = ref(false)
 const brainSpeaking = ref(false)
 const brainPulse = ref(false)
 
-onMounted(() => {
+// 自动登录获取JWT
+async function autoLogin() {
+  const token = localStorage.getItem('agent_token')
+  if (token) return token
+  try {
+    const res = await fetch('/agent/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: 'admin', password: 'admin123' })
+    })
+    if (res.ok) {
+      const data = await res.json()
+      if (data.access_token) {
+        localStorage.setItem('agent_token', data.access_token)
+        localStorage.setItem('friday_token', data.access_token)
+        return data.access_token
+      }
+    }
+  } catch (e) {
+    console.warn('Auto-login failed:', e)
+  }
+  return null
+}
+
+onMounted(async () => {
+  await autoLogin()
   window.addEventListener('brain:active', (e) => {
     brainActive.value = e.detail
   })
