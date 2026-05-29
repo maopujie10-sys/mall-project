@@ -400,8 +400,8 @@ CONV_DB = Path(__file__).parent.parent / "data" / "conversations.db"
 def _cdb():
     CONV_DB.parent.mkdir(parents=True,exist_ok=True)
     c=sqlite3.connect(str(CONV_DB))
-    c.execute("CREATE TABLE IF NOT EXISTS convs(id TEXT PRIMARY KEY,title TEXT,owner TEXT DEFAULT "admin",created TEXT,updated TEXT)")
-    c.execute("CREATE TABLE IF NOT EXISTS msgs(id INTEGER PRIMARY KEY AUTOINCREMENT,cid TEXT,role TEXT,content TEXT,owner TEXT DEFAULT "admin",created TEXT)")
+    c.execute("CREATE TABLE IF NOT EXISTS convs(id TEXT PRIMARY KEY,title TEXT,owner TEXT DEFAULT 'admin',created TEXT,updated TEXT)")
+    c.execute("CREATE TABLE IF NOT EXISTS msgs(id INTEGER PRIMARY KEY AUTOINCREMENT,cid TEXT,role TEXT,content TEXT,owner TEXT DEFAULT 'admin',created TEXT)")
     c.commit();return c
 
 @router.post("/chat/stream")

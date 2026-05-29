@@ -12,7 +12,6 @@ class SentimentAnalyzer:
     NEGATIVE = {"差","烂","慢","贵","坑","假","退","投诉","垃圾","坏","问题","失望","bad","poor","terrible","worst","糟","破","劣质","难用","丑陋","粗糙","敷衍","冷漠","忽悠","骗子","假货","破损","瑕疵","过期","变质","异味","掉色","缩水","卡顿","闪退","崩溃","死机","发热","噪音","费电","不值","后悔","踩雷","差评","恶心","无语","awful","horrible","disappointed","hate","waste"}
     URGENT = {"急","马上","立刻","赶紧","快","紧急","退款","报警","投诉"}
 
-    @classmethod
     # 否定词(反转情感)
     NEGATORS = {"不","没","无","非","别","未","否","莫","休"}
 
@@ -30,31 +29,31 @@ class SentimentAnalyzer:
         urgent = len(words & cls.URGENT)
 
         # 否定词处理: 否定词+正面词=负面
-    negated = False
-    weighted_pos = 0
-    weighted_neg = 0
-    words_list = list(words)
-    for i, w in enumerate(words_list):
-        if w in cls.NEGATORS:
-            negated = True
-            continue
-        intensity = 1.0
-        if i > 0 and words_list[i-1] in cls.INTENSIFIERS:
-            intensity = cls.INTENSIFIERS[words_list[i-1]]
-        if w in cls.POSITIVE:
-            if negated:
-                weighted_neg += 1 * intensity
-            else:
-                weighted_pos += 1 * intensity
-        elif w in cls.NEGATIVE:
-            if negated:
-                weighted_pos += 0.5 * intensity
-            else:
-                weighted_neg += 1 * intensity
         negated = False
+        weighted_pos = 0
+        weighted_neg = 0
+        words_list = list(words)
+        for i, w in enumerate(words_list):
+            if w in cls.NEGATORS:
+                negated = True
+                continue
+            intensity = 1.0
+            if i > 0 and words_list[i-1] in cls.INTENSIFIERS:
+                intensity = cls.INTENSIFIERS[words_list[i-1]]
+            if w in cls.POSITIVE:
+                if negated:
+                    weighted_neg += 1 * intensity
+                else:
+                    weighted_pos += 1 * intensity
+            elif w in cls.NEGATIVE:
+                if negated:
+                    weighted_pos += 0.5 * intensity
+                else:
+                    weighted_neg += 1 * intensity
+            negated = False
 
-    if weighted_pos > weighted_neg:
-            sentiment, score = "positive", min(1.0, (weighted_pos - weighted_neg) / max(weighted_pos + weighted_neg, 1) * 5)
+        if weighted_pos > weighted_neg:
+                sentiment, score = "positive", min(1.0, (weighted_pos - weighted_neg) / max(weighted_pos + weighted_neg, 1) * 5)
         elif neg > pos:
             sentiment, score = "negative", min(1.0, (weighted_neg - weighted_pos) / max(weighted_pos + weighted_neg, 1) * 5)
         else:

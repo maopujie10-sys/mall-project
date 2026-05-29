@@ -542,40 +542,6 @@ function applyTemplate(tmpl) {
   ElMessage.info('已选择模板: ' + tmpl.name + '，输入内容后发送')
 }
 
-// Legacy sendMessage rename to avoid conflict
-  const text = inputText.value.trim(); const files = [...attachments.value]; processingStatus.value = detectTask(text); startStepAnimation()
-  if ((!text && !files.length) || loading.value) return
-  stopVoiceInput()
-
-  const now = new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
-  clearAttachments(); messages.value.push({ role: 'user', content: text || '[附件]', time: now, voice: voiceActive.value }); window.dispatchEvent(new CustomEvent('brain:pulse')); if (files.length) { messages.value[messages.value.length-1].attachments = files.map(f=>({name:f.name,type:f.type,size:f.size})) }
-  inputText.value = ''
-  loading.value = true; window.dispatchEvent(new CustomEvent('brain:thinking', {detail:true}))
-  await nextTick(); scrollBottom()
-
-  try {
-    const token = localStorage.getItem('agent_token') || localStorage.getItem('friday_token') || 'kWs4N6GiD4vtjnuHV31r14m6HPpKttBSI35lFnpiI90'
-    window.dispatchEvent(new CustomEvent('brain:thinking', { detail: true }))
-      const res = await fetch('/agent/chat/stream', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-Agent-Token': token || 'friday-agent-token', 'Authorization': token ? `Bearer ${token}` : '' },
-      body: JSON.stringify({ message: text || '[发送了文件]', files: files.map(f=>({name:f.name,size:f.size,type:f.type})), mode: 'chat' }),
-    })
-    if (res.ok) {
-      const data = await res.json()
-      const reply = data.response || data.reply || data.message || '收到，正在处理...'
-      messages.value.push({ role: 'assistant', content: reply, time: new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }) }); window.dispatchEvent(new CustomEvent('brain:speaking', {detail:reply})); setTimeout(() => window.dispatchEvent(new CustomEvent('brain:thinking', {detail:false})), 500)
-      // 语音通话模式下自动朗读
-      if (voiceCallActive.value) { speakText(reply) }
-    } else {
-      messages.value.push({ role: 'assistant', content: '抱歉，服务暂时不可用。', time: new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }) })
-    }
-  } catch (e) {
-    messages.value.push({ role: 'assistant', content: '网络连接失败，请检查网络。', time: new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }) })
-  }
-  loading.value = false; window.dispatchEvent(new CustomEvent('brain:thinking', {detail:false}))
-  await nextTick(); scrollBottom()
-}
 
 
 const processingStatus = ref(''); const processingSteps = ref([]); let stepTimer = null

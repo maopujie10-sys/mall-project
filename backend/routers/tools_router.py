@@ -13,8 +13,8 @@ def _udb():
     USAGE_DB.parent.mkdir(parents=True, exist_ok=True)
     import sqlite3
     c = sqlite3.connect(str(USAGE_DB))
-    c.execute("CREATE TABLE IF NOT EXISTS usage(id INTEGER PRIMARY KEY AUTOINCREMENT,model TEXT,tokens_in INTEGER,tokens_out INTEGER,cost REAL, endpoint TEXT, owner TEXT DEFAULT "admin", created TEXT)")
-    c.execute("CREATE TABLE IF NOT EXISTS evals(id INTEGER PRIMARY KEY AUTOINCREMENT,question TEXT,answer TEXT,score REAL,feedback TEXT,owner TEXT DEFAULT "admin",created TEXT)")
+    c.execute("CREATE TABLE IF NOT EXISTS usage(id INTEGER PRIMARY KEY AUTOINCREMENT,model TEXT,tokens_in INTEGER,tokens_out INTEGER,cost REAL, endpoint TEXT, owner TEXT DEFAULT 'admin', created TEXT)")
+    c.execute("CREATE TABLE IF NOT EXISTS evals(id INTEGER PRIMARY KEY AUTOINCREMENT,question TEXT,answer TEXT,score REAL,feedback TEXT,owner TEXT DEFAULT 'admin',created TEXT)")
     c.commit(); return c
 
 # ===== 1. 代码解释器 =====

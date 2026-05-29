@@ -124,7 +124,7 @@ const browserCmd=ref("");const browserPlan=ref(null);const browserSummary=ref(""
 // === 人形Agent ===
 const humanCmd=ref("");const humanTarget=ref("server");const humanLog=ref([]);const humanResult=ref("");const humanScreenshot=ref(null)
 // === 远程电脑控制 ===
-const remoteClients=ref([]);const remoteClient=ref("");const remoteAction=ref("screenshot");const remoteParams=ref("");const remoteScreenshot=ref(null);const remoteResult=ref("");const remoteResult=ref("")
+const remoteClients=ref([]);const remoteClient=ref("");const remoteAction=ref("screenshot");const remoteParams=ref("");const remoteScreenshot=ref(null);const remoteResult=ref("")
 async function runBrowser(){const d=await api("/agent/advanced/browser/agent",{command:browserCmd.value});if(d?.ok){browserPlan.value=d.plan;browserSummary.value=d.summary;browserScreenshot.value=d.final_screenshot}}
 async function quickBrowser(type){const d=await api("/agent/advanced/browser/quick",{type,url:browserCmd.value||"https://www.google.com"});if(d?.ok){browserPlan.value=d.plan;browserSummary.value=d.summary;browserScreenshot.value=d.final_screenshot}}
 

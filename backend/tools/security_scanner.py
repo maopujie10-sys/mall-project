@@ -81,8 +81,6 @@ class SecurityScanner:
 
         return {"name": "SQL注入风险检查", "pass": len(risks) == 0, "severity": "high" if risks else "low", "detail": f"扫描{scanned}个Python文件, 发现{len(risks)}个潜在风险" if risks else f"扫描{scanned}个文件, 未发现SQL注入风险", "files": risks[:5]}
                 "severity": "high" if risks else "low",
-                "detail": f"发现{len(risks)}个潜在风险文件" if risks else "未发现SQL注入风险"}
-
     @classmethod
     async def check_xss_risk(cls) -> Dict:
         """检查XSS风险"""

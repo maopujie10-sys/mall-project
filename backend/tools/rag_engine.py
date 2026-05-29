@@ -76,20 +76,17 @@ class RAGEngine:
     def get_stats(cls) -> Dict:
         return {"total_docs": len(cls._docs), "total_keywords": len(cls._index), "sources": list(set(d["source"] for d in cls._docs))}
 
-# 预加载知识
-rag = RAGEngine()
-
-    @classmethod
+@classmethod
     def save(cls):
-        """持久化到SQLite"""
+"""持久化到SQLite"""
         from tools.memory_store import memory_store
         import json
         memory_store.set_knowledge("rag_docs", json.dumps(cls._docs[-500:], ensure_ascii=False))
         memory_store.set_knowledge("rag_index", json.dumps({k: v[-100:] for k, v in list(cls._index.items())[:500]}, ensure_ascii=False))
 
-    @classmethod
+@classmethod
     def load(cls):
-        """从SQLite恢复"""
+"""从SQLite恢复"""
         from tools.memory_store import memory_store
         import json
         try:
@@ -102,6 +99,10 @@ rag = RAGEngine()
             return True
         except:
             return False
+
+
+# 预加载知识
+rag = RAGEngine()
 
 # 启动时自动恢复
 try:
