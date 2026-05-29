@@ -229,33 +229,25 @@ async def run(ppk=5):
     from tools.scraper_engine import download_and_upload
 
     stats = {"cats": 0, "kws": 0, "found": 0, "imported": 0, "skipped": 0, "failed": 0}
-    # 多平台轮换，避免单平台被封
-    PLATFORMS = ["amazon", "aliexpress", "shopee", "wish", "lazada"]
-    platform_idx = 0
+    amazon_adapter = ADAPTERS["amazon"]
 
-    async with httpx.AsyncClient(timeout=25, follow_redirects=True, verify=False) as session:
+    async with httpx.AsyncClient(timeout=30, follow_redirects=True, verify=False) as session:
         for subcat, keywords in SUBCAT_KEYWORDS.items():
             stats["cats"] += 1
             cat_imported = 0
-            platform = PLATFORMS[platform_idx % len(PLATFORMS)]
-            platform_idx += 1
-            adapter = ADAPTERS.get(platform, ADAPTERS["amazon"])
-            print(f"\n[{stats['cats']}/{len(SUBCAT_KEYWORDS)}] {subcat} [{platform}]", end="", flush=True)
+            print(f"\n[{stats['cats']}/{len(SUBCAT_KEYWORDS)}] {subcat}", end="", flush=True)
 
             for kw in keywords:
                 if cat_imported >= ppk:
                     break
                 stats["kws"] += 1
-                # 搜索间隔7-12秒，防止被封
-                await asyncio.sleep(7 + random.random() * 5)
+                # 搜索间隔10-20秒，避免Amazon限流
+                delay = 10 + random.random() * 10
+                await asyncio.sleep(delay)
                 try:
-                    urls = await adapter.search(kw, max_pages=1, session=session)
+                    urls = await amazon_adapter.search(kw, max_pages=1, session=session)
                 except Exception as e:
-                    print(f"\n  {kw}: 搜索异常 {e}")
-                    # 换平台
-                    platform_idx += 1
-                    platform = PLATFORMS[platform_idx % len(PLATFORMS)]
-                    adapter = ADAPTERS.get(platform, ADAPTERS["amazon"])
+                    print(f"\n  {kw}: 搜索异常 {e}", flush=True)
                     continue
                 if not urls:
                     print(f"\n  {kw}: 0结果", end="", flush=True)
@@ -265,9 +257,9 @@ async def run(ppk=5):
                 need = ppk - cat_imported
                 products = []
                 for url in urls[:need]:
-                    await asyncio.sleep(2 + __import__('random').random() * 3)
+                    await asyncio.sleep(3 + random.random() * 4)
                     try:
-                        p = await adapter.extract_product(url, session=session)
+                        p = await amazon_adapter.extract_product(url, session=session)
                         if p and p.title and p.images:
                             p.id = hashlib.md5(p.source_url.encode()).hexdigest()[:16]
                             products.append(p)
@@ -277,10 +269,14 @@ async def run(ppk=5):
                 if not products:
                     continue
 
+                # 上传图片到COS
                 for p in products:
                     uploaded = []
                     for idx, img_url in enumerate(p.images[:8]):
-                        cos_url = await download_and_upload(img_url, p.id, idx, session)
+                        try:
+                            cos_url = await download_and_upload(img_url, p.id, idx, session)
+                        except Exception:
+                            cos_url = None
                         if cos_url:
                             uploaded.append(cos_url)
                         elif img_url:
@@ -288,20 +284,21 @@ async def run(ppk=5):
                     p.cos_images = uploaded
 
                 pds = [p.to_dict() for p in products if p.cos_images]
+                if not pds:
+                    continue
                 result = import_batch(pds)
                 stats["imported"] += result["imported"]
                 stats["skipped"] += result["skipped_duplicate"]
                 stats["failed"] += result["failed"]
                 cat_imported += result["imported"]
-                print(f"  {kw}: +{result['imported']} 上架 (dup:{result['skipped_duplicate']} fail:{result['failed']})")
-                await asyncio.sleep(1)
+                print(f" +{result['imported']}上架(重{result['skipped_duplicate']})", end="", flush=True)
 
             if cat_imported == 0:
-                print(f"  ⚠️ 该品类未采集到产品")
+                print(f" ⚠️ 未采集到", end="", flush=True)
 
-    print(f"\n{'='*60}")
+    print(f"\n\n{'='*60}")
     print(f"完成: {stats['imported']} 上架, {stats['skipped']} 重复, {stats['failed']} 失败")
-    print(f"覆盖 {stats['cats']} 子品类, {stats['kws']} 关键词")
+    print(f"覆盖 {stats['cats']} 子品类, {stats['kws']} 关键词搜索")
     return stats
 
 if __name__ == "__main__":

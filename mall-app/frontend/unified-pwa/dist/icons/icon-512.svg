@@ -1,0 +1,5 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="64" fill="#1989fa"/>
+  <text x="256" y="310" font-size="240" font-weight="bold" fill="white" text-anchor="middle" font-family="Arial">T</text>
+  <circle cx="400" cy="112" r="40" fill="#ee0a24"/>
+</svg>
