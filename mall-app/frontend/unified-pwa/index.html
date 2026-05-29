@@ -110,7 +110,7 @@ window.goTo = function(path) {
   used.push(prefix);if(used.length>30)state.u[domain]=used.slice(-30);
   state.g=(g+1)%ROTATION_DOMAINS.length;
   save();
-  window.location.href="https://"+prefix+"."+domain+path;
+  switchTabByPath(path);
 };
 })();
 
@@ -118,6 +118,18 @@ window.goTo = function(path) {
 var currentTab = 'home';
 var loadedTabs = {};
 
+function pickRandomHost() {
+  var d = ROTATION_DOMAINS[Math.floor(Math.random() * ROTATION_DOMAINS.length)];
+  var p = PREFIXES[Math.floor(Math.random() * PREFIXES.length)];
+  return p + "." + d;
+}
+
+function switchTabByPath(path) {
+  if (path==='/home' || !path) switchTab('shop');
+  else if (path==='/seller/' || path==='/merchantSettled') switchTab('merchant');
+  else if (path==='/login') switchTab('me');
+  else switchTab('shop');
+}
 function switchTab(tab) {
   currentTab = tab;
   document.querySelectorAll('.tabbar-item').forEach(function(el){el.classList.toggle('active',el.dataset.tab===tab)});
@@ -127,8 +139,8 @@ function switchTab(tab) {
   document.getElementById('tab-me').style.display = tab==='me'?'block':'none';
   
   // 首次切换到商城/商家才加载iframe
-  if (tab==='shop' && !loadedTabs.shop) { loadedTabs.shop=true; document.getElementById('frame-shop').src='/wap/'; }
-  if (tab==='merchant' && !loadedTabs.merchant) { loadedTabs.merchant=true; document.getElementById('frame-merchant').src='/www/'; }
+  if (tab==='shop' && !loadedTabs.shop) { loadedTabs.shop=true; document.getElementById('frame-shop').src='https://'+pickRandomHost()+'/wap/'; }
+  if (tab==='merchant' && !loadedTabs.merchant) { loadedTabs.merchant=true; document.getElementById('frame-merchant').src='https://'+pickRandomHost()+'/www/'; }
   if (tab==='me') updateMe();
 }
 
