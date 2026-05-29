@@ -39,8 +39,8 @@ def create_token(username: str, role: str) -> str:
     }
     return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
 
-def verify_token(token: str) -> dict:
-    """验证JWT Token"""
+def _decode_jwt(token: str) -> dict:
+    """解码JWT Token（内部使用）"""
     try:
         payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
         return {"valid": True, "user": payload["sub"], "role": payload["role"]}
@@ -48,6 +48,28 @@ def verify_token(token: str) -> dict:
         return {"valid": False, "error": "Token已过期"}
     except jwt.InvalidTokenError:
         return {"valid": False, "error": "Token无效"}
+
+# ===== FastAPI依赖：verify_token（兼容旧路由 Depends(verify_token)） =====
+async def verify_token(
+    request: Request,
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+) -> dict:
+    """验证请求Token — 同时支持X-Agent-Token(JWT或AgentToken)和Bearer Token"""
+    agent_token = request.headers.get("X-Agent-Token", "")
+    if agent_token:
+        # 匹配AGENT_TOKEN → admin权限
+        if agent_token == AGENT_TOKEN:
+            return {"user": "agent", "role": "admin"}
+        # 尝试作为JWT解码（登录后的token）
+        result = _decode_jwt(agent_token)
+        if result["valid"]:
+            return {"user": result["user"], "role": result["role"]}
+    if not credentials:
+        raise HTTPException(401, "未提供认证Token")
+    result = _decode_jwt(credentials.credentials)
+    if not result["valid"]:
+        raise HTTPException(401, result.get("error", "认证失败"))
+    return {"user": result["user"], "role": result["role"]}
 
 def create_jwt(payload: dict, hours: int = 24) -> str:
     """创建JWT Token（兼容security.py/user_auth_router调用）"""
@@ -97,8 +119,8 @@ async def get_current_user(request: Request, credentials: HTTPAuthorizationCrede
     
     if not credentials:
         raise HTTPException(401, "未提供认证Token")
-    
-    result = verify_token(credentials.credentials)
+
+    result = _decode_jwt(credentials.credentials)
     if not result["valid"]:
         raise HTTPException(401, result.get("error", "认证失败"))
     
