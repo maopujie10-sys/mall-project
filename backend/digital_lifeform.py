@@ -223,7 +223,10 @@ class DigitalLifeform:
                 cls._action_history = cls._action_history[-100:]
             results.append({"action": action_name, "success": success, "result": result})
             # 更新心情
-            cls._mood_score = cls._mood_score * 0.8 + (0.7 if success else 0.3) * 0.2
+            # mood linked to actual system health
+            health_ok = perception.get("ok", True)
+            mood_delta = 0.85 if success and health_ok else 0.5 if success else 0.25
+            cls._mood_score = cls._mood_score * 0.8 + mood_delta * 0.2
             # 更新智慧
             if success:
                 cls._wisdom += 0.1
@@ -270,10 +273,21 @@ class DigitalLifeform:
         cls._dream_log.append({"dream": dream, "time": datetime.now().isoformat()})
         if len(cls._dream_log) > 20:
             cls._dream_log = cls._dream_log[-20:]
+        if len(cls._dream_log) > 0 and len(cls._dream_log) % 10 == 0:
+            texts = [d["dream"] for d in cls._dream_log[-10:]]
+            from datetime import datetime as dt
+            cls._insights.append({"title":"dream","detail":" | ".join(texts[-3:]),"type":"dream","icon":"🌙","priority":3,"time":dt.now().isoformat()})
+            if len(cls._insights) > 50: cls._insights = cls._insights[-50:]
         return dream
 
     # ===== 主循环 =====
     @classmethod
+    def _adaptive_interval(cls, base: int, health: float) -> int:
+        if health > 0.9: return min(base * 4, 600)
+        if health > 0.7: return min(base * 2, 300)
+        if health > 0.5: return base
+        return max(30, base // 2)
+
     async def one_cycle(cls):
         """一次完整的感知-思考-行动-反思循环"""
         perception = await cls.perceive()
