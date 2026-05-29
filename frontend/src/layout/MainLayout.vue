@@ -1,7 +1,7 @@
 <template>
   <div class="sci-fi-shell">
     <!-- 3D 神经网络背景 -->
-    <div class="neural-bg">
+    <div class="neural-bg" :class="{ 'brain-active': brainActive, 'brain-pulse': brainPulse }">
       <NeuralNetwork3D />
     </div>
 
@@ -55,7 +55,18 @@ function saveToken() {
   ElMessage.success('Token 已保存')
 }
 
+const brainActive = ref(false)
+const brainPulse = ref(false)
+
 onMounted(() => {
+  window.addEventListener('brain:active', (e) => {
+    brainActive.value = e.detail
+  })
+  window.addEventListener('brain:pulse', () => {
+    brainPulse.value = true
+    setTimeout(() => { brainPulse.value = false }, 600)
+  })
+
   systemStore.fetchStatus()
 })
 
@@ -116,5 +127,18 @@ function isActive(path) {
 @media (max-width: 768px) {
   .mobile-bottom-nav { display: flex; }
   .content-overlay { bottom: 60px; }
+}
+
+/* 3D大脑联动脉冲 */
+.neural-bg.brain-active {
+  filter: brightness(1.15) saturate(1.2);
+  transition: filter 0.5s ease;
+}
+.neural-bg.brain-pulse {
+  animation: brainShock 0.6s ease-out;
+}
+@keyframes brainShock {
+  0% { filter: brightness(2) saturate(2); transform: scale(1.02); }
+  100% { filter: brightness(1.15) saturate(1.2); transform: scale(1); }
 }
 </style>

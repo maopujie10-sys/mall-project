@@ -211,8 +211,8 @@ watch(messages, (val) => {
 }, { deep: true })
 
 // === 面板控制 ===
-function openChat() { if (!isDragging) { chatOpen.value = true; hasUnread.value = false; nextTick(() => scrollBottom()) } }
-function closeChat() { stopVoiceInput(); stopVideoCall(); chatOpen.value = false; chatExpanded.value = false }
+function openChat() { if (!isDragging) { chatOpen.value = true; hasUnread.value = false; window.dispatchEvent(new CustomEvent("brain:active", {detail:true})); nextTick(() => scrollBottom()) } }
+function closeChat() { stopVoiceInput(); stopVideoCall(); chatOpen.value = false; chatExpanded.value = false; window.dispatchEvent(new CustomEvent("brain:active", {detail:false})) }
 function minimizeChat() { stopTw(); stopStepAnimation(); chatOpen.value = false }
 function toggleExpand() { chatExpanded.value = !chatExpanded.value; nextTick(() => scrollBottom()) }
 function startDrag(e) {
@@ -363,7 +363,7 @@ async function sendMessage() {
   stopVoiceInput()
 
   const now = new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
-  clearAttachments(); messages.value.push({ role: 'user', content: text || '[附件]', time: now, voice: voiceActive.value }); if (files.length) { messages.value[messages.value.length-1].attachments = files.map(f=>({name:f.name,type:f.type,size:f.size})) }
+  clearAttachments(); messages.value.push({ role: 'user', content: text || '[附件]', time: now, voice: voiceActive.value }); window.dispatchEvent(new CustomEvent('brain:pulse')); if (files.length) { messages.value[messages.value.length-1].attachments = files.map(f=>({name:f.name,type:f.type,size:f.size})) }
   inputText.value = ''
   loading.value = true
   await nextTick(); scrollBottom()
@@ -378,7 +378,7 @@ async function sendMessage() {
     if (res.ok) {
       const data = await res.json()
       const reply = data.reply || data.message || '收到，正在处理...'
-      messages.value.push({ role: 'assistant', content: reply, time: new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }) })
+      messages.value.push({ role: 'assistant', content: reply, time: new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }) }); window.dispatchEvent(new CustomEvent('brain:pulse'))
       // 语音通话模式下自动朗读
       if (voiceCallActive.value) { speakText(reply) }
     } else {
