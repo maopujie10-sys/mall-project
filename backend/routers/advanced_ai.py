@@ -958,45 +958,128 @@ if __name__ == "__main__":
 # ===== 人形Agent（升级版）=====
 @router.post("/agent/human")
 async def human_like_agent(req: dict, _=Depends(verify_token)):
-    """人类级电脑操控 - 视觉理解->决策->操作->验证 循环"""
+    """人类级电脑操控 - 智能路由: 代码任务直接执行, GUI任务视觉操控, 自动省钱"""
     command = req.get("command","")
     target = req.get("target","server")
-    max_cycles = req.get("max_cycles", 10)
+    max_cycles = req.get("max_cycles", 8)
     action_log = []
-    final_result = ""
     
-    system_prompt = """你是一个人类级别的电脑操控AI Agent。你能看到屏幕截图，像人一样思考和操作。每次我给你一张截图，你需要回复JSON: {"observation":"看到了什么","thought":"思考过程","action":"操作名","target":"元素描述","params":{},"confidence":0.8,"verify_after":"验证什么"}
-可用操作21种: click|double_click|right_click|type_text|press_key|scroll|move_mouse|drag|wait|open_app|close_window|switch_window|select_all|copy|paste|undo|save|run_command|screenshot|done|fail
-原则:1.先观察再行动 2.用target描述元素(如"文本:登录") 3.操作后验证 4.卡住换策略 5.confidence低于0.6换策略"""
+    # ===== 第0步: 任务智能分类 =====
+    classify_prompt = f"""判断这个任务属于哪一类,只回复一个词:
+- "code": 代码/文件/服务器/命令/数据处理 (不需要看屏幕)
+- "gui": 操控桌面应用/GUI/浏览器/需要看屏幕
+任务: {command}
+分类:"""
+    
+    task_type = (await _call_ai(
+        [{"role":"user","content":classify_prompt}],
+        model="gpt-3.5-turbo", max_tokens=10, temperature=0
+    )).strip().lower()
+    
+    if "code" in task_type:
+        # ===== 代码/服务器任务: 零截图,直接执行 =====
+        code_prompt = f"""你是服务器管理AI。完成这个任务,回复JSON:
+{{"steps":[{{"action":"run_command|read_file|write_file|search|done","params":{{}},"reason":"为什么"}}],"summary":"总结"}}
+可用操作: run_command(执行shell), read_file(读文件), write_file(写文件), search(搜索内容), done(完成)
+任务: {command}
+JSON:"""
+        
+        plan = await _call_ai(
+            [{"role":"user","content":code_prompt}],
+            model="gpt-4o-mini", max_tokens=600, temperature=0.2
+        )
+        
+        steps = []
+        try:
+            j = json.loads(re.search(r'{[^{}]*"steps"[^{}]*}', plan, re.DOTALL).group())
+            steps = j.get("steps",[])
+        except: pass
+        
+        results = []
+        for step in steps[:max_cycles]:
+            a = step.get("action","")
+            p = step.get("params",{})
+            action_log.append({"action":a,"params":p,"reason":step.get("reason","")})
+            
+            try:
+                if a == "run_command":
+                    r = subprocess.run(p.get("command",""), shell=True, capture_output=True, text=True, timeout=30)
+                    results.append(f"[{a}] stdout:{r.stdout[:500]} stderr:{r.stderr[:200]}")
+                elif a == "read_file":
+                    path = p.get("path","")
+                    if os.path.exists(path):
+                        with open(path,"r",errors="ignore") as f:
+                            results.append(f"[read] {path}: {f.read()[:2000]}")
+                    else:
+                        results.append(f"[read] {path}: 文件不存在")
+                elif a == "write_file":
+                    path = p.get("path",""); txt = p.get("content","")
+                    os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
+                    with open(path,"w") as f: f.write(txt)
+                    results.append(f"[write] {path}: 已写入{len(txt)}字符")
+                elif a == "search":
+                    import glob
+                    pattern = p.get("pattern","*")
+                    found = glob.glob(pattern, recursive=True)[:20]
+                    results.append(f"[search] {pattern}: {found}")
+                elif a == "done":
+                    break
+            except Exception as e:
+                results.append(f"[{a}] 错误: {str(e)[:200]}")
+        
+        # 做一次最终总结 (便宜模型)
+        summary = await _call_ai([
+            {"role":"user","content":f"任务:{command}\n执行结果:\n"+'\n'.join(results)+"\n\n请一句话总结完成情况。"}
+        ], model="gpt-3.5-turbo", max_tokens=100, temperature=0)
+        
+        token_estimate = len(classify_prompt) + len(plan) + len(summary) + 300
+        return {
+            "ok":True, "completed":True, "mode":"code", "cycles":len(action_log),
+            "log":action_log, "results":results, "final_result":summary,
+            "token_saved": True, "estimated_tokens": token_estimate,
+            "vs_visual_mode": f"省了约{(max_cycles*1500 - token_estimate)//1000}k tokens"
+        }
+    
+    # ===== GUI任务: 视觉操控(优化版) =====
+    system_prompt = """你是电脑操控AI。看到截图后回复JSON: {"observation":"看到了什么","thought":"思考","action":"操作名","target":"元素描述(文本:xxx/坐标:x,y)","params":{},"confidence":0.8}
+操作: click|double_click|type_text|press_key|scroll|move|wait|open_app|close_window|switch_window|select_all|copy|paste|undo|save|run_command|done|fail
+原则: 用target描述元素(如"文本:登录"), 操作后验证, 卡住换策略。"""
     
     cycle = 0
     last_screenshot = None
+    last_action = None  # 避免重复截图
     
     while cycle < max_cycles:
         cycle += 1
-        screenshot_b64 = None
         
-        if target == "server":
-            try:
-                script = "from playwright.sync_api import sync_playwright\np = sync_playwright().start()\nbrowser = p.chromium.launch(headless=True)\npage = browser.new_page(viewport={'width':1280,'height':900})\ntry:\n    page.screenshot(path='/tmp/human_shot.png')\nexcept:\n    page.goto('about:blank')\n    page.screenshot(path='/tmp/human_shot.png')\nbrowser.close()\np.stop()"
-                with tempfile.NamedTemporaryFile(suffix=".py",mode="w",delete=False) as f:
-                    f.write(script); tmp = f.name
-                subprocess.run(["python3",tmp],capture_output=True,text=True,timeout=15)
-                os.unlink(tmp)
-                if os.path.exists("/tmp/human_shot.png"):
-                    with open("/tmp/human_shot.png","rb") as f:
-                        screenshot_b64 = base64.b64encode(f.read()).decode()
-                    os.unlink("/tmp/human_shot.png")
-            except: pass
-        elif target in connected_remotes:
-            ws = connected_remotes[target]
-            await ws.send_json({"type":"execute","action":"screenshot","params":{}})
-            for _ in range(30):
+        # 只在必要时截图 (连续打字/按键后不需要)
+        need_screenshot = last_action not in ("type_text","press_key","wait")
+        
+        screenshot_b64 = None
+        if need_screenshot or cycle == 1:
+            if target == "server":
                 try:
-                    data = await asyncio.wait_for(ws.receive_json(), timeout=3.0)
-                    if data.get("type") == "result" and data.get("screenshot"):
-                        screenshot_b64 = data.get("screenshot"); break
-                except: break
+                    script = "from playwright.sync_api import sync_playwright\np = sync_playwright().start()\nbrowser = p.chromium.launch(headless=True)\npage = browser.new_page(viewport={'width':1024,'height':768})\ntry:\n    page.screenshot(path='/tmp/human_shot.png')\nexcept:\n    page.goto('about:blank')\n    page.screenshot(path='/tmp/human_shot.png')\nbrowser.close()\np.stop()"
+                    with tempfile.NamedTemporaryFile(suffix=".py",mode="w",delete=False) as f:
+                        f.write(script); tmp = f.name
+                    subprocess.run(["python3",tmp],capture_output=True,text=True,timeout=15)
+                    os.unlink(tmp)
+                    if os.path.exists("/tmp/human_shot.png"):
+                        with open("/tmp/human_shot.png","rb") as f:
+                            screenshot_b64 = base64.b64encode(f.read()).decode()
+                        os.unlink("/tmp/human_shot.png")
+                except: pass
+            elif target in connected_remotes:
+                try:
+                    ws = connected_remotes[target]
+                    await ws.send_json({"type":"execute","action":"screenshot","params":{}})
+                    for _ in range(30):
+                        try:
+                            data = await asyncio.wait_for(ws.receive_json(), timeout=3.0)
+                            if data.get("type") == "result" and data.get("screenshot"):
+                                screenshot_b64 = data.get("screenshot"); break
+                        except: break
+                except: pass
         
         if not screenshot_b64 and cycle == 1:
             return {"ok":False,"error":"无法获取屏幕截图","cycle":cycle}
@@ -1005,11 +1088,14 @@ async def human_like_agent(req: dict, _=Depends(verify_token)):
         
         last_screenshot = screenshot_b64
         
-        user_prompt = f"任务: {command}\n第{cycle}/{max_cycles}步。\n之前操作: {json.dumps(action_log[-5:],ensure_ascii=False)}\n请分析截图，用target描述要操作的元素。"
+        # 模型选择: 前3步用gpt-4o-mini(便宜10倍), 卡住了才用gpt-4o
+        use_model = "gpt-4o-mini" if cycle <= 3 else "gpt-4o"
+        user_prompt = f"任务: {command}\n第{cycle}/{max_cycles}步。\n之前操作: {json.dumps(action_log[-3:],ensure_ascii=False)}\n分析截图,用target描述元素。"
+        
         ai_response = await _call_ai([
             {"role":"system","content":system_prompt},
-            {"role":"user","content":[{"type":"text","text":user_prompt},{"type":"image_url","image_url":{"url":f"data:image/png;base64,{screenshot_b64}","detail":"high"}}]}
-        ], model="gpt-4o", max_tokens=500, temperature=0.3)
+            {"role":"user","content":[{"type":"text","text":user_prompt},{"type":"image_url","image_url":{"url":f"data:image/png;base64,{screenshot_b64}","detail":"low"}}]}  # low detail = 更便宜
+        ], model=use_model, max_tokens=300, temperature=0.3)
         
         decision = {}
         try:
@@ -1018,27 +1104,28 @@ async def human_like_agent(req: dict, _=Depends(verify_token)):
         except: pass
         
         if not decision:
-            action_log.append({"cycle":cycle,"ai_response":ai_response[:200],"error":"解析失败"}); continue
+            action_log.append({"cycle":cycle,"error":"解析失败"}); continue
         
         action = decision.get("action","screenshot")
         params = decision.get("params",{})
+        last_action = action
         
-        action_log.append({"cycle":cycle,"observation":decision.get("observation",""),"thought":decision.get("thought",""),"action":action,"target":decision.get("target",""),"params":params})
+        action_log.append({"cycle":cycle,"observation":decision.get("observation","")[:80],"thought":decision.get("thought","")[:80],"action":action,"target":decision.get("target","")})
         
         if action == "done":
-            return {"ok":True,"completed":True,"cycles":cycle,"log":action_log,"result":params.get("summary",""),"screenshot":last_screenshot}
+            return {"ok":True,"completed":True,"mode":"gui","cycles":cycle,"log":action_log,"result":params.get("summary",""),"screenshot":last_screenshot,"model":"gpt-4o-mini","estimated_tokens":cycle*500}
         if action == "fail":
-            return {"ok":False,"error":params.get("reason","任务失败"),"cycles":cycle,"log":action_log}
+            return {"ok":False,"error":params.get("reason","任务失败"),"mode":"gui","cycles":cycle,"log":action_log}
         
         if target == "server":
             try:
-                script = f"from playwright.sync_api import sync_playwright\np = sync_playwright().start()\nbrowser = p.chromium.launch(headless=True)\npage = browser.new_page(viewport={{'width':1280,'height':900}})\ntry:\n"
-                if action == "click": script += f"    page.mouse.click({params.get('x',640)},{params.get('y',450)})\n"
-                elif action == "double_click": script += f"    page.mouse.dblclick({params.get('x',640)},{params.get('y',450)})\n"
-                elif action == "type_text": script += f"    page.keyboard.type('{params.get('text','')}', delay=50)\n"
+                script = f"from playwright.sync_api import sync_playwright\np = sync_playwright().start()\nbrowser = p.chromium.launch(headless=True)\npage = browser.new_page(viewport={{'width':1024,'height':768}})\ntry:\n"
+                if action == "click": script += f"    page.mouse.click({params.get('x',512)},{params.get('y',384)})\n"
+                elif action == "double_click": script += f"    page.mouse.dblclick({params.get('x',512)},{params.get('y',384)})\n"
+                elif action == "type_text": script += f"    page.keyboard.type('{params.get('text','')}', delay=30)\n"
                 elif action == "scroll": script += f"    page.mouse.wheel(0,{params.get('amount',-300)})\n"
                 elif action == "press_key": script += f"    page.keyboard.press('{params.get('key','enter')}')\n"
-                elif action == "open_app" and params.get("url"): script += f"    page.goto('{params.get('url')}',wait_until='domcontentloaded')\n"
+                elif action == "run_command": script += f"    import subprocess; subprocess.run('{params.get('command','')}',shell=True)\n"
                 else: script += f"    page.keyboard.press('{params.get('key','enter')}')\n"
                 script += "    page.screenshot(path='/tmp/human_shot.png')\nexcept Exception as e:\n    print(f'ERROR: {e}')\nbrowser.close()\np.stop()"
                 with tempfile.NamedTemporaryFile(suffix=".py",mode="w",delete=False) as f:
@@ -1046,20 +1133,17 @@ async def human_like_agent(req: dict, _=Depends(verify_token)):
                 subprocess.run(["python3",tmp],capture_output=True,text=True,timeout=20)
                 os.unlink(tmp)
             except Exception as e:
-                action_log[-1]["error"] = str(e)
+                action_log[-1]["error"] = str(e)[:100]
         elif target in connected_remotes:
             try:
                 ws = connected_remotes[target]
-                remote_action = action
-                if action == "open_app" and params.get("url"): remote_action = "open_url"
-                await ws.send_json({"type":"execute","action":remote_action,"params":params,"task_id":str(cycle)})
+                await ws.send_json({"type":"execute","action":action,"params":params,"task_id":str(cycle)})
                 action_log[-1]["remote"] = target
             except Exception as e:
-                action_log[-1]["error"] = str(e)
+                action_log[-1]["error"] = str(e)[:100]
     
-    return {"ok":False,"error":"达到最大循环次数","cycles":cycle,"log":action_log,"partial_result":final_result,"screenshot":last_screenshot}
+    return {"ok":False,"error":"达到最大循环次数","mode":"gui","cycles":cycle,"log":action_log,"screenshot":last_screenshot,"estimated_tokens":cycle*500}
 
-# ===== 远程电脑快速操控 =====
 @router.post("/agent/quick")
 async def quick_agent_action(req: dict, _=Depends(verify_token)):
     client_id = req.get("client_id","")
