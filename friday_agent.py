@@ -13,7 +13,173 @@ import socket
 # ===== 配置 =====
 SERVER = os.getenv("FRIDAY_SERVER", "wss://tiktook.eu.cc/agent/advanced/remote/ws")
 CLIENT_ID = socket.gethostname()
-VISION_ENABLED = True  # 是否启用视觉理解（截图发给服务器AI分析）
+VISION_ENABLED = True  # 是否启用视觉理解
+# ===== 本地零Token命令解析 =====
+LOCAL_COMMANDS = {
+    # 截图类
+    "截图": "screenshot", "截屏": "screenshot", "屏幕截图": "screenshot",
+    # 系统操作
+    "锁屏": "lock", "睡眠": "sleep_pc", "关机": "shutdown", "重启": "restart",
+    "音量加": "volume_up", "音量减": "volume_down", "静音": "mute",
+    "亮度加": "brightness_up", "亮度减": "brightness_down",
+    # 快捷键
+    "复制": "copy", "粘贴": "paste", "全选": "select_all", "撤销": "undo",
+    "保存": "save", "剪切": "cut",
+    # 窗口
+    "关闭窗口": "close_window", "切换窗口": "switch_window",
+    "最小化": "minimize", "最大化": "maximize",
+    # 应用
+    "打开记事本": ("open_app", "notepad"),
+    "打开计算器": ("open_app", "calc"),
+    "打开画图": ("open_app", "mspaint"),
+    "打开浏览器": ("open_app", "chrome"),
+    "打开任务管理器": ("open_app", "taskmgr"),
+    "打开cmd": ("open_app", "cmd"),
+    "打开终端": ("open_app", "cmd"),
+    # 信息
+    "现在几点": "get_time", "几点了": "get_time",
+    "今天几号": "get_date", "什么日期": "get_date",
+    "CPU使用率": "get_cpu", "内存使用": "get_memory", "磁盘空间": "get_disk",
+}
+
+def parse_local_command(text):
+    """解析自然语言指令，匹配本地命令。返回(action, params)或None"""
+    text_lower = text.strip().lower()
+    # 精确匹配
+    for keyword, action in LOCAL_COMMANDS.items():
+        if keyword in text_lower or keyword in text:
+            if isinstance(action, tuple):
+                return action[0], {"name": action[1]}
+            return action, {}
+    
+    # 模式匹配: "打开XXX" -> 尝试打开任意应用
+    import re
+    open_match = re.match(r'打开s*(.+)', text)
+    if open_match:
+        app_name = open_match.group(1).strip()
+        return "open_app", {"name": app_name}
+    
+    # 模式匹配: "输入XXX" / "打字XXX"
+    type_match = re.match(r'(?:输入|打字|写)s*(.+)', text)
+    if type_match:
+        return "type_text", {"text": type_match.group(1).strip()}
+    
+    # 模式匹配: "按XXX键" / "按XXX"
+    key_match = re.match(r'按s*(.+?)(?:键)?$', text)
+    if key_match:
+        key_map = {"回车": "enter", "空格": "space", "删除": "backspace", "退格": "backspace",
+                   "上": "up", "下": "down", "左": "left", "右": "right",
+                   "ESC": "escape", "Tab": "tab", "Win": "win", "F5": "f5"}
+        key = key_match.group(1).strip()
+        return "press_key", {"key": key_map.get(key, key)}
+    
+    return None
+
+async def execute_local_command(action, params):
+    """执行本地零Token命令（不经过服务器AI）"""
+    import pyautogui, time
+    
+    if action == "screenshot":
+        return {"ok": True, "screenshot": screenshot_to_base64()}
+    
+    elif action == "lock":
+        if os.name == 'nt': subprocess.run("rundll32.exe user32.dll,LockWorkStation", shell=True)
+        else: subprocess.run(["xdg-screensaver", "lock"])
+        return {"ok": True, "done": "locked"}
+    
+    elif action == "sleep_pc":
+        if os.name == 'nt': subprocess.run("rundll32.exe powrprof.dll,SetSuspendState 0,1,0", shell=True)
+        else: subprocess.run(["systemctl", "suspend"])
+        return {"ok": True, "done": "sleeping"}
+    
+    elif action == "shutdown":
+        if os.name == 'nt': subprocess.run("shutdown /s /t 5", shell=True)
+        else: subprocess.run(["shutdown", "-h", "+1"])
+        return {"ok": True, "done": "shutting down"}
+    
+    elif action == "restart":
+        if os.name == 'nt': subprocess.run("shutdown /r /t 5", shell=True)
+        else: subprocess.run(["shutdown", "-r", "+1"])
+        return {"ok": True, "done": "restarting"}
+    
+    elif action == "volume_up":
+        pyautogui.press("volumeup")
+        return {"ok": True, "done": "volume_up"}
+    
+    elif action == "volume_down":
+        pyautogui.press("volumedown")
+        return {"ok": True, "done": "volume_down"}
+    
+    elif action == "mute":
+        pyautogui.press("volumemute")
+        return {"ok": True, "done": "muted"}
+    
+    elif action in ("copy","paste","select_all","undo","save","cut"):
+        key_map = {"copy": ("ctrl","c"), "paste": ("ctrl","v"), "select_all": ("ctrl","a"),
+                   "undo": ("ctrl","z"), "save": ("ctrl","s"), "cut": ("ctrl","x")}
+        pyautogui.hotkey(*key_map[action])
+        return {"ok": True, "done": action}
+    
+    elif action == "close_window":
+        pyautogui.hotkey("alt", "f4")
+        return {"ok": True, "done": "closed"}
+    
+    elif action == "switch_window":
+        pyautogui.hotkey("alt", "tab")
+        return {"ok": True, "done": "switched"}
+    
+    elif action == "minimize":
+        pyautogui.hotkey("win", "down")
+        return {"ok": True, "done": "minimized"}
+    
+    elif action == "maximize":
+        pyautogui.hotkey("win", "up")
+        return {"ok": True, "done": "maximized"}
+    
+    elif action == "open_app":
+        app = params.get("name", "")
+        if os.name == 'nt':
+            subprocess.Popen(app, shell=True)
+        else:
+            subprocess.Popen([app])
+        time.sleep(0.5)
+        return {"ok": True, "done": f"opened {app}"}
+    
+    elif action == "get_time":
+        from datetime import datetime
+        return {"ok": True, "time": datetime.now().strftime("%H:%M:%S")}
+    
+    elif action == "get_date":
+        from datetime import datetime
+        return {"ok": True, "date": datetime.now().strftime("%Y-%m-%d %A")}
+    
+    elif action == "get_cpu":
+        import psutil
+        return {"ok": True, "cpu": f"{psutil.cpu_percent()}%"}
+    
+    elif action == "get_memory":
+        import psutil
+        return {"ok": True, "memory": f"{psutil.virtual_memory().percent}%"}
+    
+    elif action == "get_disk":
+        import psutil
+        return {"ok": True, "disk": f"{psutil.disk_usage('/').percent}%"}
+    
+    elif action in ("brightness_up","brightness_down"):
+        # Windows亮度
+        if os.name == 'nt':
+            import screen_brightness_control as sbc
+            try:
+                current = sbc.get_brightness()[0]
+                new = min(100, current + 10) if action == "brightness_up" else max(0, current - 10)
+                sbc.set_brightness(new)
+                return {"ok": True, "brightness": new}
+            except: pass
+        return {"ok": False, "error": "亮度调节需要安装 screen-brightness-control"}
+    
+    return {"ok": False, "error": f"未知本地命令: {action}"}
+
+（截图发给服务器AI分析）
 
 # ===== 截图 =====
 def screenshot_to_base64():
@@ -355,6 +521,15 @@ async def main():
                         task_id = data.get("task_id", "")
                         print(f"\n[执行] {action} | {str(params)[:80]}")
                         
+                        # 先检查本地命令（零Token，不花钱）
+                        local_result = parse_local_command(action) if not params or not any(params.values()) else None
+                        if local_result:
+                            local_action, local_params = local_result
+                            result = await execute_local_command(local_action, local_params)
+                            await ws.send(json.dumps({"type":"result","task_id":task_id,"action":action,"ok":result.get("ok",False),"data":result,"screenshot":result.get("screenshot"),"local":True},ensure_ascii=False))
+                            print(f"[本地零Token] {action} -> {local_action} \u2705")
+                            continue
+                        
                         result = await execute_action(action, params, ws)
                         
                         # 返回结果
@@ -389,6 +564,18 @@ async def main():
                     
                     else:
                         print(f"[未知消息] {msg_type}")
+                    
+                    elif msg_type == "nl_command":
+                        # 自然语言指令 -> 先尝试本地解析（零Token）
+                        text = data.get("text","")
+                        local_result = parse_local_command(text)
+                        if local_result:
+                            local_action, local_params = local_result
+                            result = await execute_local_command(local_action, local_params)
+                            await ws.send(json.dumps({"type":"nl_result","original":text,"action":local_action,"ok":result.get("ok",False),"data":result,"screenshot":result.get("screenshot"),"local":True,"zero_token":True},ensure_ascii=False))
+                            print(f"[NL本地] \"{text}\" -> {local_action} ✅ (零Token)")
+                        else:
+                            await ws.send(json.dumps({"type":"nl_result","original":text,"local":False,"message":"需要AI处理"},ensure_ascii=False))
         
         except websockets.exceptions.ConnectionClosed:
             print(f"[断开] 连接关闭，5秒后重连...")
