@@ -263,7 +263,7 @@ async function sendFloatMsg() {
   padding: 10px 12px; border-radius: 8px;
   color: rgba(255,255,255,0.5); text-decoration: none;
   font-size: 13px; transition: all 0.15s; margin-bottom: 2px; white-space: nowrap;
-}
+
 .nav-item:hover { background: rgba(102,126,234,0.1); color: rgba(255,255,255,0.85); }
 .nav-item.active {
   background: linear-gradient(135deg, rgba(102,126,234,0.2), rgba(19,194,194,0.15));
