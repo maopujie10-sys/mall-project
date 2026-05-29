@@ -442,21 +442,6 @@ minimizeChat = function() { stopMatrixRain(); origMin() }
 
 function detectTask(msg) {
   const m = msg.toLowerCase();
-  if (m.includes('???')||m.includes('server')||m.includes('??')||m.includes('cpu')) return '?????...';
-  if (m.includes('??')||m.includes('order')) return '??????...';
-  if (m.includes('??')||m.includes('report')||m.includes('??')) return '?????...';
-  if (m.includes('??')||m.includes('??')||m.includes('??')||m.includes('??')) return '??????...';
-  if (m.includes('??')||m.includes('??')||m.includes('price')) return '??????...';
-  if (m.includes('??')||m.includes('??')||m.includes('??')) return 'AI????...';
-  if (m.includes('??')||m.includes('backup')) return '?????...';
-  if (m.includes('??')||m.includes('?')||m.includes('scrape')) return '?????...';
-  if (m.includes('??')||m.includes('deploy')||m.includes('docker')) return '????...';
-  return 'AI ???...';
-}
-
-
-function detectTask(msg) {
-  const m = msg.toLowerCase();
   processingSteps.value = [];
   if (m.includes('???')||m.includes('server')||m.includes('??')||m.includes('cpu')||m.includes('??')) {
     processingSteps.value = ['?????...', '??CPU??...', '??????...', '??????...', '????...'];
