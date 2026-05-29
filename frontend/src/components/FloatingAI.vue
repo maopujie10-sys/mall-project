@@ -24,9 +24,9 @@
     <transition name="slide-up">
       <div v-if="chatOpen" class="ai-chat-panel" :class="{ expanded: chatExpanded, video: videoActive }">
         <!-- 头部工具栏 -->
-        <div class="chat-header" @mousedown="startPanelDrag">
+        <div class="chat-header" @mousedown="startPanelDrag"><div class="header-scanline"></div>
           <div class="header-left">
-            <div class="ai-avatar-small">AI</div>
+            <div class="ai-avatar-small"><div class="avatar-holo"></div>AI</div>
             <div>
               <div class="header-title">{{ videoActive ? '视频通话' : 'Friday AI 助手' }}</div>
               <div class="header-status">{{ videoActive ? '通话中...' : (voiceActive ? '🎤 语音聆听中...' : '在线 · 随时为您服务') }}</div>
@@ -69,7 +69,7 @@
         </div>
 
         <!-- ====== 消息区 ====== -->
-        <div v-if="!videoActive" class="chat-messages" ref="msgList">
+        <div v-if="!videoActive" class="chat-messages" ref="msgList"><canvas ref="matrixCanvas" class="matrix-bg"></canvas>
           <div v-if="messages.length === 0" class="empty-chat">
             <div class="empty-icon">🤖</div>
             <p>你好！我是 Friday AI 助手</p>
@@ -394,6 +394,51 @@ function getFileIcon(name) { const ext = name.split('.').pop().toLowerCase(); co
 function formatSize(bytes) { if(!bytes) return ''; if(bytes<1024) return bytes+'B'; if(bytes<1024*1024) return (bytes/1024).toFixed(1)+'KB'; return (bytes/(1024*1024)).toFixed(1)+'MB' }
 function clearAttachments() { attachments.value = [] }
 
+
+
+// === SCI-FI EFFECTS ===
+const matrixCanvas = ref(null)
+let matrixInterval = null
+
+function startMatrixRain() {
+  nextTick(() => {
+    const canvas = matrixCanvas.value
+    if (!canvas) return
+    const parent = canvas.parentElement
+    canvas.width = parent.clientWidth
+    canvas.height = parent.clientHeight
+    const ctx = canvas.getContext('2d')
+    const chars = '?????????????????????????01'
+    const fontSize = 10
+    const columns = Math.floor(canvas.width / fontSize)
+    const drops = Array(columns).fill(1)
+
+    function draw() {
+      ctx.fillStyle = 'rgba(10,10,30,0.05)'
+      ctx.fillRect(0, 0, canvas.width, canvas.height)
+      ctx.fillStyle = 'rgba(0,240,255,0.08)'
+      ctx.font = fontSize + 'px monospace'
+      for (let i = 0; i < drops.length; i++) {
+        const char = chars[Math.floor(Math.random() * chars.length)]
+        ctx.fillText(char, i * fontSize, drops[i] * fontSize)
+        if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0
+        drops[i]++
+      }
+    }
+    matrixInterval = setInterval(draw, 50)
+  })
+}
+function stopMatrixRain() {
+  if (matrixInterval) { clearInterval(matrixInterval); matrixInterval = null }
+}
+
+// Auto-start matrix when panel opens
+const origOpen = openChat
+openChat = function() { origOpen(); setTimeout(startMatrixRain, 200) }
+const origClose = closeChat
+closeChat = function() { stopMatrixRain(); origClose() }
+const origMin = minimizeChat
+minimizeChat = function() { stopMatrixRain(); origMin() }
 
 function detectTask(msg) {
   const m = msg.toLowerCase();
