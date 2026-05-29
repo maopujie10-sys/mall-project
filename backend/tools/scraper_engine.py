@@ -513,6 +513,9 @@ class EbayHtmlAdapter:
             m = re.search(r'/itm/(\d{10,13})', a.get("href", ""))
             if m:
                 item_ids.add(m.group(1))
+        # 如果无结果，重置session（可能被限流）
+        if not item_ids:
+            self._session = None
         return list(item_ids)
 
     async def search(self, keyword: str, max_pages: int = 1, session=None) -> list[str]:
