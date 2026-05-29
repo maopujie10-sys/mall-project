@@ -14,7 +14,7 @@ services:
       - ./backups:/app/backups
       - ./logs:/app/logs
       - /var/run/docker.sock:/var/run/docker.sock:ro
-        healthcheck:
+    healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9000/health"]
       interval: 30s
       retries: 3
@@ -25,8 +25,4 @@ services:
     container_name: mall-ai-frontend
     ports:
       - "5173:80"
-        healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9000/health"]
-      interval: 30s
-      retries: 3
     restart: unless-stopped

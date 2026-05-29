@@ -1,0 +1,25 @@
+{
+  "name": "TikTok跨境商城",
+  "short_name": "TK商城",
+  "description": "TikTok跨境商城 — 全球跨境批发平台，一件代发、品牌直供、创作者带货",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0f172a",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "zh-CN",
+  "icons": [{
+    "src": "/assets/logo.png",
+    "sizes": "512x512",
+    "type": "image/png",
+    "purpose": "any maskable"
+  },{
+    "src": "/assets/logo.png",
+    "sizes": "192x192",
+    "type": "image/png",
+    "purpose": "any maskable"
+  }],
+  "categories": ["shopping", "business"],
+  "prefer_related_applications": false
+}
