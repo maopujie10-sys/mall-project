@@ -148,6 +148,13 @@ function initScene() {
   })
   core = new THREE.Mesh(coreGeo, coreMat)
   scene.add(core)
+  
+  // AI之眼 — 内核心
+  const pupilGeo = new THREE.SphereGeometry(0.25, 32, 32)
+  const pupilMat = new THREE.MeshBasicMaterial({ color: 0xffffff })
+  const pupil = new THREE.Mesh(pupilGeo, pupilMat)
+  pupil.name = 'aiPupil'
+  scene.add(pupil)
 
   
   const glowGeo = new THREE.IcosahedronGeometry(1.2, 2)
@@ -286,6 +293,16 @@ function animate() {
   const heartbeat = 1 + 0.12 * Math.sin(t * 1.5)
   core.scale.set(heartbeat, heartbeat, heartbeat)
   core.material.emissiveIntensity = 0.4 + 0.5 * Math.sin(t * 1.5)
+  
+  // AI之眼 — 四处观察
+  const p = scene.getObjectByName('aiPupil')
+  if (p) {
+    p.position.x = Math.sin(t * 0.7) * 0.15
+    p.position.y = Math.cos(t * 0.5) * 0.1
+    p.position.z = Math.cos(t * 0.6) * 0.15
+    const ps = 1 + 0.1 * Math.sin(t * 2)
+    p.scale.set(ps, ps, ps)
+  }
 
   
   coreGlow.rotation.x += 0.002
@@ -416,6 +433,8 @@ onMounted(() => {
   window.addEventListener("resize", resize)
   container.value.addEventListener("mousemove", onMouseMove)
   container.value.addEventListener("click", onClick)
+  container.value.addEventListener("dblclick", () => { window.dispatchEvent(new CustomEvent('brain:openChat')) })
+  window.addEventListener('brain:speaking', () => { window._brainSpeaking = true; setTimeout(() => { window._brainSpeaking = false }, 2000) })
 })
 onBeforeUnmount(() => {
   cancelAnimationFrame(animFrameId)

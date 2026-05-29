@@ -86,6 +86,7 @@ onMounted(async () => {
   window.addEventListener('brain:thinking', (e) => { brainThinking.value = e.detail })
   window.addEventListener('brain:speaking', () => { brainSpeaking.value = true; setTimeout(() => { brainSpeaking.value = false }, 2000) })
   window.addEventListener('brain:pulse', () => { brainPulse.value = true; setTimeout(() => { brainPulse.value = false }, 600) })
+  window.addEventListener('brain:openChat', () => { const btn = document.querySelector('.ai-float-btn'); if (btn) btn.click() })
 })
 </script>
 <style>
