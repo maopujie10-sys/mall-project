@@ -53,6 +53,22 @@ const routes = [
       { path: "batch-upload", name: "BatchUpload", component: () => import("@/views/BatchUpload.vue"), meta: { title: "批量上架" } },
       { path: "auto-reply", name: "AutoReply", component: () => import("@/views/AutoReply.vue"), meta: { title: "自动回复" } },
       { path: "order-alert", name: "OrderAlert", component: () => import("@/views/OrderAlert.vue"), meta: { title: "订单预警" } },
+
+      // === 全能AI升级 v5 ===
+      { path: "voice-chat", name: "VoiceChat", component: () => import("@/views/VoiceChat.vue"), meta: { title: "语音对话" } },
+      { path: "agent-collab", name: "AgentCollab", component: () => import("@/views/AgentCollab.vue"), meta: { title: "Agent协作" } },
+      { path: "knowledge", name: "KnowledgeHub", component: () => import("@/views/KnowledgeHub.vue"), meta: { title: "知识中心" } },
+      { path: "code-deploy", name: "CodeDeploy", component: () => import("@/views/CodeDeploy.vue"), meta: { title: "AI代码部署" } },
+      { path: "predict", name: "PredictDashboard", component: () => import("@/views/PredictDashboard.vue"), meta: { title: "预测分析" } },
+      { path: "recommend", name: "RecommendPanel", component: () => import("@/views/RecommendPanel.vue"), meta: { title: "推荐引擎" } },
+      { path: "competitor", name: "CompetitorMonitor", component: () => import("@/views/CompetitorMonitor.vue"), meta: { title: "竞品监控" } },
+      { path: "customer-profile", name: "CustomerProfile", component: () => import("@/views/CustomerProfile.vue"), meta: { title: "客户画像" } },
+      { path: "text2sql", name: "Text2SQLPanel", component: () => import("@/views/Text2SQLPanel.vue"), meta: { title: "自然语言查库" } },
+      { path: "content-factory", name: "ContentFactory", component: () => import("@/views/ContentFactory.vue"), meta: { title: "AI内容工厂" } },
+      { path: "skill-market", name: "SkillMarket", component: () => import("@/views/SkillMarket.vue"), meta: { title: "技能市场" } },
+      { path: "memory-sync", name: "MemorySync", component: () => import("@/views/MemorySync.vue"), meta: { title: "跨平台记忆" } },
+      { path: "ab-test", name: "ABTestPanel", component: () => import("@/views/ABTestPanel.vue"), meta: { title: "A/B测试" } },
+      { path: "security-scan", name: "SecurityScan", component: () => import("@/views/SecurityScan.vue"), meta: { title: "安全扫描" } },
     ],
   },
 ]
