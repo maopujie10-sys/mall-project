@@ -320,7 +320,7 @@ async def run(ppk=5):
                 pds = [p.to_dict() for p in products if p.cos_images]
                 if not pds:
                     continue
-                result = import_batch(pds)
+                result = import_batch(pds, subcat_name=subcat)
                 stats["imported"] += result["imported"]
                 stats["skipped"] += result["skipped_duplicate"]
                 stats["failed"] += result["failed"]

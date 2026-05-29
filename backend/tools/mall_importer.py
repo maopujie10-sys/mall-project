@@ -59,23 +59,37 @@ def _ensure_review_table():
         conn.close()
 
 
-def _find_category(category_path: list[str]) -> str:
+def _find_category(category_path: list[str], subcat_name: str = "") -> str:
     """尝试从品类路径匹配系统分类，失败返回默认分类"""
-    if not category_path:
+    if not category_path and not subcat_name:
         return DEFAULT_CATEGORY_ID
 
-    cache_key = "|".join(category_path)
+    cache_key = subcat_name or "|".join(category_path)
     if cache_key in _cat_cache:
         return _cat_cache[cache_key]
 
     conn = _conn()
     try:
         cur = conn.cursor()
+        # 1) 优先精确匹配子品类名
+        if subcat_name:
+            cur.execute(
+                """SELECT c.UUID FROM T_MALL_CATEGORY c
+                   JOIN T_MALL_CATEGORY_LANG cl ON c.UUID = cl.CATEGORY_ID
+                   WHERE cl.NAME = %s AND c.TYPE=1 AND c.STATUS=1 AND cl.LANG='en'
+                   LIMIT 1""",
+                (subcat_name,)
+            )
+            row = cur.fetchone()
+            if row:
+                _cat_cache[cache_key] = row[0]
+                return row[0]
+        # 2) 模糊匹配品类路径
         for cat_name in reversed(category_path):
             cur.execute(
                 """SELECT c.UUID FROM T_MALL_CATEGORY c
                    JOIN T_MALL_CATEGORY_LANG cl ON c.UUID = cl.CATEGORY_ID
-                   WHERE cl.NAME LIKE %s AND c.TYPE=2 AND c.STATUS=1 AND cl.LANG='en'
+                   WHERE cl.NAME LIKE %s AND c.TYPE=1 AND c.STATUS=1 AND cl.LANG='en'
                    LIMIT 1""",
                 (f"%{cat_name}%",)
             )
@@ -123,7 +137,7 @@ def check_duplicate(title: str, source_url: str = "") -> Optional[str]:
     return None
 
 
-def import_product(product: dict, seller_id: str = DEFAULT_SELLER_ID) -> dict:
+def import_product(product: dict, seller_id: str = DEFAULT_SELLER_ID, subcat_name: str = "") -> dict:
     """导入单个采集商品到Mall数据库 — 直接上架
 
     写入表: T_MALL_SYSTEM_GOODS, T_MALL_SYSTEM_GOODS_LANG,
@@ -155,7 +169,7 @@ def import_product(product: dict, seller_id: str = DEFAULT_SELLER_ID) -> dict:
     specs = product.get("specs", []) or []
     reviews = product.get("reviews", []) or []
 
-    category_id = _find_category(category_path)
+    category_id = _find_category(category_path, subcat_name)
     now_ts = _now_ts()
     now_dt = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
@@ -289,14 +303,14 @@ def import_product(product: dict, seller_id: str = DEFAULT_SELLER_ID) -> dict:
         return {"ok": False, "error": str(e), "goods_id": goods_id}
 
 
-def import_batch(products: list[dict], seller_id: str = DEFAULT_SELLER_ID) -> dict:
+def import_batch(products: list[dict], seller_id: str = DEFAULT_SELLER_ID, subcat_name: str = "") -> dict:
     """批量导入 — 自动去重，导完触发GC"""
     imported = []
     skipped = []
     failed = []
 
     for p in products:
-        result = import_product(p, seller_id)
+        result = import_product(p, seller_id, subcat_name)
         if result.get("ok"):
             imported.append(result)
         elif result.get("duplicate"):
