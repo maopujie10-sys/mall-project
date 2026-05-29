@@ -118,8 +118,9 @@ function initPositions() {
   })
 }
 initPositions()
+startFloating()
 if (typeof window !== 'undefined') {
-  window.addEventListener('resize', initPositions)
+  window.addEventListener('resize', () => { initPositions(); floatTimers.forEach(clearInterval); setTimeout(startFloating, 200) })
 }
 
 const activeCategory = computed(() => categories.find(c => c.id === activeCat.value))
@@ -171,6 +172,28 @@ function onDragUp() {
   document.ontouchmove = null
   document.ontouchend = null
 }
+
+
+// ===== 自动漂浮动画 =====
+let floatTimers = []
+function startFloating() {
+  floatTimers.forEach(clearInterval)
+  floatTimers = []
+  categories.forEach((cat, i) => {
+    const baseX = cat.x, baseY = cat.y
+    const phase = i * Math.PI / 2
+    const speed = 0.3 + i * 0.1
+    const range = 20 + i * 8
+    floatTimers.push(setInterval(() => {
+      if (cat.dragging) return
+      const t = Date.now() / 1000
+      cat.x = baseX + Math.sin(t * speed + phase) * range
+      cat.y = baseY + Math.cos(t * speed * 0.7 + phase) * range * 0.6
+    }, 50))
+  })
+}
+startFloating()
+window.addEventListener('resize', () => { initPositions(); startFloating() })
 
 function handleAction(item) {
   if (item.action === 'openChat') {

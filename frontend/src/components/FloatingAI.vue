@@ -187,6 +187,7 @@ const posY = ref(0)
 let isDragging = false
 let dragStartX = 0, dragStartY = 0, btnStartX = 0, btnStartY = 0
 let panelDragging = false, panelStartX = 0, panelStartY = 0, panelPos = { x: 0, y: 0 }
+let floatTimer = null
 
 const STORAGE_KEY = 'friday_floating_chat'
 
