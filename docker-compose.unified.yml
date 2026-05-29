@@ -14,7 +14,7 @@ services:
     ports:
       - "3306:3306"
     environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-changeme}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
       MYSQL_DATABASE: mall_db
     volumes:
       - mysql_data:/var/lib/mysql
@@ -52,12 +52,12 @@ services:
       - DB_HOST=mysql
       - DB_PORT=3306
       - DB_USER=root
-      - DB_PASSWORD=${MYSQL_ROOT_PASSWORD:-changeme}
+      - DB_PASSWORD=${DB_PASSWORD}
       - DB_NAME=ai_agent
       - MALL_DB_HOST=mysql
       - MALL_DB_PORT=3306
       - MALL_DB_USER=root
-      - MALL_DB_PASSWORD=${MYSQL_ROOT_PASSWORD:-changeme}
+      - MALL_DB_PASSWORD=${DB_PASSWORD}
       - MALL_DB_NAME=mall_db
       - REDIS_DSN=redis://redis:6379/0
       - MALL_BASE_URL=http://mall-api:8080
@@ -95,7 +95,7 @@ services:
     environment:
       - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/mall_db?useUnicode=true&characterEncoding=utf8mb4
       - SPRING_DATASOURCE_USERNAME=root
-      - SPRING_DATASOURCE_PASSWORD=${MYSQL_ROOT_PASSWORD:-changeme}
+      - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
       - SPRING_REDIS_HOST=redis
       - SPRING_REDIS_PORT=6379
     volumes:
