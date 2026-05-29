@@ -3,6 +3,7 @@ import asyncio, json, random, time, httpx, os
 from datetime import datetime, timedelta
 from state import state
 from tools.memory_store import memory_store
+from tools.omni_engine import PredictEngine, SmartPricing, SelfHealing, KnowledgeGraph, BusinessEngine
 from tools.logger import get_logger
 
 logger = get_logger("lifeform")
@@ -85,6 +86,22 @@ class DigitalLifeform:
                     "net_out_mb": round(psutil.net_io_counters().bytes_sent / 1024**2, 1),
                 }
 
+            if action_name == "manage_scraper":
+                cmd = (params or {}).get("command", "status")
+                import subprocess
+                if cmd == "start":
+                    r = subprocess.run(["nohup","python3","/app/full_scrape.py","&"], cwd="/app", shell=True, capture_output=True, text=True)
+                    return {"ok": True, "action": "started"}
+                elif cmd == "stop":
+                    r = subprocess.run(["pkill","-f","full_scrape.py"], capture_output=True, text=True)
+                    return {"ok": True, "action": "stopped"}
+                else:
+                    r = subprocess.run(["pgrep","-f","full_scrape.py"], capture_output=True, text=True)
+                    return {"ok": True, "running": bool(r.stdout.strip()), "pid": r.stdout.strip()}
+
+            if action_name == "run_daily_report":
+                return await cls.daily_report()
+
             if action_name == "send_alert":
                 msg = (params or {}).get("message", "")
                 try:
@@ -150,16 +167,19 @@ class DigitalLifeform:
         cpu = perception.get("cpu", 0)
         if cpu > 85:
             actions.append({"action": "check_system_health", "reason": f"CPU={cpu}%,需检查", "urgency": 4})
+            await cls.push_alert("CPU告警", f"CPU使用率达{cpu}%,正在检查", "warning")
 
         # 2. 内存过高 -> 清理
         mem = perception.get("memory", 0)
         if mem > 85:
             actions.append({"action": "clean_docker_cache", "reason": f"内存={mem}%", "urgency": 5})
+            await cls.push_alert("内存告警", f"内存使用率达{mem}%,正在清理", "warning")
 
         # 3. 磁盘告急 -> 清理
         disk = perception.get("disk", 0)
         if disk > 90:
             actions.append({"action": "clean_docker_cache", "reason": f"磁盘={disk}%", "urgency": 5})
+            await cls.push_alert("磁盘告急", f"磁盘使用率达{disk}%,正在清理", "critical")
 
         # 4. 定期轮值检查
         if cls._cycle_count % 6 == 0:  # 每6个周期(约30分钟)
@@ -173,7 +193,27 @@ class DigitalLifeform:
         if perception.get("tasks_pending", 0) > 5:
             actions.append({"action": "send_alert", "params": {"message": f"审批堆积: {perception['tasks_pending']}个待处理"}, "reason": "审批堆积", "urgency": 3})
 
-        # 7. 用AI模型做更智能的决策(如果有API Key)
+        # 7. 检查采集器状态
+        if cls._cycle_count % 15 == 0:  # 每30分钟
+            import subprocess
+            try:
+                r = subprocess.run(["pgrep","-f","full_scrape.py"], capture_output=True, text=True)
+                if not r.stdout.strip():
+                    await cls.push_alert("采集器异常", "采集器未运行,建议重新启动", "warning")
+            except: pass
+
+        # 8. 预测性告警
+        if cls._cycle_count % 10 == 0:
+            for metric in ["cpu", "memory", "disk"]:
+                pred = PredictEngine.predict(metric)
+                if pred.get("will_exceed"):
+                    await cls.push_alert(
+                        f"预测告警: {metric}",
+                        f"{metric}将在{pred['eta_minutes']}分钟后超标 (当前{pred['current']}% {pred['trend']})",
+                        "warning"
+                    )
+
+        # 9. 用AI模型做更智能的决策(如果有API Key)
         if (DEEPSEEK_KEY or OPENAI_KEY) and cls._cycle_count % 3 == 0:
             try:
                 prompt = f"""系统状态:
@@ -296,6 +336,12 @@ class DigitalLifeform:
             return {"status": "perception_error"}
 
         cls._cycle_count += 1
+        # 记录指标用于趋势预测
+        for k, v in perception.items():
+            if k in ("cpu", "memory", "disk"):
+                try:
+                    PredictEngine.record(k, float(str(v).replace("%","")))
+                except: pass
         actions = await cls.think(perception)
         results = await cls.act(actions)
         reflection = cls.reflect()
@@ -340,6 +386,29 @@ class DigitalLifeform:
 
         asyncio.create_task(loop())
         return {"status": "started", "interval": interval}
+
+    @classmethod
+    async def daily_report(cls):
+        """每日健康报告"""
+        try:
+            import psutil
+            cpu = psutil.cpu_percent(interval=1)
+            mem = psutil.virtual_memory()
+            disk = psutil.disk_usage("/")
+            report = {
+                "title": f"Friday 每日健康报告",
+                "body": f"CPU:{cpu}% 内存:{mem.percent}% 磁盘:{disk.percent}%\n周期:{cls._cycle_count} 心情:{cls._mood_score:.0%} 智慧:{cls._wisdom:.1f}",
+                "level": "info",
+                "time": __import__("datetime").datetime.now().isoformat()
+            }
+            from websocket_manager import ws_manager
+            import json
+            await ws_manager.broadcast(json.dumps({"type":"daily_report", **report}))
+            logger.info(f"Daily report: {report['body']}")
+            return report
+        except Exception as e:
+            logger.info(f"Daily report failed: {e}")
+            return {"error": str(e)}
 
     @classmethod
     async def stop_loop(cls):

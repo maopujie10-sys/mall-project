@@ -313,6 +313,22 @@ async def confirm_task(req: ConfirmRequest, _=Depends(verify_token)):
             return {"ok": True, "status": a["status"]}
     return {"ok": False, "error": "未找到该任务"}
 
+# ===== 图片分析 =====
+class ImageChatRequest(BaseModel):
+    image_base64: str
+    question: str = "请描述这张图片"
+
+@router.post("/chat/vision")
+async def agent_chat_vision(req: ImageChatRequest, _=Depends(verify_token)):
+    """AI图片分析"""
+    try:
+        from agents.vision_agent import analyze_image
+        result = await analyze_image(req.image_base64, req.question)
+        DigitalLifeform.remember_conversation(f"[图片] {req.question}", str(result)[:300])
+        return {"ok": True, "reply": str(result)}
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
 @router.post("/handover")
 async def agent_handover(req: HandoverRequest, _=Depends(verify_token)):
     state.mode = "human_control"

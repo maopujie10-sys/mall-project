@@ -135,6 +135,7 @@ from routers.description_router import router as description_router
 from routers.fraud_router import router as fraud_router
 from routers.trace_router import router as trace_router
 from routers.ws_router import router as ws_router
+from routers.gateway_router import router as gateway_router
 
 # === 落地页轮值 ===
 ROTATION_DOMAINS = [
@@ -224,6 +225,7 @@ app.include_router(description_router)
 app.include_router(fraud_router)
 app.include_router(trace_router)
 app.include_router(ws_router)
+app.include_router(gateway_router, prefix="/api")
 
 @app.get("/agent", include_in_schema=False)
 async def dashboard():
