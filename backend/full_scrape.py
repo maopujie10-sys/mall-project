@@ -225,33 +225,47 @@ print(f"覆盖 {len(SUBCAT_KEYWORDS)} 个子品类, {TOTAL} 个关键词")
 async def run(ppk=5):
     from tools.scraper_engine import ADAPTERS
     from tools.mall_importer import import_batch
-    import httpx
+    import httpx, random, hashlib
     from tools.scraper_engine import download_and_upload
 
     stats = {"cats": 0, "kws": 0, "found": 0, "imported": 0, "skipped": 0, "failed": 0}
-    adapter = ADAPTERS["amazon"]
+    # 多平台轮换，避免单平台被封
+    PLATFORMS = ["amazon", "aliexpress", "shopee", "wish", "lazada"]
+    platform_idx = 0
 
     async with httpx.AsyncClient(timeout=25, follow_redirects=True, verify=False) as session:
         for subcat, keywords in SUBCAT_KEYWORDS.items():
             stats["cats"] += 1
             cat_imported = 0
-            print(f"\n[{stats['cats']}/{len(SUBCAT_KEYWORDS)}] {subcat}")
+            platform = PLATFORMS[platform_idx % len(PLATFORMS)]
+            platform_idx += 1
+            adapter = ADAPTERS.get(platform, ADAPTERS["amazon"])
+            print(f"\n[{stats['cats']}/{len(SUBCAT_KEYWORDS)}] {subcat} [{platform}]", end="", flush=True)
 
             for kw in keywords:
                 if cat_imported >= ppk:
-                    break  # 该子品类已够，跳到下一个
+                    break
                 stats["kws"] += 1
+                # 搜索间隔7-12秒，防止被封
+                await asyncio.sleep(7 + random.random() * 5)
                 try:
                     urls = await adapter.search(kw, max_pages=1, session=session)
                 except Exception as e:
-                    print(f"  {kw}: 搜索失败 {e}")
+                    print(f"\n  {kw}: 搜索异常 {e}")
+                    # 换平台
+                    platform_idx += 1
+                    platform = PLATFORMS[platform_idx % len(PLATFORMS)]
+                    adapter = ADAPTERS.get(platform, ADAPTERS["amazon"])
                     continue
                 if not urls:
+                    print(f"\n  {kw}: 0结果", end="", flush=True)
                     continue
+                print(f"\n  {kw}: {len(urls)}链接", end="", flush=True)
 
                 need = ppk - cat_imported
                 products = []
                 for url in urls[:need]:
+                    await asyncio.sleep(2 + __import__('random').random() * 3)
                     try:
                         p = await adapter.extract_product(url, session=session)
                         if p and p.title and p.images:
@@ -259,7 +273,6 @@ async def run(ppk=5):
                             products.append(p)
                     except Exception:
                         continue
-                    await asyncio.sleep(1.5)
 
                 if not products:
                     continue
