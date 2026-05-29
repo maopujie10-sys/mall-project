@@ -1,43 +1,43 @@
-"""鍏ㄥ搧绫婚噰闆?鈥?瑕嗙洊鎵€鏈変簩绾у垎绫伙紝閲囬泦鍚庢浛鎹㈡棫鍟嗗搧"""
+"""全品类采集 — 覆盖所有二级分类，采集后替换旧商品"""
 import asyncio, sys, hashlib, time, gc, os, random
 import psutil
 sys.path.insert(0, ".")
 
-# 鍐呭瓨瀹夊叏閰嶇疆
-MEMORY_LIMIT_PCT = 80     # 鍐呭瓨瓒呮姣斾緥鏆傚仠
-MEMORY_CHECK_INTERVAL = 10 # 姣廚涓叧閿瘝妫€鏌ヤ竴娆″唴瀛?
-SEARCH_DELAY_BASE = 8      # 鎼滅储鍩虹闂撮殧绉?鑷€傚簲:閬?29鍔犲€?
-SEARCH_DELAY_MAX = 60      # 鎼滅储鏈€澶ч棿闅旂
-PRODUCT_DELAY = 3          # 浜у搧骞跺彂鎵归棿闅旂
-CONCURRENCY = 3            # 浜у搧椤靛苟鍙戞暟
-CATEGORY_PAUSE = 30        # 姣忓畬鎴愪竴涓垎绫绘殏鍋滅
+# 内存安全配置
+MEMORY_LIMIT_PCT = 80     # 内存超此比例暂停
+MEMORY_CHECK_INTERVAL = 10 # 每N个关键词检查一次内存
+SEARCH_DELAY_BASE = 8      # 搜索基础间隔秒(自适应:遇429加倍)
+SEARCH_DELAY_MAX = 60      # 搜索最大间隔秒
+PRODUCT_DELAY = 3          # 产品并发批间隔秒
+CONCURRENCY = 3            # 产品页并发数
+CATEGORY_PAUSE = 30        # 每完成一个分类暂停秒
 
 LOG_FILE = "/tmp/full_scrape.log"
 
 def _log(msg: str):
-    """杈撳嚭鍒皊tdout + 鏃ュ織鏂囦欢"""
+    """输出到stdout + 日志文件"""
     ts = time.strftime("%H:%M:%S")
     mem = psutil.virtual_memory()
-    line = f"[{ts}] {msg} | 杩涚▼{psutil.Process().memory_info().rss//1024//1024}MB 绯荤粺{mem.percent:.1f}%"
+    line = f"[{ts}] {msg} | 进程{psutil.Process().memory_info().rss//1024//1024}MB 系统{mem.percent:.1f}%"
     print(line, flush=True)
     with open(LOG_FILE, "a") as f:
         f.write(line + "\n")
 
-# 宸查噰闆哢RL缂撳瓨(闃查噸澶?
+# 已采集URL缓存(防重复)
 seen_urls = set()
 
 async def check_memory():
-    """妫€鏌ュ唴瀛?瓒呴檺鍒欑瓑寰呴噴鏀?""
+    """检查内存,超限则等待释放"""
     mem = psutil.virtual_memory()
     if mem.percent > MEMORY_LIMIT_PCT:
-        print(f"\n[鍐呭瓨] {mem.percent}% > {MEMORY_LIMIT_PCT}%, 鏆傚仠30绉掗噴鏀?..", flush=True)
+        print(f"\n[内存] {mem.percent}% > {MEMORY_LIMIT_PCT}%, 暂停30秒释放...", flush=True)
         gc.collect()
         await asyncio.sleep(30)
         mem = psutil.virtual_memory()
-        print(f"[鍐呭瓨] 鎭㈠: {mem.percent}%", flush=True)
+        print(f"[内存] 恢复: {mem.percent}%", flush=True)
     return mem.percent
 
-# 姣忎釜浜岀骇鍒嗙被 鈫?Amazon鎼滅储鍏抽敭璇?
+# 每个二级分类 → Amazon搜索关键词
 SUBCAT_KEYWORDS = {
     # Computer Peripherals
     "Computer Assembly Accessories": ["pc fan", "thermal paste", "sata cable"],
@@ -255,7 +255,7 @@ SUBCAT_KEYWORDS = {
 }
 
 TOTAL = sum(len(v) for v in SUBCAT_KEYWORDS.values())
-print(f"瑕嗙洊 {len(SUBCAT_KEYWORDS)} 涓瓙鍝佺被, {TOTAL} 涓叧閿瘝")
+print(f"覆盖 {len(SUBCAT_KEYWORDS)} 个子品类, {TOTAL} 个关键词")
 
 async def run(ppk=5):
     from tools.scraper_engine import ADAPTERS
@@ -263,9 +263,9 @@ async def run(ppk=5):
     import httpx, random, hashlib
     from tools.scraper_engine import download_and_upload
 
-    _log(f"===== 鍏ㄥ搧绫婚噰闆?鍚姩 =====")
-    _log(f"鍝佺被鏁? {len(SUBCAT_KEYWORDS)} | 鍏抽敭璇嶆暟: {TOTAL} | 姣忓搧绫荤洰鏍? {ppk}")
-    _log(f"鎼滅储闂撮殧: {SEARCH_DELAY_BASE}s(鑷€傚簲) | 浜у搧寤惰繜: {PRODUCT_DELAY}s | 骞跺彂: {CONCURRENCY}")
+    _log(f"===== 全品类采集 启动 =====")
+    _log(f"品类数: {len(SUBCAT_KEYWORDS)} | 关键词数: {TOTAL} | 每品类目标: {ppk}")
+    _log(f"搜索间隔: {SEARCH_DELAY_BASE}s(自适应) | 产品延迟: {PRODUCT_DELAY}s | 并发: {CONCURRENCY}")
 
     stats = {"cats": 0, "kws": 0, "found": 0, "imported": 0, "skipped": 0, "failed": 0}
     amazon_adapter = ADAPTERS["amazon"]
@@ -276,7 +276,7 @@ async def run(ppk=5):
         for subcat, keywords in SUBCAT_KEYWORDS.items():
             stats["cats"] += 1
             if stats["cats"] > 1:
-                _log(f"浼戞伅 {CATEGORY_PAUSE}s")
+                _log(f"休息 {CATEGORY_PAUSE}s")
                 gc.collect()
                 await asyncio.sleep(CATEGORY_PAUSE)
             cat_imported = 0
@@ -289,7 +289,7 @@ async def run(ppk=5):
                     break
                 stats["kws"] += 1
 
-                # 鈹€鈹€ 鍙屽钩鍙版悳绱?鈹€鈹€
+                # ── 双平台搜索 ──
                 all_fresh = []  # (platform_name, search_items)   items=URLs or itemIds
                 need = ppk - cat_imported
 
@@ -298,7 +298,7 @@ async def run(ppk=5):
                 try:
                     amz_urls = await amazon_adapter.search(kw, max_pages=1, session=session)
                 except Exception as e:
-                    _log(f"  [Amazon] {kw}: 鎼滅储寮傚父 {e}")
+                    _log(f"  [Amazon] {kw}: 搜索异常 {e}")
                     search_delay = min(search_delay * 1.3, SEARCH_DELAY_MAX)
                     amz_urls = []
                 if amz_urls:
@@ -311,9 +311,9 @@ async def run(ppk=5):
                 else:
                     search_delay = min(search_delay * 1.1, SEARCH_DELAY_MAX)
 
-                # eBay (琛ュ厖锛屾瘡鍏抽敭璇嶉檺5涓猧temId)
+                # eBay (补充，每关键词限5个itemId)
                 if ebay_adapter and cat_imported < ppk:
-                    await asyncio.sleep(2)  # eBay API鐭棿闅?
+                    await asyncio.sleep(2)  # eBay API短间隔
                     try:
                         ebay_ids = await ebay_adapter.search(kw, max_pages=1, session=session)
                     except Exception:
@@ -326,10 +326,10 @@ async def run(ppk=5):
                             all_fresh.append(("ebay", fresh_ebay))
 
                 if not all_fresh:
-                    _log(f"  {kw}: 鍙屽钩鍙?缁撴灉")
+                    _log(f"  {kw}: 双平台0结果")
                     continue
 
-                # 鈹€鈹€ 骞跺彂鎻愬彇+瀵煎叆 鈹€鈹€
+                # ── 并发提取+导入 ──
                 for platform, items in all_fresh:
                     if cat_imported >= ppk:
                         break
@@ -377,17 +377,17 @@ async def run(ppk=5):
 
                     cat_imported += imported_now
                     tag = "[A]" if platform == "amazon" else "[e]"
-                    _log(f"  {tag} +{imported_now}鏂板搧 | 璇勮{review_total} SKU{sku_total}")
+                    _log(f"  {tag} +{imported_now}新品 | 评论{review_total} SKU{sku_total}")
                     need = ppk - cat_imported
 
                 await asyncio.sleep(PRODUCT_DELAY)
 
             if cat_imported == 0:
-                _log(f"  鈿狅笍 {subcat} 鏈噰闆嗗埌")
+                _log(f"  ⚠️ {subcat} 未采集到")
 
-    _log(f"===== 瀹屾垚 =====")
-    _log(f"涓婃灦 {stats['imported']} | 閲嶅 {stats['skipped']} | 澶辫触 {stats['failed']}")
-    _log(f"瑕嗙洊 {stats['cats']} 瀛愬搧绫? {stats['kws']} 鍏抽敭璇嶆悳绱?)
+    _log(f"===== 完成 =====")
+    _log(f"上架 {stats['imported']} | 重复 {stats['skipped']} | 失败 {stats['failed']}")
+    _log(f"覆盖 {stats['cats']} 子品类, {stats['kws']} 关键词搜索")
     return stats
 
 if __name__ == "__main__":

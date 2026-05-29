@@ -1,4 +1,4 @@
-"""数字生命体 v4 — 真正的自主AI: AI推理+工具执行+主动运维+经验学习"""
+﻿"""数字生命体 v4 — 真正的自主AI: AI推理+工具执行+主动运维+经验学习"""
 import asyncio, json, random, time, httpx, os
 from datetime import datetime, timedelta
 from state import state

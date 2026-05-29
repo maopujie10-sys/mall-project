@@ -1,4 +1,4 @@
-锘?""鍏ㄩ摼璺仴搴锋鏌?鈥?MySQL/Redis/Docker/Nginx/Tomcat/纾佺洏/鍐呭瓨"""
+﻿"""全链路健康检查 — MySQL/Redis/Docker/Nginx/Tomcat/磁盘/内存"""
 import socket, os, subprocess, asyncio
 from datetime import datetime
 from fastapi import APIRouter
@@ -6,7 +6,7 @@ from fastapi import APIRouter
 router = APIRouter(prefix="/agent/health", tags=["Health"])
 
 async def _check_tcp(host: str, port: int, timeout: float = 2) -> dict:
-    """TCP绔彛杩為€氭€ф鏌?""
+    """TCP端口连通性检查"""
     try:
         _, writer = await asyncio.wait_for(
             asyncio.open_connection(host, port), timeout=timeout
@@ -17,7 +17,7 @@ async def _check_tcp(host: str, port: int, timeout: float = 2) -> dict:
         return {"ok": False, "error": str(e)[:80]}
 
 async def _check_mysql() -> dict:
-    """MySQL杩炴帴+鏌ヨ妫€鏌?""
+    """MySQL连接+查询检查"""
     try:
         import pymysql
         from config import DB_CONFIG
@@ -35,7 +35,7 @@ async def _check_mysql() -> dict:
         return {"ok": False, "error": str(e)[:100]}
 
 async def _check_redis() -> dict:
-    """Redis杩炴帴妫€鏌?""
+    """Redis连接检查"""
     try:
         from config import REDIS_DSN
         import redis
@@ -47,12 +47,12 @@ async def _check_redis() -> dict:
         return {"ok": False, "error": str(e)[:80]}
 
 async def _check_docker() -> dict:
-    """Docker鏈嶅姟+瀹瑰櫒鐘舵€?""
+    """Docker服务+容器状态"""
     try:
         result = subprocess.run(["docker", "ps", "--format", "{{.Names}} {{.Status}}"],
             capture_output=True, text=True, timeout=5)
         if result.returncode != 0:
-            return {"ok": False, "error": "Docker瀹堟姢杩涚▼寮傚父"}
+            return {"ok": False, "error": "Docker守护进程异常"}
         containers = []
         for line in result.stdout.strip().split("\n"):
             if line:
@@ -61,20 +61,20 @@ async def _check_docker() -> dict:
         stopped = [c for c in containers if "Up" not in c["status"]]
         return {"ok": True, "total": len(containers), "running": len(containers) - len(stopped), "stopped": [c["name"] for c in stopped]}
     except FileNotFoundError:
-        return {"ok": True, "note": "Docker鏈畨瑁?}
+        return {"ok": True, "note": "Docker未安装"}
     except Exception as e:
         return {"ok": False, "error": str(e)[:80]}
 
 async def _check_nginx() -> dict:
-    """Nginx绔彛妫€鏌?""
+    """Nginx端口检查"""
     return await _check_tcp("127.0.0.1", 80)
 
 async def _check_tomcat() -> dict:
-    """Tomcat绔彛妫€鏌?""
+    """Tomcat端口检查"""
     return await _check_tcp("127.0.0.1", 8080)
 
 async def _check_disk() -> dict:
-    """纾佺洏浣跨敤鐜?""
+    """磁盘使用率"""
     try:
         import psutil
         disk = psutil.disk_usage("/")
@@ -83,7 +83,7 @@ async def _check_disk() -> dict:
         return {"ok": False, "error": str(e)[:80]}
 
 async def _check_memory() -> dict:
-    """鍐呭瓨浣跨敤鐜?""
+    """内存使用率"""
     try:
         import psutil
         mem = psutil.virtual_memory()
@@ -93,12 +93,12 @@ async def _check_memory() -> dict:
 
 @router.get("")
 async def health_check():
-    """鍩虹鍋ュ悍妫€鏌?""
+    """基础健康检查"""
     return {"status": "ok", "service": "TikTokMall Agent", "version": "1.0.0", "time": datetime.now().isoformat()}
 
 @router.get("/full")
 async def full_health_check():
-    """鍏ㄩ摼璺仴搴锋鏌?鈥?鎵€鏈変緷璧栭」"""
+    """全链路健康检查 — 所有依赖项"""
     results = await asyncio.gather(
         _check_mysql(), _check_redis(), _check_docker(),
         _check_nginx(), _check_tomcat(), _check_disk(), _check_memory(),
@@ -128,5 +128,5 @@ async def full_health_check():
 
 @router.get("/simple")
 async def simple_health():
-    """绠€鍗曞仴搴锋鏌?渚汥ocker healthcheck)"""
+    """简单健康检查(供Docker healthcheck)"""
     return {"status": "ok"}

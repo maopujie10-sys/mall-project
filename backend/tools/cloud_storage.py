@@ -1,4 +1,4 @@
-"""鑵捐浜?COS 鍥剧墖瀛樺偍宸ュ叿 鈥?涓婁紶/涓嬭浇/鍒犻櫎/绛惧悕URL"""
+"""腾讯云 COS 图片存储工具 — 上传/下载/删除/签名URL"""
 import os
 import hashlib
 import httpx
@@ -11,7 +11,7 @@ COS_ENDPOINT = f"{COS_BUCKET}.cos.{COS_REGION}.myqcloud.com"
 COS_BASE_URL = f"https://{COS_ENDPOINT}"
 
 def _cos_sign(method: str, path: str, headers: dict, expire: int = 3600) -> str:
-    """鐢熸垚 COS 绛惧悕 (鑷疄鐜?HMAC-SHA1)"""
+    """生成 COS 签名 (自实现 HMAC-SHA1)"""
     import hmac, time
     key_time = f"{int(time.time())};{int(time.time())+expire}"
     sign_key = hmac.new(COS_SECRET_KEY.encode(), key_time.encode(), hashlib.sha1).hexdigest()
@@ -30,9 +30,9 @@ def _cos_sign(method: str, path: str, headers: dict, expire: int = 3600) -> str:
     return auth
 
 async def upload_image(file_path: str, cos_key: str = None, content_type: str = "image/jpeg") -> dict:
-    """涓婁紶鍥剧墖鍒?COS锛岃繑鍥?{"ok": True, "url": "https://..."} 鎴?{"ok": False, "error": "..."}"""
+    """上传图片到 COS，返回 {"ok": True, "url": "https://..."} 或 {"ok": False, "error": "..."}"""
     if not COS_SECRET_ID or not COS_SECRET_KEY:
-        return {"ok": False, "error": "COS 瀵嗛挜鏈厤缃?}
+        return {"ok": False, "error": "COS 密钥未配置"}
 
     if not cos_key:
         ext = os.path.splitext(file_path)[1] or ".jpg"
@@ -56,14 +56,14 @@ async def upload_image(file_path: str, cos_key: str = None, content_type: str = 
             if r.status_code in (200, 204):
                 return {"ok": True, "url": f"{COS_DOMAIN}/{cos_key}", "key": cos_key, "size": len(data)}
             else:
-                return {"ok": False, "error": f"COS 杩斿洖 {r.status_code}: {r.text[:200]}"}
+                return {"ok": False, "error": f"COS 返回 {r.status_code}: {r.text[:200]}"}
     except Exception as e:
         return {"ok": False, "error": str(e)}
 
 async def upload_bytes(data: bytes, cos_key: str, content_type: str = "image/jpeg") -> dict:
-    """涓婁紶瀛楄妭鏁版嵁鍒?COS"""
+    """上传字节数据到 COS"""
     if not COS_SECRET_ID or not COS_SECRET_KEY:
-        return {"ok": False, "error": "COS 瀵嗛挜鏈厤缃?}
+        return {"ok": False, "error": "COS 密钥未配置"}
 
     url = f"{COS_BASE_URL}/{quote(cos_key, safe='/')}"
     headers = {
@@ -78,12 +78,12 @@ async def upload_bytes(data: bytes, cos_key: str, content_type: str = "image/jpe
             r = await cli.put(url, content=data, headers=headers)
             if r.status_code in (200, 204):
                 return {"ok": True, "url": f"{COS_DOMAIN}/{cos_key}", "key": cos_key, "size": len(data)}
-            return {"ok": False, "error": f"COS 杩斿洖 {r.status_code}: {r.text[:200]}"}
+            return {"ok": False, "error": f"COS 返回 {r.status_code}: {r.text[:200]}"}
     except Exception as e:
         return {"ok": False, "error": str(e)}
 
 async def delete_image(cos_key: str) -> dict:
-    """鍒犻櫎 COS 涓殑鍥剧墖"""
+    """删除 COS 中的图片"""
     url = f"{COS_BASE_URL}/{quote(cos_key, safe='/')}"
     headers = {"Host": COS_ENDPOINT}
     headers["Authorization"] = _cos_sign("delete", f"/{cos_key}", headers)
@@ -95,7 +95,7 @@ async def delete_image(cos_key: str) -> dict:
         return {"ok": False, "error": str(e)}
 
 def get_signed_url(cos_key: str, expire: int = 3600) -> str:
-    """鐢熸垚涓存椂绛惧悕URL (甯︽湁鏁堟湡)"""
+    """生成临时签名URL (带有效期)"""
     headers = {"Host": COS_ENDPOINT}
     auth = _cos_sign("get", f"/{cos_key}", headers, expire)
     params = auth.replace("&", "&")

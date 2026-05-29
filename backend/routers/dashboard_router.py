@@ -1,4 +1,4 @@
-锘?""浠〃鐩楢PI 鈥?瀹炴椂鎸囨爣閲囬泦/鍘嗗彶瓒嬪娍/绯荤粺鍋ュ悍鍒?""
+﻿"""仪表盘API — 实时指标采集/历史趋势/系统健康分"""
 import os, time
 from datetime import datetime, timedelta
 from fastapi import APIRouter, Depends
@@ -12,7 +12,7 @@ router = APIRouter(prefix="/dashboard", tags=["Dashboard"])
 
 @cached('dashboard', ttl=60)
     async def collect_metrics() -> dict:
-    """閲囬泦褰撳墠绯荤粺鎸囨爣蹇収"""
+    """采集当前系统指标快照"""
     import psutil
     cpu = psutil.cpu_percent(interval=0.3)
     mem = psutil.virtual_memory()
@@ -37,21 +37,21 @@ router = APIRouter(prefix="/dashboard", tags=["Dashboard"])
 
 @router.get("/metrics")
 async def get_current_metrics(_=Depends(verify_token)):
-    """鑾峰彇褰撳墠绯荤粺鎸囨爣"""
+    """获取当前系统指标"""
     return {"ok": True, "metrics": await collect_metrics()}
 
 
 @router.get("/history")
 @cached('dashboard', ttl=60)
     async def get_metrics_history(points: int = 60, _=Depends(verify_token)):
-    """鑾峰彇鍘嗗彶鎸囨爣瓒嬪娍"""
+    """获取历史指标趋势"""
     history = state._data.get("metrics_history", [])
     return {"ok": True, "history": history[-points:], "total": len(history)}
 
 
 @router.get("/health-score")
 async def get_health_score(_=Depends(verify_token)):
-    """璁＄畻绯荤粺鍋ュ悍鍒?(0-100)"""
+    """计算系统健康分 (0-100)"""
     m = await collect_metrics()
     score = 100
     if m["cpu"] > 80: score -= 20
@@ -78,7 +78,7 @@ async def get_health_score(_=Depends(verify_token)):
 
 @router.post("/record")
 async def record_metrics(_=Depends(verify_token)):
-    """鎵嬪姩璁板綍涓€娆℃寚鏍囧揩鐓?""
+    """手动记录一次指标快照"""
     m = await collect_metrics()
     history = state._data.setdefault("metrics_history", [])
     history.append(m)

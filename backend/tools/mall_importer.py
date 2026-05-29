@@ -1,4 +1,4 @@
-"""鐩存帴鍐欏叆Mall鏁版嵁搴?鈥?鍘婚噸/涓婃灦/SKU鐢熸垚/璇勮"""
+"""直接写入Mall数据库 — 去重/上架/SKU生成/评论"""
 import hashlib
 import time
 import gc
@@ -6,9 +6,9 @@ import pymysql
 from datetime import datetime
 from typing import Optional
 
-# 榛樿鍗栧ID锛堢郴缁熶腑宸叉湁9063涓晢鍝佺殑鑰佸崠瀹讹級
+# 默认卖家ID（系统中已有9063个商品的老卖家）
 DEFAULT_SELLER_ID = "e7a5a8828bd3e591018c05838c120853"
-# 榛樿鍒嗙被ID锛圖igital Products锛岄噰闆嗗晢鍝侀€氱敤鍏滃簳锛?
+# 默认分类ID（Digital Products，采集商品通用兜底）
 DEFAULT_CATEGORY_ID = "ff80808184809ef9018480a468c30000"
 
 DB_CONFIG = {
@@ -20,7 +20,7 @@ DB_CONFIG = {
     "charset": "utf8mb4",
 }
 
-_cat_cache = {}  # category_path 鈫?CATEGORY_ID
+_cat_cache = {}  # category_path → CATEGORY_ID
 
 
 def _conn():
@@ -36,7 +36,7 @@ def _now_ts() -> int:
 
 
 def _ensure_review_table():
-    """鍒涘缓璇勮琛紙濡備笉瀛樺湪锛?""
+    """创建评论表（如不存在）"""
     conn = _conn()
     try:
         cur = conn.cursor()
@@ -60,7 +60,7 @@ def _ensure_review_table():
 
 
 def _find_category(category_path: list[str], subcat_name: str = "") -> str:
-    """灏濊瘯浠庡搧绫昏矾寰勫尮閰嶇郴缁熷垎绫伙紝澶辫触杩斿洖榛樿鍒嗙被"""
+    """尝试从品类路径匹配系统分类，失败返回默认分类"""
     if not category_path and not subcat_name:
         return DEFAULT_CATEGORY_ID
 
@@ -71,7 +71,7 @@ def _find_category(category_path: list[str], subcat_name: str = "") -> str:
     conn = _conn()
     try:
         cur = conn.cursor()
-        # 1) 浼樺厛绮剧‘鍖归厤瀛愬搧绫诲悕
+        # 1) 优先精确匹配子品类名
         if subcat_name:
             cur.execute(
                 """SELECT c.UUID FROM T_MALL_CATEGORY c
@@ -84,7 +84,7 @@ def _find_category(category_path: list[str], subcat_name: str = "") -> str:
             if row:
                 _cat_cache[cache_key] = row[0]
                 return row[0]
-        # 2) 妯＄硦鍖归厤鍝佺被璺緞
+        # 2) 模糊匹配品类路径
         for cat_name in reversed(category_path):
             cur.execute(
                 """SELECT c.UUID FROM T_MALL_CATEGORY c
@@ -107,7 +107,7 @@ def _find_category(category_path: list[str], subcat_name: str = "") -> str:
 
 
 def check_duplicate(title: str, source_url: str = "") -> Optional[str]:
-    """妫€鏌ラ噸澶?鈥?鎸夋爣棰樻ā绯婂尮閰嶆垨URL绮剧‘鍖归厤锛岃繑鍥炲凡瀛樺湪鐨凣OODS_ID"""
+    """检查重复 — 按标题模糊匹配或URL精确匹配，返回已存在的GOODS_ID"""
     conn = _conn()
     try:
         cur = conn.cursor()
@@ -138,22 +138,22 @@ def check_duplicate(title: str, source_url: str = "") -> Optional[str]:
 
 
 def import_product(product: dict, seller_id: str = DEFAULT_SELLER_ID, subcat_name: str = "") -> dict:
-    """瀵煎叆鍗曚釜閲囬泦鍟嗗搧鍒癕all鏁版嵁搴?鈥?鐩存帴涓婃灦
+    """导入单个采集商品到Mall数据库 — 直接上架
 
-    鍐欏叆琛? T_MALL_SYSTEM_GOODS, T_MALL_SYSTEM_GOODS_LANG,
+    写入表: T_MALL_SYSTEM_GOODS, T_MALL_SYSTEM_GOODS_LANG,
             T_MALL_SELLER_GOODS, T_MALL_GOODS_SKU, T_MALL_GOODS_REVIEW
     """
     title = product.get("title", "").strip()
     if not title:
-        return {"ok": False, "error": "鏍囬涓虹┖"}
+        return {"ok": False, "error": "标题为空"}
 
     source_url = product.get("source_url", "")
     goods_id = _uuid(source_url or title)
 
-    # 鍘婚噸
+    # 去重
     existing = check_duplicate(title, source_url)
     if existing:
-        return {"ok": False, "error": "鍟嗗搧宸插瓨鍦?, "duplicate": True, "existing_id": existing}
+        return {"ok": False, "error": "商品已存在", "duplicate": True, "existing_id": existing}
 
     price = float(product.get("price", 0) or 0)
     org_price = float(product.get("original_price", 0) or 0)
@@ -190,7 +190,7 @@ def import_product(product: dict, seller_id: str = DEFAULT_SELLER_ID, subcat_nam
             VALUES (%s, %s, %s, 1, %s, %s, %s, {', '.join(['%s']*len(img_values))})
         """, [goods_id, price, category_id, now_dt, now_ts, source_url] + img_values)
 
-        # 2. T_MALL_SYSTEM_GOODS_LANG 鈥?鏍囬+鎻忚堪锛堜腑鑻辨枃锛?
+        # 2. T_MALL_SYSTEM_GOODS_LANG — 标题+描述（中英文）
         lang_id = _uuid(f"{goods_id}_cn")
         desc_text = description[:8000]
         cur.execute("""INSERT INTO T_MALL_SYSTEM_GOODS_LANG
@@ -206,7 +206,7 @@ def import_product(product: dict, seller_id: str = DEFAULT_SELLER_ID, subcat_nam
             ON DUPLICATE KEY UPDATE NAME=%s, DES=%s""",
             (lang_id_en, goods_id, title, desc_text, title, desc_text))
 
-        # 3. T_MALL_SELLER_GOODS 鈥?鐩存帴涓婃灦
+        # 3. T_MALL_SELLER_GOODS — 直接上架
         sg_id = _uuid(f"{goods_id}_seller")
         rec_time = now_ts
         new_time = now_ts
@@ -220,16 +220,16 @@ def import_product(product: dict, seller_id: str = DEFAULT_SELLER_ID, subcat_nam
             (sg_id, seller_id, category_id, goods_id, sell_price, price,
              rec_time, new_time, now_dt, now_ts, now_ts))
 
-        # 4. T_MALL_GOODS_SKU 鈥?澶歋KU锛堜粠閲囬泦鐨勮鏍肩敓鎴愶級
-        sku_data_base = f"骞冲彴:{platform}"
+        # 4. T_MALL_GOODS_SKU — 多SKU（从采集的规格生成）
+        sku_data_base = f"平台:{platform}"
         if brand:
-            sku_data_base += f"|鍝佺墝:{brand}"
+            sku_data_base += f"|品牌:{brand}"
         if rating > 0:
-            sku_data_base += f"|璇勫垎:{rating}"
+            sku_data_base += f"|评分:{rating}"
         if rating_count > 0:
-            sku_data_base += f"|{rating_count}璇?
+            sku_data_base += f"|{rating_count}评"
         if sales_count > 0:
-            sku_data_base += f"|閿€閲?{sales_count}"
+            sku_data_base += f"|销量:{sales_count}"
 
         sku_count = 0
         if skus:
@@ -239,7 +239,7 @@ def import_product(product: dict, seller_id: str = DEFAULT_SELLER_ID, subcat_nam
                     sku_spec = sku.get("spec", "")
                     sku_spec_name = sku.get("spec_name", "")
                     sku_img = sku.get("image", "") or (cos_images[0] if cos_images else "")
-                    sku_data = f"{sku_data_base}|瑙勬牸:{sku_spec_name}:{sku_spec}"[:500]
+                    sku_data = f"{sku_data_base}|规格:{sku_spec_name}:{sku_spec}"[:500]
                     mu_sku_id = _uuid(f"{goods_id}_sku_{i}")
                     cur.execute("""INSERT INTO T_MALL_GOODS_SKU
                         (ID, GOOD_ID, PRICE, PIC, SP_DATA, SALE, DELETED)
@@ -250,7 +250,7 @@ def import_product(product: dict, seller_id: str = DEFAULT_SELLER_ID, subcat_nam
                     sku_count += 1
 
         if sku_count == 0:
-            # 榛樿SKU
+            # 默认SKU
             sku_id = _uuid(f"{goods_id}_sku_default")
             sku_pic = cos_images[0] if cos_images else ""
             cur.execute("""INSERT INTO T_MALL_GOODS_SKU
@@ -259,7 +259,7 @@ def import_product(product: dict, seller_id: str = DEFAULT_SELLER_ID, subcat_nam
                 (sku_id, goods_id, price, sku_pic, sku_data_base[:500], 999))
             sku_count = 1
 
-        # 5. 鍐欏叆璇勮
+        # 5. 写入评论
         review_count = 0
         for rev in reviews:
             if isinstance(rev, dict) and rev.get("body"):
@@ -304,7 +304,7 @@ def import_product(product: dict, seller_id: str = DEFAULT_SELLER_ID, subcat_nam
 
 
 def import_batch(products: list[dict], seller_id: str = DEFAULT_SELLER_ID, subcat_name: str = "") -> dict:
-    """鎵归噺瀵煎叆 鈥?鑷姩鍘婚噸锛屽瀹岃Е鍙慓C"""
+    """批量导入 — 自动去重，导完触发GC"""
     imported = []
     skipped = []
     failed = []
@@ -318,7 +318,7 @@ def import_batch(products: list[dict], seller_id: str = DEFAULT_SELLER_ID, subca
         else:
             failed.append(result)
 
-    # 姣忔壒瀵煎畬瑙﹀彂涓€娆C
+    # 每批导完触发一次GC
     gc.collect()
 
     return {

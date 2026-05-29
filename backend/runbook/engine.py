@@ -1,4 +1,4 @@
-锘?""鑷姪杩愮淮 Runbook 鈥?鑷姩鍖栨晠闅滃鐞嗘祦绋嬪紩鎿?""
+﻿"""自助运维 Runbook — 自动化故障处理流程引擎"""
 import httpx
 from datetime import datetime
 from typing import Optional
@@ -7,7 +7,7 @@ from risk import handle_risk
 from config import MALL_BASE_URL
 
 class StepResult:
-    """鍗曟鎵ц缁撴灉"""
+    """单步执行结果"""
     def __init__(self, name: str, ok: bool, detail: str = "", evidence: str = ""):
         self.name = name
         self.ok = ok
@@ -20,7 +20,7 @@ class StepResult:
 
 
 class Runbook:
-    """Runbook 鍩虹被"""
+    """Runbook 基类"""
 
     def __init__(self, name: str, description: str):
         self.name = name
@@ -29,7 +29,7 @@ class Runbook:
         self._failed = False
 
     async def run(self) -> dict:
-        """鎵ц runbook锛岃繑鍥炲畬鏁存姤鍛?""
+        """执行 runbook，返回完整报告"""
         raise NotImplementedError
 
     def _add_step(self, name: str, ok: bool, detail: str = "", evidence: str = ""):
@@ -55,133 +55,137 @@ class Runbook:
         total = len(self.steps)
         if self._failed:
             failed_steps = [s.name for s in self.steps if not s.ok]
-            return f"瀹屾垚 {passed}/{total} 姝ャ€傗潓 寮傚父: {', '.join(failed_steps)}銆傚缓璁汉宸ヤ粙鍏ャ€?
-        return f"鍏ㄩ儴 {total} 姝ラ€氳繃 鉁咃紝绯荤粺杩愯姝ｅ父銆?
+            return f"完成 {passed}/{total} 步。❌ 异常: {', '.join(failed_steps)}。建议人工介入。"
+        return f"全部 {total} 步通过 ✅，系统运行正常。"
 
 
-# ===== 鍏蜂綋 Runbook =====
+# ===== 具体 Runbook =====
 
 class MallDownRunbook(Runbook):
-    """鍟嗗煄鎵撲笉寮€ 鈥?绔埌绔瘖鏂?""
+    """商城打不开 — 端到端诊断"""
 
     def __init__(self):
-        super().__init__("鍟嗗煄鎵撲笉寮€璇婃柇", "妫€鏌NS鈫掓湇鍔″櫒鈫掔鍙ｂ啋Nginx鈫扗ocker鈫掓棩蹇椻啋鏁版嵁搴撯啋璇婃柇鎶ュ憡")
+        super().__init__("商城打不开诊断", "检查DNS→服务器→端口→Nginx→Docker→日志→数据库→诊断报告")
 
     async def run(self) -> dict:
         async with httpx.AsyncClient(timeout=10, follow_redirects=True) as c:
-            # 1. 妫€鏌ュ煙鍚嶈В鏋?            try:
+            # 1. 检查域名解析
+            try:
                 r = await c.get(f"https://dns.google/resolve?name={MALL_BASE_URL.replace('http://','').replace('https://','').split(':')[0]}&type=A")
                 data = r.json()
                 ips = [a.get("data") for a in data.get("Answer", [])] if data.get("Status") == 0 else []
-                self._add_step("DNS瑙ｆ瀽", len(ips) > 0, f"瑙ｆ瀽鍒?{len(ips)} 涓狪P: {', '.join(ips[:3])}", str(ips[:3]))
+                self._add_step("DNS解析", len(ips) > 0, f"解析到 {len(ips)} 个IP: {', '.join(ips[:3])}", str(ips[:3]))
             except Exception as e:
-                self._add_step("DNS瑙ｆ瀽", False, f"DNS鏌ヨ澶辫触: {str(e)}")
+                self._add_step("DNS解析", False, f"DNS查询失败: {str(e)}")
 
-            # 2. 妫€娴嬫湇鍔″櫒杩為€氭€?            for port, name in [(80, "HTTP"), (443, "HTTPS"), (9000, "Agent")]:
+            # 2. 检测服务器连通性
+            for port, name in [(80, "HTTP"), (443, "HTTPS"), (9000, "Agent")]:
                 try:
                     r = await c.get(f"{MALL_BASE_URL if port != 9000 else 'http://localhost:9000'}/agent/health", timeout=5)
-                    self._add_step(f"{name}绔彛", r.status_code == 200, f"鐘舵€佺爜 {r.status_code}")
+                    self._add_step(f"{name}端口", r.status_code == 200, f"状态码 {r.status_code}")
                 except Exception as e:
-                    self._add_step(f"{name}绔彛", False, f"杩炴帴澶辫触: {str(e)[:50]}")
+                    self._add_step(f"{name}端口", False, f"连接失败: {str(e)[:50]}")
 
-            # 3. 妫€鏌ュ晢鍩庡叧閿〉闈?            for path, name in [("/", "棣栭〉"), ("/api/products", "鍟嗗搧鎺ュ彛"), ("/api/categories", "鍒嗙被鎺ュ彛")]:
+            # 3. 检查商城关键页面
+            for path, name in [("/", "首页"), ("/api/products", "商品接口"), ("/api/categories", "分类接口")]:
                 try:
                     r = await c.get(f"{MALL_BASE_URL}{path}", timeout=5)
-                    self._add_step(f"鍟嗗煄{name}", r.status_code < 500, f"鐘舵€佺爜 {r.status_code}")
+                    self._add_step(f"商城{name}", r.status_code < 500, f"状态码 {r.status_code}")
                 except Exception as e:
-                    self._add_step(f"鍟嗗煄{name}", False, str(e)[:50])
+                    self._add_step(f"商城{name}", False, str(e)[:50])
 
         return self._report()
 
 
 class ServerHealthRunbook(Runbook):
-    """鏈嶅姟鍣ㄥ仴搴锋鏌?""
+    """服务器健康检查"""
 
     def __init__(self):
-        super().__init__("鏈嶅姟鍣ㄥ仴搴锋鏌?, "妫€鏌PU/鍐呭瓨/纾佺洏/璐熻浇/杩涚▼/绔彛")
+        super().__init__("服务器健康检查", "检查CPU/内存/磁盘/负载/进程/端口")
 
     async def run(self) -> dict:
         from executor import execute
 
         checks = [
-            ("CPU璐熻浇", "uptime", lambda r: "load average" in r["stdout"]),
-            ("鍐呭瓨浣跨敤", "free -h", lambda r: "Mem" in r["stdout"]),
-            ("纾佺洏绌洪棿", "df -h /", lambda r: r["success"]),
-            ("SWAP浣跨敤", "free -h | grep Swap", lambda r: True),
-            ("绯荤粺杩愯鏃堕棿", "uptime -p", lambda r: r["success"]),
-            ("鐧诲綍璁板綍", "last -5", lambda r: r["success"]),
+            ("CPU负载", "uptime", lambda r: "load average" in r["stdout"]),
+            ("内存使用", "free -h", lambda r: "Mem" in r["stdout"]),
+            ("磁盘空间", "df -h /", lambda r: r["success"]),
+            ("SWAP使用", "free -h | grep Swap", lambda r: True),
+            ("系统运行时间", "uptime -p", lambda r: r["success"]),
+            ("登录记录", "last -5", lambda r: r["success"]),
         ]
 
         for name, cmd, check in checks:
             result = await execute(cmd)
             self._add_step(name, check(result), result["stdout"][:200] or result["stderr"][:100])
 
-        # CPU 杩囪浇鍛婅
+        # CPU 过载告警
         import psutil
         cpu = psutil.cpu_percent(interval=0.5)
         mem = psutil.virtual_memory()
         disk = psutil.disk_usage("/")
-        self._add_step("CPU浣跨敤鐜?, cpu < 80, f"CPU {cpu}%")
-        self._add_step("鍐呭瓨浣跨敤鐜?, mem.percent < 80, f"鍐呭瓨 {mem.percent}%")
-        self._add_step("纾佺洏浣跨敤鐜?, disk.percent < 85, f"纾佺洏 {disk.percent}%")
+        self._add_step("CPU使用率", cpu < 80, f"CPU {cpu}%")
+        self._add_step("内存使用率", mem.percent < 80, f"内存 {mem.percent}%")
+        self._add_step("磁盘使用率", disk.percent < 85, f"磁盘 {disk.percent}%")
 
         return self._report()
 
 
 class DiskFullRunbook(Runbook):
-    """纾佺洏蹇弧 鈥?鍒嗘瀽澶ф枃浠?娓呯悊鏃ュ織/鍘嬬缉"""
+    """磁盘快满 — 分析大文件/清理日志/压缩"""
 
     def __init__(self):
-        super().__init__("纾佺洏娓呯悊", "鍒嗘瀽纾佺洏浣跨敤鈫掑畾浣嶅ぇ鏂囦欢鈫掓竻鐞嗘棩蹇椻啋鍘嬬缉澶囦唤")
+        super().__init__("磁盘清理", "分析磁盘使用→定位大文件→清理日志→压缩备份")
 
     async def run(self) -> dict:
         from executor import execute
         import shutil, psutil
 
-        # 1. 纾佺洏鐜扮姸
+        # 1. 磁盘现状
         disk = psutil.disk_usage("/")
-        self._add_step("纾佺洏浣跨敤鐜?, disk.percent < 90, f"宸茬敤 {disk.percent}% ({disk.used/1024**3:.1f}GB/{disk.total/1024**3:.1f}GB)")
+        self._add_step("磁盘使用率", disk.percent < 90, f"已用 {disk.percent}% ({disk.used/1024**3:.1f}GB/{disk.total/1024**3:.1f}GB)")
 
-        # 2. 鎵惧ぇ鐩綍
+        # 2. 找大目录
         result = await execute("du -sh /var/log /tmp /opt 2>/dev/null | sort -rh | head -5")
-        self._add_step("澶х洰褰曞垎鏋?, result["success"], result["stdout"][:300])
+        self._add_step("大目录分析", result["success"], result["stdout"][:300])
 
-        # 3. 娓呯悊鏃ュ織缂撳瓨
+        # 3. 清理日志缓存
         result = await execute("journalctl --vacuum-time=3d 2>/dev/null || echo 'journalctl not available'")
-        self._add_step("娓呯悊绯荤粺鏃ュ織", True, result["stdout"][:200])
+        self._add_step("清理系统日志", True, result["stdout"][:200])
 
-        # 4. 娓呯悊 Docker 缂撳瓨
+        # 4. 清理 Docker 缓存
         result = await execute("docker system df 2>/dev/null || echo 'docker not available'")
-        self._add_step("Docker纾佺洏浣跨敤", True, result["stdout"][:300])
+        self._add_step("Docker磁盘使用", True, result["stdout"][:300])
 
-        # 5. 娓呯悊涓存椂鏂囦欢
+        # 5. 清理临时文件
         result = await execute("rm -rf /tmp/* 2>/dev/null; echo done")
-        self._add_step("娓呯悊涓存椂鏂囦欢", True, "瀹屾垚")
+        self._add_step("清理临时文件", True, "完成")
 
-        # 鏈€缁?        disk2 = psutil.disk_usage("/")
+        # 最终
+        disk2 = psutil.disk_usage("/")
         freed = disk.used - disk2.used
-        self._add_step("娓呯悊缁撴灉", True, f"閲婃斁 {freed/1024**3:.2f}GB锛屼娇鐢ㄧ巼 {disk.percent}% 鈫?{disk2.percent}%")
+        self._add_step("清理结果", True, f"释放 {freed/1024**3:.2f}GB，使用率 {disk.percent}% → {disk2.percent}%")
 
         return self._report()
 
 
 class RotationCheckRunbook(Runbook):
-    """杞€煎煙鍚嶅贰妫€"""
+    """轮值域名巡检"""
 
     def __init__(self):
-        super().__init__("杞€煎煙鍚嶅贰妫€", "妫€鏌ユ墍鏈夎疆鍊煎煙鍚岲NS/HTTPS/璺宠浆閾捐矾")
+        super().__init__("轮值域名巡检", "检查所有轮值域名DNS/HTTPS/跳转链路")
 
     async def run(self) -> dict:
         domains = state._data.get("rotation_domains", [])
         if not domains:
-            self._add_step("鍩熷悕鍒楄〃", False, "娌℃湁閰嶇疆杞€煎煙鍚?)
+            self._add_step("域名列表", False, "没有配置轮值域名")
             return self._report()
 
-        self._add_step("鍩熷悕鎬绘暟", True, f"鍏?{len(domains)} 涓煙鍚?)
+        self._add_step("域名总数", True, f"共 {len(domains)} 个域名")
 
         async with httpx.AsyncClient(timeout=10, follow_redirects=True) as c:
             active = [d for d in domains if d.get("active")]
-            self._add_step("娲昏穬鍩熷悕", True, f"{len(active)}/{len(domains)} 涓椿璺?)
+            self._add_step("活跃域名", True, f"{len(active)}/{len(domains)} 个活跃")
 
             ok_count = 0
             for d in active:
@@ -192,35 +196,37 @@ class RotationCheckRunbook(Runbook):
                     ok = r.status_code < 400
                     if ok: ok_count += 1
                     d["health"] = "ok" if ok else "error"
-                    self._add_step(d["domain"], ok, f"鐘舵€佺爜 {r.status_code}", " 鈫?".join(chain + [str(r.url)])[:200])
+                    self._add_step(d["domain"], ok, f"状态码 {r.status_code}", " → ".join(chain + [str(r.url)])[:200])
                 except Exception as e:
                     d["health"] = "error"
                     self._add_step(d["domain"], False, str(e)[:100])
 
             state._save()
-            self._add_step("妫€娴嬬粨鏋?, ok_count == len(active), f"{ok_count}/{len(active)} 姝ｅ父")
+            self._add_step("检测结果", ok_count == len(active), f"{ok_count}/{len(active)} 正常")
 
         return self._report()
 
 
 class CustomerOrderRunbook(Runbook):
-    """瀹㈡湇璁㈠崟鏌ヨ 鈥?鏌ョ敤鎴封啋鏌ヨ鍗曗啋鏌ユ敮浠樷啋鍥炲"""
+    """客服订单查询 — 查用户→查订单→查支付→回复"""
 
     def __init__(self, user_id: str = "", order_id: str = ""):
-        super().__init__("瀹㈡湇璁㈠崟鏌ヨ", "纭鐢ㄦ埛韬唤鈫掓煡璇㈣鍗曗啋鏀粯鐘舵€佲啋鍒ゆ柇寮傚父鈫掔敓鎴愬洖澶?)
+        super().__init__("客服订单查询", "确认用户身份→查询订单→支付状态→判断异常→生成回复")
         self.user_id = user_id
         self.order_id = order_id
 
     async def run(self) -> dict:
         async with httpx.AsyncClient(timeout=10) as c:
-            # 鏌ョ敤鎴?            if self.user_id:
+            # 查用户
+            if self.user_id:
                 try:
                     r = await c.get(f"{MALL_BASE_URL}/api/users", params={"id": self.user_id})
-                    self._add_step("鐢ㄦ埛鏌ヨ", r.status_code == 200, f"鐢ㄦ埛 {self.user_id}" if r.status_code == 200 else f"閿欒 {r.status_code}")
+                    self._add_step("用户查询", r.status_code == 200, f"用户 {self.user_id}" if r.status_code == 200 else f"错误 {r.status_code}")
                 except Exception as e:
-                    self._add_step("鐢ㄦ埛鏌ヨ", False, str(e)[:100])
+                    self._add_step("用户查询", False, str(e)[:100])
 
-            # 鏌ヨ鍗?            params = {}
+            # 查订单
+            params = {}
             if self.order_id: params["id"] = self.order_id
             if self.user_id: params["userId"] = self.user_id
             try:
@@ -228,16 +234,16 @@ class CustomerOrderRunbook(Runbook):
                 if r.status_code == 200:
                     data = r.json()
                     total = data.get("total", data.get("totalCount", "N/A"))
-                    self._add_step("璁㈠崟鏌ヨ", True, f"鏌ュ埌 {total} 鏉¤鍗?)
+                    self._add_step("订单查询", True, f"查到 {total} 条订单")
                 else:
-                    self._add_step("璁㈠崟鏌ヨ", False, f"閿欒 {r.status_code}")
+                    self._add_step("订单查询", False, f"错误 {r.status_code}")
             except Exception as e:
-                self._add_step("璁㈠崟鏌ヨ", False, str(e)[:100])
+                self._add_step("订单查询", False, str(e)[:100])
 
-        # 鑷姩鐢熸垚鍥炲寤鸿
+        # 自动生成回复建议
         if self._failed:
-            self._add_step("鍥炲寤鸿", True, "璁㈠崟鏌ヨ寮傚父锛屽缓璁浆浜哄伐瀹㈡湇澶勭悊")
+            self._add_step("回复建议", True, "订单查询异常，建议转人工客服处理")
         else:
-            self._add_step("鍥炲寤鸿", True, "璁㈠崟淇℃伅宸茶幏鍙栵紝鍙嚜鍔ㄥ洖澶嶅鎴?)
+            self._add_step("回复建议", True, "订单信息已获取，可自动回复客户")
 
         return self._report()

@@ -1,11 +1,11 @@
-"""APScheduler 瀹氭椂浠诲姟 鈥?宸℃/澶囦唤/杞€?瀹㈡湇鎶ュ憡/鍟嗗煄鎵弿/鏃ヨ
-瀹氭椂浠诲姟娓呭崟:
-  - 姣?0鍒嗛挓 鏈嶅姟鍣ㄥ贰妫€ (CPU/Docker/Nginx/缃戠珯)
-  - 姣忔棩鍑屾櫒2鐐?鏁版嵁搴撳浠?
-  - 姣忔棩9鐐?21鐐?鍩熷悕杞€兼娴?鑷姩鍒囨崲
-  - 姣忔棩18鐐?瀹㈡湇鎶ュ憡
-  - 姣忔棩鍑屾櫒3鐐?鍟嗗煄鎵弿
-  - 姣忔棩23:55 鏃ヨ鐢熸垚
+"""APScheduler 定时任务 — 巡检/备份/轮值/客服报告/商城扫描/日记
+定时任务清单:
+  - 每30分钟 服务器巡检 (CPU/Docker/Nginx/网站)
+  - 每日凌晨2点 数据库备份
+  - 每日9点+21点 域名轮值检测+自动切换
+  - 每日18点 客服报告
+  - 每日凌晨3点 商城扫描
+  - 每日23:55 日记生成
 """
 import asyncio
 from datetime import datetime
@@ -15,7 +15,7 @@ from apscheduler.triggers.cron import CronTrigger
 from tools.logger import get_logger
 from tools.alert_push import push_weekly_report
 
-# 鏈€灏忛棿闅斾繚鎶?绉? 鈥?闃叉浠讳綍瀹氭椂浠诲姟浣庝簬姝ら鐜?
+# 最小间隔保护(秒) — 防止任何定时任务低于此频率
 MIN_SCHEDULE_INTERVAL = 60
 
 scheduler = AsyncIOScheduler()
@@ -23,20 +23,20 @@ logger = get_logger("scheduler")
 
 
 async def patrol_task():
-    """鏈嶅姟鍣ㄥ贰妫€ 鈥?CPU/Docker/Nginx/缃戠珯"""
+    """服务器巡检 — CPU/Docker/Nginx/网站"""
     now_str = datetime.now().strftime("%H:%M:%S")
-    logger.info(f"鏈嶅姟鍣ㄥ贰妫€ {now_str}")
+    logger.info(f"服务器巡检 {now_str}")
     try:
         from routers.inspector import run_inspection
         await run_inspection()
     except Exception as e:
-        logger.info(f"宸℃寮傚父: {e}")
+        logger.info(f"巡检异常: {e}")
 
 
 async def backup_task():
-    """姣忔棩鏁版嵁搴撳浠?""
+    """每日数据库备份"""
     now_str = datetime.now().strftime("%H:%M:%S")
-    logger.info(f"鏁版嵁搴撳浠?{now_str}")
+    logger.info(f"数据库备份 {now_str}")
     try:
         from routers.rollback_center import _load_backups, _save_backups
         import subprocess, os
@@ -51,71 +51,71 @@ async def backup_task():
                 f.write(result.stdout)
             records = _load_backups()
             records.append({
-                "id": ts, "name": f"鑷姩澶囦唤_{ts}", "type": "auto",
+                "id": ts, "name": f"自动备份_{ts}", "type": "auto",
                 "target": "database", "path": backup_path,
                 "size": len(result.stdout), "created_at": datetime.now().isoformat(),
             })
             _save_backups(records)
-            logger.info(f"澶囦唤鎴愬姛 {backup_path}")
+            logger.info(f"备份成功 {backup_path}")
         else:
-            logger.info(f"澶囦唤澶辫触: {result.stderr[:200]}")
+            logger.info(f"备份失败: {result.stderr[:200]}")
     except Exception as e:
-        logger.info(f"澶囦唤寮傚父: {e}")
+        logger.info(f"备份异常: {e}")
 
 
 async def rotation_check_task():
-    """鍩熷悕杞€兼娴?+ 鑷姩鍒囨崲"""
+    """域名轮值检测 + 自动切换"""
     now_str = datetime.now().strftime("%H:%M:%S")
-    logger.info(f"鍩熷悕杞€兼娴?{now_str}")
+    logger.info(f"域名轮值检测 {now_str}")
     try:
         from routers.rotation_panel import _check_all
         result = await _check_all()
         if result.get("rotated_to"):
-            logger.info(f"鑷姩杞€?鈫?{result['rotated_to']}")
-        logger.info(f"鍩熷悕鍋ュ悍: {result.get('checked', 0)} 涓凡妫€娴?)
+            logger.info(f"自动轮值 → {result['rotated_to']}")
+        logger.info(f"域名健康: {result.get('checked', 0)} 个已检测")
     except Exception as e:
-        logger.info(f"鍩熷悕杞€煎紓甯? {e}")
+        logger.info(f"域名轮值异常: {e}")
 
 
 async def customer_report_task():
-    """瀹㈡湇鎶ュ憡鐢熸垚"""
+    """客服报告生成"""
     now_str = datetime.now().strftime("%H:%M:%S")
-    logger.info(f"瀹㈡湇鎶ュ憡 {now_str}")
+    logger.info(f"客服报告 {now_str}")
     try:
         from routers.customer_panel import _generate_report
         await _generate_report()
     except Exception as e:
-        logger.info(f"瀹㈡湇鎶ュ憡寮傚父: {e}")
+        logger.info(f"客服报告异常: {e}")
 
 
 async def diary_task():
-    """姣忔棩鏃ヨ鑷姩鐢熸垚"""
+    """每日日记自动生成"""
     now_str = datetime.now().strftime("%H:%M:%S")
-    logger.info(f"鏃ヨ鐢熸垚 {now_str}")
+    logger.info(f"日记生成 {now_str}")
     try:
         from services import DiaryService
         journal = DiaryService.generate_daily()
         path = DiaryService.save_journal(journal)
-        logger.info(f"鏃ヨ宸蹭繚瀛?{path}")
+        logger.info(f"日记已保存 {path}")
     except Exception as e:
-        logger.info(f"鏃ヨ鐢熸垚澶辫触: {e}")
+        logger.info(f"日记生成失败: {e}")
 
 
 async def mall_scan_task():
-    """鍟嗗煄鎵弿"""
+    """商城扫描"""
     now_str = datetime.now().strftime("%H:%M:%S")
-    logger.info(f"鍟嗗煄鎵弿 {now_str}")
+    logger.info(f"商城扫描 {now_str}")
     try:
         from routers.mall_scanner import run_scan
         await run_scan()
     except Exception as e:
-        logger.info(f"鍟嗗煄鎵弿寮傚父: {e}")
+        logger.info(f"商城扫描异常: {e}")
 
 
 
 async def ssl_renew_check_task():
-    """SSL璇佷功鍒版湡妫€鏌?+ 鑷姩缁"""
-    logger.info("SSL璇佷功妫€鏌?{datetime.now().strftime('%H:%M:%S')}")
+    """SSL证书到期检查 + 自动续签"""
+    logger.info("SSL证书检查 {datetime.now().strftime('%H:%M:%S')}")
     try:
         from routers.ssl_router import _cert_valid, _issue
         from routers.rotation_panel import _get_domains
@@ -124,24 +124,24 @@ async def ssl_renew_check_task():
             info = _cert_valid(d["domain"])
             if info.get("ok") and info.get("days_left", 0) > 30:
                 continue
-            logger.info("SSL鍒版湡({info.get('days_left', 0)}澶?, 鑷姩缁: {d['domain']}")
+            logger.info("SSL到期({info.get('days_left', 0)}天), 自动续签: {d['domain']}")
             result = _issue(d["domain"], "")
             if result.get("ok"):
-                logger.info("SSL缁鎴愬姛: {d['domain']}")
+                logger.info("SSL续签成功: {d['domain']}")
             else:
-                logger.info("SSL缁澶辫触: {d['domain']} - {result.get('error', '')}")
+                logger.info("SSL续签失败: {d['domain']} - {result.get('error', '')}")
     except Exception as e:
-        logger.info(f"SSL妫€鏌ュ紓甯? {e}")
+        logger.info(f"SSL检查异常: {e}")
 
 
 async def daily_report_task():
-    """姣忔棩8鐐圭敓鎴愯繍钀ユ棭鎶?""
+    """每日8点生成运营早报"""
     try:
         from routers.daily_report import daily_report
         from auth import verify_token
         from fastapi import Depends
-        logger.info("鐢熸垚姣忔棩鏃╂姤...")
-        # 鐩存帴璋冪敤鐢熸垚閫昏緫
+        logger.info("生成每日早报...")
+        # 直接调用生成逻辑
         import psutil
         from state import state
         mem = psutil.virtual_memory()
@@ -161,23 +161,23 @@ async def daily_report_task():
                   "health_score": score, "server": {"cpu":f"{cpu}%","memory":f"{mem.percent}%","disk":f"{disk.percent}%"},
                   "domains":{"total":len(domains),"active":active},"pending_approvals":len(pending)}
         state.append_data("daily_reports", report, 365)
-        # 鍙戦€氱煡
-        state._data["last_notification"] = f"姣忔棩鏃╂姤: 鍋ュ悍鍒唟score}, CPU{cpu}%, 鍐呭瓨{mem.percent}%, 纾佺洏{disk.percent}%"
+        # 发通知
+        state._data["last_notification"] = f"每日早报: 健康分{score}, CPU{cpu}%, 内存{mem.percent}%, 磁盘{disk.percent}%"
         state._save()
-        logger.info(f"姣忔棩鏃╂姤: 鍋ュ悍鍒唟score}")
-        # 鍛ㄤ竴鑷姩鎺ㄩ€佸懆鎶?
+        logger.info(f"每日早报: 健康分{score}")
+        # 周一自动推送周报
         if __import__("datetime").datetime.now().weekday() == 0:
             try:
                 from routers.weekly_report import router as wr
-                # 鐢熸垚骞舵帹閫?
-                await push_weekly_report({"summary": f"鏈懆鍋ュ悍鍒唟score}, CPU{cpu}%, 鍐呭瓨{mem.percent}%, 璁㈠崟{len(state._data.get("orders",[]))}"})
+                # 生成并推送
+                await push_weekly_report({"summary": f"本周健康分{score}, CPU{cpu}%, 内存{mem.percent}%, 订单{len(state._data.get("orders",[]))}"})
             except Exception as e:
-                logger.info(f"鍛ㄦ姤鎺ㄩ€佽烦杩? {e}")
+                logger.info(f"周报推送跳过: {e}")
     except Exception as e:
-        logger.info(f"鏃╂姤澶辫触: {e}")
+        logger.info(f"早报失败: {e}")
 
 async def metrics_record_task():
-    """瀹氭椂璁板綍绯荤粺鎸囨爣"""
+    """定时记录系统指标"""
     try:
         from routers.dashboard_router import collect_metrics
         from state import state as _s
@@ -188,10 +188,10 @@ async def metrics_record_task():
             _s._data["metrics_history"] = history[-500:]
         _s._save()
     except Exception as e:
-        logger.info(f"鎸囨爣璁板綍寮傚父: {e}")
+        logger.info(f"指标记录异常: {e}")
 
 def start_scheduler():
-    """鍚姩瀹氭椂浠诲姟"""
+    """启动定时任务"""
     scheduler.add_job(patrol_task, IntervalTrigger(minutes=30), id="patrol", replace_existing=True)
     scheduler.add_job(backup_task, CronTrigger(hour=2, minute=0), id="backup", replace_existing=True)
     scheduler.add_job(rotation_check_task, CronTrigger(minute='*/5'), id='rotation', replace_existing=True)
@@ -202,13 +202,13 @@ def start_scheduler():
     scheduler.add_job(daily_report_task, CronTrigger(hour=8, minute=0), id="daily_report", replace_existing=True)
     scheduler.add_job(metrics_record_task, IntervalTrigger(minutes=5), id="metrics", replace_existing=True)
     scheduler.start()
-    logger.info("瀹氭椂浠诲姟鍚姩瀹屾垚: 宸℃/澶囦唤/杞€?SSL缁/鍟嗗煄鎵弿/瀹㈡湇/鏃ヨ/鏃╂姤/鎸囨爣")
+    logger.info("定时任务启动完成: 巡检/备份/轮值/SSL续签/商城扫描/客服/日记/早报/指标")
 
 
 def stop_scheduler():
-    """鍋滄瀹氭椂浠诲姟"""
+    """停止定时任务"""
     scheduler.shutdown(wait=False)
-    logger.info("瀹氭椂浠诲姟宸插仠姝?)
+    logger.info("定时任务已停止")
 
 
 

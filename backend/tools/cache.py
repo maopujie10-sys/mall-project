@@ -1,4 +1,4 @@
-锘?""Redis缂撳瓨灞?鈥?瑁呴グ鍣ㄦā寮?鑷姩搴忓垪鍖?TTL鏀寔"""
+﻿"""Redis缓存层 — 装饰器模式,自动序列化,TTL支持"""
 import json
 import functools
 import asyncio
@@ -6,7 +6,7 @@ import os
 import hashlib
 from typing import Optional
 
-# 灏濊瘯杩炴帴Redis,涓嶅彲鐢ㄦ椂鍥為€€鍐呭瓨缂撳瓨
+# 尝试连接Redis,不可用时回退内存缓存
 try:
     import redis.asyncio as aioredis
     _redis = aioredis.from_url(
@@ -18,16 +18,16 @@ except Exception:
     _redis = None
     _redis_available = False
 
-# 鍐呭瓨缂撳瓨(Redis涓嶅彲鐢ㄦ椂鍥為€€)
+# 内存缓存(Redis不可用时回退)
 _memory_cache = {}
 
 def _make_key(prefix: str, args, kwargs) -> str:
-    """鐢熸垚缂撳瓨key"""
+    """生成缓存key"""
     raw = f"{prefix}:{json.dumps(args, sort_keys=True, default=str)}:{json.dumps(kwargs, sort_keys=True, default=str)}"
     return f"cache:{prefix}:{hashlib.md5(raw.encode()).hexdigest()[:16]}"
 
 async def cache_get(key: str) -> Optional[str]:
-    """璇诲彇缂撳瓨"""
+    """读取缓存"""
     if _redis_available:
         try:
             return await _redis.get(key)
@@ -39,7 +39,7 @@ async def cache_get(key: str) -> Optional[str]:
     return None
 
 async def cache_set(key: str, value: str, ttl: int = 300):
-    """鍐欏叆缂撳瓨"""
+    """写入缓存"""
     if _redis_available:
         try:
             await _redis.set(key, value, ex=ttl)
@@ -52,7 +52,7 @@ async def cache_set(key: str, value: str, ttl: int = 300):
     }
 
 async def cache_delete(prefix: str):
-    """鎸夊墠缂€娓呴櫎缂撳瓨"""
+    """按前缀清除缓存"""
     if _redis_available:
         try:
             keys = await _redis.keys(f"cache:{prefix}:*")
@@ -65,7 +65,7 @@ async def cache_delete(prefix: str):
             del _memory_cache[key]
 
 def cached(prefix: str, ttl: int = 300):
-    """缂撳瓨瑁呴グ鍣?""
+    """缓存装饰器"""
     def decorator(func):
         @functools.wraps(func)
         async def wrapper(*args, **kwargs):
@@ -79,7 +79,7 @@ def cached(prefix: str, ttl: int = 300):
         return wrapper
     return decorator
 
-# 瀹氭椂娓呯悊杩囨湡鍐呭瓨缂撳瓨
+# 定时清理过期内存缓存
 _last_cleanup = 0
 
 async def cleanup_memory_cache():

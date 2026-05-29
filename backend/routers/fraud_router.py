@@ -1,4 +1,4 @@
-锘?""AI寮傚父璁㈠崟妫€娴婣PI 鈥?鍗曠瑪鍒嗘瀽+鎵归噺鎵弿+瑙勫垯鏌ヨ"""
+﻿"""AI异常订单检测API — 单笔分析+批量扫描+规则查询"""
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
 from typing import Optional
@@ -28,7 +28,7 @@ class BatchCheckRequest(BaseModel):
 
 @router.post("/check")
 async def check_order(req: OrderCheckRequest, _=Depends(verify_token)):
-    """鍗曠瑪璁㈠崟椋庨櫓鍒嗘瀽"""
+    """单笔订单风险分析"""
     order = req.model_dump()
     result = await fraud_detector.analyze_order(order)
     return {"ok": True, "data": result}
@@ -36,23 +36,23 @@ async def check_order(req: OrderCheckRequest, _=Depends(verify_token)):
 
 @router.post("/quick-scan")
 async def quick_scan(req: OrderCheckRequest, _=Depends(verify_token)):
-    """蹇€熸壂鎻忥紙涓嶈皟AI锛?""
+    """快速扫描（不调AI）"""
     result = fraud_detector.quick_scan(req.model_dump())
     return {"ok": True, "data": result}
 
 
 @router.post("/batch")
 async def batch_check(req: BatchCheckRequest, _=Depends(verify_token)):
-    """鎵归噺椋庨櫓鍒嗘瀽"""
+    """批量风险分析"""
     if not req.orders:
-        raise HTTPException(400, "璁㈠崟鍒楄〃涓嶈兘涓虹┖")
+        raise HTTPException(400, "订单列表不能为空")
     if len(req.orders) > 100:
-        raise HTTPException(400, "鍗曟鏈€澶?00涓鍗?)
+        raise HTTPException(400, "单次最多100个订单")
     result = await fraud_detector.batch_analyze(req.orders)
     return {"ok": True, "data": result}
 
 
 @router.get("/rules")
 async def fraud_rules(_=Depends(verify_token)):
-    """椋庢帶瑙勫垯鍒楄〃"""
+    """风控规则列表"""
     return {"ok": True, "rules": fraud_detector.get_rules()}

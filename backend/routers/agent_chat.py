@@ -1,4 +1,4 @@
-锘?""Agent Chat API v3 鈥?鍘熺敓Function Calling + 瀵硅瘽璁板繂鎸佷箙鍖?""
+﻿"""Agent Chat API v3 — 原生Function Calling + 对话记忆持久化"""
 import asyncio, httpx, json, re, os
 from datetime import datetime
 from fastapi import APIRouter, Depends, Query
@@ -16,8 +16,8 @@ router = APIRouter(prefix="/agent", tags=["Agent"])
 
 class ChatRequest(BaseModel):
     message: str
-    history: list[dict] = []  # 瀵硅瘽鍘嗗彶 [{role,content}]
-    model: str = ""            # 鎸囧畾妯″瀷
+    history: list[dict] = []  # 对话历史 [{role,content}]
+    model: str = ""            # 指定模型
 
 class ConfirmRequest(BaseModel):
     taskId: str
@@ -32,40 +32,40 @@ DEEPSEEK_KEY = os.getenv("DEEPSEEK_API_KEY", "")
 OPENAI_KEY = os.getenv("OPENAI_API_KEY", "")
 _API_URL = OPENAI_BASE_URL or "https://api.openai.com/v1"
 
-SYSTEM_PROMPT = """浣犳槸 Friday AI OS锛屼竴涓櫤鑳借繍缁村姪鎵嬨€備綘鑳借皟鐢ㄥ伐鍏锋墽琛屽疄闄呮搷浣溿€?
+SYSTEM_PROMPT = """你是 Friday AI OS，一个智能运维助手。你能调用工具执行实际操作。
 
-瑙勫垯锛?
-1. 鐞嗚В鐢ㄦ埛鎰忓浘锛岄€夋嫨鍚堥€傜殑宸ュ叿
-2. 鍒ゆ柇椋庨櫓绛夌骇锛歀1=瀹夊叏 L2=浣庨闄?L3=闇€瀹℃壒 L4=绂佹
-3. L1鑷姩鎵ц锛孡3闇€纭锛孡4鎷掔粷
-4. 鐢ㄤ腑鏂囧洖澶嶏紝绠€娲佷笓涓?
-5. 鎵ц瀹屽伐鍏峰悗锛岀敤鑷劧璇█瑙ｉ噴缁撴灉"""
+规则：
+1. 理解用户意图，选择合适的工具
+2. 判断风险等级：L1=安全 L2=低风险 L3=需审批 L4=禁止
+3. L1自动执行，L3需确认，L4拒绝
+4. 用中文回复，简洁专业
+5. 执行完工具后，用自然语言解释结果"""
 
-# ===== 宸ュ叿瀹氫箟 (OpenAI Function Calling鏍煎紡) =====
+# ===== 工具定义 (OpenAI Function Calling格式) =====
 def _build_tools():
-    """鏋勫缓宸ュ叿schema"""
+    """构建工具schema"""
     tools_list = registry.list_all()[:50]
     return [{
         "type": "function",
         "function": {
             "name": t.name,
-            "description": f"{t.display_name}: {t.description} [椋庨櫓:{t.risk_level}]",
+            "description": f"{t.display_name}: {t.description} [风险:{t.risk_level}]",
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "message": {"type": "string", "description": "鐢ㄦ埛鍘熷娑堟伅鎴栧弬鏁?}
+                    "message": {"type": "string", "description": "用户原始消息或参数"}
                 },
                 "required": ["message"]
             }
         }
     } for t in tools_list]
 
-# ===== 妯″瀷璋冪敤 =====
+# ===== 模型调用 =====
 async def call_ai_with_tools(messages, model=""):
-    """璋冪敤AI妯″瀷锛屾敮鎸佸師鐢烣unction Calling"""
+    """调用AI模型，支持原生Function Calling"""
     tools = _build_tools()
     
-    # 浼樺厛DeepSeek锛堝吋瀹筄penAI鏍煎紡锛?
+    # 优先DeepSeek（兼容OpenAI格式）
     if DEEPSEEK_KEY:
         try:
             async with httpx.AsyncClient(timeout=90) as c:
@@ -79,7 +79,7 @@ async def call_ai_with_tools(messages, model=""):
         except Exception:
             pass
     
-    # OpenAI鍏煎API (302AI绛?
+    # OpenAI兼容API (302AI等)
     if OPENAI_KEY:
         try:
             async with httpx.AsyncClient(timeout=90) as c:
@@ -93,11 +93,11 @@ async def call_ai_with_tools(messages, model=""):
         except Exception:
             pass
     
-    # 鍥為€€: 鏃ф牸寮?-> 姝ｅ垯鍖归厤宸ュ叿
+    # 回退: 旧格式 -> 正则匹配工具
     tl = "\n".join([f"- {t['function']['name']}: {t['function']['description']}" for t in tools])
-    fallback_msgs = [{"role": "system", "content": SYSTEM_PROMPT + "\n\n宸ュ叿鍒楄〃:\n" + tl}]
+    fallback_msgs = [{"role": "system", "content": SYSTEM_PROMPT + "\n\n工具列表:\n" + tl}]
     fallback_msgs.extend(messages)
-    fallback_msgs.append({"role": "user", "content": '璇烽€夋嫨宸ュ叿,杩斿洖JSON: {"tool":"宸ュ叿鍚?,"reason":"鍘熷洜"}'})
+    fallback_msgs.append({"role": "user", "content": '请选择工具,返回JSON: {"tool":"工具名","reason":"原因"}'})
     
     if DEEPSEEK_KEY:
         try:
@@ -112,11 +112,11 @@ async def call_ai_with_tools(messages, model=""):
         except Exception:
             pass
     
-    return {"fallback": True, "choices": [{"message": {"content": "閫夋嫨宸ュ叿澶辫触"}}]}
+    return {"fallback": True, "choices": [{"message": {"content": "选择工具失败"}}]}
 
-# ===== 宸ュ叿鎵ц =====
+# ===== 工具执行 =====
 async def execute_tool(name: str, params: dict) -> dict:
-    """鎵ц宸ュ叿骞惰繑鍥炵粨鏋?""
+    """执行工具并返回结果"""
     try:
         if name == "system_status":
             import psutil
@@ -129,7 +129,7 @@ async def execute_tool(name: str, params: dict) -> dict:
             from config import MALL_BASE_URL
             async with httpx.AsyncClient(timeout=10) as c:
                 r = await c.get(f"{MALL_BASE_URL}/api/orders", params={"page":1,"size":5})
-                return {"success": True, "data": r.json() if r.status_code==200 else {"error":"API涓嶅彲鐢?}}
+                return {"success": True, "data": r.json() if r.status_code==200 else {"error":"API不可用"}}
         if name == "docker_status":
             import subprocess
             r = subprocess.run(["docker","ps","--format","{{.Names}} {{.Status}}"], capture_output=True, text=True, timeout=10)
@@ -138,32 +138,32 @@ async def execute_tool(name: str, params: dict) -> dict:
             import subprocess, gc
             gc.collect()
             subprocess.run(["docker","system","prune","-f"], capture_output=True, timeout=30)
-            return {"success": True, "data": {"message": "鍐呭瓨宸查噴鏀撅紝Docker缂撳瓨宸叉竻鐞?}}
+            return {"success": True, "data": {"message": "内存已释放，Docker缓存已清理"}}
         
-        # 閫氱敤宸ュ叿鎵ц
+        # 通用工具执行
         tool = registry.get(name)
         if tool:
             result = await tool.execute(params)
             return {"success": True, "data": result if result else {}}
-        return {"success": False, "error": f"宸ュ叿 {name} 鏈壘鍒?}
+        return {"success": False, "error": f"工具 {name} 未找到"}
     except Exception as e:
         return {"success": False, "error": str(e)[:200]}
 
-# ===== RAG涓婁笅鏂?=====
+# ===== RAG上下文 =====
 async def _get_context(message: str) -> str:
-    """鑾峰彇鐩稿叧鐭ヨ瘑"""
+    """获取相关知识"""
     try:
         ctx = await VectorMemory.search(message, top_k=3)
         if ctx:
-            return "鐩稿叧鐭ヨ瘑:\n" + "\n".join([c.get("text","")[:200] for c in ctx])
+            return "相关知识:\n" + "\n".join([c.get("text","")[:200] for c in ctx])
     except Exception:
         pass
     return ""
 
-# ===== 涓籆hat绔偣 (Function Calling) =====
+# ===== 主Chat端点 (Function Calling) =====
 @router.post("/chat")
 async def agent_chat(req: ChatRequest, _=Depends(verify_token)):
-    """AI瀵硅瘽 - 鍘熺敓Function Calling"""
+    """AI对话 - 原生Function Calling"""
     rag_ctx = await _get_context(req.message)
     system_content = SYSTEM_PROMPT
     if rag_ctx:
@@ -171,19 +171,19 @@ async def agent_chat(req: ChatRequest, _=Depends(verify_token)):
     
     messages = [{"role": "system", "content": system_content}]
     if req.history:
-        messages.extend(req.history[-20:])  # 鏈€杩?0鏉″巻鍙?
+        messages.extend(req.history[-20:])  # 最近20条历史
     messages.append({"role": "user", "content": req.message})
     
     result = await call_ai_with_tools(messages, req.model)
     
-    # 澶勭悊Function Calling鍝嶅簲
+    # 处理Function Calling响应
     if not result.get("fallback"):
         choice = result.get("choices", [{}])[0]
         msg = choice.get("message", {})
         tool_calls = msg.get("tool_calls", [])
         
         if tool_calls:
-            # AI閫夋嫨浜嗗伐鍏?
+            # AI选择了工具
             tc = tool_calls[0]
             func = tc.get("function", {})
             tool_name = func.get("name", "")
@@ -196,18 +196,18 @@ async def agent_chat(req: ChatRequest, _=Depends(verify_token)):
                 await handle_risk(risk, td.display_name, req.message[:100])
             
             if risk == "L4":
-                return {"response": f"鉀?L4椋庨櫓鎿嶄綔宸查樆姝? {tool_name}", "tool": tool_name, "risk": "L4"}
+                return {"response": f"⛔ L4风险操作已阻止: {tool_name}", "tool": tool_name, "risk": "L4"}
             
             exec_result = await execute_tool(tool_name, tool_args)
             
-            # 灏嗙粨鏋滃弽棣堢粰AI鐢熸垚鑷劧璇█鍥炲
+            # 将结果反馈给AI生成自然语言回复
             messages.append({"role": "assistant", "content": None, "tool_calls": tool_calls})
             messages.append({"role": "tool", "tool_call_id": tc.get("id",""), "content": json.dumps(exec_result, ensure_ascii=False)})
             
             final = await call_ai_with_tools(messages, req.model)
-            ai_text = final.get("choices",[{}])[0].get("message",{}).get("content", "鎵ц瀹屾垚")
+            ai_text = final.get("choices",[{}])[0].get("message",{}).get("content", "执行完成")
             
-            # 璁板繂瀛樺偍
+            # 记忆存储
             try:
                 DigitalLifeform.remember_conversation(req.message, ai_text[:300])
                 asyncio.ensure_future(VectorMemory.remember(ai_text[:300], {"type":"ai","source":"chat","tool":tool_name}))
@@ -222,7 +222,7 @@ async def agent_chat(req: ChatRequest, _=Depends(verify_token)):
                 "mode": state.mode
             }
         else:
-            # AI鐩存帴鏂囨湰鍥炲
+            # AI直接文本回复
             ai_text = msg.get("content", "")
             try:
                 DigitalLifeform.remember_conversation(req.message, ai_text[:300])
@@ -230,7 +230,7 @@ async def agent_chat(req: ChatRequest, _=Depends(verify_token)):
                 pass
             return {"response": ai_text, "tool": None, "risk": "L1", "mode": state.mode}
     
-    # Fallback: 鏃ф牸寮?
+    # Fallback: 旧格式
     ai_text = result.get("choices",[{}])[0].get("message",{}).get("content","")
     m = re.search(r'\{[^}]+\}', ai_text.strip())
     tool_name = None
@@ -243,14 +243,14 @@ async def agent_chat(req: ChatRequest, _=Depends(verify_token)):
     
     if tool_name:
         exec_result = await execute_tool(tool_name, {"message": req.message})
-        ai_text = f"鎵ц {tool_name}: " + json.dumps(exec_result.get("data",{}), ensure_ascii=False)[:500]
+        ai_text = f"执行 {tool_name}: " + json.dumps(exec_result.get("data",{}), ensure_ascii=False)[:500]
     
-    return {"response": ai_text or "宸叉敹鍒?姝ｅ湪澶勭悊...", "tool": tool_name, "risk": "L1", "mode": state.mode}
+    return {"response": ai_text or "已收到,正在处理...", "tool": tool_name, "risk": "L1", "mode": state.mode}
 
-# ===== 娴佸紡瀵硅瘽 =====
+# ===== 流式对话 =====
 @router.post("/chat/stream")
 async def agent_chat_stream(req: ChatRequest, _=Depends(verify_token)):
-    """娴佸紡SSE瀵硅瘽"""
+    """流式SSE对话"""
     async def generate():
         try:
             result = await agent_chat(req)
@@ -261,12 +261,12 @@ async def agent_chat_stream(req: ChatRequest, _=Depends(verify_token)):
     return StreamingResponse(generate(), media_type="text/event-stream",
         headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
 
-# ===== 宸插璇濆巻鍙?=====
+# ===== 已对话历史 =====
 _chat_histories = {}  # user_id -> [messages]
 
 @router.post("/chat/history")
 async def save_chat_history(req: dict, _=Depends(verify_token)):
-    """淇濆瓨瀵硅瘽鍘嗗彶"""
+    """保存对话历史"""
     uid = req.get("user_id", "default")
     _chat_histories[uid] = req.get("messages", [])[-100:]
     state._data[f"chat_history_{uid}"] = _chat_histories[uid]
@@ -275,17 +275,17 @@ async def save_chat_history(req: dict, _=Depends(verify_token)):
 
 @router.get("/chat/history")
 async def load_chat_history(user_id: str = Query("default"), _=Depends(verify_token)):
-    """鍔犺浇瀵硅瘽鍘嗗彶"""
+    """加载对话历史"""
     return {"messages": state._data.get(f"chat_history_{user_id}", [])[-50:]}
 
 @router.delete("/chat/history")
 async def clear_chat_history(user_id: str = Query("default"), _=Depends(verify_token)):
-    """娓呴櫎瀵硅瘽鍘嗗彶"""
+    """清除对话历史"""
     state._data.pop(f"chat_history_{user_id}", None)
     state._save()
     return {"ok": True}
 
-# ===== 杈呭姪绔偣 =====
+# ===== 辅助端点 =====
 @router.get("/tools")
 async def list_tools(_=Depends(verify_token)):
     ts = registry.list_all()
@@ -303,7 +303,7 @@ async def confirm_task(req: ConfirmRequest, _=Depends(verify_token)):
             state.approval_history.append({**a, "result": a["status"]})
             state.pending_approvals.remove(a)
             return {"ok": True, "status": a["status"]}
-    return {"ok": False, "error": "鏈壘鍒拌浠诲姟"}
+    return {"ok": False, "error": "未找到该任务"}
 
 @router.post("/handover")
 async def agent_handover(req: HandoverRequest, _=Depends(verify_token)):

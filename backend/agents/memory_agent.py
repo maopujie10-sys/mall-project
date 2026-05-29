@@ -1,5 +1,5 @@
-"""Memory Agent 鈥?闀挎湡璁板繂/鐢ㄦ埛涔犳儻/椤圭洰鐘舵€?Bug鍘嗗彶/鑷姩鎬荤粨
-鑱岃矗锛氳褰曚竴鍒囥€佹绱㈠巻鍙层€佸涔犳ā寮忋€佸叧鑱旂煡璇?""
+"""Memory Agent — 长期记忆/用户习惯/项目状态/Bug历史/自动总结
+职责：记录一切、检索历史、学习模式、关联知识"""
 import json
 import os
 import hashlib
@@ -10,7 +10,7 @@ from typing import Optional
 
 @dataclass
 class Memory:
-    """鍗曟潯璁板繂"""
+    """单条记忆"""
     id: str
     category: str  # user_pref / project / bug / decision / learning
     content: str
@@ -23,7 +23,7 @@ class Memory:
 
 
 class MemoryAgent:
-    """Memory Agent 鈥?鏁板瓧澶ц剳鐨勬捣椹綋"""
+    """Memory Agent — 数字大脑的海马体"""
 
     MEMORY_DIR = os.getenv("APP_MEMORY_DIR", "memory")
     MEMORY_FILE = os.path.join(os.getenv("APP_MEMORY_DIR", "memory"), "agent_memory.json")
@@ -51,7 +51,7 @@ class MemoryAgent:
 
     @staticmethod
     async def remember(content: str, category: str = "general", importance: int = 1, tags: list = None) -> dict:
-        """淇濆瓨涓€鏉¤蹇?""
+        """保存一条记忆"""
         memories = MemoryAgent._load_memories()
         mem = {
             "id": hashlib.md5(f"{category}:{content}:{datetime.now().isoformat()}".encode()).hexdigest()[:12],
@@ -65,9 +65,9 @@ class MemoryAgent:
             "related_memories": [],
         }
         memories.insert(0, mem)
-        # 闄愬埗鎬绘暟
+        # 限制总数
         if len(memories) > 10000:
-            # 淇濈暀閲嶈鐨勶紝鍒犻櫎鏃х殑
+            # 保留重要的，删除旧的
             memories.sort(key=lambda x: (x.get("importance", 1), x.get("access_count", 0)), reverse=True)
             memories = memories[:10000]
         MemoryAgent._save_memories(memories)
@@ -75,21 +75,21 @@ class MemoryAgent:
 
     @staticmethod
     async def recall(query: str = None, category: str = None, tags: list = None, limit: int = 20) -> dict:
-        """妫€绱㈣蹇?""
+        """检索记忆"""
         memories = MemoryAgent._load_memories()
         results = []
 
         for mem in memories:
             score = 0
-            # 鍒嗙被鍖归厤
+            # 分类匹配
             if category and mem.get("category") == category:
                 score += 3
-            # 鏍囩鍖归厤
+            # 标签匹配
             if tags:
                 mem_tags = set(mem.get("tags", []))
                 query_tags = set(tags)
                 score += len(mem_tags & query_tags) * 2
-            # 鍐呭鍖归厤
+            # 内容匹配
             if query:
                 content_lower = mem.get("content", "").lower()
                 for word in query.lower().split():
@@ -102,7 +102,7 @@ class MemoryAgent:
         results.sort(key=lambda x: (x.get("importance", 1), x.get("_score", 0)), reverse=True)
         results = results[:limit]
 
-        # 鏇存柊璁块棶璁℃暟
+        # 更新访问计数
         for r in results:
             r["last_accessed"] = datetime.now().isoformat()
             r["access_count"] = r.get("access_count", 0) + 1
@@ -117,16 +117,16 @@ class MemoryAgent:
 
     @staticmethod
     async def learn_from_conversation(user_message: str, ai_response: str, topic: str = "") -> dict:
-        """浠庡璇濅腑瀛︿範"""
+        """从对话中学习"""
         memories = MemoryAgent._load_memories()
 
-        # 鎻愬彇鍏抽敭淇℃伅
+        # 提取关键信息
         keywords = MemoryAgent._extract_keywords(user_message)
         summary = ai_response[:200] if len(ai_response) > 200 else ai_response
 
         learnings = [
-            {"category": "conversation", "content": f"鐢ㄦ埛: {user_message[:100]}", "tags": keywords, "importance": 2},
-            {"category": "learning", "content": f"AI瀛︿範: {summary}", "tags": keywords + [topic] if topic else keywords, "importance": 3},
+            {"category": "conversation", "content": f"用户: {user_message[:100]}", "tags": keywords, "importance": 2},
+            {"category": "learning", "content": f"AI学习: {summary}", "tags": keywords + [topic] if topic else keywords, "importance": 3},
         ]
 
         for l in learnings:
@@ -148,15 +148,15 @@ class MemoryAgent:
 
     @staticmethod
     def _extract_keywords(text: str) -> list:
-        """绠€鍗曞叧閿瘝鎻愬彇"""
-        stop_words = {"鐨?, "浜?, "鏄?, "鍦?, "鎴?, "鏈?, "鍜?, "灏?, "涓?, "浜?, "閮?, "涓€", "涓€涓?, "涓?, "涔?, "寰?, "鍒?, "璇?, "瑕?, "鍘?, "浣?, "浼?, "鐫€", "娌℃湁", "鐪?, "濂?, "鑷繁", "杩?}
-        words = text.replace("锛?, " ").replace("銆?, " ").replace("锛?, " ").replace("锛?, " ").split()
+        """简单关键词提取"""
+        stop_words = {"的", "了", "是", "在", "我", "有", "和", "就", "不", "人", "都", "一", "一个", "上", "也", "很", "到", "说", "要", "去", "你", "会", "着", "没有", "看", "好", "自己", "这"}
+        words = text.replace("，", " ").replace("。", " ").replace("？", " ").replace("！", " ").split()
         keywords = [w for w in words if len(w) >= 2 and w not in stop_words]
         return keywords[:10]
 
     @staticmethod
     async def summarize_memories(category: str = None, days: int = 7) -> dict:
-        """鎬荤粨鏈€杩戣蹇?""
+        """总结最近记忆"""
         memories = MemoryAgent._load_memories()
         cutoff = (datetime.now() - timedelta(days=days)).isoformat()
 
@@ -165,7 +165,7 @@ class MemoryAgent:
             recent = [m for m in recent if m.get("category") == category]
 
         if not recent:
-            return {"ok": True, "summary": "鏈€杩戞病鏈夋柊璁板繂", "count": 0}
+            return {"ok": True, "summary": "最近没有新记忆", "count": 0}
 
         categories = {}
         for m in recent:
@@ -174,7 +174,7 @@ class MemoryAgent:
 
         return {
             "ok": True,
-            "period": f"鏈€杩憑days}澶?,
+            "period": f"最近{days}天",
             "total": len(recent),
             "categories": categories,
             "top_tags": MemoryAgent._get_top_tags(recent, 10),
@@ -192,11 +192,11 @@ class MemoryAgent:
 
     @staticmethod
     async def find_related(memory_id: str) -> dict:
-        """鎵惧埌鐩稿叧璁板繂"""
+        """找到相关记忆"""
         memories = MemoryAgent._load_memories()
         target = next((m for m in memories if m.get("id") == memory_id), None)
         if not target:
-            return {"ok": False, "error": "璁板繂涓嶅瓨鍦?}
+            return {"ok": False, "error": "记忆不存在"}
 
         target_tags = set(target.get("tags", []))
         related = []
@@ -215,13 +215,13 @@ class MemoryAgent:
             "related": [{k: v for k, v in m.items() if k not in ("_overlap", "_score")} for m in related[:10]],
         }
 
-    # ===== 鐢ㄦ埛涔犳儻瀛︿範 =====
+    # ===== 用户习惯学习 =====
 
     @staticmethod
     async def learn_user_habit(habit_type: str, detail: str) -> dict:
-        """瀛︿範鐢ㄦ埛涔犳儻"""
+        """学习用户习惯"""
         return await MemoryAgent.remember(
-            content=f"[涔犳儻] {habit_type}: {detail}",
+            content=f"[习惯] {habit_type}: {detail}",
             category="user_habit",
             importance=4,
             tags=["habit", habit_type],
@@ -229,9 +229,9 @@ class MemoryAgent:
 
     @staticmethod
     async def get_user_profile() -> dict:
-        """鑾峰彇鐢ㄦ埛鐢诲儚"""
+        """获取用户画像"""
         result = await MemoryAgent.recall(category="user_habit", limit=50)
-        habits = [m["content"].replace("[涔犳儻] ", "") for m in result.get("memories", [])]
+        habits = [m["content"].replace("[习惯] ", "") for m in result.get("memories", [])]
         return {
             "ok": True,
             "habits_count": len(habits),
@@ -241,7 +241,7 @@ class MemoryAgent:
 
     @staticmethod
     async def cleanup(days_old: int = 30) -> dict:
-        """娓呴櫎鏃ц蹇?""
+        """清除旧记忆"""
         memories = MemoryAgent._load_memories()
         cutoff = (datetime.now() - timedelta(days=days_old)).isoformat()
         before = len(memories)

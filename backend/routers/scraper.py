@@ -1,4 +1,4 @@
-锘?""鍏ㄩ噺鍟嗗搧閲囬泦 API 鈥?鎼滅储/鎻愬彇/涓嬭浇/涓婁紶COS/瀵煎叆鍟嗗煄"""
+﻿"""全量商品采集 API — 搜索/提取/下载/上传COS/导入商城"""
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
 from typing import Optional
@@ -9,9 +9,9 @@ from tools.scraper_engine import ScraperEngine
 
 router = APIRouter(prefix="/agent/scraper", tags=["Scraper"])
 
-# 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺?
-#  璇锋眰妯″瀷
-# 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺?
+# ═══════════════════════════════════════
+#  请求模型
+# ═══════════════════════════════════════
 
 class StartJobRequest(BaseModel):
     platform: str = "ebay"
@@ -22,16 +22,16 @@ class StartJobRequest(BaseModel):
 class ImportRequest(BaseModel):
     product_ids: list[str]
 
-# 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺?
+# ═══════════════════════════════════════
 #  API
-# 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺?
+# ═══════════════════════════════════════
 
 @router.post("/jobs")
 async def start_job(req: StartJobRequest, _=Depends(verify_token)):
-    """鍚姩閲囬泦浠诲姟 鈥?鍏抽敭璇嶆悳绱?+ 璇︽儏椤垫彁鍙?+ 鍥剧墖涓婁紶COS"""
-    await handle_risk("L1", "鍚姩閲囬泦浠诲姟", f"{req.platform}:{req.keyword}")
+    """启动采集任务 — 关键词搜索 + 详情页提取 + 图片上传COS"""
+    await handle_risk("L1", "启动采集任务", f"{req.platform}:{req.keyword}")
     if req.max_items > 100:
-        raise HTTPException(400, "鍗曟鏈€澶氶噰闆?00涓晢鍝?)
+        raise HTTPException(400, "单次最多采集100个商品")
     job = await ScraperEngine.start_job(
         platform=req.platform,
         keyword=req.keyword,
@@ -42,27 +42,27 @@ async def start_job(req: StartJobRequest, _=Depends(verify_token)):
 
 @router.get("/jobs")
 async def list_jobs(_=Depends(verify_token)):
-    """鏌ョ湅鎵€鏈夐噰闆嗕换鍔?""
-    await handle_risk("L1", "鏌ョ湅閲囬泦浠诲姟鍒楄〃")
+    """查看所有采集任务"""
+    await handle_risk("L1", "查看采集任务列表")
     return {"jobs": ScraperEngine.get_jobs()}
 
 @router.get("/jobs/{job_id}")
 async def get_job(job_id: str, _=Depends(verify_token)):
-    """鏌ョ湅閲囬泦浠诲姟杩涘害"""
-    await handle_risk("L1", "鏌ョ湅閲囬泦浠诲姟")
+    """查看采集任务进度"""
+    await handle_risk("L1", "查看采集任务")
     job = ScraperEngine.get_job(job_id)
     if not job:
-        raise HTTPException(404, "浠诲姟涓嶅瓨鍦?)
+        raise HTTPException(404, "任务不存在")
     return {"job": job}
 
 @router.delete("/jobs/{job_id}")
 async def delete_job(job_id: str, _=Depends(verify_token)):
-    """鍒犻櫎閲囬泦浠诲姟"""
-    await handle_risk("L1", "鍒犻櫎閲囬泦浠诲姟", job_id)
+    """删除采集任务"""
+    await handle_risk("L1", "删除采集任务", job_id)
     from tools.scraper_engine import _get_jobs
     jobs = _get_jobs()
     if job_id not in jobs:
-        raise HTTPException(404, "浠诲姟涓嶅瓨鍦?)
+        raise HTTPException(404, "任务不存在")
     del jobs[job_id]
     from state import state
     state._save()
@@ -75,50 +75,50 @@ async def list_products(
     size: int = Query(20, ge=1, le=100),
     status: Optional[str] = None,
 ):
-    """娴忚閲囬泦鍒扮殑鍟嗗搧"""
-    await handle_risk("L1", "鏌ョ湅閲囬泦鍟嗗搧")
+    """浏览采集到的商品"""
+    await handle_risk("L1", "查看采集商品")
     return ScraperEngine.get_products(page=page, size=size, status=status)
 
 @router.post("/products/import")
 async def import_products(req: ImportRequest, _=Depends(verify_token)):
-    """鎵归噺瀵煎叆閲囬泦鍟嗗搧鍒板晢鍩?""
-    await handle_risk("L3", "瀵煎叆閲囬泦鍟嗗搧鍒板晢鍩?, f"{len(req.product_ids)} 涓晢鍝?)
+    """批量导入采集商品到商城"""
+    await handle_risk("L3", "导入采集商品到商城", f"{len(req.product_ids)} 个商品")
     result = ScraperEngine.import_to_mall(req.product_ids)
     return {"ok": True, **result}
 
 @router.post("/products/{product_id}/upload")
 async def upload_product_images(product_id: str, _=Depends(verify_token)):
-    """鎵嬪姩閲嶆柊涓婁紶鏌愪釜浜у搧鐨勫浘鐗?""
-    await handle_risk("L2", "閲嶆柊涓婁紶浜у搧鍥剧墖", product_id)
+    """手动重新上传某个产品的图片"""
+    await handle_risk("L2", "重新上传产品图片", product_id)
     return {"product_id": product_id, "status": "queued"}
 
 
 @router.get("/cos-status")
 async def cos_status(_=Depends(verify_token)):
-    """鏌ョ湅 COS 涓婁紶鐘舵€?""
-    await handle_risk("L1", "鏌ョ湅COS鐘舵€?)
+    """查看 COS 上传状态"""
+    await handle_risk("L1", "查看COS状态")
     from tools.cloud_storage import get_cos_status as _cos
     try:
-        status = await _cos() if callable(_cos) else {"status": "鏈繛鎺?, "bucket": "N/A", "region": "N/A", "uploaded": 0, "usage": "0 MB"}
+        status = await _cos() if callable(_cos) else {"status": "未连接", "bucket": "N/A", "region": "N/A", "uploaded": 0, "usage": "0 MB"}
         return {"ok": True, "status": status}
     except Exception:
-        return {"ok": True, "status": {"status": "鏈繛鎺?, "bucket": "N/A", "region": "N/A", "uploaded": 0, "usage": "0 MB"}}
+        return {"ok": True, "status": {"status": "未连接", "bucket": "N/A", "region": "N/A", "uploaded": 0, "usage": "0 MB"}}
 
 @router.get("/sources")
 @cached('scraper_sources', ttl=300)
 async def list_sources(_=Depends(verify_token)):
-    """鏌ョ湅鍙敤閲囬泦骞冲彴"""
-    await handle_risk("L1", "鏌ョ湅閲囬泦骞冲彴")
+    """查看可用采集平台"""
+    await handle_risk("L1", "查看采集平台")
     return {
         "sources": [
-            {"id": "ebay",     "name": "eBay 鍏ㄧ悆绔?,       "type": "api",   "status": "ready"},
-            {"id": "amazon",   "name": "Amazon 鍏ㄧ悆绔?,     "type": "scrape","status": "ready"},
-            {"id": "aliexpress","name": "AliExpress 閫熷崠閫?, "type": "scrape","status": "ready"},
-            {"id": "shopee",   "name": "Shopee 铏剧毊",       "type": "hybrid","status": "ready"},
-            {"id": "lazada",   "name": "Lazada 鏉ヨ禐杈?,     "type": "scrape","status": "ready"},
-            {"id": "wish",     "name": "Wish 鍏ㄧ悆绔?,       "type": "scrape","status": "ready"},
+            {"id": "ebay",     "name": "eBay 全球站",       "type": "api",   "status": "ready"},
+            {"id": "amazon",   "name": "Amazon 全球站",     "type": "scrape","status": "ready"},
+            {"id": "aliexpress","name": "AliExpress 速卖通", "type": "scrape","status": "ready"},
+            {"id": "shopee",   "name": "Shopee 虾皮",       "type": "hybrid","status": "ready"},
+            {"id": "lazada",   "name": "Lazada 来赞达",     "type": "scrape","status": "ready"},
+            {"id": "wish",     "name": "Wish 全球站",       "type": "scrape","status": "ready"},
             {"id": "tiktok",   "name": "TikTok Shop",       "type": "scrape","status": "ready"},
-            {"id": "taobao",  "name": "娣樺疂/澶╃尗",          "type": "scrape","status": "ready"},
-            {"id": "alibaba1688","name": "1688闃块噷宸村反",     "type": "scrape","status": "ready"},
+            {"id": "taobao",  "name": "淘宝/天猫",          "type": "scrape","status": "ready"},
+            {"id": "alibaba1688","name": "1688阿里巴巴",     "type": "scrape","status": "ready"},
         ]
     }

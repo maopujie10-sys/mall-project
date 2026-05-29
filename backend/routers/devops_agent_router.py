@@ -1,4 +1,4 @@
-锘?""DevOps Agent API 鈥?杩愮淮鎿嶄綔鍏ュ彛"""
+﻿"""DevOps Agent API — 运维操作入口"""
 from fastapi import APIRouter, Depends, Query
 from pydantic import BaseModel
 from typing import Optional
@@ -13,48 +13,48 @@ class RestartRequest(BaseModel):
 
 @router.get("/health")
 async def server_health(host: str = "localhost", _=Depends(verify_token)):
-    """鏈嶅姟鍣ㄥ仴搴锋鏌?""
-    await handle_risk("L1", "鏈嶅姟鍣ㄥ仴搴锋鏌?, host)
+    """服务器健康检查"""
+    await handle_risk("L1", "服务器健康检查", host)
     return await DevOpsAgent.check_server_health(host)
 
 @router.get("/ports")
 async def check_ports(_=Depends(verify_token)):
-    """绔彛鐘舵€佹鏌?""
-    await handle_risk("L1", "绔彛妫€鏌?)
+    """端口状态检查"""
+    await handle_risk("L1", "端口检查")
     return {"ports": await DevOpsAgent.check_ports()}
 
 @router.get("/processes")
 async def top_processes(limit: int = 10, _=Depends(verify_token)):
-    """楂樺崰鐢ㄨ繘绋?""
-    await handle_risk("L1", "杩涚▼妫€鏌?)
+    """高占用进程"""
+    await handle_risk("L1", "进程检查")
     return {"processes": await DevOpsAgent.check_top_processes(limit)}
 
 @router.get("/docker")
 async def docker_status(_=Depends(verify_token)):
-    """Docker鐘舵€?""
-    await handle_risk("L1", "Docker妫€鏌?)
+    """Docker状态"""
+    await handle_risk("L1", "Docker检查")
     return await DevOpsAgent.check_docker_status()
 
 @router.post("/docker/restart")
 async def restart_container(req: RestartRequest, _=Depends(verify_token)):
-    """閲嶅惎瀹瑰櫒"""
-    await handle_risk("L2", f"閲嶅惎瀹瑰櫒: {req.name}")
+    """重启容器"""
+    await handle_risk("L2", f"重启容器: {req.name}")
     return await DevOpsAgent.restart_container(req.name)
 
 @router.get("/nginx")
 async def nginx_status(_=Depends(verify_token)):
-    """Nginx鐘舵€?""
-    await handle_risk("L1", "Nginx妫€鏌?)
+    """Nginx状态"""
+    await handle_risk("L1", "Nginx检查")
     return await DevOpsAgent.check_nginx_status()
 
 @router.get("/nginx/logs")
 async def nginx_logs(lines: int = 50, _=Depends(verify_token)):
-    """Nginx鏃ュ織"""
-    await handle_risk("L1", "Nginx鏃ュ織")
+    """Nginx日志"""
+    await handle_risk("L1", "Nginx日志")
     return await DevOpsAgent.get_nginx_logs(lines)
 
 @router.post("/auto-heal")
 async def auto_heal(_=Depends(verify_token)):
-    """鑷姩淇宸℃"""
-    await handle_risk("L2", "鑷姩淇")
+    """自动修复巡检"""
+    await handle_risk("L2", "自动修复")
     return await DevOpsAgent.auto_heal_check()

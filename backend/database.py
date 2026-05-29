@@ -1,4 +1,4 @@
-閿?""閺佺増宓佹惔鎾圭箾閹恒儰绗岄幙宥勭稊 閳?SQLAlchemy 濡€崇€?""
+﻿"""数据库连接与操作 — SQLAlchemy 模型"""
 import json
 from datetime import datetime
 from config import DB_CONFIG
@@ -8,7 +8,7 @@ from sqlalchemy.orm import sessionmaker
 
 Base = declarative_base()
 
-# ===== 濡€崇€风€规矮绠?=====
+# ===== 模型定义 =====
 class AgentTask(Base):
     __tablename__ = "agent_tasks"
     id = Column(BigInteger, primary_key=True, autoincrement=True)
@@ -37,7 +37,7 @@ class AgentAlert(Base):
     created_at = Column(DateTime, default=datetime.now)
 
 
-# ===== 閸忋劌鐪鏇熸惛 =====
+# ===== 全局引擎 =====
 _engine = None
 _SessionLocal = None
 
@@ -56,7 +56,7 @@ def get_session():
     return _SessionLocal() if _SessionLocal else None
 
 def init_db():
-    """閸掓繂顫愰崠鏍ㄦ殶閹诡喖绨辩悰?""
+    """初始化数据库表"""
     engine = get_engine()
     if engine:
         Base.metadata.create_all(engine)
@@ -64,12 +64,12 @@ def init_db():
     return False
 
 def db_available():
-    """濡偓閺屻儲鏆熼幑顔肩氨閺勵垰鎯侀崣顖滄暏"""
+    """检查数据库是否可用"""
     return get_engine() is not None
 
-# ===== 娓氭寧宓庨幙宥勭稊 =====
+# ===== 便捷操作 =====
 def save_task(task_id: str, data: dict):
-    """娣囨繂鐡ㄦ禒璇插"""
+    """保存任务"""
     if not db_available():
         return False
     session = get_session()
@@ -85,7 +85,7 @@ def save_task(task_id: str, data: dict):
         session.close()
 
 def save_alert(alert_id: str, level: str, title: str, detail: str = "", source: str = "system"):
-    """娣囨繂鐡ㄩ崨濠咁劅"""
+    """保存告警"""
     if not db_available():
         return False
     session = get_session()

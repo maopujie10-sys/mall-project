@@ -1,4 +1,4 @@
-"""鍩熷悕杞€肩鐞?鈥?鐪熸鐨勫仴搴锋娴?鑷姩鍒囨崲/鏉冮噸杞€?""
+"""域名轮值管理 — 真正的健康检测/自动切换/权重轮值"""
 import asyncio
 import ssl as ssl_mod
 import socket
@@ -13,15 +13,15 @@ from tools.cache import cached
 router = APIRouter(prefix="/rotation", tags=["Rotation"])
 
 DEFAULT_DOMAINS = [
-    {"domain": "tiktook.eu.cc", "active": True, "health": "ok", "type": "涓诲煙鍚?, "weight": 5},
-    {"domain": "chxhx.eu.cc", "active": True, "health": "ok", "type": "杞€?, "weight": 5},
-    {"domain": "drrgr.eu.cc", "active": True, "health": "ok", "type": "杞€?, "weight": 5},
-    {"domain": "drrimrf.eu.cc", "active": True, "health": "ok", "type": "杞€?, "weight": 5},
-    {"domain": "drriiu.eu.cc", "active": True, "health": "ok", "type": "杞€?, "weight": 5},
-    {"domain": "duomi.eu.cc", "active": True, "health": "ok", "type": "杞€?, "weight": 4},
-    {"domain": "dengruihan.eu.cc", "active": True, "health": "ok", "type": "杞€?, "weight": 4},
-    {"domain": "yyawzx.eu.cc", "active": True, "health": "ok", "type": "杞€?, "weight": 3},
-    {"domain": "gamed.eu.cc", "active": True, "health": "ok", "type": "杞€?, "weight": 3},
+    {"domain": "tiktook.eu.cc", "active": True, "health": "ok", "type": "主域名", "weight": 5},
+    {"domain": "chxhx.eu.cc", "active": True, "health": "ok", "type": "轮值", "weight": 5},
+    {"domain": "drrgr.eu.cc", "active": True, "health": "ok", "type": "轮值", "weight": 5},
+    {"domain": "drrimrf.eu.cc", "active": True, "health": "ok", "type": "轮值", "weight": 5},
+    {"domain": "drriiu.eu.cc", "active": True, "health": "ok", "type": "轮值", "weight": 5},
+    {"domain": "duomi.eu.cc", "active": True, "health": "ok", "type": "轮值", "weight": 4},
+    {"domain": "dengruihan.eu.cc", "active": True, "health": "ok", "type": "轮值", "weight": 4},
+    {"domain": "yyawzx.eu.cc", "active": True, "health": "ok", "type": "轮值", "weight": 3},
+    {"domain": "gamed.eu.cc", "active": True, "health": "ok", "type": "轮值", "weight": 3},
 ]
 
 def _get_domains():
@@ -32,7 +32,7 @@ def _get_domains():
 
 
 async def _check_one(d: dict) -> dict:
-    """妫€娴嬪崟涓煙鍚嶏紝杩斿洖甯﹀疄鏃舵寚鏍囩殑缁撴灉"""
+    """检测单个域名，返回带实时指标的结果"""
     import httpx
     domain = d["domain"]
     url = f"https://{domain}"
@@ -46,14 +46,14 @@ async def _check_one(d: dict) -> dict:
         "ip": "",
         "error": "",
     }
-    # DNS 瑙ｆ瀽
+    # DNS 解析
     try:
         ips = await asyncio.get_event_loop().run_in_executor(None, lambda: socket.getaddrinfo(domain, 443, socket.AF_INET))
         if ips:
             result["ip"] = ips[0][4][0]
     except Exception:
         pass
-    # HTTP 妫€娴?
+    # HTTP 检测
     try:
         start = datetime.now()
         async with httpx.AsyncClient(timeout=10, follow_redirects=True, verify=False) as c:
@@ -72,7 +72,7 @@ async def _check_one(d: dict) -> dict:
 
 
 async def _check_ssl(domain: str) -> dict:
-    """妫€鏌?SSL 璇佷功鏈夋晥鏈?""
+    """检查 SSL 证书有效期"""
     try:
         ctx = ssl_mod.create_default_context()
         with socket.create_connection((domain, 443), timeout=5) as sock:
@@ -94,7 +94,7 @@ async def _check_ssl(domain: str) -> dict:
 
 
 async def _enrich_domain(d: dict) -> dict:
-    """缁欏煙鍚嶈ˉ鍏呭疄鏃舵娴嬫暟鎹?""
+    """给域名补充实时检测数据"""
     check = await _check_one(d)
     ssl_info = await _check_ssl(d["domain"])
     enriched = dict(d)
@@ -119,8 +119,8 @@ async def _enrich_domain(d: dict) -> dict:
 
 
 async def _check_all():
-    """缁欒皟搴﹀櫒鐢ㄧ殑鍏ㄩ噺妫€娴嬶紙鏃犻渶閴存潈锛夛紝鍚屾椂鎵ц鑷姩杞€?""
-    print(f"[Rotation] 寮€濮嬪叏閲忓煙鍚嶆娴?{datetime.now().strftime('%H:%M:%S')}")
+    """给调度器用的全量检测（无需鉴权），同时执行自动轮值"""
+    print(f"[Rotation] 开始全量域名检测 {datetime.now().strftime('%H:%M:%S')}")
     domains = _get_domains()
     changed = False
     for d in domains:
@@ -142,49 +142,49 @@ async def _check_all():
         d["ssl_days"] = ssl_info.get("days_left", 0)
         if d["health"] != old_health:
             changed = True
-            print(f"[Rotation] {d['domain']}: {old_health} 鈫?{d['health']}")
-    # 鑷姩杞€硷細濡傛灉涓诲煙鍚嶆寕浜嗭紝鍒囨崲鍒颁笅涓€涓仴搴峰煙鍚?
+            print(f"[Rotation] {d['domain']}: {old_health} → {d['health']}")
+    # 自动轮值：如果主域名挂了，切换到下一个健康域名
     rotated = await _auto_rotate()
     if rotated:
-        print(f"[Rotation] 鑷姩杞€?鈫?{rotated}")
+        print(f"[Rotation] 自动轮值 → {rotated}")
     if changed or rotated:
         state._save()
-    print(f"[Rotation] 妫€娴嬪畬鎴? {sum(1 for d in domains if d.get('health')=='ok')}/{len(domains)} 鍋ュ悍")
+    print(f"[Rotation] 检测完成: {sum(1 for d in domains if d.get('health')=='ok')}/{len(domains)} 健康")
     return {"checked": len(domains), "rotated_to": rotated}
 
 
 async def _auto_rotate() -> str:
-    """鑷姩杞€奸€昏緫锛氭寜鏉冮噸閫夋嫨鏈€鍋ュ悍鐨勫煙鍚?""
+    """自动轮值逻辑：按权重选择最健康的域名"""
     domains = _get_domains()
-    primary = next((d for d in domains if d.get("type") == "涓诲煙鍚?), None)
-    # 涓诲煙鍚嶅仴搴?鈫?涓嶅垏鎹?
+    primary = next((d for d in domains if d.get("type") == "主域名"), None)
+    # 主域名健康 → 不切换
     if primary and primary.get("health") == "ok" and primary.get("active"):
         return ""
-    # 涓诲煙鍚嶆寕浜嗘垨娌¤ 鈫?閫夋潈閲嶆渶楂樼殑鍋ュ悍鍩熷悕
-    healthy = [d for d in domains if d.get("active") and d.get("health") == "ok" and d.get("type") != "涓诲煙鍚?]
+    # 主域名挂了或没设 → 选权重最高的健康域名
+    healthy = [d for d in domains if d.get("active") and d.get("health") == "ok" and d.get("type") != "主域名"]
     if not healthy:
         return ""
-    # 鎸夋潈閲嶉檷搴忥紝鍚屾潈閲嶉殢鏈?
+    # 按权重降序，同权重随机
     healthy.sort(key=lambda d: (-d.get("weight", 1), d["domain"]))
     best = healthy[0]
-    # 濡傛灉涓诲煙鍚嶅瓨鍦ㄤ絾涓嶅仴搴凤紝鍋滅敤瀹冿紝婵€娲绘渶浣虫浛琛?
+    # 如果主域名存在但不健康，停用它，激活最佳替补
     if primary and primary.get("health") != "ok":
         primary["active"] = False
     best["active"] = True
     return best["domain"]
 
 
-# ===== API 绔偣 =====
+# ===== API 端点 =====
 
 @router.get("/domains")
 async def get_domains(_=Depends(verify_token)):
-    """鑾峰彇鍩熷悕鍒楄〃锛堣繑鍥炰笂娆℃娴嬬殑缂撳瓨鏁版嵁锛屽疄鏃舵娴嬬敤 /check-all锛?""
-    await handle_risk("L1", "鏌ョ湅杞€煎煙鍚嶅垪琛?)
+    """获取域名列表（返回上次检测的缓存数据，实时检测用 /check-all）"""
+    await handle_risk("L1", "查看轮值域名列表")
     domains = _get_domains()
     results = []
     for d in domains:
         entry = dict(d)
-        # 鐢?_check_all 缂撳瓨鐨勬娴嬫暟鎹紙last_check/latency/ip/status_code/ssl_*锛?
+        # 用 _check_all 缓存的检测数据（last_check/latency/ip/status_code/ssl_*）
         if d.get("last_check"):
             entry["latency_ms"] = d.get("latency", 0)
             entry["ip_addr"] = d.get("ip", "")
@@ -198,15 +198,15 @@ async def get_domains(_=Depends(verify_token)):
 
 class AddDomainRequest(BaseModel):
     domain: str
-    type: str = "杞€?
+    type: str = "轮值"
 
 
 @router.post("/domains")
 async def add_domain(req: AddDomainRequest, _=Depends(verify_token)):
-    """娣诲姞鍩熷悕"""
+    """添加域名"""
     domains = _get_domains()
     if any(d["domain"] == req.domain for d in domains):
-        raise HTTPException(400, "鍩熷悕宸插瓨鍦?)
+        raise HTTPException(400, "域名已存在")
     domains.append({
         "domain": req.domain, "active": True, "health": "ok",
         "type": req.type, "weight": 1,
@@ -217,13 +217,13 @@ async def add_domain(req: AddDomainRequest, _=Depends(verify_token)):
 
 @router.delete("/domains/{domain}")
 async def remove_domain(domain: str, _=Depends(verify_token)):
-    """鍒犻櫎鍩熷悕"""
+    """删除域名"""
     domains = _get_domains()
     before = len(domains)
     state._data["rotation_domains"] = [d for d in domains if d["domain"] != domain]
     state._save()
     if len(_get_domains()) == before:
-        raise HTTPException(404, "鍩熷悕涓嶅瓨鍦?)
+        raise HTTPException(404, "域名不存在")
     return {"domain": domain, "removed": True}
 
 
@@ -243,8 +243,8 @@ class WeightRequest(BaseModel):
 
 @router.post("/toggle")
 async def toggle_domain(req: ToggleRequest, _=Depends(verify_token)):
-    """鍚敤/鍋滅敤鍩熷悕"""
-    await handle_risk("L2", f"鍩熷悕杞€? {req.domain} {'鍚敤' if req.active else '鍋滅敤'}")
+    """启用/停用域名"""
+    await handle_risk("L2", f"域名轮值: {req.domain} {'启用' if req.active else '停用'}")
     for d in _get_domains():
         if d["domain"] == req.domain:
             d["active"] = req.active
@@ -254,13 +254,13 @@ async def toggle_domain(req: ToggleRequest, _=Depends(verify_token)):
                 d["health"] = "disabled"
             state._save()
             return {"domain": req.domain, "active": req.active, "health": d["health"]}
-    raise HTTPException(status_code=404, detail="鍩熷悕涓嶅瓨鍦?)
+    raise HTTPException(status_code=404, detail="域名不存在")
 
 
 @router.post("/check")
 async def check_domain(req: CheckRequest, _=Depends(verify_token)):
-    """妫€娴嬪崟涓煙鍚嶏紙鐪熷疄 HTTP 妫€娴嬶級"""
-    await handle_risk("L1", f"鍩熷悕妫€娴?, req.domain)
+    """检测单个域名（真实 HTTP 检测）"""
+    await handle_risk("L1", f"域名检测", req.domain)
     for d in _get_domains():
         if d["domain"] == req.domain:
             check = await _check_one(d)
@@ -285,29 +285,29 @@ async def check_domain(req: CheckRequest, _=Depends(verify_token)):
                 "ssl_days": d["ssl_days"],
                 "online": check.get("ok", False),
             }
-    raise HTTPException(status_code=404, detail="鍩熷悕涓嶅瓨鍦?)
+    raise HTTPException(status_code=404, detail="域名不存在")
 
 
 @router.get("/report")
 async def rotation_report(_=Depends(verify_token)):
-    """鐢熸垚杞€兼姤鍛?""
-    await handle_risk("L1", "鐢熸垚杞€兼姤鍛?)
+    """生成轮值报告"""
+    await handle_risk("L1", "生成轮值报告")
     domains = _get_domains()
     active = [d for d in domains if d.get("active")]
     inactive = [d for d in domains if not d.get("active")]
     unhealthy = [d for d in domains if d.get("health") not in ("ok", "disabled")]
     healthy_active = [d for d in active if d.get("health") == "ok"]
-    primary = next((d for d in domains if d.get("type") == "涓诲煙鍚?), None)
+    primary = next((d for d in domains if d.get("type") == "主域名"), None)
     return {
         "total": len(domains),
         "active": len(active),
         "inactive": len(inactive),
         "unhealthy": len(unhealthy),
         "health_rate": f"{len(healthy_active)/max(len(active),1)*100:.0f}%",
-        "primary_domain": primary["domain"] if primary else "鏈缃?,
+        "primary_domain": primary["domain"] if primary else "未设置",
         "primary_healthy": primary.get("health") == "ok" if primary else False,
         "current_rotation": primary["domain"] if (primary and primary.get("health") == "ok" and primary.get("active")) else
-            (next((d["domain"] for d in active if d.get("health") == "ok"), "鏃犲彲鐢?)),
+            (next((d["domain"] for d in active if d.get("health") == "ok"), "无可用")),
         "avg_latency": round(sum(d.get("latency", 0) for d in active if d.get("latency")) / max(len([d for d in active if d.get("latency")]), 1), 1),
         "unhealthy_domains": [{"domain": d["domain"], "error": d.get("last_error", "")} for d in unhealthy],
         "ssl_expiring_soon": [{"domain": d["domain"], "days_left": d.get("ssl_days", 0)} for d in domains if d.get("ssl_days", 999) < 30],
@@ -316,20 +316,20 @@ async def rotation_report(_=Depends(verify_token)):
 
 @router.post("/weight")
 async def set_weight(req: WeightRequest, _=Depends(verify_token)):
-    """璋冩暣鍩熷悕鏉冮噸锛堟潈閲嶈秺楂樿秺浼樺厛琚€変负杞€肩洰鏍囷級"""
-    await handle_risk("L2", "璋冩暣鍩熷悕鏉冮噸", f"{req.domain}={req.weight}")
+    """调整域名权重（权重越高越优先被选为轮值目标）"""
+    await handle_risk("L2", "调整域名权重", f"{req.domain}={req.weight}")
     for d in _get_domains():
         if d["domain"] == req.domain:
             d["weight"] = max(1, min(10, req.weight))
             state._save()
             return {"domain": req.domain, "weight": d["weight"]}
-    raise HTTPException(status_code=404, detail="鍩熷悕涓嶅瓨鍦?)
+    raise HTTPException(status_code=404, detail="域名不存在")
 
 
 @router.post("/check-all")
 async def check_all_domains(_=Depends(verify_token)):
-    """妫€娴嬫墍鏈夊煙鍚嶅苟鎵ц鑷姩杞€?""
-    await handle_risk("L2", "鍏ㄩ噺妫€娴嬭疆鍊煎煙鍚?)
+    """检测所有域名并执行自动轮值"""
+    await handle_risk("L2", "全量检测轮值域名")
     result = await _check_all()
     domain_list = _get_domains()
     return {
@@ -343,24 +343,24 @@ async def check_all_domains(_=Depends(verify_token)):
 
 @router.get("/history")
 async def rotation_history(_=Depends(verify_token)):
-    """鑾峰彇鍩熷悕妫€娴嬪巻鍙?""
+    """获取域名检测历史"""
     history = state._data.get("rotation_history", [])
     return {"history": history[-50:]}
 
 
 @router.post("/rotate")
 async def manual_rotate(_=Depends(verify_token)):
-    """鎵嬪姩瑙﹀彂杞€煎垏鎹?""
-    await handle_risk("L2", "鎵嬪姩瑙﹀彂鍩熷悕杞€?)
+    """手动触发轮值切换"""
+    await handle_risk("L2", "手动触发域名轮值")
     rotated = await _auto_rotate()
     state._save()
-    return {"ok": bool(rotated), "rotated_to": rotated or "鏃犲彲鐢ㄦ浛琛?}
+    return {"ok": bool(rotated), "rotated_to": rotated or "无可用替补"}
 
 
 
-# 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺?
-#  涓ょ骇杞€奸厤缃鐞?(1涓诲煙鍚?+ 8杞€肩粍)
-# 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺?
+# ═══════════════════════════════════════
+#  两级轮值配置管理 (1主域名 + 8轮值组)
+# ═══════════════════════════════════════
 
 class RotationConfigRequest(BaseModel):
     primary: dict | None = None  # { main, weight, children: [{host,weight}] }
@@ -371,7 +371,7 @@ class SubdomainRequest(BaseModel):
     weight: int = 1
 
 def _get_config():
-    """鑾峰彇涓ょ骇杞€奸厤缃?""
+    """获取两级轮值配置"""
     if "rotation_two_level" not in state._data:
         state._data["rotation_two_level"] = {
             "primary": {
@@ -390,16 +390,16 @@ def _get_config():
 
 @router.get("/two-level/config")
 async def get_rotation_config(_=Depends(verify_token)):
-    """鑾峰彇涓ょ骇杞€煎畬鏁撮厤缃?""
-    await handle_risk("L1", "鏌ョ湅杞€奸厤缃?)
+    """获取两级轮值完整配置"""
+    await handle_risk("L1", "查看轮值配置")
     config = _get_config()
     return {"ok": True, "config": config}
 
 
 @router.put("/two-level/config")
 async def update_rotation_config(req: RotationConfigRequest, _=Depends(verify_token)):
-    """鏇存柊涓ょ骇杞€奸厤缃?""
-    await handle_risk("L3", "鏇存柊杞€奸厤缃?)
+    """更新两级轮值配置"""
+    await handle_risk("L3", "更新轮值配置")
     config = _get_config()
     if req.primary:
         config["primary"] = req.primary
@@ -411,60 +411,60 @@ async def update_rotation_config(req: RotationConfigRequest, _=Depends(verify_to
 
 @router.put("/two-level/rotation/{group_id}/toggle")
 async def toggle_rotation_group(group_id: str, _=Depends(verify_token)):
-    """鍚仠杞€煎煙鍚嶇粍"""
-    await handle_risk("L2", f"鍚仠杞€肩粍 {group_id}")
+    """启停轮值域名组"""
+    await handle_risk("L2", f"启停轮值组 {group_id}")
     config = _get_config()
     for r in config["rotation"]:
         if r["id"] == group_id:
             r["enabled"] = not r.get("enabled", True)
             state._save()
             return {"ok": True, "group_id": group_id, "enabled": r["enabled"]}
-    raise HTTPException(404, "杞€肩粍涓嶅瓨鍦?)
+    raise HTTPException(404, "轮值组不存在")
 
 
 @router.put("/two-level/rotation/{group_id}/weight")
 async def set_rotation_weight(group_id: str, weight: int, _=Depends(verify_token)):
-    """璋冩暣杞€肩粍鏉冮噸"""
-    await handle_risk("L2", f"璋冩暣杞€肩粍鏉冮噸 {group_id}={weight}")
+    """调整轮值组权重"""
+    await handle_risk("L2", f"调整轮值组权重 {group_id}={weight}")
     config = _get_config()
     for r in config["rotation"]:
         if r["id"] == group_id:
             r["weight"] = max(1, min(10, weight))
             state._save()
             return {"ok": True, "group_id": group_id, "weight": r["weight"]}
-    raise HTTPException(404, "杞€肩粍涓嶅瓨鍦?)
+    raise HTTPException(404, "轮值组不存在")
 
 
 @router.post("/two-level/rotation/{group_id}/subdomain")
 async def add_subdomain(group_id: str, req: SubdomainRequest, _=Depends(verify_token)):
-    """缁欒疆鍊肩粍娣诲姞瀛愬煙鍚?""
-    await handle_risk("L2", f"娣诲姞瀛愬煙鍚?{req.host}")
+    """给轮值组添加子域名"""
+    await handle_risk("L2", f"添加子域名 {req.host}")
     config = _get_config()
     for r in config["rotation"]:
         if r["id"] == group_id:
             r["children"].append({"host": req.host, "weight": req.weight})
             state._save()
             return {"ok": True, "added": req.host}
-    raise HTTPException(404, "杞€肩粍涓嶅瓨鍦?)
+    raise HTTPException(404, "轮值组不存在")
 
 
 @router.delete("/two-level/rotation/{group_id}/subdomain/{host}")
 async def remove_subdomain(group_id: str, host: str, _=Depends(verify_token)):
-    """鍒犻櫎瀛愬煙鍚?""
-    await handle_risk("L2", f"鍒犻櫎瀛愬煙鍚?{host}")
+    """删除子域名"""
+    await handle_risk("L2", f"删除子域名 {host}")
     config = _get_config()
     for r in config["rotation"]:
         if r["id"] == group_id:
             r["children"] = [c for c in r["children"] if c["host"] != host]
             state._save()
             return {"ok": True, "removed": host}
-    raise HTTPException(404, "杞€肩粍涓嶅瓨鍦?)
+    raise HTTPException(404, "轮值组不存在")
 
 
-# 鍏紑绔偣(钀藉湴椤电敤锛屾棤闇€閴存潈)
+# 公开端点(落地页用，无需鉴权)
 @router.get("/two-level/public-config")
 async def get_public_config():
-    """鍏紑閰嶇疆(钀藉湴椤佃皟鐢紝涓嶅惈鏁忔劅淇℃伅)"""
+    """公开配置(落地页调用，不含敏感信息)"""
     config = _get_config()
     return {
         "primary": config["primary"],
@@ -472,10 +472,10 @@ async def get_public_config():
     }
 
 
-# ===== 鑷姩鍙戠幇瑙ｆ瀽鍒版湰鏈嶅姟鍣ㄧ殑鍩熷悕 =====
+# ===== 自动发现解析到本服务器的域名 =====
 
 async def _get_server_ip() -> str:
-    """鑾峰彇鏈湇鍔″櫒鍏綉IP"""
+    """获取本服务器公网IP"""
     import httpx
     for url in ["https://ifconfig.me", "https://api.ipify.org", "https://checkip.amazonaws.com"]:
         try:
@@ -490,20 +490,20 @@ async def _get_server_ip() -> str:
 
 @router.get("/auto-discover")
 async def auto_discover_domains(_=Depends(verify_token)):
-    """鑷姩妫€娴嬭В鏋愬埌鏈湇鍔″櫒鐨勫煙鍚嶅苟鍔犲叆杞€肩郴缁?""
-    await handle_risk("L2", "鑷姩鍙戠幇鍩熷悕")
+    """自动检测解析到本服务器的域名并加入轮值系统"""
+    await handle_risk("L2", "自动发现域名")
     server_ip = await _get_server_ip()
     if not server_ip:
-        return {"ok": False, "error": "鏃犳硶鑾峰彇鏈湇鍔″櫒鍏綉IP"}
+        return {"ok": False, "error": "无法获取本服务器公网IP"}
     existing = _get_domains()
     existing_domains = {d["domain"] for d in existing}
-    # 浠庣幇鏈夊煙鍚嶈鐢熷€欓€夊煙鍚嶏紙tld杞€硷級
+    # 从现有域名衍生候选域名（tld轮值）
     candidates = set()
     for d in existing:
         parts = d["domain"].split(".")
         if len(parts) >= 2:
             base = parts[-2] if len(parts) == 2 else ".".join(parts[:-1])
-            # 甯歌TLD
+            # 常见TLD
             for tld in [".eu.cc", ".shop", ".store", ".online", ".live", ".xyz", ".top", ".cloud", ".site", ".fun", ".vip", ".pro", ".cc", ".com", ".net", ".org"]:
                 candidates.add(f"{base}{tld}")
     discovered = []
@@ -517,7 +517,7 @@ async def auto_discover_domains(_=Depends(verify_token)):
             if ips and ips[0][4][0] == server_ip:
                 existing.append({
                     "domain": dom, "active": True, "health": "pending",
-                    "type": "鑷姩鍙戠幇", "weight": 1
+                    "type": "自动发现", "weight": 1
                 })
                 discovered.append(dom)
         except Exception:

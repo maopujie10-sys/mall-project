@@ -1,11 +1,11 @@
-锘?""AI 鍐呭宸ュ巶 鈥?浣滃浘/瑙嗛/鏂囨鐢熸垚宸ュ叿灏佽"""
+﻿"""AI 内容工厂 — 作图/视频/文案生成工具封装"""
 import httpx
 import json
 from datetime import datetime
 from typing import Optional
 from state import state
 
-# ===== 閰嶇疆锛堜粠config瀵煎叆锛?====
+# ===== 配置（从config导入）=====
 from config import (
     CLAUDE_API_KEY,
     CLAUDE_MODEL,
@@ -16,21 +16,21 @@ from config import (
 )
 
 
-# ===== 鏂囨鐢熸垚 =====
+# ===== 文案生成 =====
 COPYWRITER_PROMPTS = {
-    "title": "浣犳槸涓€涓數鍟嗘枃妗堜笓瀹躲€傝涓轰互涓嬪晢鍝佺敓鎴愪竴涓惛寮曚汉鐨勪腑鏂囨爣棰橈紙20瀛椾互鍐咃級锛岀獊鍑哄崠鐐癸細\n{product_info}",
-    "description": "浣犳槸涓€涓數鍟嗘枃妗堜笓瀹躲€傝涓轰互涓嬪晢鍝佺敓鎴愪竴娈佃缁嗙殑涓枃鍟嗗搧鎻忚堪锛?00-300瀛楋級锛屽寘鍚崠鐐广€佽鏍笺€侀€傜敤鍦烘櫙锛歕n{product_info}",
-    "seo": "浣犳槸涓€涓猄EO涓撳銆傝涓轰互涓嬪晢鍝佺敓鎴怱EO鍏抽敭璇嶅拰鎻忚堪锛?00瀛椾互鍐咃級锛歕n{product_info}",
-    "ad": "浣犳槸涓€涓惀閿€鏂囨涓撳銆傝涓轰互涓嬪晢鍝佺敓鎴愪竴鏉℃湅鍙嬪湀/绀句氦濯掍綋鎺ㄥ箍鏂囨锛?0瀛椾互鍐咃級锛歕n{product_info}",
+    "title": "你是一个电商文案专家。请为以下商品生成一个吸引人的中文标题（20字以内），突出卖点：\n{product_info}",
+    "description": "你是一个电商文案专家。请为以下商品生成一段详细的中文商品描述（200-300字），包含卖点、规格、适用场景：\n{product_info}",
+    "seo": "你是一个SEO专家。请为以下商品生成SEO关键词和描述（100字以内）：\n{product_info}",
+    "ad": "你是一个营销文案专家。请为以下商品生成一条朋友圈/社交媒体推广文案（80字以内）：\n{product_info}",
 }
 
 async def generate_copy(product_info: str, style: str = "title") -> dict:
-    """璋冪敤 Claude 鐢熸垚鏂囨"""
+    """调用 Claude 生成文案"""
     prompt = COPYWRITER_PROMPTS.get(style, COPYWRITER_PROMPTS["title"])
     prompt = prompt.replace("{product_info}", product_info)
 
     if not CLAUDE_API_KEY:
-        return {"ok": False, "error": "CLAUDE_API_KEY 鏈厤缃紝璇峰湪 .env 涓缃?, "style": style}
+        return {"ok": False, "error": "CLAUDE_API_KEY 未配置，请在 .env 中设置", "style": style}
 
     try:
         async with httpx.AsyncClient(timeout=30) as c:
@@ -50,16 +50,16 @@ async def generate_copy(product_info: str, style: str = "title") -> dict:
             if r.status_code == 200:
                 content = r.json()["content"][0]["text"]
                 return {"ok": True, "style": style, "content": content.strip()}
-            return {"ok": False, "error": f"API杩斿洖 {r.status_code}: {r.text[:200]}", "style": style}
+            return {"ok": False, "error": f"API返回 {r.status_code}: {r.text[:200]}", "style": style}
     except Exception as e:
         return {"ok": False, "error": str(e), "style": style}
 
 
-# ===== 鍥剧墖鐢熸垚 =====
+# ===== 图片生成 =====
 async def generate_image(prompt: str, size: str = "1024x1024", style: str = " realistic") -> dict:
-    """璋冪敤浣滃浘 API 鐢熸垚鍟嗗搧鍥?""
+    """调用作图 API 生成商品图"""
     if not IMAGE_API_KEY:
-        return {"ok": False, "error": "IMAGE_API_KEY 鏈厤缃紝璇峰湪 .env 涓缃?}
+        return {"ok": False, "error": "IMAGE_API_KEY 未配置，请在 .env 中设置"}
 
     try:
         async with httpx.AsyncClient(timeout=60) as c:
@@ -77,16 +77,16 @@ async def generate_image(prompt: str, size: str = "1024x1024", style: str = " re
                 data = r.json()
                 url = data["data"][0]["url"]
                 return {"ok": True, "url": url, "prompt": prompt, "size": size}
-            return {"ok": False, "error": f"API杩斿洖 {r.status_code}", "prompt": prompt}
+            return {"ok": False, "error": f"API返回 {r.status_code}", "prompt": prompt}
     except Exception as e:
         return {"ok": False, "error": str(e), "prompt": prompt}
 
 
-# ===== 瑙嗛鐢熸垚 =====
+# ===== 视频生成 =====
 async def generate_video(product_name: str, script: str = "", duration: int = 15) -> dict:
-    """璋冪敤瑙嗛 API 鐢熸垚鍟嗗搧灞曠ず瑙嗛"""
+    """调用视频 API 生成商品展示视频"""
     if not VIDEO_API_KEY:
-        return {"ok": False, "error": "VIDEO_API_KEY 鏈厤缃紝璇峰湪 .env 涓缃?}
+        return {"ok": False, "error": "VIDEO_API_KEY 未配置，请在 .env 中设置"}
 
     try:
         async with httpx.AsyncClient(timeout=120) as c:
@@ -101,19 +101,19 @@ async def generate_video(product_name: str, script: str = "", duration: int = 15
             if r.status_code == 200:
                 data = r.json()
                 return {"ok": True, "video_url": data.get("url", ""), "product": product_name}
-            return {"ok": False, "error": f"API杩斿洖 {r.status_code}: {r.text[:200]}", "product": product_name}
+            return {"ok": False, "error": f"API返回 {r.status_code}: {r.text[:200]}", "product": product_name}
     except Exception as e:
         return {"ok": False, "error": str(e), "product": product_name}
 
 
-# ===== 鍘嗗彶璁板綍 =====
+# ===== 历史记录 =====
 def get_history(category: str = "all") -> list:
-    """鑾峰彇 AI 鍐呭鐢熸垚鍘嗗彶"""
+    """获取 AI 内容生成历史"""
     key = f"ai_factory_{category}"
     return state._data.get(key, [])
 
 def save_record(category: str, record: dict):
-    """淇濆瓨鐢熸垚璁板綍"""
+    """保存生成记录"""
     key = f"ai_factory_{category}"
     records = state._data.setdefault(key, [])
     records.insert(0, record)

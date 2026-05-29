@@ -1,4 +1,4 @@
-"""鐔旀柇鏈哄埗 + 闃插惊鐜?API"""
+"""熔断机制 + 防循环 API"""
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from auth import verify_token
@@ -9,13 +9,13 @@ router = APIRouter(prefix="/safety", tags=["Safety"])
 
 @router.get("/circuit")
 async def circuit_status(_=Depends(verify_token)):
-    await handle_risk("L1", "鏌ョ湅鐔旀柇鐘舵€?)
+    await handle_risk("L1", "查看熔断状态")
     return circuit_breaker.status()
 
 @router.post("/circuit/reset")
 async def circuit_reset(action: str = "", _=Depends(verify_token)):
-    """閲嶇疆鎸囧畾鎿嶄綔鐨勭啍鏂櫒锛岀暀绌哄垯閲嶇疆鍏ㄩ儴"""
-    await handle_risk("L1", "閲嶇疆鐔旀柇鍣?, action or "鍏ㄩ儴")
+    """重置指定操作的熔断器，留空则重置全部"""
+    await handle_risk("L1", "重置熔断器", action or "全部")
     from safety import CircuitBreaker
     if action:
         circuit_breaker._failures[action].clear()
@@ -27,7 +27,7 @@ async def circuit_reset(action: str = "", _=Depends(verify_token)):
 
 @router.get("/anti-loop")
 async def antiloop_status(_=Depends(verify_token)):
-    await handle_risk("L1", "鏌ョ湅闃插惊鐜姸鎬?)
+    await handle_risk("L1", "查看防循环状态")
     return {"records": dict(anti_loop._records)}
 
 @router.post("/anti-loop/check")

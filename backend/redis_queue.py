@@ -1,12 +1,13 @@
-"""Redis 浠诲姟闃熷垪 鈥?鏇夸唬鍐呭瓨闃熷垪鐨勬寔涔呭寲浠诲姟绯荤粺
+"""Redis 任务队列 — 替代内存队列的持久化任务系统
 
-褰?Redis 鍙敤鏃朵娇鐢?Redis 闃熷垪锛屽惁鍒欏洖閫€鍒板唴瀛橀槦鍒椼€?"""
+当 Redis 可用时使用 Redis 队列，否则回退到内存队列。
+"""
 import json
 import os
 
 
 class RedisQueue:
-    """Redis 浠诲姟闃熷垪"""
+    """Redis 任务队列"""
 
     _redis = None
 
@@ -26,7 +27,7 @@ class RedisQueue:
 
     @classmethod
     def enqueue(cls, queue_name: str, task: dict) -> str:
-        """鍔犲叆浠诲姟闃熷垪"""
+        """加入任务队列"""
         import uuid
         task_id = str(uuid.uuid4())[:8]
         task["id"] = task_id
@@ -34,7 +35,7 @@ class RedisQueue:
         if r:
             r.lpush(queue_name, json.dumps(task, ensure_ascii=False, default=str))
             return task_id
-        # Fallback: 鍐呭瓨闃熷垪
+        # Fallback: 内存队列
         from state import state
         key = f"redis_queue_{queue_name}"
         q = state._data.setdefault(key, [])
@@ -44,7 +45,7 @@ class RedisQueue:
 
     @classmethod
     def dequeue(cls, queue_name: str) -> dict:
-        """鍙栧嚭浠诲姟"""
+        """取出任务"""
         r = cls._get_redis()
         if r:
             data = r.rpop(queue_name)
@@ -56,7 +57,7 @@ class RedisQueue:
 
     @classmethod
     def length(cls, queue_name: str) -> int:
-        """闃熷垪闀垮害"""
+        """队列长度"""
         r = cls._get_redis()
         if r:
             return r.llen(queue_name)

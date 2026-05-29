@@ -1,4 +1,4 @@
-锘?""AI杩愯惀鍛ㄦ姤 鈥?鑷姩姹囨€绘湰鍛ㄨ鍗?閿€鍞/Top鍟嗗搧/寮傚父/娴侀噺/绔炲搧鍔ㄦ€?""
+﻿"""AI运营周报 — 自动汇总本周订单/销售额/Top商品/异常/流量/竞品动态"""
 import httpx
 from datetime import datetime, timedelta
 from fastapi import APIRouter, Depends
@@ -13,8 +13,8 @@ def _get_weekly_reports():
 
 @router.post("/weekly")
 async def generate_weekly_report(_=Depends(verify_token)):
-    """鐢熸垚鏈懆杩愯惀鍛ㄦ姤"""
-    await handle_risk("L2", "鐢熸垚杩愯惀鍛ㄦ姤")
+    """生成本周运营周报"""
+    await handle_risk("L2", "生成运营周报")
     today = datetime.now()
     week_start = (today - timedelta(days=today.weekday())).strftime("%Y-%m-%d")
     week_num = today.isocalendar()[1]
@@ -22,7 +22,7 @@ async def generate_weekly_report(_=Depends(verify_token)):
 
     data = {"week": week_num, "week_start": week_start, "period": f"{week_start} ~ {today.strftime('%Y-%m-%d')}"}
 
-    # 璁㈠崟鏁版嵁
+    # 订单数据
     from config import MALL_BASE_URL
     async with httpx.AsyncClient(timeout=10) as c:
         try:
@@ -40,24 +40,24 @@ async def generate_weekly_report(_=Depends(verify_token)):
             data["users_total"] = r.json().get("total", 0) if r.status_code == 200 else 0
         except: data["users_total"] = 0
 
-    # 绯荤粺鍋ュ悍
+    # 系统健康
     import psutil
     data["cpu"] = f"{psutil.cpu_percent(interval=0.3)}%"
     data["memory"] = f"{psutil.virtual_memory().percent}%"
     data["disk"] = f"{psutil.disk_usage('/').percent}%"
 
-    # 鏈懆鍛婅
+    # 本周告警
     alerts = state._data.get("alerts", [])
     week_alerts = [a for a in alerts if a.get("time","")[:10] >= week_start]
     data["alerts_this_week"] = len(week_alerts)
     data["alerts_p1"] = sum(1 for a in week_alerts if "P1" in str(a.get("level","")))
 
-    # 鏈懆瀹㈡湇娑堟伅
+    # 本周客服消息
     msgs = state._data.get("customer_messages", [])
     week_msgs = [m for m in msgs if m.get("time","")[:10] >= week_start]
     data["customer_messages"] = len(week_msgs)
 
-    # 寮傚父浜嬩欢
+    # 异常事件
     try:
         with open("memory/anomalies.json", "r") as f:
             import json
@@ -69,35 +69,35 @@ async def generate_weekly_report(_=Depends(verify_token)):
         data["anomalies"] = 0
         data["anomalies_resolved"] = 0
 
-    # 閲囬泦鍟嗗搧
+    # 采集商品
     scraped = state._data.get("scraped_products", [])
     week_scraped = [s for s in scraped if s.get("crawled_at","")[:10] >= week_start]
     data["scraped_products"] = len(week_scraped)
     data["scraped_imported"] = sum(1 for s in week_scraped if s.get("status")=="imported")
 
-    # 鍩燂拷锟斤拷杞€?
+    # 域���轮值
     domains = state._data.get("rotation_domains", [])
     data["active_domains"] = sum(1 for d in domains if d.get("active"))
     data["total_domains"] = len(domains)
 
-    # 姣忔棩鎶ュ憡姹囨€?
+    # 每日报告汇总
     daily_reports = state._data.get("daily_reports", [])
     week_dailies = [r for r in daily_reports if r.get("date","") >= week_start]
     avg_health = sum(r.get("health_score",100) for r in week_dailies) / max(len(week_dailies), 1)
     data["avg_health_score"] = round(avg_health, 1)
 
-    # AI鐢熸垚鎽樿
+    # AI生成摘要
     summary = (
-        f"馃搳 绗瑊week_num}鍛ㄨ繍钀ュ懆鎶?({data['period']})\n"
-        f"鈹佲攣鈹佲攣鈹佲攣鈹佲攣鈹佲攣鈹佲攣鈹佲攣鈹佲攣鈹佲攣\n"
-        f"馃摝 璁㈠崟: {data['orders_total']} | 鍟嗗搧: {data['products_total']} | 鐢ㄦ埛: {data['users_total']}\n"
-        f"馃枼锔?CPU: {data['cpu']} | 鍐呭瓨: {data['memory']} | 纾佺洏: {data['disk']}\n"
-        f"鈿狅笍 鏈懆鍛婅: {data['alerts_this_week']} (P1: {data['alerts_p1']})\n"
-        f"馃┖ 寮傚父: {data['anomalies']} | 宸茶В鍐? {data['anomalies_resolved']}\n"
-        f"馃挰 瀹㈡湇娑堟伅: {data['customer_messages']}\n"
-        f"馃暦锔?閲囬泦鍟嗗搧: {data['scraped_products']} | 宸插鍏? {data['scraped_imported']}\n"
-        f"馃寪 娲昏穬鍩熷悕: {data['active_domains']}/{data['total_domains']}\n"
-        f"鉂わ笍 骞冲潎鍋ュ悍鍒? {data['avg_health_score']}/100"
+        f"📊 第{week_num}周运营周报 ({data['period']})\n"
+        f"━━━━━━━━━━━━━━━━━━\n"
+        f"📦 订单: {data['orders_total']} | 商品: {data['products_total']} | 用户: {data['users_total']}\n"
+        f"🖥️ CPU: {data['cpu']} | 内存: {data['memory']} | 磁盘: {data['disk']}\n"
+        f"⚠️ 本周告警: {data['alerts_this_week']} (P1: {data['alerts_p1']})\n"
+        f"🩺 异常: {data['anomalies']} | 已解决: {data['anomalies_resolved']}\n"
+        f"💬 客服消息: {data['customer_messages']}\n"
+        f"🕷️ 采集商品: {data['scraped_products']} | 已导入: {data['scraped_imported']}\n"
+        f"🌐 活跃域名: {data['active_domains']}/{data['total_domains']}\n"
+        f"❤️ 平均健康分: {data['avg_health_score']}/100"
     )
 
     report = {
@@ -118,12 +118,12 @@ async def generate_weekly_report(_=Depends(verify_token)):
 
 @router.get("/weekly")
 async def list_weekly_reports(_=Depends(verify_token)):
-    """鏌ョ湅鍘嗗彶鍛ㄦ姤"""
-    await handle_risk("L1", "鏌ョ湅杩愯惀鍛ㄦ姤")
+    """查看历史周报"""
+    await handle_risk("L1", "查看运营周报")
     return {"reports": _get_weekly_reports()}
 
 @router.get("/weekly/latest")
 async def latest_weekly_report(_=Depends(verify_token)):
-    """鏌ョ湅鏈€鏂板懆鎶?""
+    """查看最新周报"""
     reports = _get_weekly_reports()
     return {"report": reports[0] if reports else None}

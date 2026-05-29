@@ -1,4 +1,4 @@
-锘?""鏁版嵁搴撶鐞?鈥?鐘舵€?琛ㄤ俊鎭?鏌ヨ/浼樺寲"""
+﻿"""数据库管理 — 状态/表信息/查询/优化"""
 import os
 import subprocess
 from datetime import datetime
@@ -29,7 +29,7 @@ def _init():
 
 
 def _mysql_cmd(sql: str) -> dict:
-    """鎵ц MySQL 鏌ヨ杩斿洖缁撴灉"""
+    """执行 MySQL 查询返回结果"""
     _init()
     try:
         cmd = [
@@ -52,17 +52,17 @@ def _mysql_cmd(sql: str) -> dict:
             rows.append(dict(zip(headers, vals)))
         return {"ok": True, "rows": rows, "count": len(rows)}
     except subprocess.TimeoutExpired:
-        return {"ok": False, "error": "鏌ヨ瓒呮椂"}
+        return {"ok": False, "error": "查询超时"}
     except FileNotFoundError:
-        return {"ok": False, "error": "mysql 瀹㈡埛绔湭瀹夎"}
+        return {"ok": False, "error": "mysql 客户端未安装"}
     except Exception as e:
         return {"ok": False, "error": str(e)}
 
 
 @router.get("/status")
 async def db_status(_=Depends(verify_token)):
-    """鏁版嵁搴撹繍琛岀姸鎬?""
-    await handle_risk("L1", "鏌ョ湅鏁版嵁搴撶姸鎬?)
+    """数据库运行状态"""
+    await handle_risk("L1", "查看数据库状态")
     _init()
     info = _mysql_cmd("SHOW GLOBAL STATUS LIKE 'Uptime'")
     vars = _mysql_cmd("SHOW VARIABLES LIKE 'max_connections'")
@@ -70,7 +70,8 @@ async def db_status(_=Depends(verify_token)):
         "SELECT table_schema AS db, ROUND(SUM(data_length+index_length)/1024/1024,1) AS size_mb, "
         "COUNT(*) AS tables FROM information_schema.tables GROUP BY table_schema"
     )
-    # 妫€娴嬭繛鎺?    try:
+    # 检测连接
+    try:
         import psutil
         conn_count = 0
         for c in psutil.net_connections():
@@ -92,8 +93,8 @@ async def db_status(_=Depends(verify_token)):
 
 @router.get("/tables")
 async def db_tables(_=Depends(verify_token)):
-    """鍒楀嚭鎵€鏈夋暟鎹〃"""
-    await handle_risk("L1", "鏌ョ湅鏁版嵁搴撹〃")
+    """列出所有数据表"""
+    await handle_risk("L1", "查看数据库表")
     _init()
     result = _mysql_cmd(
         "SELECT TABLE_NAME AS name, ENGINE AS engine, "

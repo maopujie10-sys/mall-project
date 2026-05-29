@@ -1,4 +1,4 @@
-锘?""Dashboard WebSocket 鈥?瀹炴椂鎺ㄩ€佺郴缁熸寚鏍?鍛婅+璁㈠崟+鐢熷懡浣撶姸鎬?""
+﻿"""Dashboard WebSocket — 实时推送系统指标+告警+订单+生命体状态"""
 import asyncio, json
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from websocket_manager import ws_manager
@@ -10,17 +10,17 @@ router = APIRouter()
 
 @router.websocket("/ws/dashboard")
 async def dashboard_websocket(ws: WebSocket):
-    """Dashboard瀹炴椂鏁版嵁WebSocket"""
+    """Dashboard实时数据WebSocket"""
     client_id = f"dashboard_{id(ws)}"
     await ws_manager.connect(ws, client_id)
 
-    # 棣栨鎺ㄩ€佸叏閲忔暟鎹?
+    # 首次推送全量数据
     await ws_manager.push_system_metrics()
 
     try:
         while True:
             try:
-                # 鎺ユ敹瀹㈡埛绔秷鎭紙蹇冭烦/ping锛?
+                # 接收客户端消息（心跳/ping）
                 data = await asyncio.wait_for(ws.receive_text(), timeout=60)
                 msg = json.loads(data) if data else {}
                 msg_type = msg.get("type", "")
@@ -33,21 +33,21 @@ async def dashboard_websocket(ws: WebSocket):
                     await ws_manager.push_lifeform_status()
 
             except asyncio.TimeoutError:
-                # 瓒呮椂涔熸帹閫佷竴娆℃暟鎹?
+                # 超时也推送一次数据
                 await ws_manager.push_system_metrics()
                 await ws.send_text(json.dumps({"type": "ping"}))
 
     except WebSocketDisconnect:
         pass
     except Exception as e:
-        logger.info(f"Dashboard WS寮傚父: {e}")
+        logger.info(f"Dashboard WS异常: {e}")
     finally:
         await ws_manager.disconnect(ws, client_id)
 
 
 @router.websocket("/ws/alerts")
 async def alerts_websocket(ws: WebSocket):
-    """鍛婅瀹炴椂鎺ㄩ€乄ebSocket"""
+    """告警实时推送WebSocket"""
     client_id = f"alerts_{id(ws)}"
     await ws_manager.connect(ws, client_id)
 
@@ -67,5 +67,5 @@ async def alerts_websocket(ws: WebSocket):
 
 @router.get("/ws/stats")
 async def ws_stats():
-    """WebSocket杩炴帴缁熻"""
+    """WebSocket连接统计"""
     return {"ok": True, "connections": ws_manager.count()}

@@ -1,4 +1,4 @@
-锘?""鎺ㄩ€佸綊妗?鈥?涓€閿墦鍖呭帇缂?鐗堟湰璁板綍+鍙€塆itHub鎺ㄩ€?""
+﻿"""推送归档 — 一键打包压缩+版本记录+可选GitHub推送"""
 import os
 import tarfile
 import json
@@ -17,23 +17,23 @@ ARCHIVE_DIR = os.path.join(BACKUP_DIR, "archives")
 os.makedirs(ARCHIVE_DIR, exist_ok=True)
 
 ARCHIVE_TARGETS = {
-    "landing": {"name": "钀藉湴椤?, "path": "/opt/landing"},
-    "nginx-config": {"name": "Nginx閰嶇疆", "path": "/usr/local/nginx/conf"},
-    "frontend-dist": {"name": "AI鍓嶇鏋勫缓浜х墿", "path": "frontend/dist"},
-    "h5-dist": {"name": "H5鍟嗗煄鏋勫缓浜х墿", "path": "mall-app/frontend/h5/build"},
-    "memory": {"name": "AI璁板繂鏂囦欢", "path": "memory"},
-    "backend": {"name": "鍚庣婧愮爜", "path": "backend"},
-    "frontend-src": {"name": "鍓嶇婧愮爜", "path": "frontend/src"},
+    "landing": {"name": "落地页", "path": "/opt/landing"},
+    "nginx-config": {"name": "Nginx配置", "path": "/usr/local/nginx/conf"},
+    "frontend-dist": {"name": "AI前端构建产物", "path": "frontend/dist"},
+    "h5-dist": {"name": "H5商城构建产物", "path": "mall-app/frontend/h5/build"},
+    "memory": {"name": "AI记忆文件", "path": "memory"},
+    "backend": {"name": "后端源码", "path": "backend"},
+    "frontend-src": {"name": "前端源码", "path": "frontend/src"},
 }
 
 class ArchiveRequest(BaseModel):
-    targets: list[str] = ["memory", "backend"]  # 榛樿褰掓。鐩爣
-    note: str = ""  # 褰掓。璇存槑
+    targets: list[str] = ["memory", "backend"]  # 默认归档目标
+    note: str = ""  # 归档说明
     push_github: bool = False
 
 @router.get("/targets")
 async def list_targets(_=Depends(verify_token)):
-    """鍒楀嚭鍙綊妗ｇ殑鐩爣"""
+    """列出可归档的目标"""
     targets = []
     for key, info in ARCHIVE_TARGETS.items():
         path = info["path"]
@@ -55,8 +55,8 @@ async def list_targets(_=Depends(verify_token)):
 
 @router.post("/create")
 async def create_archive(req: ArchiveRequest, _=Depends(verify_token)):
-    """鍒涘缓褰掓。鍖?""
-    await handle_risk("L2", f"鍒涘缓褰掓。: {', '.join(req.targets)}")
+    """创建归档包"""
+    await handle_risk("L2", f"创建归档: {', '.join(req.targets)}")
     
     ts = datetime.now().strftime("%Y%m%d_%H%M%S")
     archive_name = f"archive_{ts}.tar.gz"
@@ -68,14 +68,14 @@ async def create_archive(req: ArchiveRequest, _=Depends(verify_token)):
     with tarfile.open(archive_path, "w:gz") as tar:
         for target_id in req.targets:
             if target_id not in ARCHIVE_TARGETS:
-                skipped.append({"id": target_id, "reason": "鏈煡鐩爣"})
+                skipped.append({"id": target_id, "reason": "未知目标"})
                 continue
             
             info = ARCHIVE_TARGETS[target_id]
             path = info["path"]
             
             if not os.path.exists(path):
-                skipped.append({"id": target_id, "reason": f"璺緞涓嶅瓨鍦? {path}"})
+                skipped.append({"id": target_id, "reason": f"路径不存在: {path}"})
                 continue
             
             arcname = target_id
@@ -84,11 +84,11 @@ async def create_archive(req: ArchiveRequest, _=Depends(verify_token)):
     
     if not included:
         os.remove(archive_path)
-        return {"ok": False, "error": "娌℃湁鍙綊妗ｇ殑鏂囦欢"}
+        return {"ok": False, "error": "没有可归档的文件"}
     
     size = os.path.getsize(archive_path)
     
-    # 璁板綍鐗堟湰
+    # 记录版本
     records = state._data.setdefault("archive_records", [])
     record = {
         "id": ts,
@@ -108,12 +108,12 @@ async def create_archive(req: ArchiveRequest, _=Depends(verify_token)):
     
     result = {"ok": True, "archive": record}
     
-    # 鍙€夋帹閫佸埌GitHub
+    # 可选推送到GitHub
     if req.push_github:
         try:
-            # 灏濊瘯鎺ㄩ€佸埌GitHub release (閫氳繃gh CLI)
+            # 尝试推送到GitHub release (通过gh CLI)
             result_gh = subprocess.run(
-                ["gh", "release", "create", f"archive-{ts}", archive_path, "--title", f"褰掓。 {ts}", "--notes", req.note or "鑷姩褰掓。"],
+                ["gh", "release", "create", f"archive-{ts}", archive_path, "--title", f"归档 {ts}", "--notes", req.note or "自动归档"],
                 capture_output=True, text=True, timeout=30,
                 cwd=os.path.dirname(ARCHIVE_DIR)
             )
@@ -122,7 +122,7 @@ async def create_archive(req: ArchiveRequest, _=Depends(verify_token)):
                 "output": (result_gh.stdout + result_gh.stderr)[:500]
             }
         except FileNotFoundError:
-            result["github"] = {"ok": False, "error": "gh CLI鏈畨瑁?}
+            result["github"] = {"ok": False, "error": "gh CLI未安装"}
         except Exception as e:
             result["github"] = {"ok": False, "error": str(e)[:200]}
     
@@ -130,17 +130,17 @@ async def create_archive(req: ArchiveRequest, _=Depends(verify_token)):
 
 @router.get("/records")
 async def list_archives(_=Depends(verify_token)):
-    """褰掓。鍘嗗彶"""
+    """归档历史"""
     records = state._data.get("archive_records", [])
-    # 妫€鏌ユ枃浠舵槸鍚︿粛瀛樺湪
+    # 检查文件是否仍存在
     for r in records:
         r["file_exists"] = os.path.exists(r.get("path", ""))
     return {"ok": True, "total": len(records), "archives": records}
 
 @router.delete("/records/{archive_id}")
 async def delete_archive(archive_id: str, _=Depends(verify_token)):
-    """鍒犻櫎褰掓。鏂囦欢鍜岃褰?""
-    await handle_risk("L3", f"鍒犻櫎褰掓。: {archive_id}")
+    """删除归档文件和记录"""
+    await handle_risk("L3", f"删除归档: {archive_id}")
     records = state._data.get("archive_records", [])
     for r in records:
         if r["id"] == archive_id:
@@ -150,11 +150,11 @@ async def delete_archive(archive_id: str, _=Depends(verify_token)):
             records.remove(r)
             state._save()
             return {"ok": True, "deleted": archive_id}
-    return {"ok": False, "error": "褰掓。涓嶅瓨鍦?}
+    return {"ok": False, "error": "归档不存在"}
 
 @router.get("/storage")
 async def archive_storage(_=Depends(verify_token)):
-    """褰掓。瀛樺偍缁熻"""
+    """归档存储统计"""
     total_size = 0
     total_files = 0
     if os.path.exists(ARCHIVE_DIR):

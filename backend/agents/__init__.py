@@ -1,4 +1,4 @@
-锘?""Friday AI OS 鈥?7澶gent绯荤粺"""
+﻿"""Friday AI OS — 7大Agent系统"""
 from agents.master_agent import MasterAgent
 from agents.code_agent import CodeAgent
 from agents.trend_agent import TrendAgent

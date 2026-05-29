@@ -1,9 +1,9 @@
-閿?""娴犺濮熼梼鐔峰灙 + 娴犺濮熼柨?閳?閹烘帡妲?娴兼ê鍘涚痪?閺嗗倸浠?閸欐牗绉?鐡掑懏妞?楠炶泛褰傞柨?""
+﻿"""任务队列 + 任务锁 — 排队/优先级/暂停/取消/超时/并发锁"""
 from datetime import datetime, timedelta
 from typing import Optional
 from state import state
 
-# ===== 娴犺濮熼悩鑸碘偓?=====
+# ===== 任务状态 =====
 TASK_PENDING = "pending"
 TASK_RUNNING = "running"
 TASK_PAUSED = "paused"
@@ -14,14 +14,14 @@ TASK_FAILED = "failed"
 
 
 class TaskQueue:
-    """閸愬懎鐡ㄦ禒璇插闂冪喎鍨敍灞炬暜閹镐椒绱崗鍫㈤獓/閺嗗倸浠?閸欐牗绉?鐡掑懏妞?""
+    """内存任务队列，支持优先级/暂停/取消/超时"""
 
     def __init__(self):
         self._tasks: list[dict] = []
         self._counter = 0
 
     def enqueue(self, name: str, risk: str = "L1", priority: int = 5, timeout_s: int = 60) -> str:
-        """濞ｈ濮炴禒璇插閸掍即妲﹂崚妤嬬礉priority 鐡掑﹤鐨导妯哄帥缁狙嗙Ш妤?""
+        """添加任务到队列，priority 越小优先级越高"""
         self._counter += 1
         task = {
             "id": f"q_{self._counter}_{int(datetime.now().timestamp())}",
@@ -41,10 +41,11 @@ class TaskQueue:
         return task["id"]
 
     def dequeue(self) -> Optional[dict]:
-        """閸欐牕鍤稉瀣╃娑擃亜绶熼幍褑顢戞禒璇插"""
+        """取出下一个待执行任务"""
         for t in self._tasks:
             if t["status"] == TASK_PENDING:
-                # 濡偓閺屻儴绉撮弮?                created = datetime.fromisoformat(t["created_at"])
+                # 检查超时
+                created = datetime.fromisoformat(t["created_at"])
                 if datetime.now() - created > timedelta(seconds=t["timeout_s"]):
                     t["status"] = TASK_TIMEOUT
                     continue
@@ -89,22 +90,22 @@ class TaskQueue:
         return sum(1 for t in self._tasks if t["status"] == TASK_PENDING)
 
 
-# ===== 娴犺濮熼柨?=====
+# ===== 任务锁 =====
 class TaskLock:
-    """娴犺濮熼柨渚婄礉闂冨弶顒涢獮璺哄絺閸愯尙鐛?""
+    """任务锁，防止并发冲突"""
 
     def __init__(self):
         self._locks: dict[str, str] = {}  # lock_name -> task_id
 
     def acquire(self, lock_name: str, task_id: str) -> bool:
-        """閼惧嘲褰囬柨渚婄礉閹存劕濮涙潻鏂挎礀 True"""
+        """获取锁，成功返回 True"""
         if lock_name not in self._locks:
             self._locks[lock_name] = task_id
             return True
         return False
 
     def release(self, lock_name: str, task_id: str) -> bool:
-        """闁插﹥鏂侀柨渚婄礉閸欘亝婀侀幐浣规箒閼板懏澧犻懗浠嬪櫞閺€?""
+        """释放锁，只有持有者才能释放"""
         if self._locks.get(lock_name) == task_id:
             del self._locks[lock_name]
             return True
@@ -114,7 +115,7 @@ class TaskLock:
         return lock_name in self._locks
 
     def force_release(self, lock_name: str):
-        """瀵搫鍩楅柌濠冩杹闁夸緤绱欑粻锛勬倞閸涙ɑ鎼锋担婊愮礆"""
+        """强制释放锁（管理员操作）"""
         self._locks.pop(lock_name, None)
 
     def list_locks(self) -> dict:
@@ -127,8 +128,12 @@ class TaskLock:
         }
 
 
-# 閸忋劌鐪崡鏇氱伐
+# 全局单例
 task_queue = TaskQueue()
 task_lock = TaskLock()
 
-# 濞夈劌鍞芥妯款吇闁?LOCK_BACKUP = "backup"       # 婢跺洣鍞ら柨?LOCK_DEPLOY = "deploy"       # 闁劎璁查柨?LOCK_RESTART = "restart"     # 闁插秴鎯庨柨?LOCK_ROLLBACK = "rollback"   # 閸ョ偞绮撮柨?
+# 注册默认锁
+LOCK_BACKUP = "backup"       # 备份锁
+LOCK_DEPLOY = "deploy"       # 部署锁
+LOCK_RESTART = "restart"     # 重启锁
+LOCK_ROLLBACK = "rollback"   # 回滚锁

@@ -1,5 +1,5 @@
-"""鏈嶅姟灞?鈥?鏍稿績涓氬姟閫昏緫
-浠?Router 涓娊绂伙紝鍙鐢ㄣ€佸彲娴嬭瘯"""
+"""服务层 — 核心业务逻辑
+从 Router 中抽离，可复用、可测试"""
 from datetime import datetime
 from typing import Optional
 from tools.memory_store import memory_store
@@ -8,11 +8,11 @@ from digital_lifeform import DigitalLifeform
 
 
 class SystemService:
-    """绯荤粺鏍稿績鏈嶅姟"""
+    """系统核心服务"""
 
     @staticmethod
     def get_status() -> dict:
-        """鑾峰彇绯荤粺缁煎悎鐘舵€?""
+        """获取系统综合状态"""
         mem_stats = memory_store.get_stats()
         vec_stats = vector_memory.get_stats()
         return {
@@ -31,7 +31,7 @@ class SystemService:
 
     @staticmethod
     def get_dashboard() -> dict:
-        """鎺у埗鍙伴椤垫暟鎹?""
+        """控制台首页数据"""
         stats = memory_store.get_stats()
         learnings = memory_store.recall_learnings("", 5)
         return {
@@ -42,30 +42,33 @@ class SystemService:
 
 
 class MemoryService:
-    """璁板繂鏈嶅姟"""
+    """记忆服务"""
 
     @staticmethod
     def search(query: str, limit: int = 10) -> list:
-        """鎼滅储璁板繂"""
-        # 浼樺厛鍚戦噺鎼滅储
+        """搜索记忆"""
+        # 优先向量搜索
         vec_results = vector_memory.recall(query, limit)
         if vec_results:
             return vec_results
-        # 鍥為€€鍒板叏鏂囨悳绱?        return memory_store.search(query, limit)
+        # 回退到全文搜索
+        return memory_store.search(query, limit)
 
     @staticmethod
     def remember_fact(category: str, key: str, value: str, confidence: float = 0.7):
-        """璁颁綇涓€涓煡璇嗙偣"""
+        """记住一个知识点"""
         memory_store.set_knowledge(category, key, value, confidence)
-        # 鍚屾椂鍚戦噺鍖?        vector_memory.remember(f"[鐭ヨ瘑] {category}/{key}: {value}", {"type": "knowledge", "category": category})
+        # 同时向量化
+        vector_memory.remember(f"[知识] {category}/{key}: {value}", {"type": "knowledge", "category": category})
 
     @staticmethod
     def recall_context(query: str, limit: int = 5) -> str:
-        """鑾峰彇涓婁笅鏂?""
-        # 鍏堝悜閲?        ctx = vector_memory.recall_context(query, limit)
+        """获取上下文"""
+        # 先向量
+        ctx = vector_memory.recall_context(query, limit)
         if ctx:
             return ctx
-        # 鍥為€€鍏ㄦ枃
+        # 回退全文
         results = memory_store.search(query, limit)
         if results:
             return "\n".join([f"{r['role']}: {r['content'][:100]}" for r in results])
@@ -73,41 +76,41 @@ class MemoryService:
 
 
 class DiaryService:
-    """鏃ヨ鏈嶅姟 鈥?鑷姩鐢熸垚姣忔棩鎶ュ憡"""
+    """日记服务 — 自动生成每日报告"""
 
     @staticmethod
     def generate_daily() -> dict:
-        """鐢熸垚姣忔棩鏃ヨ"""
+        """生成每日日记"""
         today = datetime.now().strftime("%Y-%m-%d")
         stats = memory_store.get_stats()
         learnings = memory_store.recall_learnings("", 50)
         recent = memory_store.recall_recent(30)
 
-        # 鍒嗘瀽浠婃棩瀵硅瘽涓婚
+        # 分析今日对话主题
         topic_counts = {}
         for r in recent:
-            topic = r.get("topic", "鏈煡")
+            topic = r.get("topic", "未知")
             topic_counts[topic] = topic_counts.get(topic, 0) + 1
 
-        # 浠婃棩浜偣
+        # 今日亮点
         highlights = []
         for l in learnings[:5]:
             if l.get("learned"):
-                highlights.append(f"瀛︿細浜? {l['learned'][:100]}")
+                highlights.append(f"学会了: {l['learned'][:100]}")
 
         return {
             "date": today,
             "total_memories": stats["total_conversations"],
             "today_conversations": len([r for r in recent if r.get("time", "").startswith(today)]),
             "topics_discussed": sorted(topic_counts.items(), key=lambda x: x[1], reverse=True)[:5],
-            "highlights": highlights or ["骞抽潤鐨勪竴澶?],
+            "highlights": highlights or ["平静的一天"],
             "mood": DigitalLifeform.get_mood(),
-            "summary": f"浠婃棩鍏眥len(recent)}娈靛璇濓紝鍏虫敞{topic_counts}",
+            "summary": f"今日共{len(recent)}段对话，关注{topic_counts}",
         }
 
     @staticmethod
     def save_journal(journal: dict):
-        """淇濆瓨鏃ヨ鍒版枃浠?""
+        """保存日记到文件"""
         import json, os
         journal_dir = os.path.join(os.path.dirname(__file__), "..", "..", "memory")
         os.makedirs(journal_dir, exist_ok=True)

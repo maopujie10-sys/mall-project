@@ -1,4 +1,4 @@
-锘?""Friday AI OS 鈥?Agent API璺敱"""
+﻿"""Friday AI OS — Agent API路由"""
 from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect, Query
 from pydantic import BaseModel
 from typing import Optional
@@ -20,9 +20,9 @@ router = APIRouter(prefix="/agent/friday", tags=["Friday AI OS"])
 # ===== WebSocket =====
 @router.websocket("/ws")
 async def friday_websocket(ws: WebSocket):
-    """WebSocket鍏ュ彛 鈥?鍏堥獙璇乀oken鍐嶅缓绔嬭繛鎺?""
+    """WebSocket入口 — 先验证Token再建立连接"""
     client_id = "friday-console"
-    # 棣栨娑堟伅蹇呴』鏄疶oken楠岃瘉
+    # 首次消息必须是Token验证
     try:
         token_data = await ws.receive_text()
         try:
@@ -37,7 +37,7 @@ async def friday_websocket(ws: WebSocket):
         elif token == AGENT_TOKEN:
             authed = True
         if not authed:
-            await ws.send_text(json.dumps({"type": "error", "message": "璁よ瘉澶辫触"}))
+            await ws.send_text(json.dumps({"type": "error", "message": "认证失败"}))
             await ws.close()
             return
         await ws.send_text(json.dumps({"type": "auth_ok"}))
@@ -49,41 +49,41 @@ async def friday_websocket(ws: WebSocket):
         while True:
             data = await ws.receive_text()
             if data == "ping" or data == "pong":
-                # 鏇存柊蹇冭烦鏃堕棿
+                # 更新心跳时间
                 if client_id in ws_manager.connections:
                     ws_manager.connections[client_id]["last_heartbeat"] = __import__("time").time()
                 continue
     except WebSocketDisconnect:
         await ws_manager.disconnect(ws, client_id)
 
-# ===== Agent鐘舵€?=====
+# ===== Agent状态 =====
 @router.get("/agents")
 async def list_agents(_=Depends(verify_token)):
-    """鑾峰彇鎵€鏈堿gent鐘舵€?""
+    """获取所有Agent状态"""
     agents = MasterAgent.get_agent_status()
-    # 鎺ㄩ€佺姸鎬佺粰鎵€鏈塛ebSocket瀹㈡埛绔?
+    # 推送状态给所有WebSocket客户端
     await ws_manager.agent_status_update(agents)
     return {"ok": True, "agents": agents, "total": len(agents)}
 
-# ===== Master Agent: 鎰忓浘鍒嗘瀽 =====
+# ===== Master Agent: 意图分析 =====
 class IntentRequest(BaseModel):
     message: str
 
 @router.post("/intent")
 async def analyze_intent(req: IntentRequest, _=Depends(verify_token)):
-    """鍒嗘瀽鐢ㄦ埛鎰忓浘"""
+    """分析用户意图"""
     result = MasterAgent.analyze_intent(req.message)
     return {"ok": True, **result}
 
-# ===== Code Agent: 浠ｇ爜鍒嗘瀽/鎼滅储 =====
+# ===== Code Agent: 代码分析/搜索 =====
 @router.get("/code/analyze")
 async def analyze_file(filepath: str, _=Depends(verify_token)):
-    """鍒嗘瀽浠ｇ爜鏂囦欢"""
+    """分析代码文件"""
     return await CodeAgent.analyze_file(filepath)
 
 @router.get("/code/search")
 async def search_code(directory: str, pattern: str, _=Depends(verify_token)):
-    """鎼滅储浠ｇ爜"""
+    """搜索代码"""
     results = await CodeAgent.search_code(directory, pattern)
     return {"ok": True, "results": results, "count": len(results)}
 
@@ -93,42 +93,42 @@ class GenerateAPIRequest(BaseModel):
 
 @router.post("/code/generate-api")
 async def generate_api(req: GenerateAPIRequest, _=Depends(verify_token)):
-    """鐢熸垚API浠ｇ爜"""
+    """生成API代码"""
     code = await CodeAgent.generate_api(req.name, req.fields)
     return {"ok": True, "code": code}
 
-# ===== Trend Agent: 鐑偣 =====
+# ===== Trend Agent: 热点 =====
 @router.get("/trends")
 async def get_trends(platform: Optional[str] = None, _=Depends(verify_token)):
-    """鑾峰彇鐑偣鏁版嵁"""
+    """获取热点数据"""
     return await TrendAgent.fetch_trends(platform)
 
 @router.get("/trends/analyze")
 async def analyze_trend(keyword: str, _=Depends(verify_token)):
-    """鍒嗘瀽瓒嬪娍"""
+    """分析趋势"""
     return await TrendAgent.analyze_trend(keyword)
 
 @router.get("/trends/predict")
-async def predict_hot(category: str = "绉戞妧", _=Depends(verify_token)):
-    """棰勬祴鐑棬"""
+async def predict_hot(category: str = "科技", _=Depends(verify_token)):
+    """预测热门"""
     predictions = await TrendAgent.predict_hot(category)
     return {"ok": True, "category": category, "predictions": predictions}
 
 # ===== Vision Agent =====
 @router.get("/vision/analyze")
 async def analyze_image(url: str, _=Depends(verify_token)):
-    """鍒嗘瀽鍥剧墖"""
+    """分析图片"""
     return await VisionAgent.analyze_image(image_url=url)
 
 # ===== Multi-Model =====
 @router.get("/models")
 async def list_models(_=Depends(verify_token)):
-    """鍒楀嚭鎵€鏈夋ā鍨?""
+    """列出所有模型"""
     return {"ok": True, "models": await ModelRouter.list_models()}
 
 @router.get("/models/route")
 async def route_model(mode: str = "quality", _=Depends(verify_token)):
-    """鏅鸿兘璺敱閫夋嫨妯″瀷"""
+    """智能路由选择模型"""
     try:
         m = ModelMode(mode)
     except ValueError:
@@ -136,17 +136,17 @@ async def route_model(mode: str = "quality", _=Depends(verify_token)):
     config = ModelRouter.route(m)
     return {"ok": True, "mode": mode, "model": config.model_name, "provider": config.provider}
 
-# ===== WebSocket骞挎挱娴嬭瘯 =====
+# ===== WebSocket广播测试 =====
 
-# ===== Playwright 娴忚鍣ㄨ嚜鍔ㄥ寲 =====
+# ===== Playwright 浏览器自动化 =====
 @router.post("/models/test")
 async def test_model_speed(model_id: str, _=Depends(verify_token)):
-    """娴嬭瘯妯″瀷鍝嶅簲閫熷害"""
+    """测试模型响应速度"""
     from agents.multi_model import ModelRouter
     start = __import__("time").time()
     try:
         resp = await ModelRouter.route(
-            prompt='浣犲ソ锛岃鍥炲"hello"娴嬭瘯鍝嶅簲閫熷害',
+            prompt='你好，请回复"hello"测试响应速度',
             model_id=model_id or None
         )
         elapsed = round(__import__("time").time() - start, 2)
@@ -157,13 +157,13 @@ async def test_model_speed(model_id: str, _=Depends(verify_token)):
 
 @router.post("/models/compare")
 async def compare_models(model_ids: list[str], _=Depends(verify_token)):
-    """瀵规瘮澶氫釜妯″瀷"""
+    """对比多个模型"""
     from agents.multi_model import ModelRouter
     results = []
-    for mid in model_ids[:3]:  # 鏈€澶氭瘮3涓?
+    for mid in model_ids[:3]:  # 最多比3个
         start = __import__("time").time()
         try:
-            resp = await ModelRouter.route(prompt='鍥炲"hello world"', model_id=mid)
+            resp = await ModelRouter.route(prompt='回复"hello world"', model_id=mid)
             elapsed = round(__import__("time").time() - start, 2)
             results.append({"model_id": mid, "latency_ms": round(elapsed * 1000), "ok": True})
         except Exception as e:
@@ -173,7 +173,7 @@ async def compare_models(model_ids: list[str], _=Depends(verify_token)):
 
 @router.post("/models/switch")
 async def switch_active_model(model_id: str, _=Depends(verify_token)):
-    """鍒囨崲褰撳墠浣跨敤鐨勬ā鍨?""
+    """切换当前使用的模型"""
     from state import state
     state._data["active_model"] = model_id
     state._save()
@@ -182,7 +182,7 @@ async def switch_active_model(model_id: str, _=Depends(verify_token)):
 
 @router.get("/models/status")
 async def model_status(_=Depends(verify_token)):
-    """鑾峰彇妯″瀷鐘舵€?""
+    """获取模型状态"""
     from agents.multi_model import ModelRouter
     return {
         "ok": True,
@@ -210,28 +210,28 @@ async def search_products(keyword: str, site: str = "ebay", _=Depends(verify_tok
     result = await PlaywrightAgent.search_and_scrape(keyword, site)
     return result
 
-# ===== 璁板繂浜烘牸 =====
+# ===== 记忆人格 =====
 @router.post("/collaborate")
 async def agent_collaborate(goal: str = Query(...), _=Depends(verify_token)):
-    """澶欰gent鍗忎綔: 鍒嗘瀽鐩爣->鎷嗚В浠诲姟->骞惰鎵ц->姹囨€荤粨鏋?""
-    await handle_risk("L2", "澶欰gent鍗忎綔", goal[:100])
+    """多Agent协作: 分析目标->拆解任务->并行执行->汇总结果"""
+    await handle_risk("L2", "多Agent协作", goal[:100])
     result = await agent_collab.execute_all(goal)
     return result
 
 @router.get("/lifeform/status")
 async def lifeform_status(_=Depends(verify_token)):
-    """鏁板瓧鐢熷懡浣撶姸鎬?""
+    """数字生命体状态"""
     return DigitalLifeform.get_status()
 
 @router.get("/lifeform/start")
 async def lifeform_start(interval: int = 120, _=Depends(verify_token)):
-    """鍚姩/閲嶅惎鐢熷懡浣?""
+    """启动/重启生命体"""
     await DigitalLifeform.start_loop(interval)
     return {"ok": True, "interval": interval}
 
 @router.get("/lifeform/stop")
 async def lifeform_stop(_=Depends(verify_token)):
-    """鍋滄鐢熷懡浣?""
+    """停止生命体"""
     return await DigitalLifeform.stop_loop()
 
 @router.get("/personality")
@@ -267,37 +267,37 @@ class RememberRequest(BaseModel):
 @router.post("/remember")
 async def remember_something(req: RememberRequest, _=Depends(verify_token)):
     PersonalityEngine.remember(req.category, req.key, req.value, req.importance)
-    return {"ok": True, "message": f"宸茶浣? {req.category}/{req.key}"}
+    return {"ok": True, "message": f"已记住: {req.category}/{req.key}"}
 @router.post("/broadcast")
-async def test_broadcast(message: str = "Friday AI OS 鍦ㄧ嚎", _=Depends(verify_token)):
+async def test_broadcast(message: str = "Friday AI OS 在线", _=Depends(verify_token)):
     await ws_manager.broadcast("test", {"message": message})
     return {"ok": True, "clients": ws_manager.count()}
 
 
-# ===== Vision Agent: OCR/瑙嗛/鐗╀綋/浜鸿劯 =====
+# ===== Vision Agent: OCR/视频/物体/人脸 =====
 @router.get("/vision/ocr")
 async def vision_ocr(image_url: str = Query(...), _=Depends(verify_token)):
-    """OCR 鏂囧瓧璇嗗埆"""
+    """OCR 文字识别"""
     return await VisionAgent.ocr_recognize(image_url)
 
 @router.get("/vision/video")
 async def vision_video(video_url: str = Query(...), _=Depends(verify_token)):
-    """瑙嗛鍒嗘瀽"""
+    """视频分析"""
     return await VisionAgent.analyze_video(video_url=video_url)
 
 @router.get("/vision/objects")
 async def vision_objects(image_url: str = Query(...), _=Depends(verify_token)):
-    """鐗╀綋妫€娴?""
+    """物体检测"""
     return await VisionAgent.detect_objects(image_url)
 
 @router.get("/vision/faces")
 async def vision_faces(image_url: str = Query(...), _=Depends(verify_token)):
-    """浜鸿劯妫€娴?""
+    """人脸检测"""
     return await VisionAgent.detect_faces(image_url)
 
 @router.post("/vision/upload")
 async def vision_upload(url: str = Query(""), file: bytes = None, _=Depends(verify_token)):
-    """涓婁紶鍥剧墖骞跺垎鏋愶紙鏀寔鏂囦欢涓婁紶鎴朥RL锛?""
+    """上传图片并分析（支持文件上传或URL）"""
     if url:
         return await VisionAgent.analyze_image(image_url=url)
     if file:
@@ -310,7 +310,7 @@ async def vision_upload(url: str = Query(""), file: bytes = None, _=Depends(veri
             return result
         finally:
             os.unlink(tmp.name)
-    return {"ok": False, "error": "璇锋彁渚涘浘鐗嘦RL鎴栦笂浼犳枃浠?}
+    return {"ok": False, "error": "请提供图片URL或上传文件"}
 
 
 

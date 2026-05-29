@@ -1,4 +1,4 @@
-"""澶囦唤鍥炴粴涓績 API 鈥?鏁版嵁搴撳浠?鎭㈠/Nginx閰嶇疆澶囦唤/椤圭洰澶囦唤"""
+"""备份回滚中心 API — 数据库备份/恢复/Nginx配置备份/项目备份"""
 import os, json, subprocess
 from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException
@@ -38,8 +38,8 @@ class CreateBackupRequest(BaseModel):
 
 @router.get("/backups")
 async def list_backups(_=Depends(verify_token)):
-    """鍒楀嚭鎵€鏈夊浠借褰?""
-    await handle_risk("L1", "鍒楀嚭澶囦唤璁板綍")
+    """列出所有备份记录"""
+    await handle_risk("L1", "列出备份记录")
     records = _load_backups()
     total_size = 0
     for r in records:
@@ -53,8 +53,8 @@ async def list_backups(_=Depends(verify_token)):
 
 @router.post("/backups")
 async def create_backup(req: CreateBackupRequest, _=Depends(verify_token)):
-    """鍒涘缓澶囦唤锛氭敮鎸佹暟鎹簱/Nginx閰嶇疆/椤圭洰鏂囦欢"""
-    await handle_risk("L2", f"鍒涘缓澶囦唤: {req.name} ({req.target})")
+    """创建备份：支持数据库/Nginx配置/项目文件"""
+    await handle_risk("L2", f"创建备份: {req.name} ({req.target})")
 
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     result = {"path": "", "success": False, "size": 0}
@@ -79,7 +79,7 @@ async def create_backup(req: CreateBackupRequest, _=Depends(verify_token)):
                     result["success"] = True
                     result["size"] = os.path.getsize(backup_file)
             except Exception as e2:
-                result["error"] = f"鏁版嵁搴撳浠藉け璐ワ紝璇锋鏌ysqldump鏄惁鍙敤: {str(e2)}"
+                result["error"] = f"数据库备份失败，请检查mysqldump是否可用: {str(e2)}"
 
     elif req.target == "nginx":
         backup_file = os.path.join(BACKUP_DIR, f"nginx_conf_{timestamp}.tar.gz")
@@ -91,7 +91,7 @@ async def create_backup(req: CreateBackupRequest, _=Depends(verify_token)):
                 result["success"] = True
                 result["size"] = os.path.getsize(backup_file)
         except Exception:
-            result["error"] = "Nginx澶囦唤鍒涘缓澶辫触"
+            result["error"] = "Nginx备份创建失败"
 
     elif req.target == "project":
         project_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -104,7 +104,7 @@ async def create_backup(req: CreateBackupRequest, _=Depends(verify_token)):
                 result["success"] = True
                 result["size"] = os.path.getsize(backup_file)
         except Exception:
-            result["error"] = "椤圭洰澶囦唤鍒涘缓澶辫触"
+            result["error"] = "项目备份创建失败"
 
     records = _load_backups()
     entry = {
@@ -130,39 +130,39 @@ async def create_backup(req: CreateBackupRequest, _=Depends(verify_token)):
 
 @router.post("/backups/{backup_id}/verify")
 async def verify_backup(backup_id: str, _=Depends(verify_token)):
-    """楠岃瘉澶囦唤鏂囦欢瀹屾暣鎬?""
-    await handle_risk("L2", "楠岃瘉澶囦唤", backup_id)
+    """验证备份文件完整性"""
+    await handle_risk("L2", "验证备份", backup_id)
     records = _load_backups()
     for r in records:
         if r["id"] == backup_id:
             path = r.get("path", "")
             if not path or not os.path.exists(path):
                 r["verified"] = False
-                r["verify_error"] = "澶囦唤鏂囦欢涓嶅瓨鍦?
+                r["verify_error"] = "备份文件不存在"
                 _save_backups(records)
-                return {"backup_id": backup_id, "verified": False, "error": "澶囦唤鏂囦欢涓嶅瓨鍦?}
+                return {"backup_id": backup_id, "verified": False, "error": "备份文件不存在"}
             size = os.path.getsize(path)
             r["verified"] = size > 0
             r["verified_at"] = datetime.now().isoformat()
             _save_backups(records)
             return {"backup_id": backup_id, "verified": True, "size_mb": round(size / 1024 / 1024, 2)}
-    raise HTTPException(404, "澶囦唤璁板綍鏈壘鍒?)
+    raise HTTPException(404, "备份记录未找到")
 
 @router.post("/backups/{backup_id}/rollback")
 async def rollback(backup_id: str, _=Depends(verify_token)):
-    """鎵ц鍥炴粴鎿嶄綔"""
+    """执行回滚操作"""
     records = _load_backups()
     for r in records:
         if r["id"] == backup_id:
             path = r.get("path", "")
             target = r.get("target", "database")
 
-            risk = await handle_risk("L3", f"鎵ц鍥炴粴: {r['name']}", f"鐩爣: {target}, 璺緞: {path}")
+            risk = await handle_risk("L3", f"执行回滚: {r['name']}", f"目标: {target}, 路径: {path}")
             if not risk["allowed"]:
                 return risk
 
             if not path or not os.path.exists(path):
-                return {"backup_id": backup_id, "status": "failed", "error": "澶囦唤鏂囦欢涓嶅瓨鍦?}
+                return {"backup_id": backup_id, "status": "failed", "error": "备份文件不存在"}
 
             result = {"success": False}
             if target == "database" and path.endswith(".sql"):
@@ -175,7 +175,7 @@ async def rollback(backup_id: str, _=Depends(verify_token)):
                     except Exception as e:
                         result["error"] = str(e)
                 else:
-                    result["error"] = "鏁版嵁搴撻厤缃笉瀹屾暣"
+                    result["error"] = "数据库配置不完整"
             elif target == "nginx" and path.endswith(".tar.gz"):
                 try:
                     cmd = f"tar xzf {path} -C / 2>&1 && nginx -t 2>&1 && echo ok || echo fail"
@@ -185,19 +185,19 @@ async def rollback(backup_id: str, _=Depends(verify_token)):
                 except Exception as e:
                     result["error"] = str(e)
             else:
-                result["info"] = "涓嶆敮鎸佺殑澶囦唤绫诲瀷锛岃鎵嬪姩鎭㈠"
+                result["info"] = "不支持的备份类型，请手动恢复"
 
             return {
                 "backup_id": backup_id,
                 "status": "completed" if result["success"] else "failed",
                 "result": result,
-                "note": "鍥炴粴鎿嶄綔宸插畬鎴愶紝璇烽獙璇佹暟鎹畬鏁存€?,
+                "note": "回滚操作已完成，请验证数据完整性",
             }
-    raise HTTPException(404, "澶囦唤璁板綍鏈壘鍒?)
+    raise HTTPException(404, "备份记录未找到")
 
 @router.delete("/backups/{backup_id}")
 async def delete_backup(backup_id: str, _=Depends(verify_token)):
-    """鍒犻櫎澶囦唤璁板綍鍙婃枃浠?""
+    """删除备份记录及文件"""
     records = _load_backups()
     for i, r in enumerate(records):
         if r["id"] == backup_id:
@@ -210,12 +210,12 @@ async def delete_backup(backup_id: str, _=Depends(verify_token)):
             records.pop(i)
             _save_backups(records)
             return {"deleted": True, "backup_id": backup_id}
-    raise HTTPException(404, "澶囦唤璁板綍鏈壘鍒?)
+    raise HTTPException(404, "备份记录未找到")
 
 @router.post("/cleanup")
 async def cleanup_old_backups(_=Depends(verify_token)):
-    """娓呯悊杩囨湡澶囦唤锛堣秴杩?澶╋級"""
-    await handle_risk("L2", "娓呯悊杩囨湡澶囦唤")
+    """清理过期备份（超过7天）"""
+    await handle_risk("L2", "清理过期备份")
     records = _load_backups()
     now = datetime.now().timestamp()
     kept = []

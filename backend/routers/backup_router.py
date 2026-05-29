@@ -1,4 +1,4 @@
-锘?""澶囦唤鎭㈠绯荤粺 鈥?鏍￠獙+涓€閿仮澶?淇濈暀绛栫暐"""
+﻿"""备份恢复系统 — 校验+一键恢复+保留策略"""
 import os, hashlib, glob, json, subprocess
 from datetime import datetime, timedelta
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -11,13 +11,13 @@ router = APIRouter(prefix="/agent/backup", tags=["Backup"])
 
 @router.get("/list")
 async def list_backups(_=Depends(verify_token)):
-    """澶囦唤鍒楄〃(鍚牎楠岀姸鎬?"""
+    """备份列表(含校验状态)"""
     backups = []
     for f in sorted(glob.glob(os.path.join(BACKUP_DIR, "*.sql*")) + glob.glob(os.path.join(BACKUP_DIR, "*.tar*")), reverse=True):
         size = os.path.getsize(f)
         name = os.path.basename(f)
         mtime = datetime.fromtimestamp(os.path.getmtime(f)).strftime("%Y-%m-%d %H:%M")
-        # 鏍￠獙鏂囦欢鏄惁瀛樺湪hash
+        # 校验文件是否存在hash
         hash_file = f + ".sha256"
         verified = False
         if os.path.exists(hash_file):
@@ -31,10 +31,10 @@ async def list_backups(_=Depends(verify_token)):
 
 @router.post("/verify/{backup_name}")
 async def verify_backup(backup_name: str, _=Depends(verify_token)):
-    """鏍￠獙澶囦唤鏂囦欢瀹屾暣鎬?""
+    """校验备份文件完整性"""
     backup_path = os.path.join(BACKUP_DIR, backup_name)
     if not os.path.exists(backup_path):
-        raise HTTPException(404, "澶囦唤鏂囦欢涓嶅瓨鍦?)
+        raise HTTPException(404, "备份文件不存在")
     file_hash = hashlib.sha256(open(backup_path, "rb").read()).hexdigest()
     hash_path = backup_path + ".sha256"
     with open(hash_path, "w") as f: f.write(file_hash)
@@ -42,11 +42,11 @@ async def verify_backup(backup_name: str, _=Depends(verify_token)):
 
 @router.post("/restore/{backup_name}")
 async def restore_backup(backup_name: str, target_db: str = "", _=Depends(verify_token)):
-    """涓€閿仮澶嶆暟鎹簱锛堥渶瀹℃壒L4锛?""
-    await handle_risk("L4", f"鎭㈠鏁版嵁搴? {backup_name}", need_confirm=True)
+    """一键恢复数据库（需审批L4）"""
+    await handle_risk("L4", f"恢复数据库: {backup_name}", need_confirm=True)
     backup_path = os.path.join(BACKUP_DIR, backup_name)
     if not os.path.exists(backup_path):
-        raise HTTPException(404, "澶囦唤鏂囦欢涓嶅瓨鍦?)
+        raise HTTPException(404, "备份文件不存在")
     db = target_db or DB_CONFIG.get("name", "ai_agent")
     user = DB_CONFIG.get("user", "root")
     password = DB_CONFIG.get("password", "")
@@ -64,7 +64,7 @@ async def restore_backup(backup_name: str, target_db: str = "", _=Depends(verify
 
 @router.delete("/cleanup")
 async def cleanup_old_backups(days: int = 30, _=Depends(verify_token)):
-    """娓呯悊瓒呰繃N澶╃殑澶囦唤(淇濈暀鏈€杩?0澶?"""
+    """清理超过N天的备份(保留最近30天)"""
     cutoff = datetime.now() - timedelta(days=days)
     deleted = 0
     for f in glob.glob(os.path.join(BACKUP_DIR, "*")):

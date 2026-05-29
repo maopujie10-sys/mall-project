@@ -1,32 +1,32 @@
-锘?""API璇锋眰闄愭祦涓棿浠?鈥?浠ょ墝妗剁畻娉?鍩轰簬IP+璺緞"""
+﻿"""API请求限流中间件 — 令牌桶算法,基于IP+路径"""
 import time
 from collections import defaultdict
 from fastapi import Request, HTTPException
 
-# 闄愭祦閰嶇疆: {璺緞鍓嶇紑: (浠ょ墝鏁? 鏃堕棿绐楀彛绉?}
+# 限流配置: {路径前缀: (令牌数, 时间窗口秒)}
 RATE_LIMITS = {
-    "/agent/scraper": (10, 60),      # 閲囬泦: 10娆?鍒嗛挓
-    "/agent/archive": (5, 60),       # 褰掓。: 5娆?鍒嗛挓
-    "/heal/auto-fix": (3, 300),      # 鑷剤: 3娆?5鍒嗛挓
-    "/report": (10, 60),             # 鎶ュ憡: 10娆?鍒嗛挓
-    "/agent/logs": (20, 60),         # 鏃ュ織: 20娆?鍒嗛挓
-    "/agent/competitor": (30, 60),   # 绔炲搧: 30娆?鍒嗛挓
-    "default": (100, 60),            # 榛樿: 100娆?鍒嗛挓
+    "/agent/scraper": (10, 60),      # 采集: 10次/分钟
+    "/agent/archive": (5, 60),       # 归档: 5次/分钟
+    "/heal/auto-fix": (3, 300),      # 自愈: 3次/5分钟
+    "/report": (10, 60),             # 报告: 10次/分钟
+    "/agent/logs": (20, 60),         # 日志: 20次/分钟
+    "/agent/competitor": (30, 60),   # 竞品: 30次/分钟
+    "default": (100, 60),            # 默认: 100次/分钟
 }
 
-# 浠ょ墝妗跺瓨鍌? {ip: {path: (tokens, last_refill_time)}}
+# 令牌桶存储: {ip: {path: (tokens, last_refill_time)}}
 _buckets = defaultdict(lambda: defaultdict(lambda: [0, time.time()]))
 
 def _get_limit(path: str):
-    """鏍规嵁璺緞鑾峰彇闄愭祦閰嶇疆"""
+    """根据路径获取限流配置"""
     for prefix, limit in RATE_LIMITS.items():
         if prefix != "default" and path.startswith(prefix):
             return limit
     return RATE_LIMITS["default"]
 
 async def rate_limit_middleware(request: Request, call_next):
-    """FastAPI闄愭祦涓棿浠?""
-    # 璺宠繃鍋ュ悍妫€鏌?
+    """FastAPI限流中间件"""
+    # 跳过健康检查
     if request.url.path in ("/health", "/", "/docs", "/openapi.json"):
         return await call_next(request)
     
@@ -39,7 +39,7 @@ async def rate_limit_middleware(request: Request, call_next):
     bucket = _buckets[client_ip][path]
     tokens, last_refill = bucket
     
-    # 浠ょ墝妗? 鎸夋椂闂磋ˉ鍏?
+    # 令牌桶: 按时间补充
     elapsed = now - last_refill
     refill_amount = elapsed * (max_tokens / window)
     tokens = min(max_tokens, tokens + refill_amount)
@@ -47,7 +47,7 @@ async def rate_limit_middleware(request: Request, call_next):
     if tokens < 1:
         raise HTTPException(
             status_code=429,
-            detail=f"璇锋眰澶绻?璇穥int(window)}绉掑悗閲嶈瘯 (闄愭祦: {max_tokens}娆?{window}绉?"
+            detail=f"请求太频繁,请{int(window)}秒后重试 (限流: {max_tokens}次/{window}秒)"
         )
     
     tokens -= 1
@@ -56,19 +56,19 @@ async def rate_limit_middleware(request: Request, call_next):
     response = await call_next(request)
     return response
 
-# 瀹氭椂娓呯悊杩囨湡妗?姣?0鍒嗛挓)
+# 定时清理过期桶(每10分钟)
 _last_cleanup = time.time()
 
 def _cleanup_buckets():
     global _last_cleanup
     now = time.time()
-    if now - _last_cleanup < 600:  # 10鍒嗛挓
+    if now - _last_cleanup < 600:  # 10分钟
         return
     _last_cleanup = now
     for ip in list(_buckets.keys()):
         for path in list(_buckets[ip].keys()):
             _, last_refill = _buckets[ip][path]
-            if now - last_refill > 3600:  # 1灏忔椂鏈娇鐢ㄥ垯娓呯悊
+            if now - last_refill > 3600:  # 1小时未使用则清理
                 del _buckets[ip][path]
         if not _buckets[ip]:
             del _buckets[ip]
