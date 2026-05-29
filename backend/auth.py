@@ -138,3 +138,24 @@ async def refresh_token(user: dict = Depends(get_current_user)):
 async def list_roles(_=Depends(require_role("admin"))):
     """列出所有角色(仅管理员)"""
     return {"ok": True, "roles": ROLES}
+
+# ===== ?????security.py?????? =====
+def get_audit_logs(limit: int = 50):
+    """??????"""
+    return []
+
+def get_rate_limit_stats():
+    """????"""
+    return {"total": 0, "blocked": 0, "window": 60}
+
+def create_jwt(username: str, role: str = "admin"):
+    """??JWT?create_token????"""
+    return create_token(username, role)
+
+def decode_jwt(token: str):
+    """??JWT"""
+    return verify_token(token)
+
+def verify_jwt(token: str):
+    """??JWT??verify_token???????"""
+    return verify_token(token)
