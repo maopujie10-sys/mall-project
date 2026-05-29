@@ -1,7 +1,7 @@
 <template>
-  <!-- 鍏ㄥ眬鎮诞AI鍔╂墜 鈥?鏂囧瓧+璇煶+瑙嗛鍏ㄩ泦鎴?-->
+  <!-- 全局悬浮AI助手 — 文字+语音+视频全集成 -->
   <div class="floating-ai" :class="{ 'chat-open': chatOpen, 'chat-expanded': chatExpanded, 'video-mode': videoActive }">
-    <!-- ====== 鎮诞鎸夐挳 ====== -->
+    <!-- ====== 悬浮按钮 ====== -->
     <div
       v-if="!chatOpen"
       class="ai-float-btn"
@@ -20,80 +20,80 @@
       <span class="btn-pulse" v-if="hasUnread"></span>
     </div>
 
-    <!-- ====== 鑱婂ぉ闈㈡澘 ====== -->
+    <!-- ====== 聊天面板 ====== -->
     <transition name="slide-up">
       <div v-if="chatOpen" class="ai-chat-panel" :class="{ expanded: chatExpanded, video: videoActive }">
-        <!-- 澶撮儴宸ュ叿鏍?-->
+        <!-- 头部工具栏 -->
         <div class="chat-header" @mousedown="startPanelDrag"><div class="header-scanline"></div>
           <div class="header-left">
             <div class="ai-avatar-small"><div class="avatar-holo"></div>AI</div>
             <div>
-              <div class="header-title">{{ videoActive ? '瑙嗛閫氳瘽' : 'Friday AI 鍔╂墜' }}</div>
-              <div class="header-status">{{ videoActive ? '閫氳瘽涓?..' : (voiceActive ? '馃帳 璇煶鑱嗗惉涓?..' : '鍦ㄧ嚎 路 闅忔椂涓烘偍鏈嶅姟') }}</div>
+              <div class="header-title">{{ videoActive ? '视频通话' : 'Friday AI 助手' }}</div>
+              <div class="header-status">{{ videoActive ? '通话中...' : (voiceActive ? '🎤 语音聆听中...' : '在线 · 随时为您服务') }}</div>
             </div>
           </div>
           <div class="header-actions">
-            <!-- 璇煶閫氳瘽 -->
-            <button class="header-btn" @click="toggleVoiceCall" :title="voiceCallActive ? '鎸傛柇璇煶' : '璇煶閫氳瘽'" :class="{ active: voiceCallActive }">
-              {{ voiceCallActive ? '馃摓' : '馃摓' }}
+            <!-- 语音通话 -->
+            <button class="header-btn" @click="toggleVoiceCall" :title="voiceCallActive ? '挂断语音' : '语音通话'" :class="{ active: voiceCallActive }">
+              {{ voiceCallActive ? '📞' : '📞' }}
             </button>
-            <!-- 瑙嗛閫氳瘽 -->
-            <button class="header-btn" @click="toggleVideoCall" :title="videoActive ? '鍏抽棴瑙嗛' : '瑙嗛閫氳瘽'" :class="{ active: videoActive }">
-              {{ videoActive ? '馃摴' : '馃摴' }}
+            <!-- 视频通话 -->
+            <button class="header-btn" @click="toggleVideoCall" :title="videoActive ? '关闭视频' : '视频通话'" :class="{ active: videoActive }">
+              {{ videoActive ? '📹' : '📹' }}
             </button>
-            <button class="header-btn" @click="toggleExpand" :title="chatExpanded ? '缂╁皬' : '鎵╁ぇ'">
-              {{ chatExpanded ? '鈯? : '鈯? }}
+            <button class="header-btn" @click="toggleExpand" :title="chatExpanded ? '缩小' : '扩大'">
+              {{ chatExpanded ? '⊟' : '⊞' }}
             </button>
-            <button class="header-btn" @click="minimizeChat" title="鏈€灏忓寲">鈭?/button>
-            <button class="header-btn close-btn" @click="closeChat" title="鍏抽棴">脳</button>
+            <button class="header-btn" @click="minimizeChat" title="最小化">−</button>
+            <button class="header-btn close-btn" @click="closeChat" title="关闭">×</button>
           </div>
         </div>
 
-        <!-- ====== 瑙嗛鍖哄煙 ====== -->
+        <!-- ====== 视频区域 ====== -->
         <div v-if="videoActive" class="video-area">
           <div class="video-remote">
             <video ref="remoteVideo" autoplay playsinline class="video-main"></video>
             <div class="video-overlay" v-if="!videoConnected">
               <div class="connect-spinner"></div>
-              <p>姝ｅ湪杩炴帴...</p>
+              <p>正在连接...</p>
             </div>
           </div>
           <div class="video-local">
             <video ref="localVideo" autoplay playsinline muted class="video-thumb"></video>
           </div>
           <div class="video-controls">
-            <button @click="toggleMic" :class="{ muted: micMuted }">{{ micMuted ? '馃攪' : '馃帣锔? }}</button>
-            <button @click="toggleCamera" :class="{ muted: cameraOff }">{{ cameraOff ? '馃摲鉂? : '馃摲' }}</button>
-            <button @click="endVideoCall" class="end-call-btn">馃敶 鎸傛柇</button>
+            <button @click="toggleMic" :class="{ muted: micMuted }">{{ micMuted ? '🔇' : '🎙️' }}</button>
+            <button @click="toggleCamera" :class="{ muted: cameraOff }">{{ cameraOff ? '📷❌' : '📷' }}</button>
+            <button @click="endVideoCall" class="end-call-btn">🔴 挂断</button>
           </div>
         </div>
 
-        <!-- ====== 娑堟伅鍖?====== -->
+        <!-- ====== 消息区 ====== -->
         <div v-if="!videoActive" class="chat-messages" ref="msgList"><canvas ref="matrixCanvas" class="matrix-bg"></canvas>
           <div v-if="messages.length === 0" class="empty-chat">
-            <div class="empty-icon">馃</div>
-            <p>浣犲ソ锛佹垜鏄?Friday AI 鍔╂墜</p>
-            <p class="empty-sub">鏂囧瓧 路 璇煶 路 瑙嗛 路 浼犲浘 路 浼犳枃浠?/p>
+            <div class="empty-icon">🤖</div>
+            <p>你好！我是 Friday AI 助手</p>
+            <p class="empty-sub">文字 · 语音 · 视频 · 传图 · 传文件</p>
             <div class="quick-actions">
-              <button @click="quickAsk('鏈嶅姟鍣ㄧ姸鎬佹€庝箞鏍凤紵')">馃搳 鏈嶅姟鍣ㄧ姸鎬?/button>
-              <button @click="quickAsk('浠婂ぉ鏈夊灏戣鍗曪紵')">馃摝 浠婃棩璁㈠崟</button>
-              <button @click="quickAsk('甯垜鍒嗘瀽鏈€杩戠殑寮傚父')">馃攳 寮傚父鍒嗘瀽</button>
-              <button @click="quickAsk('鐢熸垚浠婃棩杩愯惀鎶ュ憡')">馃摑 杩愯惀鎶ュ憡</button>
+              <button @click="quickAsk('服务器状态怎么样？')">📊 服务器状态</button>
+              <button @click="quickAsk('今天有多少订单？')">📦 今日订单</button>
+              <button @click="quickAsk('帮我分析最近的异常')">🔍 异常分析</button>
+              <button @click="quickAsk('生成今日运营报告')">📝 运营报告</button>
             </div>
           </div>
 
           <div v-for="(msg, i) in messages" :key="i" class="msg-row" :class="msg.role">
-            <div class="msg-avatar">{{ msg.role === 'user' ? '馃懁' : 'AI' }}</div>
+            <div class="msg-avatar">{{ msg.role === 'user' ? '👤' : 'AI' }}</div>
             <div class="msg-bubble" :class="msg.role">
               <div class="msg-text" v-html="renderMsg(msg.content)"></div>
               <div class="msg-time">
                 {{ msg.time }}
-                <span v-if="msg.voice" class="voice-tag">馃帳 璇煶</span>
+                <span v-if="msg.voice" class="voice-tag">🎤 语音</span>
               </div>
             </div>
-            <!-- 璇煶鎾斁鎸夐挳 -->
-            <button v-if="msg.role === 'assistant'" class="play-voice-btn" @click="speakText(msg.content)" title="鏈楄">
-              馃攰
+            <!-- 语音播放按钮 -->
+            <button v-if="msg.role === 'assistant'" class="play-voice-btn" @click="speakText(msg.content)" title="朗读">
+              🔊
             </button>
           </div>
 
@@ -105,24 +105,24 @@
           </div>
         </div>
 
-        <!-- ====== 杈撳叆鍖?====== -->
+        <!-- ====== 输入区 ====== -->
         <div v-if="!videoActive" class="chat-input-area">
-          <!-- 璇煶杈撳叆鎻愮ず -->
+          <!-- 语音输入提示 -->
           <div v-if="attachments.length > 0" class="attachments-bar"><div v-for="(att, i) in attachments" :key="i" class="attach-item"><div v-if="att.type === 'image'" class="attach-preview-img"><img :src="att.dataUrl" /><button class="attach-remove" @click="removeAttachment(i)">x</button></div><div v-else-if="att.type === 'video'" class="attach-preview-video"><video :src="att.dataUrl" controls preload="metadata"></video><button class="attach-remove" @click="removeAttachment(i)">x</button></div><div v-else class="attach-tag"><span class="attach-icon">{{ getFileIcon(att.name) }}</span><span class="attach-name">{{ att.name }}</span><span class="attach-size">{{ formatSize(att.size) }}</span><button class="attach-remove" @click="removeAttachment(i)">x</button></div></div></div>
           <div v-if="voiceActive" class="voice-indicator">
             <div class="voice-wave">
               <span v-for="n in 5" :key="n" :style="{ animationDelay: n * 0.1 + 's' }"></span>
             </div>
-            <span>姝ｅ湪鑱嗗惉... 鐐瑰嚮楹﹀厠椋庡仠姝?/span>
+            <span>正在聆听... 点击麦克风停止</span>
           </div>
 
           <div class="input-row">
-            <!-- 璇煶杈撳叆鎸夐挳 -->
+            <!-- 语音输入按钮 -->
             <button
               class="voice-input-btn"
               :class="{ recording: voiceActive }"
               @click="toggleVoiceInput"
-              title="璇煶杈撳叆"
+              title="语音输入"
             >
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" :stroke="voiceActive ? '#fff' : '#889'" stroke-width="2">
                 <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
@@ -136,7 +136,7 @@
               v-model="inputText"
               @keydown.enter.exact.prevent="sendMessage"
               @keydown.enter.shift.exact="inputText += '\n'"
-              :placeholder="voiceActive ? '璇煶璇嗗埆涓?..' : '杈撳叆娑堟伅... (Enter鍙戦€?'"
+              :placeholder="voiceActive ? '语音识别中...' : '输入消息... (Enter发送)'"
               rows="1"
               ref="inputBox"
               :disabled="loading || voiceActive"
@@ -157,7 +157,7 @@
 <script setup>
 import { ref, nextTick, onMounted, onUnmounted, watch } from 'vue'
 
-// === 鐘舵€?===
+// === 状态 ===
 const chatOpen = ref(false)
 const chatExpanded = ref(false)
 const messages = ref([])
@@ -165,13 +165,13 @@ const inputText = ref('')
 const loading = ref(false)
 const hasUnread = ref(false)
 
-// 璇煶
+// 语音
 const voiceActive = ref(false)
 const voiceCallActive = ref(false)
 let recognition = null
 let synth = null
 
-// 瑙嗛
+// 视频
 const videoActive = ref(false)
 const videoConnected = ref(false)
 const micMuted = ref(false)
@@ -181,7 +181,7 @@ const localVideo = ref(null)
 let localStream = null
 let peerConnection = null
 
-// 浣嶇疆
+// 位置
 const posX = ref(0)
 const posY = ref(0)
 let isDragging = false
@@ -190,7 +190,7 @@ let panelDragging = false, panelStartX = 0, panelStartY = 0, panelPos = { x: 0, 
 
 const STORAGE_KEY = 'friday_floating_chat'
 
-// === 鍒濆鍖?===
+// === 初始化 ===
 onMounted(() => {
   try {
     const saved = localStorage.getItem(STORAGE_KEY)
@@ -210,9 +210,9 @@ watch(messages, (val) => {
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(val.slice(-50))) } catch (e) {}
 }, { deep: true })
 
-// === 闈㈡澘鎺у埗 ===
+// === 面板控制 ===
 function openChat() { if (!isDragging) { chatOpen.value = true; hasUnread.value = false; nextTick(() => scrollBottom()) } }
-function closeChat() { stopVoiceInput(); stopVideoCall(); chatOpen.value = false; chatExpanded.value = false; const p=document.querySelector(".floating-ai .ai-chat-panel");if(p){p.style.left="";p.style.top="";p.style.right="";p.style.bottom=""} }
+function closeChat() { stopVoiceInput(); stopVideoCall(); chatOpen.value = false; chatExpanded.value = false }
 function minimizeChat() { stopTw(); stopStepAnimation(); chatOpen.value = false }
 function toggleExpand() { chatExpanded.value = !chatExpanded.value; nextTick(() => scrollBottom()) }
 function startDrag(e) {
@@ -225,34 +225,9 @@ function startDrag(e) {
   const onUp = () => { document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp); setTimeout(() => { isDragging = false }, 50) }
   document.addEventListener('mousemove', onMove); document.addEventListener('mouseup', onUp)
 }
-function startPanelDrag(e) {
-  if (e.target.tagName === 'BUTTON') return
-  panelDragging = true
-  panelStartX = e.clientX
-  panelStartY = e.clientY
-  const panel = document.querySelector('.floating-ai .ai-chat-panel')
-  if (panel) {
-    panelPos.x = panel.offsetLeft || 0
-    panelPos.y = panel.offsetTop || 0
-      const s = panel.style
-    const onMove = (ev) => {
-      const dx = ev.clientX - panelStartX
-      const dy = ev.clientY - panelStartY
-      s.right = 'auto'; s.bottom = 'auto'
-        s.left = (panelPos.x + dx) + 'px'
-        s.top = (panelPos.y + dy) + 'px'
-    }
-    const onUp = () => {
-      panelDragging = false
-      document.removeEventListener('mousemove', onMove)
-      document.removeEventListener('mouseup', onUp)
-    }
-    document.addEventListener('mousemove', onMove)
-    document.addEventListener('mouseup', onUp)
-  }
-}
+function startPanelDrag(e) {}
 
-// === 璇煶鍚堟垚 (TTS) ===
+// === 语音合成 (TTS) ===
 function initSpeechSynth() {
   if ('speechSynthesis' in window) {
     synth = window.speechSynthesis
@@ -271,7 +246,7 @@ function speakText(text) {
   synth.speak(utterance)
 }
 
-// === 璇煶璇嗗埆 (STT) ===
+// === 语音识别 (STT) ===
 function toggleVoiceInput() {
   if (voiceActive.value) { stopVoiceInput(); return }
   startVoiceInput()
@@ -280,7 +255,7 @@ function toggleVoiceInput() {
 function startVoiceInput() {
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
   if (!SpeechRecognition) {
-    inputText.value = '[娴忚鍣ㄤ笉鏀寔璇煶璇嗗埆锛岃浣跨敤Chrome]'
+    inputText.value = '[浏览器不支持语音识别，请使用Chrome]'
     return
   }
   recognition = new SpeechRecognition()
@@ -307,17 +282,18 @@ function stopVoiceInput() {
   voiceActive.value = false
 }
 
-// === 璇煶閫氳瘽 ===
+// === 语音通话 ===
 function toggleVoiceCall() {
   if (voiceCallActive.value) {
     synth && synth.cancel()
     voiceCallActive.value = false
   } else {
     voiceCallActive.value = true
-    // 鑷姩鏈楄妯″紡锛氭敹鍒癆I鍥炲鍚庤嚜鍔ㄦ湕璇?  }
+    // 自动朗读模式：收到AI回复后自动朗读
+  }
 }
 
-// === 瑙嗛閫氳瘽 ===
+// === 视频通话 ===
 async function toggleVideoCall() {
   if (videoActive.value) { endVideoCall(); return }
   try {
@@ -327,10 +303,10 @@ async function toggleVideoCall() {
     }
     videoActive.value = true
     videoConnected.value = false
-    // 妯℃嫙杩炴帴锛堢湡瀹炲満鏅渶瑕乄ebRTC淇′护鏈嶅姟鍣級
+    // 模拟连接（真实场景需要WebRTC信令服务器）
     setTimeout(() => { videoConnected.value = true }, 2000)
   } catch (e) {
-    alert('鏃犳硶璁块棶鎽勫儚澶?楹﹀厠椋? ' + e.message)
+    alert('无法访问摄像头/麦克风: ' + e.message)
   }
 }
 
@@ -361,14 +337,14 @@ function stopVideoCall() {
   endVideoCall()
 }
 
-// === 娑堟伅 ===
+// === 消息 ===
 async function sendMessage() {
   const text = inputText.value.trim(); const files = [...attachments.value]; processingStatus.value = detectTask(text); startStepAnimation()
   if (!text || loading.value) return
   stopVoiceInput()
 
   const now = new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
-  clearAttachments(); messages.value.push({ role: 'user', content: text || '[闄勪欢]', time: now, voice: voiceActive.value }); if (files.length) { messages.value[messages.value.length-1].attachments = files.map(f=>({name:f.name,type:f.type,size:f.size})) }
+  clearAttachments(); messages.value.push({ role: 'user', content: text || '[附件]', time: now, voice: voiceActive.value }); if (files.length) { messages.value[messages.value.length-1].attachments = files.map(f=>({name:f.name,type:f.type,size:f.size})) }
   inputText.value = ''
   loading.value = true
   await nextTick(); scrollBottom()
@@ -382,14 +358,15 @@ async function sendMessage() {
     })
     if (res.ok) {
       const data = await res.json()
-      const reply = data.reply || data.message || '鏀跺埌锛屾鍦ㄥ鐞?..'
+      const reply = data.reply || data.message || '收到，正在处理...'
       messages.value.push({ role: 'assistant', content: reply, time: new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }) })
-      // 璇煶閫氳瘽妯″紡涓嬭嚜鍔ㄦ湕璇?      if (voiceCallActive.value) { speakText(reply) }
+      // 语音通话模式下自动朗读
+      if (voiceCallActive.value) { speakText(reply) }
     } else {
-      messages.value.push({ role: 'assistant', content: '鎶辨瓑锛屾湇鍔℃殏鏃朵笉鍙敤銆?, time: new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }) })
+      messages.value.push({ role: 'assistant', content: '抱歉，服务暂时不可用。', time: new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }) })
     }
   } catch (e) {
-    messages.value.push({ role: 'assistant', content: '缃戠粶杩炴帴澶辫触锛岃妫€鏌ョ綉缁溿€?, time: new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }) })
+    messages.value.push({ role: 'assistant', content: '网络连接失败，请检查网络。', time: new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }) })
   }
   loading.value = false
   await nextTick(); scrollBottom()
@@ -401,7 +378,7 @@ const attachments = ref([])
 function onFileSelected(e) {
   const files = Array.from(e.target.files || [])
   for (const file of files) {
-    if (attachments.value.length >= 5) { alert('鏈€澶?涓枃浠?); break }
+    if (attachments.value.length >= 5) { alert('最多5个文件'); break }
     const reader = new FileReader()
     reader.onload = (ev) => {
       let type = 'file'
@@ -549,7 +526,7 @@ function scrollBottom() {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
-/* === 鎮诞鎸夐挳 === */
+/* === 悬浮按钮 === */
 .ai-float-btn {
   position: fixed;
   width: 56px; height: 56px;
@@ -589,7 +566,7 @@ function scrollBottom() {
   100% { box-shadow: 0 0 0 0 rgba(255,71,87,0); }
 }
 
-/* === 闈㈡澘 === */
+/* === 面板 === */
 .ai-chat-panel {
   position: fixed;
   bottom: 20px; right: 20px;
@@ -609,7 +586,7 @@ function scrollBottom() {
   bottom: 20px; right: 20px;
 }
 
-/* === 澶撮儴 === */
+/* === 头部 === */
 .chat-header {
   display: flex; align-items: center; justify-content: space-between;
   padding: 10px 14px;
@@ -637,7 +614,7 @@ function scrollBottom() {
 .header-btn.active { background: rgba(255,255,255,0.35); box-shadow: 0 0 8px rgba(255,255,255,0.3); }
 .close-btn:hover { background: rgba(255,71,87,0.6); }
 
-/* === 瑙嗛鍖哄煙 === */
+/* === 视频区域 === */
 .video-area {
   flex: 1; position: relative; background: #000;
   display: flex; align-items: center; justify-content: center;
@@ -681,7 +658,7 @@ function scrollBottom() {
   font-size: 14px !important;
 }
 
-/* === 娑堟伅鍖?=== */
+/* === 消息区 === */
 .chat-messages {
   flex: 1; overflow-y: auto; padding: 14px;
   display: flex; flex-direction: column; gap: 10px;
@@ -732,7 +709,7 @@ function scrollBottom() {
 }
 .play-voice-btn:hover { background: rgba(102,126,234,0.35); }
 
-/* === 璇煶鎸囩ず鍣?=== */
+/* === 语音指示器 === */
 .voice-indicator {
   display: flex; align-items: center; gap: 10px;
   padding: 8px 12px; margin-bottom: 8px;
@@ -754,7 +731,7 @@ function scrollBottom() {
   50% { transform: scaleY(0.4); }
 }
 
-/* === 杈撳叆鍖?=== */
+/* === 输入区 === */
 .chat-input-area { padding: 10px 12px; border-top: 1px solid rgba(255,255,255,0.06); }
 .input-row { display: flex; gap: 8px; align-items: flex-end; }
 .voice-input-btn {
@@ -787,7 +764,7 @@ function scrollBottom() {
 .send-btn:hover:not(:disabled) { transform: scale(1.05); }
 .send-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
-/* === 鍔ㄧ敾 === */
+/* === 动画 === */
 .slide-up-enter-active { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
 .slide-up-leave-active { transition: all 0.2s ease-in; }
 .slide-up-enter-from { opacity: 0; transform: translateY(20px) scale(0.95); }
@@ -921,6 +898,10 @@ function scrollBottom() {
 @keyframes btnBreathe {
   0%, 100% { transform: scale(1); box-shadow: 0 4px 20px rgba(102,126,234,0.4); }
   50% { transform: scale(1.05); box-shadow: 0 6px 32px rgba(102,126,234,0.7), 0 0 50px rgba(118,75,162,0.3); }
+}
+  100% { transform: translateX(100%); }
+}
+  50% { opacity: 1; }
 }
 
 </style>
