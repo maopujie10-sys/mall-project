@@ -1,4 +1,4 @@
-﻿"""Trend Agent — 热点监控 / 舆情分析 / 趋势预测
+"""Trend Agent — 热点监控 / 舆情分析 / 趋势预测
 监控：抖音/B站/微博/X/YouTube/Google Trends"""
 import httpx
 import asyncio

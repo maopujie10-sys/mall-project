@@ -1,4 +1,4 @@
-﻿"""审计日志 — 全量操作追踪/查询/导出"""
+"""审计日志 — 全量操作追踪/查询/导出"""
 from datetime import datetime
 from fastapi import APIRouter, Depends, Query
 from auth import verify_token

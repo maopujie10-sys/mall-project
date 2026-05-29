@@ -1,4 +1,4 @@
-﻿"""Friday AI OS — Agent API路由"""
+"""Friday AI OS — Agent API路由"""
 from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect, Query
 from pydantic import BaseModel
 from typing import Optional

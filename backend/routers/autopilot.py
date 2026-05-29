@@ -1,4 +1,4 @@
-﻿"""自动巡检 — 站点监控/SEO/性能检测 + 定时自愈"""
+"""自动巡检 — 站点监控/SEO/性能检测 + 定时自愈"""
 import httpx
 import asyncio
 from datetime import datetime

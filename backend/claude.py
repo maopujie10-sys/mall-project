@@ -1,4 +1,4 @@
-﻿"""Claude API 真实接入 — 替代关键词匹配"""
+"""Claude API 真实接入 — 替代关键词匹配"""
 import httpx
 import json
 from typing import Optional

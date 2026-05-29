@@ -1,4 +1,4 @@
-﻿"""日志治理 — 自动轮转+保留策略+清理"""
+"""日志治理 — 自动轮转+保留策略+清理"""
 import os, glob, logging
 from logging.handlers import RotatingFileHandler
 from datetime import datetime, timedelta

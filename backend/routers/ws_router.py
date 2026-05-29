@@ -1,4 +1,4 @@
-﻿"""Dashboard WebSocket — 实时推送系统指标+告警+订单+生命体状态"""
+"""Dashboard WebSocket — 实时推送系统指标+告警+订单+生命体状态"""
 import asyncio, json
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from websocket_manager import ws_manager

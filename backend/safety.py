@@ -1,4 +1,4 @@
-﻿"""熔断机制 + 防循环 — 防止AI无限重试和雪崩"""
+"""熔断机制 + 防循环 — 防止AI无限重试和雪崩"""
 from datetime import datetime, timedelta
 from collections import defaultdict
 from state import state

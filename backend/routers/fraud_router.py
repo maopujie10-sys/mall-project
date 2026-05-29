@@ -1,4 +1,4 @@
-﻿"""AI异常订单检测API — 单笔分析+批量扫描+规则查询"""
+"""AI异常订单检测API — 单笔分析+批量扫描+规则查询"""
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
 from typing import Optional

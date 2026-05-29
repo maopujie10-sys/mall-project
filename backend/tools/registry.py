@@ -1,4 +1,4 @@
-﻿"""工具注册中心 — 所有AI可调用工具的统一注册与管理
+"""工具注册中心 — 所有AI可调用工具的统一注册与管理
 v3: 全部65工具绑定真实执行函数"""
 from dataclasses import dataclass, field
 from typing import Callable, Optional

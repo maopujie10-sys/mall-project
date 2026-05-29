@@ -1,4 +1,4 @@
-﻿"""AI 启动自检 + 长期记忆预热 — 启动即加载历史经验"""
+"""AI 启动自检 + 长期记忆预热 — 启动即加载历史经验"""
 import os
 import json
 from datetime import datetime

@@ -1,4 +1,4 @@
-﻿"""RAG知识库 — 文档管理+向量化+检索增强"""
+"""RAG知识库 — 文档管理+向量化+检索增强"""
 import json, os, hashlib
 from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Query

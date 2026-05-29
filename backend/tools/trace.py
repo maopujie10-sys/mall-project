@@ -1,4 +1,4 @@
-﻿"""全链路请求追踪 + 全局异常处理 — trace_id贯穿每个请求,出问题秒定位"""
+"""全链路请求追踪 + 全局异常处理 — trace_id贯穿每个请求,出问题秒定位"""
 import time, uuid, traceback, json
 from datetime import datetime
 from fastapi import Request, Response

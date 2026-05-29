@@ -1,4 +1,4 @@
-﻿"""Friday AI OS — WebSocket实时推送管理器
+"""Friday AI OS — WebSocket实时推送管理器
 v2: 心跳检测 + 自动清理断连 + 连接数上限 + 消息队列"""
 import asyncio
 import json

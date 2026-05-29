@@ -1,4 +1,4 @@
-﻿"""服务器管理 v2 — CPU/内存/磁盘/进程/文件/日志/自动治理"""
+"""服务器管理 v2 — CPU/内存/磁盘/进程/文件/日志/自动治理"""
 import os, psutil, shutil, subprocess
 from datetime import datetime, timedelta
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Query

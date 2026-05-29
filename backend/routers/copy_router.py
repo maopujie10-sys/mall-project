@@ -1,4 +1,4 @@
-﻿"""AI商品文案生成 — 多语言标题/描述/SEO/v2 支持全球语言"""
+"""AI商品文案生成 — 多语言标题/描述/SEO/v2 支持全球语言"""
 from fastapi import APIRouter, Depends, Query
 from auth import verify_token
 from risk import handle_risk

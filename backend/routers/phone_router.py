@@ -1,4 +1,4 @@
-﻿"""AI电话助理 — 语音IVR/自动接听/下单/转人工/v1"""
+"""AI电话助理 — 语音IVR/自动接听/下单/转人工/v1"""
 from fastapi import APIRouter, Depends, HTTPException
 from auth import verify_token
 from risk import handle_risk

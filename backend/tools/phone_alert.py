@@ -1,4 +1,4 @@
-﻿"""电话告警服务 — 通过语音电话通知紧急事件/v1"""
+"""电话告警服务 — 通过语音电话通知紧急事件/v1"""
 import json, os
 from datetime import datetime
 from state import state

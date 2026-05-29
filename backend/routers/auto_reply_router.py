@@ -1,4 +1,4 @@
-﻿"""AI客服自动回复 — 规则引擎/常见问题/转人工/v1"""
+"""AI客服自动回复 — 规则引擎/常见问题/转人工/v1"""
 from fastapi import APIRouter, Depends
 from auth import verify_token
 from risk import handle_risk

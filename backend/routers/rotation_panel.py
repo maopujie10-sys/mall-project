@@ -1,3 +1,5 @@
+from tools.logger import get_logger
+logger = get_logger('rotation')
 """域名轮值管理 — 真正的健康检测/自动切换/权重轮值"""
 import asyncio
 import ssl as ssl_mod
@@ -120,7 +122,7 @@ async def _enrich_domain(d: dict) -> dict:
 
 async def _check_all():
     """给调度器用的全量检测（无需鉴权），同时执行自动轮值"""
-    print(f"[Rotation] 开始全量域名检测 {datetime.now().strftime('%H:%M:%S')}")
+    logger.info(f"[Rotation] 开始全量域名检测 {datetime.now().strftime('%H:%M:%S')}")
     domains = _get_domains()
     changed = False
     for d in domains:
@@ -142,14 +144,14 @@ async def _check_all():
         d["ssl_days"] = ssl_info.get("days_left", 0)
         if d["health"] != old_health:
             changed = True
-            print(f"[Rotation] {d['domain']}: {old_health} → {d['health']}")
+            logger.info(f"[Rotation] {d['domain']}: {old_health} → {d['health']}")
     # 自动轮值：如果主域名挂了，切换到下一个健康域名
     rotated = await _auto_rotate()
     if rotated:
-        print(f"[Rotation] 自动轮值 → {rotated}")
+        logger.info(f"[Rotation] 自动轮值 → {rotated}")
     if changed or rotated:
         state._save()
-    print(f"[Rotation] 检测完成: {sum(1 for d in domains if d.get('health')=='ok')}/{len(domains)} 健康")
+    logger.info(f"[Rotation] 检测完成: {sum(1 for d in domains if d.get('health')=='ok')}/{len(domains)} 健康")
     return {"checked": len(domains), "rotated_to": rotated}
 
 

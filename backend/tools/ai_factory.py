@@ -1,4 +1,4 @@
-﻿"""AI 内容工厂 — 作图/视频/文案生成工具封装"""
+"""AI 内容工厂 — 作图/视频/文案生成工具封装"""
 import httpx
 import json
 from datetime import datetime

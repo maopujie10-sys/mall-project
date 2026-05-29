@@ -1,4 +1,4 @@
-﻿"""配置中心 — 支持多环境"""
+"""配置中心 — 支持多环境"""
 import os, sys
 from dotenv import load_dotenv
 

@@ -1,4 +1,4 @@
-﻿"""TikTokMall AI Agent 总控 - FastAPI :9000"""
+"""TikTokMall AI Agent 总控 - FastAPI :9000"""
 import os
 import random
 import asyncio

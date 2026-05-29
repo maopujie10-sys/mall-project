@@ -1,4 +1,4 @@
-﻿"""API请求限流中间件 — 令牌桶算法,基于IP+路径"""
+"""API请求限流中间件 — 令牌桶算法,基于IP+路径"""
 import time
 from collections import defaultdict
 from fastapi import Request

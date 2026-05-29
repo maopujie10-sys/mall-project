@@ -1,4 +1,4 @@
-﻿"""企业级全量商品采集引擎 — 多平台/规格提取/SKU/OSS上传/去重"""
+"""企业级全量商品采集引擎 — 多平台/规格提取/SKU/OSS上传/去重"""
 import os
 import re
 import json

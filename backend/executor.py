@@ -1,4 +1,4 @@
-﻿"""安全执行器 — SSH/subprocess + 命令白名单/黑名单"""
+"""安全执行器 — SSH/subprocess + 命令白名单/黑名单"""
 import subprocess
 import os
 import shlex

@@ -1,4 +1,4 @@
-﻿"""消息通知 — Telegram / SMTP 邮件 / 钉钉 / 企业微信"""
+"""消息通知 — Telegram / SMTP 邮件 / 钉钉 / 企业微信"""
 from datetime import datetime
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel

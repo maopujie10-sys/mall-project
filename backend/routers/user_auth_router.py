@@ -1,4 +1,4 @@
-﻿"""用户认证系统 v2 — 登录/JWT/RBAC/用户管理"""
+"""用户认证系统 v2 — 登录/JWT/RBAC/用户管理"""
 import json, os, hashlib, secrets
 from datetime import datetime, timedelta
 from fastapi import APIRouter, Depends, HTTPException, Request

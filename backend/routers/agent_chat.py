@@ -1,4 +1,4 @@
-﻿"""Agent Chat API v3 — 原生Function Calling + 对话记忆持久化"""
+"""Agent Chat API v3 — 原生Function Calling + 对话记忆持久化"""
 import asyncio, httpx, json, re, os
 from datetime import datetime
 from fastapi import APIRouter, Depends, Query

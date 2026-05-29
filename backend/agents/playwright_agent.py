@@ -1,4 +1,4 @@
-﻿"""Playwright Agent — 浏览器自动化
+"""Playwright Agent — 浏览器自动化
 v2: 浏览器实例池 + 截图自动清理 + 并发控制"""
 import os, asyncio, json, time
 from datetime import datetime, timedelta

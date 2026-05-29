@@ -1,4 +1,4 @@
-﻿"""Google Authenticator TOTP双重验证 — 纯Python实现(无需pyotp)"""
+"""Google Authenticator TOTP双重验证 — 纯Python实现(无需pyotp)"""
 import hmac, hashlib, struct, base64, time, os, io
 from typing import Optional
 

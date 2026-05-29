@@ -1,4 +1,4 @@
-﻿"""风险等级控制 — L1自动 / L2记录+通知 / L3需审批 / L4强制接管"""
+"""风险等级控制 — L1自动 / L2记录+通知 / L3需审批 / L4强制接管"""
 import httpx
 from datetime import datetime
 from config import TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID

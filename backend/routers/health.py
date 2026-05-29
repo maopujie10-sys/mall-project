@@ -1,4 +1,4 @@
-﻿"""全链路健康检查 — MySQL/Redis/Docker/Nginx/Tomcat/磁盘/内存"""
+"""全链路健康检查 — MySQL/Redis/Docker/Nginx/Tomcat/磁盘/内存"""
 import socket, os, subprocess, asyncio
 from datetime import datetime
 from fastapi import APIRouter

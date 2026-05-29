@@ -1,4 +1,4 @@
-﻿"""Nginx 全功能管理 — 状态/配置/站点/上游/日志/SSL"""
+"""Nginx 全功能管理 — 状态/配置/站点/上游/日志/SSL"""
 import json
 from fastapi import APIRouter, Depends, HTTPException, Query
 from auth import verify_token

@@ -1,4 +1,4 @@
-﻿"""AI智能定价引擎 — 竞品分析+成本计算+AI推荐定价+价格历史追踪"""
+"""AI智能定价引擎 — 竞品分析+成本计算+AI推荐定价+价格历史追踪"""
 import json, os, httpx
 from datetime import datetime
 from dataclasses import dataclass, field

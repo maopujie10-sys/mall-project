@@ -1,4 +1,4 @@
-﻿"""任务队列 + 任务锁 — 排队/优先级/暂停/取消/超时/并发锁"""
+"""任务队列 + 任务锁 — 排队/优先级/暂停/取消/超时/并发锁"""
 from datetime import datetime, timedelta
 from typing import Optional
 from state import state

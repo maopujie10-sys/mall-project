@@ -1,4 +1,4 @@
-﻿"""多Agent协作协议 — 任务拆解+Agent调度+结果汇总"""
+"""多Agent协作协议 — 任务拆解+Agent调度+结果汇总"""
 import json, asyncio
 from datetime import datetime
 from dataclasses import dataclass, field

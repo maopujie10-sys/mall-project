@@ -1,4 +1,4 @@
-﻿"""商城管理工具 — 全量代理 mall-app 后端全部 Controller
+"""商城管理工具 — 全量代理 mall-app 后端全部 Controller
 商品/订单/用户/分类/钱包/物流/KYC/投诉/合同/信用/借贷/评论/评价/地址/购物车/收藏/关注/邀请/抽奖/返利/促销/订阅/商家/轮播/新闻/通知/系统参数/区域/等级/聊天/轮值/身份证/套餐/客服"""
 import httpx
 from fastapi import APIRouter, Depends

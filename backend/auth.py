@@ -1,4 +1,4 @@
-﻿"""认证模块 v3 — JWT + RBAC角色权限 + 审计日志"""
+"""认证模块 v3 — JWT + RBAC角色权限 + 审计日志"""
 import jwt, time, secrets, os
 from datetime import datetime, timedelta
 from fastapi import HTTPException, Request, Depends

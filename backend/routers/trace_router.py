@@ -1,4 +1,4 @@
-﻿"""请求追踪查看API — 实时链路追踪面板"""
+"""请求追踪查看API — 实时链路追踪面板"""
 from fastapi import APIRouter, Depends, Query
 from auth import verify_token, require_role
 from tools.trace import get_recent_traces, get_trace_stats

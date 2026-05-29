@@ -1,4 +1,4 @@
-﻿"""安全中心 — IP封禁/防火墙/安全评分/威胁检测/安全审计"""
+"""安全中心 — IP封禁/防火墙/安全评分/威胁检测/安全审计"""
 import json, os
 from datetime import datetime, timedelta
 from fastapi import APIRouter, Depends, HTTPException, Query

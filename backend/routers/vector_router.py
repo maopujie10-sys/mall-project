@@ -1,4 +1,4 @@
-﻿"""向量语义记忆 API"""
+"""向量语义记忆 API"""
 from fastapi import APIRouter, Depends, Query
 from auth import verify_token
 from tools.vector_memory import VectorMemory

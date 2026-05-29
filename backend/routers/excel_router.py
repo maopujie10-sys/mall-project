@@ -1,4 +1,4 @@
-﻿"""Excel批量上架 — 解析Excel+自动分类+定价+一键上架/v1"""
+"""Excel批量上架 — 解析Excel+自动分类+定价+一键上架/v1"""
 import os, json, csv, io
 from fastapi import APIRouter, Depends, UploadFile, File, Form
 from auth import verify_token

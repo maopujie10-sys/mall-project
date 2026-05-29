@@ -1,4 +1,4 @@
-﻿"""多语言商品发布 — 翻译+多平台同步/v1"""
+"""多语言商品发布 — 翻译+多平台同步/v1"""
 from fastapi import APIRouter, Depends
 from auth import verify_token
 from risk import handle_risk

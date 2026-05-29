@@ -1,4 +1,4 @@
-﻿"""Memory Personality Engine — AI数字人格
+"""Memory Personality Engine — AI数字人格
 长期记忆 + 人格形成 + 自动日记 + 跨会话上下文"""
 import os
 import json

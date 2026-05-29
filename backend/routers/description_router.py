@@ -1,4 +1,4 @@
-﻿"""AI商品描述API — 生成+多语言+标题优化+卖点提取"""
+"""AI商品描述API — 生成+多语言+标题优化+卖点提取"""
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
 from typing import Optional

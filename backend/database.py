@@ -1,4 +1,4 @@
-﻿"""数据库连接与操作 — SQLAlchemy 模型"""
+"""数据库连接与操作 — SQLAlchemy 模型"""
 import json
 from datetime import datetime
 from config import DB_CONFIG

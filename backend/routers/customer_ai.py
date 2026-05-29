@@ -1,4 +1,4 @@
-﻿"""AI智能客服2.0 — 多轮对话+知识库RAG+意图识别+智能转人工+工单创建"""
+"""AI智能客服2.0 — 多轮对话+知识库RAG+意图识别+智能转人工+工单创建"""
 import json, re, os
 from datetime import datetime
 from fastapi import APIRouter, Depends, Query

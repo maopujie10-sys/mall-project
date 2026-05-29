@@ -1,4 +1,4 @@
-﻿"""智能告警推送 — 巡检异常自动推微信/Telegram/邮件"""
+"""智能告警推送 — 巡检异常自动推微信/Telegram/邮件"""
 import os, httpx, json
 from datetime import datetime
 from tools.logger import get_logger

@@ -1,4 +1,4 @@
-﻿"""In-memory state with JSON persistence for Agent operational data.
+"""In-memory state with JSON persistence for Agent operational data.
 v2: 原子写入 + 全key上限控制 + 敏感数据保护 + 连接池"""
 import json, os, tempfile
 import sqlite3

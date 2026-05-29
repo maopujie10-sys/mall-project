@@ -1,4 +1,4 @@
-﻿"""系统设置 — 环境变量/API密钥/通用配置管理"""
+"""系统设置 — 环境变量/API密钥/通用配置管理"""
 import os
 from fastapi import APIRouter, Depends
 from auth import verify_token

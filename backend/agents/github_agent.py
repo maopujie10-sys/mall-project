@@ -1,4 +1,4 @@
-﻿"""GitHub MCP Agent — GitHub API 集成
+"""GitHub MCP Agent — GitHub API 集成
 能力：仓库状态/Issues/PRs/Workflows/代码搜索"""
 import os
 import httpx

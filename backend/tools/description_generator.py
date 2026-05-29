@@ -1,4 +1,4 @@
-﻿"""AI商品描述生成器 — 多语言SEO描述+卖点提取+批量生成"""
+"""AI商品描述生成器 — 多语言SEO描述+卖点提取+批量生成"""
 import os, httpx, json
 from datetime import datetime
 from typing import Optional

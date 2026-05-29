@@ -1,4 +1,4 @@
-﻿"""推送归档 — 一键打包压缩+版本记录+可选GitHub推送"""
+"""推送归档 — 一键打包压缩+版本记录+可选GitHub推送"""
 import os
 import tarfile
 import json

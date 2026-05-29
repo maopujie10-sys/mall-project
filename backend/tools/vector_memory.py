@@ -1,4 +1,4 @@
-﻿"""向量语义记忆 — 302AI嵌入+向量存储+语义搜索"""
+"""向量语义记忆 — 302AI嵌入+向量存储+语义搜索"""
 import json, os, math
 from datetime import datetime
 from state import state

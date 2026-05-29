@@ -1,4 +1,4 @@
-﻿"""AI异常订单检测 — 刷单识别+欺诈检测+风险评分"""
+"""AI异常订单检测 — 刷单识别+欺诈检测+风险评分"""
 import os, httpx, json, math
 from datetime import datetime, timedelta
 from collections import defaultdict

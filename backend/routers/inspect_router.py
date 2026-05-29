@@ -1,4 +1,4 @@
-﻿"""全站自动巡检 — 域名/SSL/磁盘/DB/进程/安全 一键检查"""
+"""全站自动巡检 — 域名/SSL/磁盘/DB/进程/安全 一键检查"""
 from datetime import datetime
 from fastapi import APIRouter, Depends
 from auth import verify_token

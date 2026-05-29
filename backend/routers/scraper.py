@@ -1,4 +1,4 @@
-﻿"""全量商品采集 API — 搜索/提取/下载/上传COS/导入商城"""
+"""全量商品采集 API — 搜索/提取/下载/上传COS/导入商城"""
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
 from typing import Optional

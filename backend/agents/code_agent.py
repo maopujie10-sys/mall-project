@@ -1,4 +1,4 @@
-﻿"""Code Agent — 代码编写/修复/Bug分析/测试"""
+"""Code Agent — 代码编写/修复/Bug分析/测试"""
 import os
 import re
 from datetime import datetime

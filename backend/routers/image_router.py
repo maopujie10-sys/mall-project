@@ -1,4 +1,4 @@
-﻿"""AI商品图处理 — 去背景/水印/批量裁剪/生成展示图/v1"""
+"""AI商品图处理 — 去背景/水印/批量裁剪/生成展示图/v1"""
 import base64, os, json, asyncio
 from fastapi import APIRouter, Depends, UploadFile, File, Form
 from auth import verify_token

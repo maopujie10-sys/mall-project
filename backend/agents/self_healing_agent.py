@@ -1,4 +1,4 @@
-﻿"""Self-Healing Agent — 自动检测异常/自动修复/自动回滚/自动恢复
+"""Self-Healing Agent — 自动检测异常/自动修复/自动回滚/自动恢复
 职责：7x24巡检、故障自动诊断、智能修复、服务自动恢复"""
 import json
 import os

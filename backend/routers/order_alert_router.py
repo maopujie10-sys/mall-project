@@ -1,4 +1,4 @@
-﻿"""订单异常预警 — 退款突增/库存告急/物流延迟 → 多渠道推送/v1"""
+"""订单异常预警 — 退款突增/库存告急/物流延迟 → 多渠道推送/v1"""
 from fastapi import APIRouter, Depends
 from auth import verify_token
 from risk import handle_risk

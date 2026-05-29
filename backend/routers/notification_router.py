@@ -1,4 +1,4 @@
-﻿"""通知中心 — 系统通知/审批提醒/告警推送"""
+"""通知中心 — 系统通知/审批提醒/告警推送"""
 from datetime import datetime
 from fastapi import APIRouter, Depends
 from auth import verify_token

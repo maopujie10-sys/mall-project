@@ -1,4 +1,4 @@
-﻿"""Self-Healing Agent API — 自动修复入口"""
+"""Self-Healing Agent API — 自动修复入口"""
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from auth import verify_token
