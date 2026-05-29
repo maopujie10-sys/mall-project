@@ -1,4 +1,4 @@
-﻿const CACHE = "tiktokmall-pwa-v1";
+const CACHE = "tiktokmall-pwa-v1";
 const PRECACHE = [
   "/landing/pwa/",
   "/landing/pwa/manifest.json",

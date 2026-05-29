@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="lifeform-glass">
     <div class="glass-inner">
       <div class="glass-row">

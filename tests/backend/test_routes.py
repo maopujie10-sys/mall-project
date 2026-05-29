@@ -1,4 +1,4 @@
-﻿"""AI Agent 核心功能测试"""
+"""AI Agent 核心功能测试"""
 import pytest, sys, os, json
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "backend"))
 

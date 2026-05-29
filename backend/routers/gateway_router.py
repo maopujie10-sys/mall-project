@@ -1,4 +1,4 @@
-﻿"""消息网关 — 统一多平台接入: 微信/企微/钉钉/Telegram/Slack"""
+"""消息网关 — 统一多平台接入: 微信/企微/钉钉/Telegram/Slack"""
 import json, hashlib, os, httpx
 from config import AGENT_TOKEN
 from datetime import datetime

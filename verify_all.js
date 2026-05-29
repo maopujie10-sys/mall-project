@@ -1,4 +1,4 @@
-﻿const fs = require('fs');
+const fs = require('fs');
 const { execSync } = require('child_process');
 
 // Verify all .vue files in src/

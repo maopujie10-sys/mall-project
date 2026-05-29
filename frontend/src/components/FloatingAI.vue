@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <!-- 全局悬浮AI助手 — 文字+语音+视频全集成 -->
   <div class="floating-ai" :class="{ 'chat-open': chatOpen, 'chat-expanded': chatExpanded, 'video-mode': videoActive }">
     <!-- ====== 悬浮按钮 ====== -->
