@@ -139,7 +139,7 @@ from routers.gateway_router import router as gateway_router
 from routers.omni_router import router as omni_router
 
 # === 全能AI升级 v5 ===
-from routers.voice_router import router as voice_router`nfrom routers.tools_router import router as tools_router
+from routers.voice_router import router as voice_router`nfrom routers.tools_router import router as tools_router`nfrom routers.advanced_ai import router as advanced_router
 from routers.collab_router import router as collab_router
 from routers.rag_router import router as rag_router
 from routers.predict_router import router as predict_router
@@ -150,7 +150,7 @@ from routers.text2sql_router import router as text2sql_router
 from routers.abtest_router import router as abtest_router
 from routers.security_scan_router import router as security_scan_router
 from routers.capabilities_router import router as capabilities_router
-from routers.key_router import router as key_router`nfrom routers.ecommerce_ai import router as ecommerce_ai_router`nfrom routers.voice_router import router as voice_router`nfrom routers.tools_router import router as tools_router
+from routers.key_router import router as key_router`nfrom routers.ecommerce_ai import router as ecommerce_ai_router`nfrom routers.voice_router import router as voice_router`nfrom routers.tools_router import router as tools_router`nfrom routers.advanced_ai import router as advanced_router
 # === 落地页轮值 ===
 ROTATION_DOMAINS = [
     "chxhx.eu.cc", "drrgr.eu.cc", "drrimrf.eu.cc", "drriiu.eu.cc",
@@ -241,7 +241,7 @@ app.include_router(trace_router)
 app.include_router(ws_router)
 app.include_router(gateway_router, prefix="/api")
 app.include_router(omni_router)
-app.include_router(voice_router)`napp.include_router(tools_router)
+app.include_router(voice_router)`napp.include_router(tools_router)`napp.include_router(advanced_router)
 app.include_router(collab_router)
 app.include_router(rag_router)
 app.include_router(predict_router)
@@ -252,7 +252,7 @@ app.include_router(text2sql_router)
 app.include_router(abtest_router)
 app.include_router(security_scan_router)
 app.include_router(capabilities_router)
-app.include_router(key_router)`napp.include_router(ecommerce_ai_router)`napp.include_router(voice_router)`napp.include_router(tools_router)
+app.include_router(key_router)`napp.include_router(ecommerce_ai_router)`napp.include_router(voice_router)`napp.include_router(tools_router)`napp.include_router(advanced_router)
 @app.get("/agent", include_in_schema=False)
 async def dashboard():
     from fastapi.responses import HTMLResponse
