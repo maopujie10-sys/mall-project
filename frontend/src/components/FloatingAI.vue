@@ -33,6 +33,7 @@
             </div>
           </div>
           <div class="header-actions">
+                        <button class="header-btn" @click="compareModels" title="模型对比">⚖️</button>
                         <button class="header-btn" @click="toggleVoiceInput" :title="voiceActive ? '停止语音' : '语音输入'" :class="{ active: voiceActive }">🎤</button>
             <button class="header-btn" @click="toggleVoiceCall" :title="voiceCallActive ? '关闭朗读' : '朗读回复'" :class="{ active: voiceCallActive }">🔊</button>
                         <button class="header-btn" @click="toggleExpand" :title="chatExpanded ? '缩小' : '扩大'">
@@ -721,6 +722,21 @@ function scrollBottom() {
     if (el) el.scrollTop = el.scrollHeight
   })
 }
+
+// === v7: Prompt模板 + 模型对比 ===
+async function compareModels() { 
+  const text=inputText.value.trim(); if(!text)return; inputText.value=""
+  messages.value.push({role:"user",content:text,time:new Date().toLocaleTimeString("zh-CN",{hour:"2-digit",minute:"2-digit"})})
+  loading.value=true
+  try{
+    const t=localStorage.getItem("agent_token")||localStorage.getItem("friday_token")||"kWs4N6GiD4vtjnuHV31r14m6HPpKttBSI35lFnpiI90"
+    const r=await fetch("/agent/chat/compare",{method:"POST",headers:{"Content-Type":"application/json","X-Agent-Token":t},body:JSON.stringify({message:text})})
+    if(r.ok){const d=await r.json();const results=(d.results||[]).map(x=>"**"+x.model+"**: "+((x.reply||x.error||"").slice(0,300))).join("\n\n");messages.value.push({role:"assistant",content:results,time:new Date().toLocaleTimeString("zh-CN",{hour:"2-digit",minute:"2-digit"})})}
+  }catch(e){messages.value.push({role:"assistant",content:"模型对比失败",time:new Date().toLocaleTimeString("zh-CN",{hour:"2-digit",minute:"2-digit"})})}
+  loading.value=false 
+}
+function applyTemplateByName(name) { const t=promptTemplates.value.find(p=>p.name===name); if(t){selectedTemplate.value=t.name;ElMessage.info("已选模板: "+t.name);inputText.value="";inputText.focus()} }
+loadPromptTemplates()
 </script>
 
 <style scoped>

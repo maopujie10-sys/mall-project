@@ -506,7 +506,67 @@ async def gc(cid:str,_=Depends(verify_token)):
 @router.delete("/conversations/{cid}")
 async def dc(cid:str,_=Depends(verify_token)):
     c=_cdb();c.execute("DELETE FROM msgs WHERE cid=?",(cid,));c.execute("DELETE FROM convs WHERE id=?",(cid,));c.commit();c.close()
-    return{"ok":True}
+    return{"ok":True
+# ===== RAG文件上传 =====
+@router.post("/rag/upload")
+async def rag_upload_file(file: UploadFile = File(...), _=Depends(verify_token)):
+    raw=await file.read();ext=(file.filename or "").rsplit(".",1)[-1].lower()if"."in(file.filename or "")else""
+    text=""
+    if ext in("txt","md","csv","json","py","js","html","yml","yaml"):
+        try:text=raw.decode("utf-8")
+        except:text=raw.decode("latin-1","ignore")
+    elif ext=="pdf":
+        try:
+            import subprocess,tempfile
+            with tempfile.NamedTemporaryFile(suffix=".pdf",delete=False)as f:f.write(raw);tp=f.name
+            r=subprocess.run(["pdftotext","-layout",tp,"-"],capture_output=True,text=True,timeout=30)
+            text=r.stdout or"PDF解析失败";os.unlink(tp)
+        except:text=f"[PDF:{file.filename}]需poppler-utils"
+    else:text=raw.decode("utf-8","ignore")[:5000]
+    chunks=[text[i:i+800]for i in range(0,min(len(text),16000),800)]if text.strip()else[]
+    for i,ch in enumerate(chunks):
+        try:await VectorMemory.remember(ch,{"type":"doc","source":file.filename,"chunk":i})
+        except:pass
+    return{"ok":True,"file":file.filename,"chars":len(text),"chunks":len(chunks)}
+
+# ===== 模型对比 =====
+@router.post("/chat/compare")
+async def chat_compare(req: ChatRequest, _=Depends(verify_token)):
+    """同一问题发给多个模型对比答案"""
+    models=[("gpt-3.5-turbo","GPT-3.5"),("deepseek-chat","DeepSeek")]
+    results=[]
+    for mid,mname in models:
+        try:
+            key=OPENAI_API_KEY;url=OPENAI_BASE_URL or "https://api.openai.com/v1"
+            if mid.startswith("deepseek"):key=DEEPSEEK_API_KEY or key
+            async with httpx.AsyncClient(timeout=60)as c:
+                r=await c.post(f"{url}/chat/completions",headers={"Authorization":f"Bearer {key}","Content-Type":"application/json"},
+                    json={"model":mid,"messages":[{"role":"user","content":req.message}],"temperature":0.7,"max_tokens":500})
+                if r.status_code==200:
+                    d=r.json();results.append({"model":mname,"reply":d.get("choices",[{}])[0].get("message",{}).get("content","")})
+                else:results.append({"model":mname,"error":f"HTTP {r.status_code}"})
+        except Exception as e:results.append({"model":mname,"error":str(e)})
+    return{"ok":True,"results":results}
+
+# ===== 数据看板AI =====
+@router.get("/dashboard/ask")
+async def dashboard_ask(q: str = Query(...), _=Depends(verify_token)):
+    """自然语言查询运营数据"""
+    try:
+        import psutil,os
+        cpu=psutil.cpu_percent();mem=psutil.virtual_memory();disk=psutil.disk_usage("/")
+        ctx=f"服务器状态: CPU {cpu}%, 内存 {mem.percent}%, 磁盘 {disk.percent}%"
+        key=OPENAI_API_KEY or DEEPSEEK_API_KEY;url=OPENAI_BASE_URL or "https://api.openai.com/v1"
+        async with httpx.AsyncClient(timeout=30)as c:
+            r=await c.post(f"{url}/chat/completions",headers={"Authorization":f"Bearer {key}","Content-Type":"application/json"},
+                json={"model":"gpt-3.5-turbo","messages":[
+                    {"role":"system","content":f"你是数据分析师。当前系统数据：{ctx}。请用中文简洁回答。"},
+                    {"role":"user","content":q}
+                ],"temperature":0.5,"max_tokens":400})
+            if r.status_code==200:
+                d=r.json();return{"ok":True,"answer":d.get("choices",[{}])[0].get("message",{}).get("content","")}
+        return{"ok":False,"error":f"API:{r.status_code}"}
+    except Exception as e:return{"ok":False,"error":str(e)}}
 
 @router.post("/handover")
 async def agent_handover(req: HandoverRequest, _=Depends(verify_token)):
