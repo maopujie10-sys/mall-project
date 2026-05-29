@@ -212,7 +212,7 @@ watch(messages, (val) => {
 // === 面板控制 ===
 function openChat() { if (!isDragging) { chatOpen.value = true; hasUnread.value = false; nextTick(() => scrollBottom()) } }
 function closeChat() { stopVoiceInput(); stopVideoCall(); chatOpen.value = false; chatExpanded.value = false }
-function minimizeChat() { stopTw(); chatOpen.value = false }
+function minimizeChat() { stopTw(); stopStepAnimation(); chatOpen.value = false }
 function toggleExpand() { chatExpanded.value = !chatExpanded.value; nextTick(() => scrollBottom()) }
 function startDrag(e) {
   isDragging = false; dragStartX = e.clientX; dragStartY = e.clientY; btnStartX = posX.value; btnStartY = posY.value
@@ -338,7 +338,7 @@ function stopVideoCall() {
 
 // === 消息 ===
 async function sendMessage() {
-  const text = inputText.value.trim(); const files = [...attachments.value]
+  const text = inputText.value.trim(); const files = [...attachments.value]; processingStatus.value = detectTask(text); startStepAnimation()
   if (!text || loading.value) return
   stopVoiceInput()
 
@@ -372,6 +372,7 @@ async function sendMessage() {
 }
 
 
+const processingStatus = ref(''); const processingSteps = ref([]); let stepTimer = null
 const attachments = ref([])
 function onFileSelected(e) {
   const files = Array.from(e.target.files || [])
@@ -393,12 +394,85 @@ function getFileIcon(name) { const ext = name.split('.').pop().toLowerCase(); co
 function formatSize(bytes) { if(!bytes) return ''; if(bytes<1024) return bytes+'B'; if(bytes<1024*1024) return (bytes/1024).toFixed(1)+'KB'; return (bytes/(1024*1024)).toFixed(1)+'MB' }
 function clearAttachments() { attachments.value = [] }
 
+
+function detectTask(msg) {
+  const m = msg.toLowerCase();
+  if (m.includes('???')||m.includes('server')||m.includes('??')||m.includes('cpu')) return '?????...';
+  if (m.includes('??')||m.includes('order')) return '??????...';
+  if (m.includes('??')||m.includes('report')||m.includes('??')) return '?????...';
+  if (m.includes('??')||m.includes('??')||m.includes('??')||m.includes('??')) return '??????...';
+  if (m.includes('??')||m.includes('??')||m.includes('price')) return '??????...';
+  if (m.includes('??')||m.includes('??')||m.includes('??')) return 'AI????...';
+  if (m.includes('??')||m.includes('backup')) return '?????...';
+  if (m.includes('??')||m.includes('?')||m.includes('scrape')) return '?????...';
+  if (m.includes('??')||m.includes('deploy')||m.includes('docker')) return '????...';
+  return 'AI ???...';
+}
+
+
+function detectTask(msg) {
+  const m = msg.toLowerCase();
+  processingSteps.value = [];
+  if (m.includes('???')||m.includes('server')||m.includes('??')||m.includes('cpu')||m.includes('??')) {
+    processingSteps.value = ['?????...', '??CPU??...', '??????...', '??????...', '????...'];
+    return '?????';
+  }
+  if (m.includes('??')||m.includes('order')) {
+    processingSteps.value = ['?????...', '??????...', '????...'];
+    return '?????';
+  }
+  if (m.includes('??')||m.includes('report')||m.includes('??')) {
+    processingSteps.value = ['??????...', '??????...', 'AI????...', '????...'];
+    return '?????';
+  }
+  if (m.includes('??')||m.includes('??')||m.includes('??')||m.includes('??')) {
+    processingSteps.value = ['??????...', '??????...', 'AI????...', '??????...'];
+    return '?????';
+  }
+  if (m.includes('??')||m.includes('??')||m.includes('price')) {
+    processingSteps.value = ['??????...', '??????...', 'AI????...'];
+    return '?????';
+  }
+  if (m.includes('??')||m.includes('??')||m.includes('??')) {
+    processingSteps.value = ['??????...', 'AI????...', '?????...'];
+    return 'AI???';
+  }
+  if (m.includes('??')||m.includes('backup')) {
+    processingSteps.value = ['?????...', '????...', '????...'];
+    return '?????';
+  }
+  if (m.includes('??')||m.includes('?')||m.includes('scrape')) {
+    processingSteps.value = ['?????...', '????...', '????...', '????...'];
+    return '?????';
+  }
+  processingSteps.value = ['????...', '????...', 'AI??...'];
+  return 'AI ???';
+}
+function startStepAnimation() {
+  if (stepTimer) clearInterval(stepTimer);
+  let si = 0;
+  stepTimer = setInterval(() => {
+    if (si < processingSteps.value.length && loading.value) {
+      processingStatus.value = processingSteps.value[si];
+      si++;
+    } else if (!loading.value) {
+      clearInterval(stepTimer);
+    } else {
+      clearInterval(stepTimer);
+    }
+  }, 800);
+}
+function stopStepAnimation() {
+  if (stepTimer) { clearInterval(stepTimer); stepTimer = null; }
+  processingSteps.value = [];
+}
+
 function quickAsk(question) { inputText.value = question; sendMessage() }
 
 
 // typewriter
 let twTimer=null
-function typeEffect(txt,idx){if(twTimer)clearInterval(twTimer);let i=0;const f=txt;messages.value[idx].content='';twTimer=setInterval(()=>{if(i<f.length){const s=/[\u4e00-\u9fff]/.test(f[i])?2:4;messages.value[idx].content=f.substring(0,i+s);i+=s;scrollBottom()}else{clearInterval(twTimer);twTimer=null}},25)}
+function typeEffect(txt,idx){if(twTimer)clearInterval(twTimer);let i=0;const f=txt;messages.value[idx].content='';twTimer=setInterval(()=>{if(i<f.length){const s=/[\u4e00-\u9fff]/.test(f[i])?2:4;messages.value[idx].content=f.substring(0,i+s);i+=s;scrollBottom()}else{clearInterval(twTimer);twTimer=null;stopStepAnimation();processingStatus.value=''}},25)}
 function stopTw(){if(twTimer){clearInterval(twTimer);twTimer=null}}
 
 function renderMsg(text) {
@@ -664,4 +738,139 @@ function scrollBottom() {
 .slide-up-leave-active { transition: all 0.2s ease-in; }
 .slide-up-enter-from { opacity: 0; transform: translateY(20px) scale(0.95); }
 .slide-up-leave-to { opacity: 0; transform: translateY(10px) scale(0.98); }
+
+/* === ?????? === */
+.header-status.busy { color: #667eea; animation: statusPulse 1.5s ease-in-out infinite; }
+
+/* Processing steps in chat */
+.processing-steps { margin-bottom: 10px; }
+.step-header { font-size: 13px; font-weight: 600; color: #667eea; margin-bottom: 8px; animation: statusPulse 1.5s ease-in-out infinite; }
+.step-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 4px 0; font-size: 12px; color: #667; opacity: 0.5;
+  transition: all 0.3s;
+}
+.step-item.done { color: #667eea; opacity: 1; font-weight: 500; }
+.step-dot {
+  width: 6px; height: 6px; border-radius: 50%; background: #445;
+  transition: all 0.3s;
+}
+.step-item.done .step-dot { background: #667eea; box-shadow: 0 0 6px rgba(102,126,234,0.5); animation: dotPulse 0.8s ease-in-out infinite; }
+@keyframes dotPulse {
+  0%, 100% { box-shadow: 0 0 4px rgba(102,126,234,0.3); }
+  50% { box-shadow: 0 0 10px rgba(102,126,234,0.8); }
+}
+.typing-dots { display: flex; gap: 5px; padding-left: 14px; }
+.typing-dots .dot {
+  width: 6px; height: 6px; border-radius: 50%; background: #667eea;
+  animation: typingBounce 1.4s infinite;
+}
+.typing-dots .dot:nth-child(2) { animation-delay: 0.2s; }
+.typing-dots .dot:nth-child(3) { animation-delay: 0.4s; }
+
+/* Enhanced Energy System */
+.energy-rings { position: absolute; inset: -28px; pointer-events: none; z-index: 0; }
+.energy-ring {
+  position: absolute; inset: 0; border-radius: 50%;
+  border: 2px solid transparent;
+  animation: ringSpin 4s linear infinite;
+}
+.ring1 {
+  border-top-color: rgba(102,126,234,0.7);
+  border-right-color: rgba(118,75,162,0.5);
+  animation-duration: 3s;
+  box-shadow: 0 0 18px rgba(102,126,234,0.3), inset 0 0 18px rgba(102,126,234,0.15), 0 0 40px rgba(102,126,234,0.1);
+}
+.ring2 {
+  inset: -10px;
+  border-bottom-color: rgba(102,126,234,0.5);
+  border-left-color: rgba(118,75,162,0.4);
+  animation-duration: 5s; animation-direction: reverse;
+}
+.ring3 {
+  inset: -18px;
+  border-top-color: rgba(102,126,234,0.25);
+  border-bottom-color: rgba(118,75,162,0.2);
+  animation-duration: 7s;
+}
+
+.energy-lines { position: absolute; inset: -40px; pointer-events: none; z-index: 0; }
+.line {
+  position: absolute;
+  background: linear-gradient(90deg, transparent, rgba(102,126,234,0.8), rgba(118,75,162,0.6), transparent);
+  animation: lineFlow 2s ease-in-out infinite;
+  border-radius: 1px;
+  filter: blur(0.5px);
+}
+.line-top { top: 0; left: 6%; width: 88%; height: 2px; }
+.line-right { top: 6%; right: 0; width: 2px; height: 88%; animation-delay: 0.5s; background: linear-gradient(180deg, transparent, rgba(118,75,162,0.8), rgba(102,126,234,0.6), transparent); }
+.line-bottom { bottom: 0; left: 6%; width: 88%; height: 2px; animation-delay: 1s; }
+.line-left { top: 6%; left: 0; width: 2px; height: 88%; animation-delay: 1.5s; background: linear-gradient(180deg, transparent, rgba(118,75,162,0.8), rgba(102,126,234,0.6), transparent); }
+
+@keyframes lineFlow {
+  0%, 100% { opacity: 0.4; transform: scaleX(1); }
+  50% { opacity: 1; transform: scaleX(1.25); }
+}
+
+.energy-particles { position: absolute; inset: -14px; pointer-events: none; z-index: 0; }
+.particle {
+  position: absolute; width: 5px; height: 5px; border-radius: 50%;
+  background: #667eea;
+  box-shadow: 0 0 8px #667eea, 0 0 16px rgba(102,126,234,0.6), 0 0 24px rgba(102,126,234,0.3);
+  animation: particleOrbit 3s linear infinite;
+  --angle: calc(var(--i) * 45deg);
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%) rotate(var(--angle)) translateX(48px);
+  opacity: 0.6;
+  animation-delay: calc(var(--i) * 0.12s);
+}
+.particle:nth-child(even) { background: #764ba2; box-shadow: 0 0 8px #764ba2, 0 0 16px rgba(118,75,162,0.6); }
+.particle:nth-child(3n) { width: 3px; height: 3px; }
+@keyframes particleOrbit {
+  0% { opacity: 0.15; transform: translate(-50%, -50%) rotate(var(--angle)) translateX(42px) scale(0.7); }
+  50% { opacity: 0.95; transform: translate(-50%, -50%) rotate(calc(var(--angle) + 180deg)) translateX(52px) scale(1.3); }
+  100% { opacity: 0.15; transform: translate(-50%, -50%) rotate(calc(var(--angle) + 360deg)) translateX(42px) scale(0.7); }
+}
+
+/* Status tag enhancement */
+.btn-status-tag {
+  position: absolute; bottom: -32px; left: 50%; transform: translateX(-50%);
+  padding: 5px 14px; border-radius: 16px;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: #fff; font-size: 11px; font-weight: 600; white-space: nowrap;
+  animation: statusBounce 1.5s ease-in-out infinite;
+  box-shadow: 0 6px 24px rgba(102,126,234,0.55), 0 0 40px rgba(102,126,234,0.2);
+  letter-spacing: 0.5px;
+  z-index: 10;
+}
+.btn-status-tag::before {
+  content: ''; position: absolute; inset: -2px; border-radius: 18px;
+  background: linear-gradient(135deg, rgba(102,126,234,0.4), rgba(118,75,162,0.4));
+  filter: blur(6px); z-index: -1;
+}
+.btn-status-tag::after {
+  content: ''; position: absolute; left: 0; right: 0; bottom: -1px; height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.7), transparent);
+  animation: shimmerBar 1.2s linear infinite;
+}
+@keyframes statusBounce {
+  0%, 100% { opacity: 0.85; transform: translateX(-50%) translateY(0); }
+  50% { opacity: 1; transform: translateX(-50%) translateY(-3px); }
+}
+@keyframes shimmerBar {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+/* Button breathing when processing */
+.ai-float-btn.processing { animation: btnBreathe 2s ease-in-out infinite; }
+@keyframes btnBreathe {
+  0%, 100% { transform: scale(1); box-shadow: 0 4px 20px rgba(102,126,234,0.4); }
+  50% { transform: scale(1.05); box-shadow: 0 6px 32px rgba(102,126,234,0.7), 0 0 50px rgba(118,75,162,0.3); }
+}
+  100% { transform: translateX(100%); }
+}
+  50% { opacity: 1; }
+}
+
 </style>
