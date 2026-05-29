@@ -1,15 +1,15 @@
 <template>
       <div class="sidebar-overlay" :class="{show:mobileMenuOpen}" @click="mobileMenuOpen=false"></div>
   <div class="app-shell" :class="{ collapsed: sidebarCollapsed, dark: theme.isDark.value }">
-    <!-- Electron 绐楀彛鏍囬鏍?-->
+    <!-- Electron 窗口标题栏 -->
     <header v-if="isElectron" class="electron-titlebar">
       <div class="titlebar-drag">
-        <span class="titlebar-text">馃幆 Friday AI OS</span>
+        <span class="titlebar-text">🎯 Friday AI OS</span>
       </div>
       <div class="titlebar-actions">
-        <button class="tb-btn" @click="minimizeWin" title="鏈€灏忓寲">鈹€</button>
-        <button class="tb-btn" @click="maximizeWin" title="鏈€澶у寲">鈻?/button>
-        <button class="tb-btn tb-close" @click="closeWin" title="鍏抽棴">鉁?/button>
+        <button class="tb-btn" @click="minimizeWin" title="最小化">─</button>
+        <button class="tb-btn" @click="maximizeWin" title="最大化">□</button>
+        <button class="tb-btn tb-close" @click="closeWin" title="关闭">✕</button>
       </div>
     </header>
     <aside class="sidebar" :class="{'mobile-open':mobileMenuOpen}">
@@ -33,66 +33,66 @@
         </div>
         <div class="brand-text" v-show="!sidebarCollapsed">
           <span class="brand-title">Friday AI OS</span>
-          <span class="brand-sub">瓒呯骇AI鏁板瓧鐢熷懡浣?/span>
+          <span class="brand-sub">超级AI数字生命体</span>
         </div>
       </div>
 
       <nav class="sidebar-nav">
         <div class="nav-section">
-          <div class="nav-section-label" v-show="!sidebarCollapsed"><span class="sec-icon">馃</span> AI 鏍稿績</div>
-          <router-link to="/friday" class="nav-item" :class="{ active: isActive('/friday') }"><span class="nav-icon">馃</span><span>Friday 澶ц剳</span></router-link>
-          <router-link to="/dashboard" class="nav-item" :class="{ active: isActive('/dashboard') }"><span class="nav-icon">馃搳</span><span>浠〃鐩?/span></router-link>
-          <router-link to="/chat" class="nav-item" :class="{ active: isActive('/chat') }"><span class="nav-icon">馃挰</span><span>AI 瀵硅瘽</span></router-link>
+          <div class="nav-section-label" v-show="!sidebarCollapsed"><span class="sec-icon">🤖</span> AI 核心</div>
+          <router-link to="/friday" class="nav-item" :class="{ active: isActive('/friday') }"><span class="nav-icon">🧠</span><span>Friday 大脑</span></router-link>
+          <router-link to="/dashboard" class="nav-item" :class="{ active: isActive('/dashboard') }"><span class="nav-icon">📊</span><span>仪表盘</span></router-link>
+          <router-link to="/chat" class="nav-item" :class="{ active: isActive('/chat') }"><span class="nav-icon">💬</span><span>AI 对话</span></router-link>
         </div>
         <div class="nav-section">
-          <div class="nav-section-label" v-show="!sidebarCollapsed"><span class="sec-icon">馃</span> AI 鑳藉姏</div>
-          <router-link to="/agents" class="nav-item" :class="{ active: isActive('/agents') }"><span class="nav-icon">馃</span><span>Agent 鍒楄〃</span></router-link>
-          <router-link to="/memory" class="nav-item" :class="{ active: isActive('/memory') }"><span class="nav-icon">馃捑</span><span>璁板繂涓績</span></router-link>
-          <router-link to="/models" class="nav-item" :class="{ active: isActive('/models') }"><span class="nav-icon">馃敩</span><span>妯″瀷涓績</span></router-link>
-          <router-link to="/evolution" class="nav-item" :class="{ active: isActive('/evolution') }"><span class="nav-icon">馃尡</span><span>杩涘寲鎶ュ憡</span></router-link>
-          <router-link to="/trends" class="nav-item" :class="{ active: isActive('/trends') }"><span class="nav-icon">馃搱</span><span>瓒嬪娍鐩戞帶</span></router-link>
-          <router-link to="/video" class="nav-item" :class="{ active: isActive('/video') }"><span class="nav-icon">馃幀</span><span>瑙嗛鍒嗘瀽</span></router-link>
-          <router-link to="/ocr" class="nav-item" :class="{ active: isActive('/ocr') }"><span class="nav-icon">馃攳</span><span>OCR 璇嗗埆</span></router-link>
+          <div class="nav-section-label" v-show="!sidebarCollapsed"><span class="sec-icon">🧠</span> AI 能力</div>
+          <router-link to="/agents" class="nav-item" :class="{ active: isActive('/agents') }"><span class="nav-icon">🤖</span><span>Agent 列表</span></router-link>
+          <router-link to="/memory" class="nav-item" :class="{ active: isActive('/memory') }"><span class="nav-icon">💾</span><span>记忆中心</span></router-link>
+          <router-link to="/models" class="nav-item" :class="{ active: isActive('/models') }"><span class="nav-icon">🔬</span><span>模型中心</span></router-link>
+          <router-link to="/evolution" class="nav-item" :class="{ active: isActive('/evolution') }"><span class="nav-icon">🌱</span><span>进化报告</span></router-link>
+          <router-link to="/trends" class="nav-item" :class="{ active: isActive('/trends') }"><span class="nav-icon">📈</span><span>趋势监控</span></router-link>
+          <router-link to="/video" class="nav-item" :class="{ active: isActive('/video') }"><span class="nav-icon">🎬</span><span>视频分析</span></router-link>
+          <router-link to="/ocr" class="nav-item" :class="{ active: isActive('/ocr') }"><span class="nav-icon">🔍</span><span>OCR 识别</span></router-link>
         </div>
         <div class="nav-section">
-          <div class="nav-section-label" v-show="!sidebarCollapsed"><span class="sec-icon">馃彧</span> 鍟嗗煄杩愯惀</div>
-          <router-link to="/mall" class="nav-item" :class="{ active: isActive('/mall') }"><span class="nav-icon">馃彫</span><span>鍟嗗煄绠＄悊</span></router-link>
-          <router-link to="/customer" class="nav-item" :class="{ active: isActive('/customer') }"><span class="nav-icon">馃挰</span><span>瀹㈡湇绯荤粺</span></router-link>
-          <router-link to="/site" class="nav-item" :class="{ active: isActive('/site') }"><span class="nav-icon">馃寪</span><span>钀藉湴椤垫娴?/span></router-link>
-          <router-link to="/image-process" class="nav-item" :class="{ active: isActive('/image-process') }"><span class="nav-icon">馃柤锔?/span><span>鍟嗗搧鍥惧鐞?/span></router-link>
-          <router-link to="/batch-upload" class="nav-item" :class="{ active: isActive('/batch-upload') }"><span class="nav-icon">馃搵</span><span>鎵归噺涓婃灦</span></router-link>
-          <router-link to="/multilang" class="nav-item" :class="{ active: isActive('/multilang') }"><span class="nav-icon">馃實</span><span>澶氳瑷€鍙戝竷</span></router-link>
-          <router-link to="/auto-reply" class="nav-item" :class="{ active: isActive('/auto-reply') }"><span class="nav-icon">馃</span><span>鑷姩鍥炲</span></router-link>
-          <router-link to="/order-alert" class="nav-item" :class="{ active: isActive('/order-alert') }"><span class="nav-icon">馃敂</span><span>璁㈠崟棰勮</span></router-link>
-          <router-link to="/virtual" class="nav-item" :class="{ active: isActive('/virtual') }"><span class="nav-icon">馃幃</span><span>铏氭嫙鏁版嵁</span></router-link>
-          <router-link to="/plugins" class="nav-item" :class="{ active: isActive('/plugins') }"><span class="nav-icon">馃З</span><span>鎶€鑳藉競鍦?/span></router-link>
+          <div class="nav-section-label" v-show="!sidebarCollapsed"><span class="sec-icon">🏪</span> 商城运营</div>
+          <router-link to="/mall" class="nav-item" :class="{ active: isActive('/mall') }"><span class="nav-icon">🏬</span><span>商城管理</span></router-link>
+          <router-link to="/customer" class="nav-item" :class="{ active: isActive('/customer') }"><span class="nav-icon">💬</span><span>客服系统</span></router-link>
+          <router-link to="/site" class="nav-item" :class="{ active: isActive('/site') }"><span class="nav-icon">🌐</span><span>落地页检测</span></router-link>
+          <router-link to="/image-process" class="nav-item" :class="{ active: isActive('/image-process') }"><span class="nav-icon">🖼️</span><span>商品图处理</span></router-link>
+          <router-link to="/batch-upload" class="nav-item" :class="{ active: isActive('/batch-upload') }"><span class="nav-icon">📋</span><span>批量上架</span></router-link>
+          <router-link to="/multilang" class="nav-item" :class="{ active: isActive('/multilang') }"><span class="nav-icon">🌍</span><span>多语言发布</span></router-link>
+          <router-link to="/auto-reply" class="nav-item" :class="{ active: isActive('/auto-reply') }"><span class="nav-icon">🤖</span><span>自动回复</span></router-link>
+          <router-link to="/order-alert" class="nav-item" :class="{ active: isActive('/order-alert') }"><span class="nav-icon">🔔</span><span>订单预警</span></router-link>
+          <router-link to="/virtual" class="nav-item" :class="{ active: isActive('/virtual') }"><span class="nav-icon">🎮</span><span>虚拟数据</span></router-link>
+          <router-link to="/plugins" class="nav-item" :class="{ active: isActive('/plugins') }"><span class="nav-icon">🧩</span><span>技能市场</span></router-link>
         </div>
         <div class="nav-section">
-          <div class="nav-section-label" v-show="!sidebarCollapsed"><span class="sec-icon">馃洜锔?/span> 绯荤粺杩愮淮</div>
-          <router-link to="/server" class="nav-item" :class="{ active: isActive('/server') }"><span class="nav-icon">馃枼锔?/span><span>鏈嶅姟鍣?/span></router-link>
-          <router-link to="/docker" class="nav-item" :class="{ active: isActive('/docker') }"><span class="nav-icon">馃惓</span><span>Docker</span></router-link>
-          <router-link to="/nginx" class="nav-item" :class="{ active: isActive('/nginx') }"><span class="nav-icon">馃敡</span><span>Nginx</span></router-link>
-          <router-link to="/network" class="nav-item" :class="{ active: isActive('/network') }"><span class="nav-icon">馃寪</span><span>缃戠粶宸ュ叿</span></router-link>
-          <router-link to="/github" class="nav-item" :class="{ active: isActive('/github') }"><span class="nav-icon">馃悪</span><span>GitHub MCP</span></router-link>
-          <router-link to="/rotation" class="nav-item" :class="{ active: isActive('/rotation') }"><span class="nav-icon">馃攧</span><span>鍩熷悕杞€?/span></router-link>
-          <router-link to="/rollback" class="nav-item" :class="{ active: isActive('/rollback') }"><span class="nav-icon">鈴?/span><span>澶囦唤鍥炴粴</span></router-link>
-          <router-link to="/files" class="nav-item" :class="{ active: isActive('/files') }"><span class="nav-icon">馃搧</span><span>鏂囦欢绠＄悊</span></router-link>
-          <router-link to="/database" class="nav-item" :class="{ active: isActive('/database') }"><span class="nav-icon">馃梽锔?/span><span>鏁版嵁搴?/span></router-link>
-          <router-link to="/log-viewer" class="nav-item" :class="{ active: isActive('/log-viewer') }"><span class="nav-icon">馃搵</span><span>鏃ュ織涓績</span></router-link>
-          <router-link to="/scraper" class="nav-item" :class="{ active: isActive('/scraper') }"><span class="nav-icon">馃暦锔?/span><span>閲囬泦涓績</span></router-link>
-          <router-link to="/audit" class="nav-item" :class="{ active: isActive('/audit') }"><span class="nav-icon">馃搵</span><span>瀹¤鏃ュ織</span></router-link>
-          <router-link to="/self-service" class="nav-item" :class="{ active: isActive('/self-service') }"><span class="nav-icon">馃敡</span><span>鑷姪鏈嶅姟</span></router-link>
+          <div class="nav-section-label" v-show="!sidebarCollapsed"><span class="sec-icon">🛠️</span> 系统运维</div>
+          <router-link to="/server" class="nav-item" :class="{ active: isActive('/server') }"><span class="nav-icon">🖥️</span><span>服务器</span></router-link>
+          <router-link to="/docker" class="nav-item" :class="{ active: isActive('/docker') }"><span class="nav-icon">🐳</span><span>Docker</span></router-link>
+          <router-link to="/nginx" class="nav-item" :class="{ active: isActive('/nginx') }"><span class="nav-icon">🔧</span><span>Nginx</span></router-link>
+          <router-link to="/network" class="nav-item" :class="{ active: isActive('/network') }"><span class="nav-icon">🌐</span><span>网络工具</span></router-link>
+          <router-link to="/github" class="nav-item" :class="{ active: isActive('/github') }"><span class="nav-icon">🐙</span><span>GitHub MCP</span></router-link>
+          <router-link to="/rotation" class="nav-item" :class="{ active: isActive('/rotation') }"><span class="nav-icon">🔄</span><span>域名轮值</span></router-link>
+          <router-link to="/rollback" class="nav-item" :class="{ active: isActive('/rollback') }"><span class="nav-icon">⏪</span><span>备份回滚</span></router-link>
+          <router-link to="/files" class="nav-item" :class="{ active: isActive('/files') }"><span class="nav-icon">📁</span><span>文件管理</span></router-link>
+          <router-link to="/database" class="nav-item" :class="{ active: isActive('/database') }"><span class="nav-icon">🗄️</span><span>数据库</span></router-link>
+          <router-link to="/log-viewer" class="nav-item" :class="{ active: isActive('/log-viewer') }"><span class="nav-icon">📋</span><span>日志中心</span></router-link>
+          <router-link to="/scraper" class="nav-item" :class="{ active: isActive('/scraper') }"><span class="nav-icon">🕷️</span><span>采集中心</span></router-link>
+          <router-link to="/audit" class="nav-item" :class="{ active: isActive('/audit') }"><span class="nav-icon">📋</span><span>审计日志</span></router-link>
+          <router-link to="/self-service" class="nav-item" :class="{ active: isActive('/self-service') }"><span class="nav-icon">🔧</span><span>自助服务</span></router-link>
         </div>
         <div class="nav-section">
-          <div class="nav-section-label" v-show="!sidebarCollapsed"><span class="sec-icon">馃洝锔?/span> 瀹夊叏鐩戞帶</div>
-          <router-link to="/security" class="nav-item" :class="{ active: isActive('/security') }"><span class="nav-icon">馃敀</span><span>瀹夊叏涓績</span></router-link>
-          <router-link to="/approval" class="nav-item" :class="{ active: isActive('/approval') }"><span class="nav-icon">鉁?/span><span>瀹℃壒涓績</span></router-link>
-          <router-link to="/self-healing" class="nav-item" :class="{ active: isActive('/self-healing') }"><span class="nav-icon">馃┖</span><span>寮傚父鑷剤</span></router-link>
-          <router-link to="/emergency" class="nav-item" :class="{ active: isActive('/emergency') }"><span class="nav-icon">馃毃</span><span>鎬ユ晳闈㈡澘</span></router-link>
-          <router-link to="/phone" class="nav-item" :class="{ active: isActive('/phone') }"><span class="nav-icon">馃摓</span><span>AI鐢佃瘽鍔╃悊</span></router-link>
-          <router-link to="/alert" class="nav-item" :class="{ active: isActive('/alert') }"><span class="nav-icon">馃敂</span><span>鍛婅涓績</span></router-link>
-          <router-link to="/weekly-report" class="nav-item" :class="{ active: isActive('/weekly-report') }"><span class="nav-icon">馃搳</span><span>杩愯惀鍛ㄦ姤</span></router-link>
-          <router-link to="/tasks" class="nav-item" :class="{ active: isActive('/tasks') }"><span class="nav-icon">馃搵</span><span>浠诲姟涓績</span></router-link>
+          <div class="nav-section-label" v-show="!sidebarCollapsed"><span class="sec-icon">🛡️</span> 安全监控</div>
+          <router-link to="/security" class="nav-item" :class="{ active: isActive('/security') }"><span class="nav-icon">🔒</span><span>安全中心</span></router-link>
+          <router-link to="/approval" class="nav-item" :class="{ active: isActive('/approval') }"><span class="nav-icon">✅</span><span>审批中心</span></router-link>
+          <router-link to="/self-healing" class="nav-item" :class="{ active: isActive('/self-healing') }"><span class="nav-icon">🩸</span><span>异常自愈</span></router-link>
+          <router-link to="/emergency" class="nav-item" :class="{ active: isActive('/emergency') }"><span class="nav-icon">🚨</span><span>急救面板</span></router-link>
+          <router-link to="/phone" class="nav-item" :class="{ active: isActive('/phone') }"><span class="nav-icon">📞</span><span>AI电话助理</span></router-link>
+          <router-link to="/alert" class="nav-item" :class="{ active: isActive('/alert') }"><span class="nav-icon">🔔</span><span>告警中心</span></router-link>
+          <router-link to="/weekly-report" class="nav-item" :class="{ active: isActive('/weekly-report') }"><span class="nav-icon">📊</span><span>运营周报</span></router-link>
+          <router-link to="/tasks" class="nav-item" :class="{ active: isActive('/tasks') }"><span class="nav-icon">📋</span><span>任务中心</span></router-link>
         </div>
       </nav>
       </aside>
@@ -106,8 +106,8 @@
       </main>
     </div>
     <nav class=mobile-bottom-nav><router-link to=/friday class=mb-item><span>B</span><span>Brain</span></router-link><router-link to=/chat class=mb-item><span>C</span><span>Chat</span></router-link><router-link to=/dashboard class=mb-item><span>D</span><span>Dash</span></router-link><router-link to=/server class=mb-item><span>S</span><span>Server</span></router-link><router-link to=/mall class=mb-item><span>M</span><span>Mall</span></router-link></nav><LiveTaskPanel />
-    <el-dialog v-model="emergencyVisible" title="馃毃 鎬ユ晳闈㈡澘" width="520px" top="8vh"><EmergencyPanel :embedded="true" /></el-dialog>
-    <!-- 鍏ㄥ眬 AI 娴姩鍥炬爣 -->
+    <el-dialog v-model="emergencyVisible" title="🚨 急救面板" width="520px" top="8vh"><EmergencyPanel :embedded="true" /></el-dialog>
+    <!-- 全局 AI 浮动图标 -->
 </template>
 
 <script setup>
@@ -118,7 +118,7 @@ const tokenInput = ref(localStorage.getItem('agent_token') || '')
 function saveToken() {
   localStorage.setItem('agent_token', tokenInput.value)
   tokenDialogVisible.value = false
-  ElMessage.success('Token 宸蹭繚瀛?)
+  ElMessage.success('Token 已保存')
 }
 
 import { ref, computed, onMounted, onUnmounted } from 'vue'
@@ -171,9 +171,9 @@ async function sendFloatMsg() {
   try {
     const {agentApi} = await import("@/api")
     const r = await agentApi.post("/agent/chat",{message:text})
-    floatMessages.value.push({role:"ai",text:r.response||r.reply||r.message||"鏀跺埌"})
+    floatMessages.value.push({role:"ai",text:r.response||r.reply||r.message||"收到"})
   } catch(e) {
-    floatMessages.value.push({role:"ai",text:"杩炴帴澶辫触: "+(e.message||"")})
+    floatMessages.value.push({role:"ai",text:"连接失败: "+(e.message||"")})
   }
   floatLoading.value = false
   setTimeout(()=>{if(floatMsgRef.value)floatMsgRef.value.scrollTop=floatMsgRef.value.scrollHeight},100)
@@ -288,7 +288,7 @@ async function sendFloatMsg() {
 .page-fade-enter-active, .page-fade-leave-active { transition: opacity 0.2s; }
 .page-fade-enter-from, .page-fade-leave-to { opacity: 0; }
 
-/* Electron 鏍囬鏍?*/
+/* Electron 标题栏 */
 .electron-titlebar {
   position: fixed; top: 0; left: 0; right: 0; height: 32px;
   display: flex; align-items: center; justify-content: space-between;
@@ -312,7 +312,7 @@ async function sendFloatMsg() {
 .sidebar { height: calc(100vh - 32px); top: 32px; }
 .main-area { height: calc(100vh - 32px); overflow-y: auto; }
 
-/* 閫氱煡闈㈡澘 */
+/* 通知面板 */
 .notif-item { display: flex; gap: 10px; padding: 10px; border-radius: 6px; cursor: pointer; transition: background 0.15s; margin-bottom: 4px; }
 .notif-item:hover { background: #f5f5f5; }
 .notif-item.unread { background: #e6f7ff; }
@@ -324,7 +324,7 @@ async function sendFloatMsg() {
 
 
 
-/* 馃摫 鍝嶅簲寮忥細鎵嬫満 */
+/* 📱 响应式：手机 */
 @media (max-width: 768px) {
   .sidebar { position: fixed !important; left: -260px !important; top: 0 !important; height: 100vh !important; z-index: 9999 !important; transition: left 0.3s !important; }
   .sidebar.mobile-open { left: 0 !important; }
@@ -360,7 +360,7 @@ async function sendFloatMsg() {
 
 
 
-/* 馃摫 鎵嬫満搴曢儴瀵艰埅 */
+/* 📱 手机底部导航 */
 .mobile-bottom-nav {
   display: none;
   position: fixed; bottom: 0; left: 0; right: 0;
