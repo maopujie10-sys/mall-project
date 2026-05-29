@@ -285,7 +285,7 @@ async def run(ppk: int = 5):
     }
 
     # 每10个品类打印内存
-    gc_interval = 5
+    gc_interval = 10
 
     async with httpx.AsyncClient(timeout=30, follow_redirects=True, verify=False) as session:
         for subcat, keywords in SUBCAT_KEYWORDS.items():
@@ -302,8 +302,8 @@ async def run(ppk: int = 5):
                     break
                 stats["kws"] += 1
 
-                # ── 慢速间隔 20-35秒（防限流+防OOM）──
-                delay = 20 + random.random() * 15
+                # 搜索间隔 7-12秒
+                delay = 7 + random.random() * 5
                 log(f"  等待 {delay:.0f}s ... ({kw})")
                 await asyncio.sleep(delay)
 
@@ -322,8 +322,8 @@ async def run(ppk: int = 5):
                 need = ppk - cat_imported
                 products = []
                 for url in urls[:need]:
-                    # 产品间隔 5-10秒
-                    await asyncio.sleep(5 + random.random() * 5)
+                    # 产品间隔 3-5秒
+                    await asyncio.sleep(3 + random.random() * 2)
                     try:
                         p = await amazon_adapter.extract_product(url, session=session)
                         if p and p.title and p.images:
@@ -394,7 +394,7 @@ async def run(ppk: int = 5):
             # 每5个品类强制GC+休息
             if stats["cats"] % gc_interval == 0:
                 gc.collect()
-                rest = 30 + random.random() * 10
+                rest = 15 + random.random() * 10
                 log(f"  💤 休息 {rest:.0f}s | {mem_usage()}")
                 await asyncio.sleep(rest)
 
@@ -408,7 +408,7 @@ if __name__ == "__main__":
     ppk = int(sys.argv[1]) if len(sys.argv) > 1 else 5
     log(f"===== 慢速全品类采集 启动 =====")
     log(f"品类数: {TOTAL_CATS} | 关键词数: {TOTAL_KWS} | 每品类目标: {ppk}产品")
-    log(f"搜索间隔: 20-35s | 产品间隔: 5-10s | {mem_usage()}")
+    log(f"搜索间隔: 7-12s | 产品间隔: 3-5s | {mem_usage()}")
 
     try:
         stats = asyncio.run(run(ppk))
