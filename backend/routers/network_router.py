@@ -56,7 +56,7 @@ async def network_port_scan(host: str, ports: str = "22,80,443,3306,6379,8080,90
             writer.close()
             await writer.wait_closed()
             results.append({"port": port, "open": True})
-        except:
+        except Exception:
             results.append({"port": port, "open": False})
     return {"ok": True, "host": host, "results": results, "open_count": sum(1 for r in results if r["open"])}
 

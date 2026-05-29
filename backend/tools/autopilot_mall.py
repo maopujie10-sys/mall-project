@@ -107,7 +107,7 @@ class MallBrain:
                 try:
                     ct = datetime.fromisoformat(created.replace("Z",""))
                     days = (now - ct).days
-                except:
+                except Exception:
                     pass
 
             # 健康度算法

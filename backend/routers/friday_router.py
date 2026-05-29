@@ -27,7 +27,7 @@ async def friday_websocket(ws: WebSocket):
         try:
             payload = json.loads(token_data)
             token = payload.get("token", "")
-        except:
+        except Exception:
             token = token_data
         from auth import verify_jwt, AGENT_TOKEN
         authed = False
@@ -40,7 +40,7 @@ async def friday_websocket(ws: WebSocket):
             await ws.close()
             return
         await ws.send_text(json.dumps({"type": "auth_ok"}))
-    except:
+    except Exception:
         await ws.close()
         return
     await ws_manager.connect(ws, client_id)

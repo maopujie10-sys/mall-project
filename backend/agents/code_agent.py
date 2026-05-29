@@ -42,7 +42,7 @@ class CodeAgent:
                                         "line": i,
                                         "content": line.strip()[:200],
                                     })
-                    except:
+                    except Exception:
                         pass
         return results[:50]
 

@@ -81,7 +81,7 @@ class MemorySync:
             context = PersonalityEngine.get_context()
             for item in context[:10]:
                 content += f"- [{item['category']}] **{item['key']}**: {item['value'][:200]}\n"
-        except:
+        except Exception:
             content += "*(暂无上下文记忆)*\n"
 
         content += f"""
@@ -93,7 +93,7 @@ class MemorySync:
             journals = PersonalityEngine.get_journal_history(3)
             for j in journals:
                 content += f"- **{j['date']}** {j.get('mood','')} — {j.get('summary','')[:150] if j.get('summary') else ''}\n"
-        except:
+        except Exception:
             content += "*(暂无日记)*\n"
 
         content += f"""
@@ -157,7 +157,7 @@ class MemorySync:
                 md += f"- {step}\n"
             filepath.write_text(md, encoding="utf-8")
             files_created.append(str(filepath.relative_to(ROOT)))
-        except:
+        except Exception:
             pass
 
         return {"files": files_created, "count": len(files_created)}

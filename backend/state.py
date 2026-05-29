@@ -84,7 +84,7 @@ class _AgentState:
         except Exception:
             try:
                 os.unlink(tmp)
-            except:
+            except Exception:
                 pass
 
     def _save_db(self):
@@ -125,7 +125,7 @@ class _AgentState:
                     if k not in self._data or not self._data[k]:
                         try:
                             self._data[k] = json.loads(v)
-                        except:
+                        except Exception:
                             self._data[k] = v
                 conn.close()
         except Exception:

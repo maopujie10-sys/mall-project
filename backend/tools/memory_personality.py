@@ -220,7 +220,7 @@ class PersonalityEngine:
         for r in topics_raw:
             try:
                 all_topics.extend(json.loads(r["topics"]))
-            except:
+            except Exception:
                 pass
         top_topics = Counter(all_topics).most_common(5)
 
@@ -228,7 +228,7 @@ class PersonalityEngine:
         try:
             from tools.evolution import EvolutionEngine
             success_rate = EvolutionEngine.get_success_rate(days=1)
-        except:
+        except Exception:
             success_rate = 0
 
         # 人格今日状态
@@ -259,7 +259,7 @@ class PersonalityEngine:
                 (today,)
             ).fetchall()
             learnings = [r["correct_approach"][:100] for r in learn_rows]
-        except:
+        except Exception:
             pass
 
         journal = {
@@ -449,7 +449,7 @@ def _suggest_next_steps(personality: dict, recent_stats) -> list:
         rate = EvolutionEngine.get_success_rate(days=7)
         if rate < 70:
             steps.append("⚠️ 近期成功率偏低，建议让AI学习纠正")
-    except:
+    except Exception:
         pass
     steps.append("📋 查看今日AI日记：GET /agent/friday/journal")
     steps.append("🧬 查看AI人格画像：GET /agent/friday/personality")

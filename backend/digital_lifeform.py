@@ -124,7 +124,7 @@ class DigitalLifeform:
             mem = psutil.virtual_memory()
             swap = psutil.swap_memory()
             disk = psutil.disk_usage("/")
-        except:
+        except Exception:
             return actions
         pct = mem.percent
         # ===== 4级内存阈值 =====

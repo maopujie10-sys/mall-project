@@ -36,7 +36,7 @@ class WSManager:
                 for ws in list(info.get("sockets", set())):
                     try:
                         await ws.send_text(json.dumps({"type": "ping"}))
-                    except:
+                    except Exception:
                         dead.append((cid, ws))
                     # 检查最后心跳时间
                     last = info.get("last_heartbeat", 0)
@@ -82,7 +82,7 @@ class WSManager:
             for ws in list(info.get("sockets", set())):
                 try:
                     await ws.send_text(message)
-                except:
+                except Exception:
                     dead.append((cid, ws))
         for cid, ws in dead:
             await self.disconnect(ws, cid)
@@ -100,7 +100,7 @@ class WSManager:
         for ws in list(info["sockets"]):
             try:
                 await ws.send_text(message)
-            except:
+            except Exception:
                 dead.append(ws)
         for ws in dead:
             await self.disconnect(ws, client_id)

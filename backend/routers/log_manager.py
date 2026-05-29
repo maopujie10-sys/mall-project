@@ -37,7 +37,7 @@ async def list_sources(_=Depends(verify_token)):
             try:
                 result = subprocess.run(["docker", "inspect", info["container"]], capture_output=True, timeout=5)
                 available = result.returncode == 0
-            except:
+            except Exception:
                 available = False
         sources.append({**info, "id": key, "available": available, "size": size})
     return {"ok": True, "sources": sources}
@@ -140,7 +140,7 @@ async def recent_errors(hours: int = Query(24), _=Depends(verify_token)):
             if result.get("ok"):
                 for line in result.get("lines", []):
                     all_errors.append({"source": info["name"], "line": line})
-        except:
+        except Exception:
             pass
     
     return {

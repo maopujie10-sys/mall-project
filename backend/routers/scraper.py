@@ -4,6 +4,7 @@ from pydantic import BaseModel
 from typing import Optional
 from auth import verify_token
 from risk import handle_risk
+from tools.cache import cached
 from tools.scraper_engine import ScraperEngine
 
 router = APIRouter(prefix="/agent/scraper", tags=["Scraper"])
@@ -100,11 +101,12 @@ async def cos_status(_=Depends(verify_token)):
     try:
         status = await _cos() if callable(_cos) else {"status": "未连接", "bucket": "N/A", "region": "N/A", "uploaded": 0, "usage": "0 MB"}
         return {"ok": True, "status": status}
-    except:
+    except Exception:
         return {"ok": True, "status": {"status": "未连接", "bucket": "N/A", "region": "N/A", "uploaded": 0, "usage": "0 MB"}}
 
 @router.get("/sources")
-async def list_sources(_=Depends(verify_token)):
+@cached('scraper_sources', ttl=300)
+    async def list_sources(_=Depends(verify_token)):
     """查看可用采集平台"""
     await handle_risk("L1", "查看采集平台")
     return {

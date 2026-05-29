@@ -6,6 +6,8 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from tools.logger import setup_logging
+from tools.rate_limiter import rate_limit_middleware
 from config import AGENT_TOKEN, MALL_BASE_URL
 from auth import verify_token
 
@@ -65,6 +67,9 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="TikTokMall Agent", version="1.0.0", lifespan=lifespan)
 
 # CORS
+# 限流中间件
+app.middleware("http")(rate_limit_middleware)
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=os.getenv("CORS_ORIGINS", "*").split(","),

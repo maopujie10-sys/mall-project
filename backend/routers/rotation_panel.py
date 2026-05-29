@@ -8,6 +8,7 @@ from pydantic import BaseModel
 from auth import verify_token
 from state import state
 from risk import handle_risk
+from tools.cache import cached
 
 router = APIRouter(prefix="/rotation", tags=["Rotation"])
 

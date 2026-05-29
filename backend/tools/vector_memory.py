@@ -29,7 +29,7 @@ class VectorMemory:
                     json={"model": "text-embedding-ada-002", "input": text[:1000]})
                 if r.status_code == 200:
                     return r.json()["data"][0]["embedding"]
-        except:
+        except Exception:
             pass
         return []
 

@@ -65,7 +65,7 @@ async def generate_weekly_report(_=Depends(verify_token)):
             week_anoms = [a for a in anoms if a.get("detected_at","")[:10] >= week_start]
             data["anomalies"] = len(week_anoms)
             data["anomalies_resolved"] = sum(1 for a in week_anoms if a.get("status") == "resolved")
-    except: 
+    except Exception:
         data["anomalies"] = 0
         data["anomalies_resolved"] = 0
 

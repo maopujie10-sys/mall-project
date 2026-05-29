@@ -116,7 +116,7 @@ class DevOpsAgent:
             for p in psutil.process_iter(["pid", "name", "cpu_percent", "memory_percent"]):
                 try:
                     procs.append(p.info)
-                except:
+                except Exception:
                     pass
             procs.sort(key=lambda x: x.get("cpu_percent", 0) or 0, reverse=True)
             return [
@@ -219,7 +219,7 @@ class DevOpsAgent:
                     capture_output=True, text=True, timeout=10,
                 )
                 logs[os.path.basename(log_file)] = result.stdout.strip().split("\n")[-lines:]
-            except:
+            except Exception:
                 logs[os.path.basename(log_file)] = ["无法读取"]
         return {"ok": True, "logs": logs}
 
@@ -237,7 +237,7 @@ class DevOpsAgent:
                 import subprocess
                 subprocess.run(["systemctl", "start", "docker"], timeout=10)
                 fixes_applied.append("尝试启动Docker")
-            except:
+            except Exception:
                 pass
 
         # 2. 检查关键容器
@@ -247,7 +247,7 @@ class DevOpsAgent:
                 try:
                     await DevOpsAgent.restart_container(container["name"])
                     fixes_applied.append(f"重启容器 {container['name']}")
-                except:
+                except Exception:
                     pass
 
         # 3. 检查Nginx

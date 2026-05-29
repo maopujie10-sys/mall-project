@@ -384,7 +384,7 @@ class eBayAdapter:
             current_price = item.get("CurrentPrice", {}) or cached.get("sellingStatus", [{}])[0].get("currentPrice", [{}])[0]
             try:
                 price_usd = float(current_price.get("Value", 0) or current_price.get("value", 0))
-            except:
+            except Exception:
                 price_usd = 0.0
             price = round(price_usd * 7.2, 2)
             org_price = round(price * 1.15, 2)
@@ -431,7 +431,7 @@ class eBayAdapter:
             if qty_sold:
                 try:
                     sales = int(qty_sold)
-                except:
+                except Exception:
                     pass
 
             return ScrapedProduct(
@@ -828,7 +828,7 @@ class ShopeeAdapter(BaseScrapeAdapter):
                         product_url = f"https://shopee.com/product/{shopid}/{itemid}"
                         if product_url not in urls:
                             urls.append(product_url)
-            except:
+            except Exception:
                 pass
             await self._delay(is_search=True)
         

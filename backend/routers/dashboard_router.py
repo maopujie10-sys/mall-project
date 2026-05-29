@@ -4,12 +4,14 @@ from datetime import datetime, timedelta
 from fastapi import APIRouter, Depends
 from auth import verify_token
 from risk import handle_risk
+from tools.cache import cached
 from state import state
 
 router = APIRouter(prefix="/dashboard", tags=["Dashboard"])
 
 
-async def collect_metrics() -> dict:
+@cached('dashboard', ttl=60)
+    async def collect_metrics() -> dict:
     """采集当前系统指标快照"""
     import psutil
     cpu = psutil.cpu_percent(interval=0.3)
@@ -17,7 +19,7 @@ async def collect_metrics() -> dict:
     disk = psutil.disk_usage("/")
     try:
         load = os.getloadavg()
-    except:
+    except Exception:
         load = [0, 0, 0]
     return {
         "time": datetime.now().isoformat(),
@@ -40,7 +42,8 @@ async def get_current_metrics(_=Depends(verify_token)):
 
 
 @router.get("/history")
-async def get_metrics_history(points: int = 60, _=Depends(verify_token)):
+@cached('dashboard', ttl=60)
+    async def get_metrics_history(points: int = 60, _=Depends(verify_token)):
     """获取历史指标趋势"""
     history = state._data.get("metrics_history", [])
     return {"ok": True, "history": history[-points:], "total": len(history)}

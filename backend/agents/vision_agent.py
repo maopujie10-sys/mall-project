@@ -145,7 +145,7 @@ class VisionAgent:
                 if m:
                     objects = json.loads(m.group())
                     return {"ok": True, "objects": objects[:10]}
-            except:
+            except Exception:
                 pass
             return {"ok": True, "objects": [{"name": "AI分析结果", "confidence": 50, "raw": raw[:200]}], "engine": "ai_vision"}
         except Exception as e:
@@ -178,7 +178,7 @@ class VisionAgent:
                         prompt = f"这是视频第{i * frame_interval}秒的关键帧，请列出画面中的主要物体（JSON数组格式）"
                         raw = await _call_vision_ai(prompt, img_b64)
                         frames_result.append({"time_sec": i * frame_interval, "analysis": raw[:300]})
-                    except:
+                    except Exception:
                         frames_result.append({"time_sec": i * frame_interval, "objects": []})
             return {"ok": True, "duration_sec": duration, "frames": frame_count,
                     "frame_analysis": frames_result,
@@ -209,7 +209,7 @@ class VisionAgent:
                 try:
                     data = json.loads(m.group())
                     return {"ok": True, "face_count": data.get("face_count", 0), "details": data.get("details", raw[:200])}
-                except:
+                except Exception:
                     pass
             return {"ok": True, "face_count": 0, "details": raw[:200], "engine": "ai_vision"}
         except Exception as e:

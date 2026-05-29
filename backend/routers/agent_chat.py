@@ -182,7 +182,7 @@ async def model_status():
                 models = r.json().get("models", [])
                 status["ollama"] = True
                 status["ollama_models"] = [m["name"] for m in models]
-    except:
+    except Exception:
         pass
     return {"ok": True, "engines": status}
 
@@ -209,7 +209,7 @@ async def _stream_ollama(messages):
                         token = chunk.get("message", {}).get("content", "")
                         if token:
                             yield f"data: {_json.dumps({'token': token})}\n\n"
-                    except:
+                    except Exception:
                         pass
             yield "data: [DONE]\n\n"
 
@@ -231,7 +231,7 @@ async def _stream_openai(messages, api_key, base_url="https://api.openai.com/v1"
                         token = delta.get("content", "")
                         if token:
                             yield f"data: {_json.dumps({'token': token})}\n\n"
-                    except:
+                    except Exception:
                         pass
 
 @router.post("/chat/stream")
@@ -284,7 +284,7 @@ async def agent_chat(req: ChatRequest, _=Depends(verify_token)):
                 risk = p.get("risk", "L1")
                 intent = p.get("intent", intent)
                 reason = p.get("reasoning", "")
-        except:
+        except Exception:
             pass
     if not tn:
         tn, risk = await _match(req.message)
@@ -317,17 +317,17 @@ async def agent_chat(req: ChatRequest, _=Depends(verify_token)):
     state.add_task(name=disp, risk=risk, status="done" if er["success"] else "failed")
     try:
         DigitalLifeform.remember_conversation(req.message, resp[:300])
-    except:
+    except Exception:
         pass
     try:
         asyncio.ensure_future(VectorMemory.remember(resp[:300], {'type':'ai','source':'chat'}))
-    except:
+    except Exception:
         pass
     try:
         from tools.vector_memory import vector_memory
         vector_memory.remember("用户: " + req.message[:300], {"role": "user", "tool": tn})
         vector_memory.remember("AI: " + resp[:300], {"role": "ai", "tool": tn})
-    except:
+    except Exception:
         pass
     return {"task_id": f"t{len(state.tasks)}", "response": resp, "steps": steps, "risk_level": risk, "mode": state.mode}
 

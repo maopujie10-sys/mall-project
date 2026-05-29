@@ -40,7 +40,7 @@ class MemoryAgent:
         try:
             with open(MemoryAgent.MEMORY_FILE, "r", encoding="utf-8") as f:
                 return json.load(f)
-        except:
+        except Exception:
             return []
 
     @staticmethod

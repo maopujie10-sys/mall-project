@@ -34,7 +34,7 @@ class PlaywrightAgent:
                 contexts = PlaywrightAgent._browser.contexts
                 if len(contexts) > 0:
                     return PlaywrightAgent._browser
-            except:
+            except Exception:
                 PlaywrightAgent._browser = None
                 PlaywrightAgent._context = None
 
@@ -46,7 +46,7 @@ class PlaywrightAgent:
                 viewport={"width": 1920, "height": 1080}
             )
             PlaywrightAgent.BROWSER_READY = True
-        except:
+        except Exception:
             PlaywrightAgent.BROWSER_READY = False
         return PlaywrightAgent._browser
 
@@ -67,7 +67,7 @@ class PlaywrightAgent:
                         count += 1
             if count:
                 print(f"[Playwright] 清理了 {count} 个过期截图")
-        except:
+        except Exception:
             pass
 
     @staticmethod
@@ -125,7 +125,7 @@ class PlaywrightAgent:
                             text = await el.inner_text()
                             items.append(text.strip()[:200])
                         result[name] = items[:10]
-                    except:
+                    except Exception:
                         result[name] = []
                 await page.close()
                 return {"ok": True, "result": result}

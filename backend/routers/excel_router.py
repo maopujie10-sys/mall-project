@@ -39,7 +39,7 @@ async def parse_excel(file: UploadFile = File(...), _=Depends(verify_token)):
                     for row in rows[1:]:
                         vals = [v.strip() for v in row.split(",")]
                         products.append(dict(zip(headers, vals)))
-            except:
+            except Exception:
                 pass
         if not products:
             # 生成演示数据

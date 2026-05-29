@@ -12,28 +12,30 @@ from datetime import datetime
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.interval import IntervalTrigger
 from apscheduler.triggers.cron import CronTrigger
+from tools.logger import get_logger
 
 # 最小间隔保护(秒) — 防止任何定时任务低于此频率
 MIN_SCHEDULE_INTERVAL = 60
 
 scheduler = AsyncIOScheduler()
+logger = get_logger("scheduler")
 
 
 async def patrol_task():
     """服务器巡检 — CPU/Docker/Nginx/网站"""
     now_str = datetime.now().strftime("%H:%M:%S")
-    print(f"[Scheduler] 服务器巡检 {now_str}")
+    logger.info(f"服务器巡检 {now_str}")
     try:
         from routers.inspector import run_inspection
         await run_inspection()
     except Exception as e:
-        print(f"[Scheduler] 巡检异常: {e}")
+        logger.info(f"巡检异常: {e}")
 
 
 async def backup_task():
     """每日数据库备份"""
     now_str = datetime.now().strftime("%H:%M:%S")
-    print(f"[Scheduler] 数据库备份 {now_str}")
+    logger.info(f"数据库备份 {now_str}")
     try:
         from routers.rollback_center import _load_backups, _save_backups
         import subprocess, os
@@ -53,66 +55,66 @@ async def backup_task():
                 "size": len(result.stdout), "created_at": datetime.now().isoformat(),
             })
             _save_backups(records)
-            print(f"[Scheduler] 备份成功 {backup_path}")
+            logger.info(f"备份成功 {backup_path}")
         else:
-            print(f"[Scheduler] 备份失败: {result.stderr[:200]}")
+            logger.info(f"备份失败: {result.stderr[:200]}")
     except Exception as e:
-        print(f"[Scheduler] 备份异常: {e}")
+        logger.info(f"备份异常: {e}")
 
 
 async def rotation_check_task():
     """域名轮值检测 + 自动切换"""
     now_str = datetime.now().strftime("%H:%M:%S")
-    print(f"[Scheduler] 域名轮值检测 {now_str}")
+    logger.info(f"域名轮值检测 {now_str}")
     try:
         from routers.rotation_panel import _check_all
         result = await _check_all()
         if result.get("rotated_to"):
-            print(f"[Scheduler] 自动轮值 → {result['rotated_to']}")
-        print(f"[Scheduler] 域名健康: {result.get('checked', 0)} 个已检测")
+            logger.info(f"自动轮值 → {result['rotated_to']}")
+        logger.info(f"域名健康: {result.get('checked', 0)} 个已检测")
     except Exception as e:
-        print(f"[Scheduler] 域名轮值异常: {e}")
+        logger.info(f"域名轮值异常: {e}")
 
 
 async def customer_report_task():
     """客服报告生成"""
     now_str = datetime.now().strftime("%H:%M:%S")
-    print(f"[Scheduler] 客服报告 {now_str}")
+    logger.info(f"客服报告 {now_str}")
     try:
         from routers.customer_panel import _generate_report
         await _generate_report()
     except Exception as e:
-        print(f"[Scheduler] 客服报告异常: {e}")
+        logger.info(f"客服报告异常: {e}")
 
 
 async def diary_task():
     """每日日记自动生成"""
     now_str = datetime.now().strftime("%H:%M:%S")
-    print(f"[Scheduler] 日记生成 {now_str}")
+    logger.info(f"日记生成 {now_str}")
     try:
         from services import DiaryService
         journal = DiaryService.generate_daily()
         path = DiaryService.save_journal(journal)
-        print(f"[Scheduler] 日记已保存 {path}")
+        logger.info(f"日记已保存 {path}")
     except Exception as e:
-        print(f"[Scheduler] 日记生成失败: {e}")
+        logger.info(f"日记生成失败: {e}")
 
 
 async def mall_scan_task():
     """商城扫描"""
     now_str = datetime.now().strftime("%H:%M:%S")
-    print(f"[Scheduler] 商城扫描 {now_str}")
+    logger.info(f"商城扫描 {now_str}")
     try:
         from routers.mall_scanner import run_scan
         await run_scan()
     except Exception as e:
-        print(f"[Scheduler] 商城扫描异常: {e}")
+        logger.info(f"商城扫描异常: {e}")
 
 
 
 async def ssl_renew_check_task():
     """SSL证书到期检查 + 自动续签"""
-    print(f"[Scheduler] SSL证书检查 {datetime.now().strftime('%H:%M:%S')}")
+    logger.info("SSL证书检查 {datetime.now().strftime('%H:%M:%S')}")
     try:
         from routers.ssl_router import _cert_valid, _issue
         from routers.rotation_panel import _get_domains
@@ -121,14 +123,14 @@ async def ssl_renew_check_task():
             info = _cert_valid(d["domain"])
             if info.get("ok") and info.get("days_left", 0) > 30:
                 continue
-            print(f"[Scheduler] SSL到期({info.get('days_left', 0)}天), 自动续签: {d['domain']}")
+            logger.info("SSL到期({info.get('days_left', 0)}天), 自动续签: {d['domain']}")
             result = _issue(d["domain"], "")
             if result.get("ok"):
-                print(f"[Scheduler] SSL续签成功: {d['domain']}")
+                logger.info("SSL续签成功: {d['domain']}")
             else:
-                print(f"[Scheduler] SSL续签失败: {d['domain']} - {result.get('error', '')}")
+                logger.info("SSL续签失败: {d['domain']} - {result.get('error', '')}")
     except Exception as e:
-        print(f"[Scheduler] SSL检查异常: {e}")
+        logger.info(f"SSL检查异常: {e}")
 
 
 async def daily_report_task():
@@ -137,7 +139,7 @@ async def daily_report_task():
         from routers.daily_report import daily_report
         from auth import verify_token
         from fastapi import Depends
-        print(f"[Scheduler] 生成每日早报...")
+        logger.info("生成每日早报...")
         # 直接调用生成逻辑
         import psutil
         from state import state
@@ -161,9 +163,9 @@ async def daily_report_task():
         # 发通知
         state._data["last_notification"] = f"每日早报: 健康分{score}, CPU{cpu}%, 内存{mem.percent}%, 磁盘{disk.percent}%"
         state._save()
-        print(f"[Scheduler] 每日早报: 健康分{score}")
+        logger.info(f"每日早报: 健康分{score}")
     except Exception as e:
-        print(f"[Scheduler] 早报失败: {e}")
+        logger.info(f"早报失败: {e}")
 
 async def metrics_record_task():
     """定时记录系统指标"""
@@ -177,7 +179,7 @@ async def metrics_record_task():
             _s._data["metrics_history"] = history[-500:]
         _s._save()
     except Exception as e:
-        print(f"[Scheduler] 指标记录异常: {e}")
+        logger.info(f"指标记录异常: {e}")
 
 def start_scheduler():
     """启动定时任务"""
@@ -191,13 +193,13 @@ def start_scheduler():
     scheduler.add_job(daily_report_task, CronTrigger(hour=8, minute=0), id="daily_report", replace_existing=True)
     scheduler.add_job(metrics_record_task, IntervalTrigger(minutes=5), id="metrics", replace_existing=True)
     scheduler.start()
-    print("[Scheduler] 定时任务启动完成: 巡检/备份/轮值/SSL续签/商城扫描/客服/日记/早报/指标")
+    logger.info("定时任务启动完成: 巡检/备份/轮值/SSL续签/商城扫描/客服/日记/早报/指标")
 
 
 def stop_scheduler():
     """停止定时任务"""
     scheduler.shutdown(wait=False)
-    print("[Scheduler] 定时任务已停止")
+    logger.info("定时任务已停止")
 
 
 

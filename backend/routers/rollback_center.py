@@ -47,7 +47,7 @@ async def list_backups(_=Depends(verify_token)):
         if os.path.exists(path):
             try:
                 total_size += os.path.getsize(path)
-            except:
+            except Exception:
                 pass
     return {"backups": records, "count": len(records), "total_size_mb": round(total_size / 1024 / 1024, 2)}
 
@@ -90,7 +90,7 @@ async def create_backup(req: CreateBackupRequest, _=Depends(verify_token)):
                 result["path"] = backup_file
                 result["success"] = True
                 result["size"] = os.path.getsize(backup_file)
-        except:
+        except Exception:
             result["error"] = "Nginx备份创建失败"
 
     elif req.target == "project":
@@ -103,7 +103,7 @@ async def create_backup(req: CreateBackupRequest, _=Depends(verify_token)):
                 result["path"] = backup_file
                 result["success"] = True
                 result["size"] = os.path.getsize(backup_file)
-        except:
+        except Exception:
             result["error"] = "项目备份创建失败"
 
     records = _load_backups()
@@ -205,7 +205,7 @@ async def delete_backup(backup_id: str, _=Depends(verify_token)):
             if path and os.path.exists(path):
                 try:
                     os.remove(path)
-                except:
+                except Exception:
                     pass
             records.pop(i)
             _save_backups(records)
@@ -227,7 +227,7 @@ async def cleanup_old_backups(_=Depends(verify_token)):
             if path and os.path.exists(path):
                 try:
                     os.remove(path)
-                except:
+                except Exception:
                     pass
             removed += 1
         else:

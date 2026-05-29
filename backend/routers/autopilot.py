@@ -102,7 +102,7 @@ async def full_auto_pilot(_=Depends(verify_token)):
     # 2. ����Sitemap
     try:
         sitemap_result = "������"
-    except:
+    except Exception:
         sitemap_result = "ʧ��"
 
     record = {

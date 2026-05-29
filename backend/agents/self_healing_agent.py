@@ -40,7 +40,7 @@ class SelfHealingAgent:
         try:
             with open(SelfHealingAgent.ANOMALY_FILE, "r", encoding="utf-8") as f:
                 return json.load(f)
-        except:
+        except Exception:
             return []
 
     @staticmethod
@@ -69,7 +69,7 @@ class SelfHealingAgent:
                 issues.append({"severity": "P2", "source": "CPU", "detail": f"CPU使用率 {cpu}%，偏高"})
             else:
                 checks_passed += 1
-        except:
+        except Exception:
             issues.append({"severity": "P3", "source": "CPU", "detail": "无法检查CPU"})
 
         # 2. 内存检查
@@ -83,7 +83,7 @@ class SelfHealingAgent:
                 issues.append({"severity": "P2", "source": "Memory", "detail": f"内存使用率 {mem}%，偏高"})
             else:
                 checks_passed += 1
-        except:
+        except Exception:
             issues.append({"severity": "P3", "source": "Memory", "detail": "无法检查内存"})
 
         # 3. 磁盘检查
@@ -97,7 +97,7 @@ class SelfHealingAgent:
                 issues.append({"severity": "P2", "source": "Disk", "detail": f"磁盘使用率 {disk}%，偏高"})
             else:
                 checks_passed += 1
-        except:
+        except Exception:
             issues.append({"severity": "P3", "source": "Disk", "detail": "无法检查磁盘"})
 
         # 4. Docker检查
@@ -138,7 +138,7 @@ class SelfHealingAgent:
                     issues.append({"severity": "P3", "source": "Port", "detail": f"端口 {port} 未监听"})
                 else:
                     checks_passed += 1
-            except:
+            except Exception:
                 pass
 
         # 保存异常
@@ -236,7 +236,7 @@ class SelfHealingAgent:
                     for name in stopped.replace("已停止容器: ", "").split(", "):
                         subprocess.run(["docker", "restart", name], capture_output=True, timeout=30)
                     return {"fixed": True, "action": "已尝试重启停止的容器"}
-            except:
+            except Exception:
                 pass
             return {"fixed": False, "error": "无法自动修复Docker"}
 
@@ -251,11 +251,11 @@ class SelfHealingAgent:
                             high_procs.append(f"{p.info['name']}(PID:{p.info['pid']})")
                         if source == "Memory" and (p.info.get("memory_percent", 0) or 0) > 30:
                             high_procs.append(f"{p.info['name']}(PID:{p.info['pid']})")
-                    except:
+                    except Exception:
                         pass
                 if high_procs:
                     return {"fixed": False, "error": f"高占用进程: {', '.join(high_procs[:5])}，需人工介入"}
-            except:
+            except Exception:
                 pass
             return {"fixed": False, "error": "资源问题需人工排查"}
 
@@ -265,7 +265,7 @@ class SelfHealingAgent:
                 # 清理Docker日志
                 subprocess.run(["docker", "system", "prune", "-f"], capture_output=True, timeout=60)
                 return {"fixed": True, "action": "已清理Docker缓存"}
-            except:
+            except Exception:
                 pass
             return {"fixed": False, "error": "磁盘清理失败"}
 
