@@ -5,12 +5,12 @@ sys.path.insert(0, ".")
 
 # 内存安全配置
 MEMORY_LIMIT_PCT = 80     # 内存超此比例暂停
-MEMORY_CHECK_INTERVAL = 5  # 每N个关键词检查一次内存
-SEARCH_DELAY_MIN = 30       # 搜索最小间隔秒
-SEARCH_DELAY_MAX = 60       # 搜索最大间隔秒
-PRODUCT_DELAY_MIN = 5       # 产品提取最小间隔秒
-PRODUCT_DELAY_MAX = 10      # 产品提取最大间隔秒
-CATEGORY_PAUSE = 120        # 每完成一个分类暂停秒
+MEMORY_CHECK_INTERVAL = 10 # 每N个关键词检查一次内存
+SEARCH_DELAY_BASE = 8      # 搜索基础间隔秒(自适应:遇429加倍)
+SEARCH_DELAY_MAX = 60      # 搜索最大间隔秒
+PRODUCT_DELAY = 3          # 产品并发批间隔秒
+CONCURRENCY = 3            # 产品页并发数
+CATEGORY_PAUSE = 30        # 每完成一个分类暂停秒
 
 # 已采集URL缓存(防重复)
 seen_urls = set()
@@ -254,6 +254,7 @@ async def run(ppk=5):
 
     stats = {"cats": 0, "kws": 0, "found": 0, "imported": 0, "skipped": 0, "failed": 0}
     amazon_adapter = ADAPTERS["amazon"]
+    search_delay = SEARCH_DELAY_BASE  # 自适应延迟，初始8s
 
     async with httpx.AsyncClient(timeout=30, follow_redirects=True, verify=False) as session:
         for subcat, keywords in SUBCAT_KEYWORDS.items():
@@ -266,66 +267,78 @@ async def run(ppk=5):
             print(f"\n[{stats['cats']}/{len(SUBCAT_KEYWORDS)}] {subcat}", end="", flush=True)
 
             for kw in keywords:
-                # 内存检查
                 if stats["kws"] % MEMORY_CHECK_INTERVAL == 0:
                     await check_memory()
                 if cat_imported >= ppk:
                     break
                 stats["kws"] += 1
-                # 搜索间隔10-20秒，避免Amazon限流
-                delay = SEARCH_DELAY_MIN + random.random() * (SEARCH_DELAY_MAX - SEARCH_DELAY_MIN)
-                await asyncio.sleep(delay)
+
+                await asyncio.sleep(search_delay)
                 try:
                     urls = await amazon_adapter.search(kw, max_pages=1, session=session)
                 except Exception as e:
                     print(f"\n  {kw}: 搜索异常 {e}", flush=True)
+                    search_delay = min(search_delay * 1.3, SEARCH_DELAY_MAX)
                     continue
                 if not urls:
                     print(f"\n  {kw}: 0结果", end="", flush=True)
+                    search_delay = min(search_delay * 1.1, SEARCH_DELAY_MAX)
                     continue
+                # 搜索正常，逐渐缩短延迟
+                search_delay = max(SEARCH_DELAY_BASE, search_delay * 0.95)
                 print(f"\n  {kw}: {len(urls)}链接", end="", flush=True)
 
                 need = ppk - cat_imported
-                products = []
-                for url in urls[:need]:
-                    if url in seen_urls:
-                        continue
-                    seen_urls.add(url)
-                    await asyncio.sleep(PRODUCT_DELAY_MIN + random.random() * (PRODUCT_DELAY_MAX - PRODUCT_DELAY_MIN))
-                    try:
-                        p = await amazon_adapter.extract_product(url, session=session)
-                        if p and p.title and p.images:
-                            p.id = hashlib.md5(p.source_url.encode()).hexdigest()[:16]
-                            products.append(p)
-                    except Exception:
-                        continue
+                fresh_urls = [u for u in urls[:need+2] if u not in seen_urls]
+                for u in fresh_urls:
+                    seen_urls.add(u)
+
+                if not fresh_urls:
+                    continue
+
+                # ── 并发提取产品页 ──
+                products = await amazon_adapter.extract_concurrent(
+                    fresh_urls[:need+2], session=session, concurrency=CONCURRENCY
+                )
+                for p in products:
+                    p.id = hashlib.md5(p.source_url.encode()).hexdigest()[:16]
 
                 if not products:
+                    await asyncio.sleep(PRODUCT_DELAY)
                     continue
 
-                # 上传图片到COS
-                for p in products:
+                # 上传图片+流式导入
+                imported_now = 0
+                for p in products[:need]:
                     uploaded = []
-                    for idx, img_url in enumerate(p.images[:8]):
+                    # 并发下载图片
+                    async def _dl(img_url, idx):
                         try:
-                            cos_url = await download_and_upload(img_url, p.id, idx, session)
+                            return await download_and_upload(img_url, p.id, idx, session)
                         except Exception:
-                            cos_url = None
-                        if cos_url:
-                            uploaded.append(cos_url)
-                        elif img_url:
-                            uploaded.append(img_url)
+                            return img_url  # fallback:保留原始URL
+                    tasks = [_dl(u, i) for i, u in enumerate(p.images[:8])]
+                    results = await asyncio.gather(*tasks, return_exceptions=True)
+                    for r in results:
+                        if isinstance(r, str) and r:
+                            uploaded.append(r)
                     p.cos_images = uploaded
+                    if not uploaded:
+                        continue
 
-                pds = [p.to_dict() for p in products if p.cos_images]
-                if not pds:
-                    continue
-                result = import_batch(pds, subcat_name=subcat)
-                stats["imported"] += result["imported"]
-                stats["skipped"] += result["skipped_duplicate"]
-                stats["failed"] += result["failed"]
-                cat_imported += result["imported"]
-                print(f" +{result['imported']}上架(重{result['skipped_duplicate']})", end="", flush=True)
+                    pd_dict = p.to_dict()
+                    result = import_batch([pd_dict], subcat_name=subcat)
+                    if result["imported"]:
+                        imported_now += 1
+                        stats["imported"] += 1
+                    elif result["skipped_duplicate"]:
+                        stats["skipped"] += 1
+                    else:
+                        stats["failed"] += 1
+
+                cat_imported += imported_now
+                print(f" +{imported_now}上架", end="", flush=True)
+                await asyncio.sleep(PRODUCT_DELAY)
 
             if cat_imported == 0:
                 print(f" ⚠️ 未采集到", end="", flush=True)

@@ -106,7 +106,7 @@ async def cos_status(_=Depends(verify_token)):
 
 @router.get("/sources")
 @cached('scraper_sources', ttl=300)
-    async def list_sources(_=Depends(verify_token)):
+async def list_sources(_=Depends(verify_token)):
     """查看可用采集平台"""
     await handle_risk("L1", "查看采集平台")
     return {

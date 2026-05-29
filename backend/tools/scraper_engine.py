@@ -540,7 +540,7 @@ class AliExpressAdapter(BaseScrapeAdapter):
             if not r:
                 continue
             
-            soup = BeautifulSoup(r.text, "html.parser")
+            soup = BeautifulSoup(r.text, "lxml")
             for link in soup.select("a[href*='/item/']"):
                 href = link.get("href", "")
                 if "/item/" in href:
@@ -563,7 +563,7 @@ class AliExpressAdapter(BaseScrapeAdapter):
             if not r:
                 return None
             
-            soup = BeautifulSoup(r.text, "html.parser")
+            soup = BeautifulSoup(r.text, "lxml")
             
             title = ""
             title_el = soup.select_one("h1") or soup.select_one("[class*='title']")
@@ -617,7 +617,7 @@ class AmazonAdapter(BaseScrapeAdapter):
             if not r:
                 continue
             
-            soup = BeautifulSoup(r.text, "html.parser")
+            soup = BeautifulSoup(r.text, "lxml")
             for link in soup.select("a[href*='/dp/'], a[href*='/gp/product/']"):
                 href = link.get("href", "")
                 if "/dp/" in href or "/gp/product/" in href:
@@ -640,7 +640,7 @@ class AmazonAdapter(BaseScrapeAdapter):
             if not r:
                 return None
 
-            soup = BeautifulSoup(r.text, "html.parser")
+            soup = BeautifulSoup(r.text, "lxml")
             # 立即释放原始HTML，减小内存
             page_text = r.text
             del r
@@ -837,6 +837,18 @@ class AmazonAdapter(BaseScrapeAdapter):
         except Exception:
             return None
 
+    async def extract_concurrent(self, urls: list[str], session: httpx.AsyncClient, concurrency: int = 3) -> list:
+        """并发提取多个产品页 — semaphore控并发，失败的不返回"""
+        sem = asyncio.Semaphore(concurrency)
+
+        async def _one(url):
+            async with sem:
+                return await self.extract_product(url, session=session)
+
+        tasks = [_one(u) for u in urls]
+        results = await asyncio.gather(*tasks, return_exceptions=True)
+        return [r for r in results if r is not None and not isinstance(r, Exception) and r.title and r.images]
+
 
 class WishAdapter(BaseScrapeAdapter):
     """Wish 全球站 — 反反爬增强版"""
@@ -857,7 +869,7 @@ class WishAdapter(BaseScrapeAdapter):
             if not r:
                 continue
             
-            soup = BeautifulSoup(r.text, "html.parser")
+            soup = BeautifulSoup(r.text, "lxml")
             for link in soup.select("a[href*='/product/'], a[href*='/c/']"):
                 href = link.get("href", "")
                 if "/product/" in href or "/c/" in href:
@@ -880,7 +892,7 @@ class WishAdapter(BaseScrapeAdapter):
             if not r:
                 return None
             
-            soup = BeautifulSoup(r.text, "html.parser")
+            soup = BeautifulSoup(r.text, "lxml")
             
             title = ""
             title_el = soup.select_one("[class*='ProductName']") or soup.select_one("h1")
@@ -975,7 +987,7 @@ class ShopeeAdapter(BaseScrapeAdapter):
             r = await self._safe_get(session, url, max_retries=2)
             if not r:
                 return None
-            soup = BeautifulSoup(r.text, "html.parser")
+            soup = BeautifulSoup(r.text, "lxml")
             title_el = soup.select_one("h1") or soup.select_one("[class*='title']")
             title = title_el.get_text(strip=True) if title_el else ""
             images = self._extract_images(soup, url)
@@ -1007,7 +1019,7 @@ class LazadaAdapter(BaseScrapeAdapter):
             if not r:
                 continue
             
-            soup = BeautifulSoup(r.text, "html.parser")
+            soup = BeautifulSoup(r.text, "lxml")
             for link in soup.select("a[href*='-i']"):
                 href = link.get("href", "")
                 if "-i" in href and "lazada" in href:
@@ -1030,7 +1042,7 @@ class LazadaAdapter(BaseScrapeAdapter):
             if not r:
                 return None
             
-            soup = BeautifulSoup(r.text, "html.parser")
+            soup = BeautifulSoup(r.text, "lxml")
             
             title = ""
             title_el = soup.select_one("[class*='pdp-product-title']") or soup.select_one("h1")
@@ -1079,7 +1091,7 @@ class TikTokShopAdapter(BaseScrapeAdapter):
             if not r:
                 continue
 
-            soup = BeautifulSoup(r.text, "html.parser")
+            soup = BeautifulSoup(r.text, "lxml")
             for link in soup.select("a[href*='/product/'], a[href*='tiktok.com/@']"):
                 href = link.get("href", "")
                 full = urljoin("https://www.tiktok.com", href)
@@ -1102,7 +1114,7 @@ class TikTokShopAdapter(BaseScrapeAdapter):
             if not r:
                 return None
 
-            soup = BeautifulSoup(r.text, "html.parser")
+            soup = BeautifulSoup(r.text, "lxml")
 
             title = ""
             title_el = soup.select_one("h1") or soup.select_one("[class*='title']")
@@ -1154,7 +1166,7 @@ class TaobaoAdapter(BaseScrapeAdapter):
             r = await self._safe_get(session, url, keyword, is_search=True)
             if not r:
                 continue
-            soup = BeautifulSoup(r.text, "html.parser")
+            soup = BeautifulSoup(r.text, "lxml")
             for link in soup.select("a[href*='item.taobao.com'], a[href*='detail.tmall.com']"):
                 href = link.get("href", "")
                 if "item.taobao.com" in href or "detail.tmall.com" in href:
@@ -1174,7 +1186,7 @@ class TaobaoAdapter(BaseScrapeAdapter):
             r = await self._safe_get(session, url, max_retries=2)
             if not r:
                 return None
-            soup = BeautifulSoup(r.text, "html.parser")
+            soup = BeautifulSoup(r.text, "lxml")
             title = ""
             title_el = soup.select_one("h1") or soup.select_one("[class*='tb-main-title']") or soup.select_one("[class*='ItemTitle']")
             if title_el:
@@ -1224,7 +1236,7 @@ class Alibaba1688Adapter(BaseScrapeAdapter):
             r = await self._safe_get(session, url, keyword, is_search=True)
             if not r:
                 continue
-            soup = BeautifulSoup(r.text, "html.parser")
+            soup = BeautifulSoup(r.text, "lxml")
             for link in soup.select("a[href*='detail.1688.com']"):
                 href = link.get("href", "")
                 if "detail.1688.com" in href:
@@ -1244,7 +1256,7 @@ class Alibaba1688Adapter(BaseScrapeAdapter):
             r = await self._safe_get(session, url, max_retries=2)
             if not r:
                 return None
-            soup = BeautifulSoup(r.text, "html.parser")
+            soup = BeautifulSoup(r.text, "lxml")
             title = ""
             title_el = soup.select_one("h1") or soup.select_one("[class*='offer-title']") or soup.select_one("[class*='product-title']")
             if title_el:
