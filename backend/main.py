@@ -9,7 +9,7 @@ from fastapi.responses import JSONResponse
 from tools.logger import setup_logging
 from tools.rate_limiter import rate_limit_middleware
 from config import AGENT_TOKEN, MALL_BASE_URL
-from auth import verify_token
+from auth import verify_token, auth_router
 
 
 @asynccontextmanager
@@ -77,6 +77,8 @@ app.add_middleware(
     allow_headers=["X-Agent-Token", "Content-Type"],
 )
 
+app.include_router(auth_router)
+
 # 注册路由模块
 from routers.vector_router import router as vector_router
 from routers.backup_router import router as backup_router
@@ -106,6 +108,8 @@ from routers.scheduler_api import router as scheduler_api_router
 from routers.weekly_report import router as weekly_report_router
 from routers.log_manager import router as log_manager_router
 from routers.archive_router import router as archive_router
+from routers.customer_ai import router as customer_ai_router
+from routers.observability import router as obs_router
 from routers.db_router import router as db_router
 from routers.audit_router import router as audit_router
 from routers.network_router import router as network_router
@@ -178,6 +182,8 @@ app.include_router(scheduler_api_router)
 app.include_router(weekly_report_router)
 app.include_router(log_manager_router)
 app.include_router(archive_router)
+app.include_router(customer_ai_router)
+app.include_router(obs_router)
 app.include_router(db_router)
 app.include_router(audit_router)
 app.include_router(network_router)

@@ -218,6 +218,22 @@ async def agent_collaborate(goal: str = Query(...), _=Depends(verify_token)):
     result = await agent_collab.execute_all(goal)
     return result
 
+@router.get("/lifeform/status")
+async def lifeform_status(_=Depends(verify_token)):
+    """数字生命体状态"""
+    return DigitalLifeform.get_status()
+
+@router.get("/lifeform/start")
+async def lifeform_start(interval: int = 120, _=Depends(verify_token)):
+    """启动/重启生命体"""
+    await DigitalLifeform.start_loop(interval)
+    return {"ok": True, "interval": interval}
+
+@router.get("/lifeform/stop")
+async def lifeform_stop(_=Depends(verify_token)):
+    """停止生命体"""
+    return await DigitalLifeform.stop_loop()
+
 @router.get("/personality")
 async def get_personality(_=Depends(verify_token)):
     return {"ok": True, **PersonalityEngine.get_personality()}

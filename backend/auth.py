@@ -1,185 +1,140 @@
-﻿"""认证模块 — JWT Token + 简单Token 双模式
-v2: 支持 JWT 过期验证 + 速率限制 + 审计日志"""
-import time
-import hashlib
-import hmac
-import os
-import json
+﻿"""认证模块 v3 — JWT + RBAC角色权限 + 审计日志"""
+import jwt, time, secrets, os
 from datetime import datetime, timedelta
-from fastapi import Request, HTTPException
-from config import AGENT_TOKEN
+from fastapi import HTTPException, Request, Depends
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
-# ===== JWT 配置 =====
-import secrets as _secrets
-_DEFAULT_SECRET = _secrets.token_hex(32)  # 每次启动随机生成，防止硬编码
-JWT_SECRET = os.getenv("JWT_SECRET", _DEFAULT_SECRET)
-JWT_EXPIRE_HOURS = int(os.getenv("JWT_EXPIRE_HOURS", "24"))
+security = HTTPBearer(auto_error=False)
 
-# ===== 速率限制 =====
-_rate_limits: dict[str, list] = {}  # {token: [timestamps]}
-RATE_LIMIT_MAX = int(os.getenv("RATE_LIMIT_MAX", "60"))  # 每分钟最多请求
-RATE_LIMIT_WINDOW = 60  # 秒
+# JWT配置
+JWT_SECRET = os.getenv("JWT_SECRET", secrets.token_hex(32))
+JWT_ALGORITHM = "HS256"
+JWT_EXPIRE_HOURS = 24
 
+# 角色定义
+ROLES = {
+    "admin": {"level": 100, "desc": "超级管理员", "permissions": ["*"]},
+    "operator": {"level": 50, "desc": "运营人员", "permissions": ["read:*", "execute:L1", "execute:L2", "approve:L3"]},
+    "viewer": {"level": 10, "desc": "只读用户", "permissions": ["read:*"]},
+}
 
-# ===== Redis 速率限制(持久化，重启不丢) =====
-_redis_client = None
+# 用户存储（生产环境应存数据库）
+_users = {
+    "admin": {"password": os.getenv("ADMIN_PASSWORD", "admin123"), "role": "admin"},
+    "operator": {"password": os.getenv("OPERATOR_PASSWORD", "oper123"), "role": "operator"},
+    "viewer": {"password": os.getenv("VIEWER_PASSWORD", "view123"), "role": "viewer"},
+}
 
-def _get_redis():
-    """获取 Redis 连接(惰性连接)"""
-    global _redis_client
-    if _redis_client is not None:
-        return _redis_client
-    try:
-        import redis as _r
-        dsn = os.getenv("REDIS_DSN", "redis://localhost:6379/1")
-        _redis_client = _r.from_url(dsn, decode_responses=True)
-        _redis_client.ping()
-        return _redis_client
-    except Exception:
-        _redis_client = False
-        return None
-
-# ===== 审计日志 =====
-_audit_log: list = []
-AUDIT_MAX = 1000
-
-def _base64url_encode(data: bytes) -> str:
-    import base64
-    return base64.urlsafe_b64encode(data).rstrip(b"=").decode()
-
-def _base64url_decode(data: str) -> bytes:
-    import base64
-    padding = 4 - len(data) % 4
-    if padding != 4:
-        data += "=" * padding
-    return base64.urlsafe_b64decode(data)
-
-def create_jwt(payload: dict, expire_hours: int = None) -> str:
-    """创建 JWT Token"""
-    expire_hours = expire_hours or JWT_EXPIRE_HOURS
-    header = {"alg": "HS256", "typ": "JWT"}
-    payload["exp"] = int((datetime.utcnow() + timedelta(hours=expire_hours)).timestamp())
-    payload["iat"] = int(datetime.utcnow().timestamp())
-
-    header_b64 = _base64url_encode(json.dumps(header).encode())
-    payload_b64 = _base64url_encode(json.dumps(payload).encode())
-    signing_input = f"{header_b64}.{payload_b64}"
-    signature = hmac.new(JWT_SECRET.encode(), signing_input.encode(), hashlib.sha256).digest()
-    signature_b64 = _base64url_encode(signature)
-
-    return f"{signing_input}.{signature_b64}"
-
-def verify_jwt(token: str) -> dict | None:
-    """验证 JWT Token，返回 payload 或 None"""
-    try:
-        parts = token.split(".")
-        if len(parts) != 3:
-            return None
-        header_b64, payload_b64, signature_b64 = parts
-        signing_input = f"{header_b64}.{payload_b64}"
-        expected_sig = hmac.new(JWT_SECRET.encode(), signing_input.encode(), hashlib.sha256).digest()
-        actual_sig = _base64url_decode(signature_b64)
-
-        if not hmac.compare_digest(expected_sig, actual_sig):
-            return None
-
-        payload = json.loads(_base64url_decode(payload_b64))
-        if payload.get("exp", 0) < datetime.utcnow().timestamp():
-            return None  # 过期
-
-        return payload
-    except Exception:
-        return None
-
-def check_rate_limit(token: str) -> bool:
-    """检查速率限制 — Redis 优先(持久化)，内存降级"""
-    r = _get_redis()
-    if r:
-        try:
-            key = f"rate_limit:{token}"
-            current = r.incr(key)
-            if current == 1:
-                r.expire(key, RATE_LIMIT_WINDOW)
-            return current <= RATE_LIMIT_MAX
-        except Exception:
-            pass  # Redis 异常时降级到内存
-
-    # 内存模式(降级)
-    now = time.time()
-    if token not in _rate_limits:
-        _rate_limits[token] = []
-    _rate_limits[token] = [t for t in _rate_limits[token] if now - t < RATE_LIMIT_WINDOW]
-    if len(_rate_limits[token]) >= RATE_LIMIT_MAX:
-        return False
-    _rate_limits[token].append(now)
-    return True
-
-def audit_log(method: str, path: str, token: str, status: int, ip: str = ""):
-    """记录审计日志"""
-    entry = {
-        "time": datetime.now().isoformat(),
-        "method": method,
-        "path": path,
-        "token_prefix": token[:8] + "..." if len(token) > 8 else token,
-        "status": status,
-        "ip": ip,
+# ===== JWT =====
+def create_token(username: str, role: str) -> str:
+    """创建JWT Token"""
+    payload = {
+        "sub": username,
+        "role": role,
+        "iat": datetime.utcnow(),
+        "exp": datetime.utcnow() + timedelta(hours=JWT_EXPIRE_HOURS),
+        "jti": secrets.token_hex(8),
     }
-    _audit_log.append(entry)
-    if len(_audit_log) > AUDIT_MAX:
-        _audit_log.pop(0)
+    return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
 
-def get_audit_logs(limit: int = 100) -> list:
-    """获取最近审计日志"""
-    return _audit_log[-limit:]
+def verify_token(token: str) -> dict:
+    """验证JWT Token"""
+    try:
+        payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+        return {"valid": True, "user": payload["sub"], "role": payload["role"]}
+    except jwt.ExpiredSignatureError:
+        return {"valid": False, "error": "Token已过期"}
+    except jwt.InvalidTokenError:
+        return {"valid": False, "error": "Token无效"}
 
-def get_rate_limit_stats() -> dict:
-    """速率限制统计 — Redis模式的近似统计"""
-    r = _get_redis()
-    if r:
-        try:
-            keys = list(r.scan_iter("rate_limit:*"))
-            total = len(keys)
-            blocked = sum(1 for k in keys if int(r.get(k) or 0) >= RATE_LIMIT_MAX)
-            active = total - blocked
-            return {"active_clients": active, "blocked_clients": blocked, "max_per_minute": RATE_LIMIT_MAX, "backend": "redis"}
-        except Exception:
-            pass
+def has_permission(role: str, permission: str) -> bool:
+    """检查角色权限"""
+    role_def = ROLES.get(role, {})
+    perms = role_def.get("permissions", [])
+    if "*" in perms:
+        return True
+    if permission in perms:
+        return True
+    # 通配符匹配 read:*
+    for p in perms:
+        if p.endswith(":*") and permission.startswith(p[:-1]):
+            return True
+    return False
 
-    now = time.time()
-    active = 0
-    blocked = 0
-    for token, timestamps in _rate_limits.items():
-        recent = [t for t in timestamps if now - t < RATE_LIMIT_WINDOW]
-        if len(recent) >= RATE_LIMIT_MAX:
-            blocked += 1
-        elif recent:
-            active += 1
-    return {"active_clients": active, "blocked_clients": blocked, "max_per_minute": RATE_LIMIT_MAX, "backend": "memory"}
+# ===== FastAPI依赖 =====
+async def get_current_user(request: Request, credentials: HTTPAuthorizationCredentials = Depends(security)) -> dict:
+    """获取当前用户（Bearer Token）"""
+    # 兼容旧X-Agent-Token
+    agent_token = request.headers.get("X-Agent-Token", "")
+    if agent_token:
+        from config import AGENT_TOKEN
+        if agent_token == AGENT_TOKEN:
+            return {"user": "agent", "role": "admin"}
+    
+    if not credentials:
+        raise HTTPException(401, "未提供认证Token")
+    
+    result = verify_token(credentials.credentials)
+    if not result["valid"]:
+        raise HTTPException(401, result.get("error", "认证失败"))
+    
+    return {"user": result["user"], "role": result["role"]}
 
-async def verify_token(request: Request):
-    """Token 验证中间件 — 支持 JWT + 简单 Token"""
-    token = request.headers.get("X-Agent-Token", "")
-    client_ip = request.client.host if request.client else ""
+def require_role(min_role: str = "viewer"):
+    """角色权限装饰器"""
+    async def dependency(user: dict = Depends(get_current_user)):
+        role = user.get("role", "viewer")
+        role_level = ROLES.get(role, {}).get("level", 0)
+        min_level = ROLES.get(min_role, {}).get("level", 0)
+        if role_level < min_level:
+            raise HTTPException(403, f"权限不足,需要{min_role}角色")
+        return user
+    return dependency
 
-    # 速率限制
-    rate_key = token or client_ip
-    if not check_rate_limit(rate_key):
-        audit_log(request.method, request.url.path, token, 429, client_ip)
-        raise HTTPException(status_code=429, detail="请求过于频繁，请稍后重试")
+# ===== API路由 =====
+from fastapi import APIRouter, Query
+from pydantic import BaseModel
 
-    # JWT 验证
-    if token.startswith("eyJ"):
-        payload = verify_jwt(token)
-        if payload:
-            audit_log(request.method, request.url.path, token, 200, client_ip)
-            return payload
-        audit_log(request.method, request.url.path, token, 403, client_ip)
-        raise HTTPException(status_code=403, detail="JWT 无效或已过期")
+auth_router = APIRouter(prefix="/auth", tags=["Auth"])
 
-    # 简单 Token 验证
-    if token == AGENT_TOKEN:
-        audit_log(request.method, request.url.path, token, 200, client_ip)
-        return {"authenticated": True}
+class LoginRequest(BaseModel):
+    username: str
+    password: str
 
-    audit_log(request.method, request.url.path, token, 403, client_ip)
-    raise HTTPException(status_code=403, detail="无效的 Agent Token")
+@auth_router.post("/login")
+async def login(req: LoginRequest):
+    """用户登录,返回JWT Token"""
+    user = _users.get(req.username)
+    if not user or user["password"] != req.password:
+        raise HTTPException(401, "用户名或密码错误")
+    
+    token = create_token(req.username, user["role"])
+    return {
+        "ok": True,
+        "access_token": token,
+        "token_type": "bearer",
+        "expires_in": JWT_EXPIRE_HOURS * 3600,
+        "user": {"username": req.username, "role": user["role"]},
+    }
+
+@auth_router.get("/me")
+async def get_me(user: dict = Depends(get_current_user)):
+    """获取当前用户信息"""
+    role = user.get("role", "viewer")
+    return {
+        "ok": True,
+        "user": user["user"],
+        "role": role,
+        "role_info": ROLES.get(role, {}),
+    }
+
+@auth_router.post("/refresh")
+async def refresh_token(user: dict = Depends(get_current_user)):
+    """刷新Token"""
+    token = create_token(user["user"], user["role"])
+    return {"ok": True, "access_token": token, "token_type": "bearer"}
+
+@auth_router.get("/roles")
+async def list_roles(_=Depends(require_role("admin"))):
+    """列出所有角色(仅管理员)"""
+    return {"ok": True, "roles": ROLES}
