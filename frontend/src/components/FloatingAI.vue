@@ -355,6 +355,16 @@ function endVideoCall() {
   videoActive.value = false
   videoConnected.value = false
 }
+function captureSnapshot() {
+  const videoEl = document.querySelector('.ai-video-preview video')
+  if (!videoEl) return
+  const canvas = document.createElement('canvas')
+  canvas.width = videoEl.videoWidth; canvas.height = videoEl.videoHeight
+  canvas.getContext('2d').drawImage(videoEl, 0, 0)
+  const dataUrl = canvas.toDataURL('image/jpeg', 0.9)
+  attachments.value.push({ name: 'snapshot.jpg', type: 'image', dataUrl, mimeType: 'image/jpeg', size: 0 })
+  ElMessage.success('已截图，可发送给AI分析')
+}
 
 function toggleMic() {
   micMuted.value = !micMuted.value

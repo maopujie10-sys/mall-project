@@ -133,7 +133,23 @@ async function startRecording() {
       if (e.data.size > 0) audioChunks.push(e.data)
     }
 
-    mediaRecorder.onstop = async () => {
+    let sttText = ''
+// 同时启动浏览器语音识别获取文本
+let sttRecognition = null
+try {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition
+  if (SR) {
+    sttRecognition = new SR()
+    sttRecognition.lang = 'zh-CN'
+    sttRecognition.continuous = true
+    sttRecognition.interimResults = true
+    sttRecognition.onresult = (e) => { sttText = Array.from(e.results).map(r=>r[0].transcript).join('') }
+    sttRecognition.start()
+  }
+} catch(e) {}
+
+mediaRecorder.onstop = async () => {
+  if (sttRecognition) try { sttRecognition.stop() } catch(e) {}
       stream.getTracks().forEach(t => t.stop())
       if (audioChunks.length === 0) return
 
@@ -144,7 +160,7 @@ async function startRecording() {
         if (ws && ws.readyState === WebSocket.OPEN) {
           listening.value = true
           currentStep.value = '正在发送...'
-          ws.send(JSON.stringify({ type: 'voice', audio_b64: b64, fmt: 'webm' }))
+          ws.send(JSON.stringify({ type: 'voice', audio_b64: b64, fmt: 'webm', text: sttText }))
         }
       }
       reader.readAsDataURL(blob)
