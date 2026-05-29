@@ -1,4 +1,4 @@
-"""AI工作流引擎 — 多步任务自动拆解与执行"""
+"""AI工作流引擎 -- 多步任务自动拆解与执行"""
 import asyncio, json, re
 from datetime import datetime
 from state import state
@@ -46,7 +46,7 @@ class WorkflowEngine:
 
     @classmethod
     async def parse_and_execute(cls, user_input: str) -> dict:
-        """解析用户自然语言输入，拆解为工作流步骤并执行"""
+        """解析用户自然语言输入,拆解为工作流步骤并执行"""
         # 1. 模板匹配
         matched = None
         for keyword, wf in cls.TEMPLATES.items():
@@ -54,7 +54,7 @@ class WorkflowEngine:
                 matched = {"name": f"{keyword}工作流", "steps": wf["steps"]}
                 break
         
-        # 2. 如果没有匹配模板，尝试AI生成工作流
+        # 2. 如果没有匹配模板,尝试AI生成工作流
         if not matched:
             try:
                 from tools.ai_client import call_ai
@@ -63,16 +63,18 @@ class WorkflowEngine:
                 ai_prompt = f"""你有以下可用工具: {json.dumps(tools_list,ensure_ascii=False)}
 用户想: {user_input}
 请生成一个工作流JSON: {{"name":"工作流名","steps":[{{"tool":"工具名","params":{{}},"desc":"步骤描述","risk":"L1-L4"}}]}}
-只返回JSON。"""
+只返回JSON."""
                 ai_plan = await call_ai([{"role":"user","content":ai_prompt}], max_tokens=400, temperature=0.2)
                 try:
                     j = json.loads(re.search(r'\{[^{}]*"steps"[^{}]*\}', ai_plan, re.DOTALL).group())
                     matched = j
                 except:
                     pass
-            
+            except:
+                pass
+
             if not matched:
-                return {"ok": False, "error": "未能识别任务类型，请尝试: 部署/备份/巡检/下架/SSL/清理/扩容", 
+                return {"ok": False, "error": "未能识别任务类型,请尝试: 部署/备份/巡检/下架/SSL/清理/扩容", 
                         "suggestions": list(cls.TEMPLATES.keys())}
         
         # 3. 创建工作流ID并执行

@@ -1,4 +1,4 @@
-"""Redis缓存层 — 装饰器模式,自动序列化,TTL支持"""
+"""Redis缓存层 -- 装饰器模式,自动序列化,TTL支持"""
 import json
 import functools
 import asyncio

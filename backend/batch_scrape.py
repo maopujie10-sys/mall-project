@@ -1,4 +1,4 @@
-"""批量采集 — 覆盖商城全品类，自动上架"""
+"""批量采集 -- 覆盖商城全品类,自动上架"""
 import asyncio
 import sys
 sys.path.insert(0, ".")

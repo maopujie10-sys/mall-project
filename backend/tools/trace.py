@@ -1,4 +1,4 @@
-"""全链路请求追踪 + 全局异常处理 — trace_id贯穿每个请求,出问题秒定位"""
+"""全链路请求追踪 + 全局异常处理 -- trace_id贯穿每个请求,出问题秒定位"""
 import time, uuid, traceback, json
 from datetime import datetime
 from fastapi import Request, Response
@@ -7,7 +7,7 @@ from tools.logger import get_logger
 
 logger = get_logger("trace")
 
-# 请求追踪存储（环形缓冲区）
+# 请求追踪存储(环形缓冲区)
 _trace_buffer = []
 MAX_TRACE = 1000
 _slow_threshold_ms = 1000  # 慢请求阈值
@@ -43,7 +43,7 @@ class TraceContext:
 
 
 async def trace_middleware(request: Request, call_next):
-    """全链路请求追踪中间件 — 每个请求分配trace_id"""
+    """全链路请求追踪中间件 -- 每个请求分配trace_id"""
     trace_ctx = TraceContext()
     trace_ctx.path = request.url.path
     trace_ctx.method = request.method
@@ -54,7 +54,7 @@ async def trace_middleware(request: Request, call_next):
     request.state.trace_start = trace_ctx.start_time
 
     # 记录请求
-    logger.info(f"[{trace_ctx.trace_id}] → {request.method} {request.url.path}")
+    logger.info(f"[{trace_ctx.trace_id}] -> {request.method} {request.url.path}")
 
     try:
         response = await call_next(request)

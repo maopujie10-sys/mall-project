@@ -14,7 +14,7 @@ async def circuit_status(_=Depends(verify_token)):
 
 @router.post("/circuit/reset")
 async def circuit_reset(action: str = "", _=Depends(verify_token)):
-    """重置指定操作的熔断器，留空则重置全部"""
+    """重置指定操作的熔断器,留空则重置全部"""
     await handle_risk("L1", "重置熔断器", action or "全部")
     from safety import CircuitBreaker
     if action:

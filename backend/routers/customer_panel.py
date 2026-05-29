@@ -1,4 +1,4 @@
-"""客服面板 API — 消息管理/自动回复/日报"""
+"""客服面板 API -- 消息管理/自动回复/日报"""
 from datetime import datetime
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel

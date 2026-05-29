@@ -1,4 +1,4 @@
-"""API请求限流中间件 — 令牌桶算法,基于IP+路径"""
+"""API请求限流中间件 -- 令牌桶算法,基于IP+路径"""
 import time
 from collections import defaultdict
 from fastapi import Request
@@ -16,7 +16,7 @@ RATE_LIMITS = {
 }
 
 # 令牌桶存储: {ip: {path: [tokens, last_refill_time]}}
-# 初始化为满令牌，避免新路径首次请求被误限
+# 初始化为满令牌,避免新路径首次请求被误限
 _buckets = defaultdict(lambda: defaultdict(lambda: [600, time.time()]))
 
 def _get_limit(path: str):

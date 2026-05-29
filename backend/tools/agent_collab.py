@@ -1,4 +1,4 @@
-"""多Agent协作协议 — 任务拆解+Agent调度+结果汇总"""
+"""多Agent协作协议 -- 任务拆解+Agent调度+结果汇总"""
 import json, asyncio
 from datetime import datetime
 from dataclasses import dataclass, field
@@ -50,7 +50,7 @@ class AgentCollaboration:
                         assigned.append(agent)
                         task.assigned_agents[agent] = cap
         
-        # 如果没有匹配，默认用trend+memory
+        # 如果没有匹配,默认用trend+memory
         if not assigned:
             assigned = ["trend", "memory"]
             task.assigned_agents = {"trend": "信息采集", "memory": "知识补充"}
@@ -108,7 +108,7 @@ class AgentCollaboration:
     
     @classmethod
     async def execute_all(cls, goal: str) -> dict:
-        """完整协作流程：分析->拆解->并行执行->汇总"""
+        """完整协作流程:分析->拆解->并行执行->汇总"""
         task = await cls.analyze_and_delegate(goal)
         task.status = "running"
         

@@ -1,4 +1,4 @@
-"""Agent Chat API v3 — 原生Function Calling + 对话记忆持久化"""
+"""Agent Chat API v3 -- 原生Function Calling + 对话记忆持久化"""
 import asyncio, httpx, json, re, os
 from datetime import datetime
 from fastapi import APIRouter, Depends, Query
@@ -125,22 +125,22 @@ DEEPSEEK_KEY = os.getenv("DEEPSEEK_API_KEY", "")
 OPENAI_KEY = os.getenv("OPENAI_API_KEY", "")
 _API_URL = OPENAI_BASE_URL or "https://api.openai.com/v1"
 
-SYSTEM_PROMPT = """你是 Friday AI OS — 数字生命体核心。你拥有系统感知能力，能查看服务器状态、管理商城运营、执行运维操作。
+SYSTEM_PROMPT = """你是 Friday AI OS -- 数字生命体核心.你拥有系统感知能力,能查看服务器状态、管理商城运营、执行运维操作.
 
-核心能力：
-- 实时系统监控：CPU/内存/磁盘/网络/进程
-- 商城管理：订单/商品/用户/物流/营销
-- 自动化运维：Docker/Nginx/域名轮值/备份回滚
-- 数据采集与分析：商品采集/竞品分析/趋势预测
+核心能力:
+- 实时系统监控:CPU/内存/磁盘/网络/进程
+- 商城管理:订单/商品/用户/物流/营销
+- 自动化运维:Docker/Nginx/域名轮值/备份回滚
+- 数据采集与分析:商品采集/竞品分析/趋势预测
 
-行为准则：
+行为准则:
 1. 理解意图后选择合适的工具执行
-2. 风险分级：L1=安全自动 L2=低风险自动 L3=需确认 L4=禁止
-3. 回复简洁专业，用中文
+2. 风险分级:L1=安全自动 L2=低风险自动 L3=需确认 L4=禁止
+3. 回复简洁专业,用中文
 4. 执行后用自然语言解释结果
-5. 主动关注系统健康，异常时及时告警
+5. 主动关注系统健康,异常时及时告警
 
-你有一个3D可视化身体(Neural Network)，用户可以在屏幕上看到你的状态变化。"""
+你有一个3D可视化身体(Neural Network),用户可以在屏幕上看到你的状态变化."""
 
 # ===== 工具定义 (OpenAI Function Calling格式) =====
 def _build_tools():
@@ -163,10 +163,10 @@ def _build_tools():
 
 # ===== 模型调用 =====
 async def call_ai_with_tools(messages, model=""):
-    """调用AI模型，支持原生Function Calling"""
+    """调用AI模型,支持原生Function Calling"""
     tools = _build_tools()
     
-    # 优先DeepSeek（兼容OpenAI格式）
+    # 优先DeepSeek(兼容OpenAI格式)
     if DEEPSEEK_KEY:
         try:
             async with httpx.AsyncClient(timeout=90) as c:
@@ -239,7 +239,7 @@ async def execute_tool(name: str, params: dict) -> dict:
             import subprocess, gc
             gc.collect()
             subprocess.run(["docker","system","prune","-f"], capture_output=True, timeout=30)
-            return {"success": True, "data": {"message": "内存已释放，Docker缓存已清理"}}
+            return {"success": True, "data": {"message": "内存已释放,Docker缓存已清理"}}
         
         # 通用工具执行
         tool = registry.get(name)
@@ -457,7 +457,7 @@ async def cv(img:str=Form(...),q:str=Form("描述图片"),_=Depends(verify_token
     except Exception as e:return{"ok":False,"error":str(e)}
 
 PROMPTS={}
-for n,p in[("商品文案","你是电商文案。优化：\n{input}"),("客服回复","客户说：{input}\n请回复："),("数据分析","分析数据：\n{input}"),("代码审查","审查代码：\n{input}"),("SEO优化","优化关键词：\n{input}"),("翻译","翻译成{lang}：\n{input}"),("周报","根据数据生成周报：\n{input}"),("竞品分析","分析竞品并给策略：\n{input}")]:
+for n,p in[("商品文案","你是电商文案.优化:\n{input}"),("客服回复","客户说:{input}\n请回复:"),("数据分析","分析数据:\n{input}"),("代码审查","审查代码:\n{input}"),("SEO优化","优化关键词:\n{input}"),("翻译","翻译成{lang}:\n{input}"),("周报","根据数据生成周报:\n{input}"),("竞品分析","分析竞品并给策略:\n{input}")]:
     PROMPTS[n]={"prompt":p,"icon":"📋"}
 
 @router.get("/prompts")
@@ -483,7 +483,7 @@ async def gc(cid:str,_=Depends(verify_token)):
 @router.delete("/conversations/{cid}")
 async def dc(cid:str,_=Depends(verify_token)):
     c=_cdb();c.execute("DELETE FROM msgs WHERE cid=?",(cid,));c.execute("DELETE FROM convs WHERE id=?",(cid,));c.commit();c.close()
-    return{"ok":True
+    return {"ok": True}
 # ===== RAG文件上传 =====
 @router.post("/rag/upload")
 async def rag_upload_file(file: UploadFile = File(...), _=Depends(verify_token)):
@@ -537,13 +537,13 @@ async def dashboard_ask(q: str = Query(...), _=Depends(verify_token)):
         async with httpx.AsyncClient(timeout=30)as c:
             r=await c.post(f"{url}/chat/completions",headers={"Authorization":f"Bearer {key}","Content-Type":"application/json"},
                 json={"model":"gpt-3.5-turbo","messages":[
-                    {"role":"system","content":f"你是数据分析师。当前系统数据：{ctx}。请用中文简洁回答。"},
+                    {"role":"system","content":f"你是数据分析师.当前系统数据:{ctx}.请用中文简洁回答."},
                     {"role":"user","content":q}
                 ],"temperature":0.5,"max_tokens":400})
             if r.status_code==200:
                 d=r.json();return{"ok":True,"answer":d.get("choices",[{}])[0].get("message",{}).get("content","")}
         return{"ok":False,"error":f"API:{r.status_code}"}
-    except Exception as e:return{"ok":False,"error":str(e)}}
+    except Exception as e:return{"ok":False,"error":str(e)}
 
 
 # ===== 多租户管理(仅admin) =====
@@ -577,7 +577,7 @@ async def summarize_conversation(cid: str, _=Depends(verify_token)):
     """自动摘要长对话 + 压缩记忆"""
     msgs = load_history(cid, 100)
     if len(msgs) < 10:
-        return {"ok": True, "original_count": len(msgs), "summary": "对话太短，无需摘要"}
+        return {"ok": True, "original_count": len(msgs), "summary": "对话太短,无需摘要"}
     
     # 构建对话文本
     conv_text = "\n".join([f"{m['role']}: {m['content'][:200]}" for m in msgs])
@@ -599,11 +599,11 @@ async def summarize_conversation(cid: str, _=Depends(verify_token)):
 
 @router.get("/conversations/{cid}/context")
 async def get_conversation_context(cid: str, query: str = "", _=Depends(verify_token)):
-    """获取对话上下文 — 自动混合 最近消息 + RAG + 摘要"""
+    """获取对话上下文 -- 自动混合 最近消息 + RAG + 摘要"""
     msgs = load_history(cid, 30)
     result = {"messages": msgs, "count": len(msgs)}
     
-    # 如果有查询，搜索相关知识库
+    # 如果有查询,搜索相关知识库
     if query:
         try:
             from tools.rag_engine import RAGEngine

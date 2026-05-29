@@ -1,4 +1,4 @@
-"""通知中心 — 系统通知/审批提醒/告警推送"""
+"""通知中心 -- 系统通知/审批提醒/告警推送"""
 from datetime import datetime
 from fastapi import APIRouter, Depends
 from auth import verify_token
@@ -11,7 +11,7 @@ MAX_NOTIFICATIONS = 200
 
 
 def push_notification(title: str, message: str, ntype: str = "info", link: str = ""):
-    """推送通知（其他模块可调用）"""
+    """推送通知(其他模块可调用)"""
     notif = {
         "id": datetime.now().strftime("%Y%m%d%H%M%S%f")[:-3],
         "time": datetime.now().isoformat(),

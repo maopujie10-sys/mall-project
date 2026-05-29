@@ -1,4 +1,4 @@
-"""企业级全量商品采集引擎 — 多平台/规格提取/SKU/OSS上传/去重"""
+"""企业级全量商品采集引擎 -- 多平台/规格提取/SKU/OSS上传/去重"""
 import os
 import re
 import json
@@ -100,7 +100,7 @@ async def polite_delay():
 # ═══════════════════════════════════════
 
 async def download_and_upload(url: str, product_id: str, index: int, session: httpx.AsyncClient) -> Optional[str]:
-    """下载图片并通过 COS 签名URL上传，返回COS链接"""
+    """下载图片并通过 COS 签名URL上传,返回COS链接"""
     for attempt in range(3):
         try:
             r = await session.get(url, headers={"User-Agent": random_ua()}, timeout=15)
@@ -161,13 +161,13 @@ REFERERS = [
     "https://search.yahoo.com/search?p={keyword}",
 ]
 
-# 免费代理池（备用，建议配置付费代理）
+# 免费代理池(备用,建议配置付费代理)
 FALLBACK_PROXIES = [
     # 格式: "http://ip:port"
 ]
 
 class AntiScrapEngine:
-    """企业级反反爬引擎 — IP轮换/指纹随机/智能延迟/指数退避"""
+    """企业级反反爬引擎 -- IP轮换/指纹随机/智能延迟/指数退避"""
 
     def __init__(self, domain: str, use_proxy: bool = False):
         self.domain = domain
@@ -182,7 +182,7 @@ class AntiScrapEngine:
         self._domain_delays = {}  # 每个域名的延迟策略
 
     def get_headers(self, keyword: str = "") -> dict:
-        """生成随机化请求头，模拟真实浏览器指纹"""
+        """生成随机化请求头,模拟真实浏览器指纹"""
         self._ua_idx = (self._ua_idx + 1) % len(DESKTOP_UAS)
         ua = DESKTOP_UAS[self._ua_idx] if random.random() > 0.2 else random.choice(MOBILE_UAS)
 
@@ -222,14 +222,14 @@ class AntiScrapEngine:
         self.use_proxy = True
 
     async def smart_delay(self, is_search: bool = False):
-        """智能延迟：模拟人类浏览行为
-        - 搜索页：短间隔 0.5-1.5s
-        - 详情页：中长间隔 1-3s，偶尔5-8s（模拟阅读）
+        """智能延迟:模拟人类浏览行为
+        - 搜索页:短间隔 0.5-1.5s
+        - 详情页:中长间隔 1-3s,偶尔5-8s(模拟阅读)
         """
         if is_search:
             base = random.uniform(0.5, 1.5)
         else:
-            # 80% 短间隔，15% 中间隔，5% 长间隔（模拟停下来看商品）
+            # 80% 短间隔,15% 中间隔,5% 长间隔(模拟停下来看商品)
             r = random.random()
             if r < 0.8:
                 base = random.uniform(1.0, 3.0)
@@ -245,7 +245,7 @@ class AntiScrapEngine:
 
     async def safe_request(self, session: httpx.AsyncClient, url: str, keyword: str = "",
                            max_retries: int = 3, is_search: bool = False) -> Optional[httpx.Response]:
-        """带反反爬保护的安全请求 — 自动重试+指数退避+IP轮换"""
+        """带反反爬保护的安全请求 -- 自动重试+指数退避+IP轮换"""
         last_error = None
 
         for attempt in range(max_retries):
@@ -274,23 +274,23 @@ class AntiScrapEngine:
 
                     # 检测空响应
                     if len(r.text) < 200:
-                        raise Exception(f"响应过短({len(r.text)}字节)，疑似拦截")
+                        raise Exception(f"响应过短({len(r.text)}字节),疑似拦截")
 
                     self._request_count += 1
                     self._session_requests += 1
                     return r
 
                 elif r.status_code == 429:
-                    # 限流 — 指数退避
+                    # 限流 -- 指数退避
                     wait = (2 ** attempt) + random.uniform(1, 5)
-                    print(f"[AntiScrap] {self.domain} 429限流，等待 {wait:.1f}s")
+                    print(f"[AntiScrap] {self.domain} 429限流,等待 {wait:.1f}s")
                     await asyncio.sleep(wait)
                     continue
 
                 elif r.status_code in (403, 503):
-                    # 被封 — 换IP+长等
+                    # 被封 -- 换IP+长等
                     wait = (3 ** attempt) + random.uniform(5, 15)
-                    print(f"[AntiScrap] {self.domain} {r.status_code}被封，换IP等待 {wait:.1f}s")
+                    print(f"[AntiScrap] {self.domain} {r.status_code}被封,换IP等待 {wait:.1f}s")
                     await asyncio.sleep(wait)
                     continue
 
@@ -308,7 +308,7 @@ class AntiScrapEngine:
         return None
 
     async def rotate_session(self, session: httpx.AsyncClient):
-        """轮换会话指纹 — 清cookie换身份"""
+        """轮换会话指纹 -- 清cookie换身份"""
         session.cookies.clear()
         self._session_requests = 0
         # 随机切换UA池
@@ -328,7 +328,7 @@ class AntiScrapEngine:
 # ═══════════════════════════════════════
 
 class eBayAdapter:
-    """eBay 真实API采集适配器 — Finding API + Shopping API"""
+    """eBay 真实API采集适配器 -- Finding API + Shopping API"""
     name = "ebay"
 
     def __init__(self):
@@ -344,7 +344,7 @@ class eBayAdapter:
         self._search_cache = {}
 
     async def search(self, keyword: str, max_pages: int = 3, session: httpx.AsyncClient = None) -> list[str]:
-        """eBay Finding API 搜索，返回 itemId 列表"""
+        """eBay Finding API 搜索,返回 itemId 列表"""
         item_ids = []
         close_session = session is None
         if close_session:
@@ -469,7 +469,7 @@ class eBayAdapter:
             return None
 
     async def extract_concurrent(self, item_ids: list[str], session: httpx.AsyncClient = None, concurrency: int = 3) -> list:
-        """并发提取多个eBay商品 — Semaphore控并发"""
+        """并发提取多个eBay商品 -- Semaphore控并发"""
         sem = asyncio.Semaphore(concurrency)
         async def _one(iid):
             async with sem:
@@ -480,7 +480,7 @@ class eBayAdapter:
 
 
 class EbayHtmlAdapter:
-    """eBay HTML网页采集 — curl_cffi TLS指纹绕过反爬"""
+    """eBay HTML网页采集 -- curl_cffi TLS指纹绕过反爬"""
     name = "ebay_html"
 
     EBAY_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
@@ -513,7 +513,7 @@ class EbayHtmlAdapter:
             m = re.search(r'/itm/(\d{10,13})', a.get("href", ""))
             if m:
                 item_ids.add(m.group(1))
-        # 如果无结果，重置session（可能被限流）
+        # 如果无结果,重置session(可能被限流)
         if not item_ids:
             self._session = None
         return list(item_ids)
@@ -540,7 +540,7 @@ class EbayHtmlAdapter:
             title_el = soup.select_one(".it-ttl") or soup.select_one("#itemTitle")
             title = title_el.get_text(strip=True) if title_el else ""
 
-        # 价格 — 优先JSON-LD
+        # 价格 -- 优先JSON-LD
         price = 0.0
         org_price = 0.0
         for script in soup.select("script[type='application/ld+json']"):
@@ -643,7 +643,7 @@ class EbayHtmlAdapter:
 
 
 class BaseScrapeAdapter:
-    """反反爬采集基类 — 所有 HTML 爬虫适配器继承此类"""
+    """反反爬采集基类 -- 所有 HTML 爬虫适配器继承此类"""
     
     def __init__(self, platform_name: str, domain: str):
         self.platform_name = platform_name
@@ -657,7 +657,7 @@ class BaseScrapeAdapter:
         await self.anti.smart_delay(is_search)
     
     def _parse_price(self, text: str) -> float:
-        """通用价格解析 — $19.99 / USD 19.99 / 12,99€ 等"""
+        """通用价格解析 -- $19.99 / USD 19.99 / 12,99€ 等"""
         if not text:
             return 0.0
         text = text.strip().replace(",", "").replace(" ", "")
@@ -696,7 +696,7 @@ class BaseScrapeAdapter:
         return images
 
 class AliExpressAdapter(BaseScrapeAdapter):
-    """AliExpress 速卖通 — 反反爬增强版"""
+    """AliExpress 速卖通 -- 反反爬增强版"""
     name = "aliexpress"
     
     def __init__(self):
@@ -773,7 +773,7 @@ class AliExpressAdapter(BaseScrapeAdapter):
 
 
 class AmazonAdapter(BaseScrapeAdapter):
-    """Amazon 全球站 — 反反爬增强版"""
+    """Amazon 全球站 -- 反反爬增强版"""
     name = "amazon"
     
     def __init__(self):
@@ -815,7 +815,7 @@ class AmazonAdapter(BaseScrapeAdapter):
                 return None
 
             soup = BeautifulSoup(r.text, "lxml")
-            # 立即释放原始HTML，减小内存
+            # 立即释放原始HTML,减小内存
             page_text = r.text
             del r
 
@@ -872,7 +872,7 @@ class AmazonAdapter(BaseScrapeAdapter):
                 if cat_name and cat_name not in category_path:
                     category_path.append(cat_name)
 
-            # 描述 — 优先A+内容，其次普通描述
+            # 描述 -- 优先A+内容,其次普通描述
             description = ""
             desc_el = soup.select_one("#productDescription p") or soup.select_one("#productDescription")
             if not desc_el:
@@ -884,10 +884,10 @@ class AmazonAdapter(BaseScrapeAdapter):
                 if feature_bullets:
                     description = "\n".join(li.get_text(strip=True) for li in feature_bullets[:20])
 
-            # SKU规格 — 从变体选择器提取（包括ASIN映射）
+            # SKU规格 -- 从变体选择器提取(包括ASIN映射)
             specs = []
-            asin_map = {}  # 规格值 → ASIN
-            sku_dimensions = {}  # 规格名 → [值列表]
+            asin_map = {}  # 规格值 -> ASIN
+            sku_dimensions = {}  # 规格名 -> [值列表]
 
             # 从隐藏的twister数据提取变体ASIN映射
             twister_data = soup.select_one("script[type='text/twister']")
@@ -927,7 +927,7 @@ class AmazonAdapter(BaseScrapeAdapter):
                 nice_name = {"color_name": "颜色", "size_name": "尺寸", "style_name": "款式"}.get(dim_name, dim_name)
                 spec_items.append(SpecItem(name=nice_name, values=values))
 
-            # 生成SKU（规格组合）
+            # 生成SKU(规格组合)
             skus = []
             for dim_name, values in sku_dimensions.items():
                 for val in values[:8]:  # 每维度最多8个值
@@ -957,13 +957,13 @@ class AmazonAdapter(BaseScrapeAdapter):
                 review_cards = soup.select("#cm_cr-review_list [data-hook='review'], .review.aok-relative")
             for card in review_cards[:10]:
                 try:
-                    # 作者 — genome-widget 是Amazon最新版本
+                    # 作者 -- genome-widget 是Amazon最新版本
                     name_el = (card.select_one("[data-hook='genome-widget']")
                                or card.select_one(".a-profile-name")
                                or card.select_one("[data-hook='review-author']"))
                     rev_name = name_el.get_text(strip=True) if name_el else ""
 
-                    # 评分 — review-star-rating 容器内的 .a-icon-alt
+                    # 评分 -- review-star-rating 容器内的 .a-icon-alt
                     star_el = (card.select_one("[data-hook='review-star-rating'] .a-icon-alt")
                                or card.select_one(".a-icon-alt"))
                     rev_rating = 0.0
@@ -972,11 +972,11 @@ class AmazonAdapter(BaseScrapeAdapter):
                         if r_nums:
                             rev_rating = float(r_nums[0])
 
-                    # 标题 — reviewTitle (camelCase, 不是 review-title)
+                    # 标题 -- reviewTitle (camelCase, 不是 review-title)
                     title_el = card.select_one("[data-hook='reviewTitle']") or card.select_one(".review-title")
                     rev_title = title_el.get_text(strip=True) if title_el else ""
 
-                    # 正文 — reviewRichContentContainer 有完整内容
+                    # 正文 -- reviewRichContentContainer 有完整内容
                     body_el = (card.select_one("[data-hook='reviewRichContentContainer']")
                                or card.select_one("[data-hook='reviewTextContainer']")
                                or card.select_one(".review-text"))
@@ -1023,7 +1023,7 @@ class AmazonAdapter(BaseScrapeAdapter):
             return None
 
     async def extract_concurrent(self, urls: list[str], session: httpx.AsyncClient, concurrency: int = 3) -> list:
-        """并发提取多个产品页 — semaphore控并发，失败的不返回"""
+        """并发提取多个产品页 -- semaphore控并发,失败的不返回"""
         sem = asyncio.Semaphore(concurrency)
 
         async def _one(url):
@@ -1036,7 +1036,7 @@ class AmazonAdapter(BaseScrapeAdapter):
 
 
 class WishAdapter(BaseScrapeAdapter):
-    """Wish 全球站 — 反反爬增强版"""
+    """Wish 全球站 -- 反反爬增强版"""
     name = "wish"
     
     def __init__(self):
@@ -1101,7 +1101,7 @@ class WishAdapter(BaseScrapeAdapter):
 
 
 class ShopeeAdapter(BaseScrapeAdapter):
-    """Shopee 虾皮 — 反反爬增强版"""
+    """Shopee 虾皮 -- 反反爬增强版"""
     name = "shopee"
     
     def __init__(self):
@@ -1168,7 +1168,7 @@ class ShopeeAdapter(BaseScrapeAdapter):
                         sales_count=sales, crawled_at=datetime.now().isoformat()
                     )
             
-            # 降级：HTML爬取
+            # 降级:HTML爬取
             r = await self._safe_get(session, url, max_retries=2)
             if not r:
                 return None
@@ -1186,7 +1186,7 @@ class ShopeeAdapter(BaseScrapeAdapter):
 
 
 class LazadaAdapter(BaseScrapeAdapter):
-    """Lazada 来赞达 — 反反爬增强版"""
+    """Lazada 来赞达 -- 反反爬增强版"""
     name = "lazada"
     
     def __init__(self):
@@ -1258,7 +1258,7 @@ class LazadaAdapter(BaseScrapeAdapter):
 
 
 class TikTokShopAdapter(BaseScrapeAdapter):
-    """TikTok Shop 海外抖音电商 — 反反爬增强版"""
+    """TikTok Shop 海外抖音电商 -- 反反爬增强版"""
     name = "tiktok"
 
     def __init__(self):
@@ -1334,7 +1334,7 @@ class TikTokShopAdapter(BaseScrapeAdapter):
 # ═══════════════════════════════════════
 
 class TaobaoAdapter(BaseScrapeAdapter):
-    """淘宝/天猫 — 反反爬增强版"""
+    """淘宝/天猫 -- 反反爬增强版"""
     name = "taobao"
     
     def __init__(self):
@@ -1405,7 +1405,7 @@ class TaobaoAdapter(BaseScrapeAdapter):
 # ═══════════════════════════════════════
 
 class Alibaba1688Adapter(BaseScrapeAdapter):
-    """1688阿里巴巴 — 反反爬增强版"""
+    """1688阿里巴巴 -- 反反爬增强版"""
     name = "alibaba1688"
     
     def __init__(self):
@@ -1488,15 +1488,15 @@ ADAPTERS = {
 }
 
 PRIORITY_SOURCES = [
-    "ebay",      # 官方API — 稳定首选
-    "shopee",    # API+爬虫双模 — 东南亚货源王
-    "aliexpress", # 反反爬 — 中国直发全球
-    "amazon",    # 反反爬 — 全球最大
-    "wish",      # 反反爬 — 低价爆款
-    "lazada",    # 反反爬 — 东南亚老二
-    "tiktok",   # 反反爬 — 海外抖音电商新贵
-    "taobao",     # 反反爬 — 中国最大C2C
-    "alibaba1688", # 反反爬 — 中国最大B2B批发
+    "ebay",      # 官方API -- 稳定首选
+    "shopee",    # API+爬虫双模 -- 东南亚货源王
+    "aliexpress", # 反反爬 -- 中国直发全球
+    "amazon",    # 反反爬 -- 全球最大
+    "wish",      # 反反爬 -- 低价爆款
+    "lazada",    # 反反爬 -- 东南亚老二
+    "tiktok",   # 反反爬 -- 海外抖音电商新贵
+    "taobao",     # 反反爬 -- 中国最大C2C
+    "alibaba1688", # 反反爬 -- 中国最大B2B批发
 ]
 
 def _get_jobs():
@@ -1560,7 +1560,7 @@ class ScraperEngine:
 
     @staticmethod
     def import_to_mall(product_ids: list[str]) -> dict:
-        """真实导入：写入MySQL商城表，直接上架"""
+        """真实导入:写入MySQL商城表,直接上架"""
         from tools.mall_importer import import_product
         products = _get_products()
         results = {"imported": 0, "skipped": 0, "failed": 0, "details": []}
@@ -1602,7 +1602,7 @@ async def _do_scrape(job_id: str, platform: str, keyword: str, max_items: int, d
         if download_images:
             _job_progress(job_id, {"status": "uploading"})
             for p in products:
-                # 优先尝试COS上传，失败则用源URL
+                # 优先尝试COS上传,失败则用源URL
                 uploaded = []
                 for idx, img_url in enumerate(p.images[:8]):
                     cos_url = await download_and_upload(img_url, p.id, idx, session)

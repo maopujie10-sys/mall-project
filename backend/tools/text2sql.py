@@ -1,4 +1,4 @@
-"""Text-to-SQL — 自然语言查数据库"""
+"""Text-to-SQL -- 自然语言查数据库"""
 import re, json
 from tools.logger import get_logger
 
@@ -8,7 +8,7 @@ logger = get_logger("text2sql")
 _SCHEMA_CACHE = {}
 
 class Text2SQL:
-    """自然语言→SQL查询"""
+    """自然语言->SQL查询"""
 
     @classmethod
     def set_schema(cls, tables: dict):
@@ -23,7 +23,7 @@ class Text2SQL:
         try:
             from agents.multi_model import ModelRouter
 
-            prompt = f"""数据库Schema:\n{schema_desc}\n\n用户问题: {question}\n\n请生成一个安全的SELECT查询(只读,禁止INSERT/UPDATE/DELETE/DROP)。返回JSON: {{"sql":"SELECT ...", "explanation":"查询说明"}}"""
+            prompt = f"""数据库Schema:\n{schema_desc}\n\n用户问题: {question}\n\n请生成一个安全的SELECT查询(只读,禁止INSERT/UPDATE/DELETE/DROP).返回JSON: {{"sql":"SELECT ...", "explanation":"查询说明"}}"""
 
             resp = await ModelRouter.smart_chat(messages=[{"role":"user","content":prompt}], mode="fast")
             content = resp.get("content", "{}")

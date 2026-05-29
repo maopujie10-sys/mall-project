@@ -1,4 +1,4 @@
-"""Excel批量上架 — 解析Excel+自动分类+定价+一键上架/v1"""
+"""Excel批量上架 -- 解析Excel+自动分类+定价+一键上架/v1"""
 import os, json, csv, io
 from fastapi import APIRouter, Depends, UploadFile, File, Form
 from auth import verify_token
@@ -29,7 +29,7 @@ async def parse_excel(file: UploadFile = File(...), _=Depends(verify_token)):
             for row in reader:
                 products.append({k.strip(): v.strip() for k, v in row.items()})
         else:
-            # 模拟Excel解析（实际需安装openpyxl）
+            # 模拟Excel解析(实际需安装openpyxl)
             import json as _j
             try:
                 text = content.decode("utf-8")

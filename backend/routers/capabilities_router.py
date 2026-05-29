@@ -1,4 +1,4 @@
-"""系统能力状态 API — 检测各API Key配置 + 模型可用性"""
+"""系统能力状态 API -- 检测各API Key配置 + 模型可用性"""
 import os
 from fastapi import APIRouter, Depends
 from auth import verify_token

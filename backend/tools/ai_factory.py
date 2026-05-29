@@ -1,11 +1,11 @@
-"""AI 内容工厂 — 作图/视频/文案生成工具封装"""
+"""AI 内容工厂 -- 作图/视频/文案生成工具封装"""
 import httpx
 import json
 from datetime import datetime
 from typing import Optional
 from state import state
 
-# ===== 配置（从config导入）=====
+# ===== 配置(从config导入)=====
 from config import (
     CLAUDE_API_KEY,
     CLAUDE_MODEL,
@@ -18,10 +18,10 @@ from config import (
 
 # ===== 文案生成 =====
 COPYWRITER_PROMPTS = {
-    "title": "你是一个电商文案专家。请为以下商品生成一个吸引人的中文标题（20字以内），突出卖点：\n{product_info}",
-    "description": "你是一个电商文案专家。请为以下商品生成一段详细的中文商品描述（200-300字），包含卖点、规格、适用场景：\n{product_info}",
-    "seo": "你是一个SEO专家。请为以下商品生成SEO关键词和描述（100字以内）：\n{product_info}",
-    "ad": "你是一个营销文案专家。请为以下商品生成一条朋友圈/社交媒体推广文案（80字以内）：\n{product_info}",
+    "title": "你是一个电商文案专家.请为以下商品生成一个吸引人的中文标题(20字以内),突出卖点:\n{product_info}",
+    "description": "你是一个电商文案专家.请为以下商品生成一段详细的中文商品描述(200-300字),包含卖点、规格、适用场景:\n{product_info}",
+    "seo": "你是一个SEO专家.请为以下商品生成SEO关键词和描述(100字以内):\n{product_info}",
+    "ad": "你是一个营销文案专家.请为以下商品生成一条朋友圈/社交媒体推广文案(80字以内):\n{product_info}",
 }
 
 async def generate_copy(product_info: str, style: str = "title") -> dict:
@@ -30,7 +30,7 @@ async def generate_copy(product_info: str, style: str = "title") -> dict:
     prompt = prompt.replace("{product_info}", product_info)
 
     if not CLAUDE_API_KEY:
-        return {"ok": False, "error": "CLAUDE_API_KEY 未配置，请在 .env 中设置", "style": style}
+        return {"ok": False, "error": "CLAUDE_API_KEY 未配置,请在 .env 中设置", "style": style}
 
     try:
         async with httpx.AsyncClient(timeout=30) as c:
@@ -59,7 +59,7 @@ async def generate_copy(product_info: str, style: str = "title") -> dict:
 async def generate_image(prompt: str, size: str = "1024x1024", style: str = " realistic") -> dict:
     """调用作图 API 生成商品图"""
     if not IMAGE_API_KEY:
-        return {"ok": False, "error": "IMAGE_API_KEY 未配置，请在 .env 中设置"}
+        return {"ok": False, "error": "IMAGE_API_KEY 未配置,请在 .env 中设置"}
 
     try:
         async with httpx.AsyncClient(timeout=60) as c:
@@ -86,7 +86,7 @@ async def generate_image(prompt: str, size: str = "1024x1024", style: str = " re
 async def generate_video(product_name: str, script: str = "", duration: int = 15) -> dict:
     """调用视频 API 生成商品展示视频"""
     if not VIDEO_API_KEY:
-        return {"ok": False, "error": "VIDEO_API_KEY 未配置，请在 .env 中设置"}
+        return {"ok": False, "error": "VIDEO_API_KEY 未配置,请在 .env 中设置"}
 
     try:
         async with httpx.AsyncClient(timeout=120) as c:

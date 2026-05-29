@@ -1,4 +1,4 @@
-"""自助运维 Runbook — 自动化故障处理流程引擎"""
+"""自助运维 Runbook -- 自动化故障处理流程引擎"""
 import httpx
 from datetime import datetime
 from typing import Optional
@@ -29,7 +29,7 @@ class Runbook:
         self._failed = False
 
     async def run(self) -> dict:
-        """执行 runbook，返回完整报告"""
+        """执行 runbook,返回完整报告"""
         raise NotImplementedError
 
     def _add_step(self, name: str, ok: bool, detail: str = "", evidence: str = ""):
@@ -55,17 +55,17 @@ class Runbook:
         total = len(self.steps)
         if self._failed:
             failed_steps = [s.name for s in self.steps if not s.ok]
-            return f"完成 {passed}/{total} 步。❌ 异常: {', '.join(failed_steps)}。建议人工介入。"
-        return f"全部 {total} 步通过 ✅，系统运行正常。"
+            return f"完成 {passed}/{total} 步.❌ 异常: {', '.join(failed_steps)}.建议人工介入."
+        return f"全部 {total} 步通过 ✅,系统运行正常."
 
 
 # ===== 具体 Runbook =====
 
 class MallDownRunbook(Runbook):
-    """商城打不开 — 端到端诊断"""
+    """商城打不开 -- 端到端诊断"""
 
     def __init__(self):
-        super().__init__("商城打不开诊断", "检查DNS→服务器→端口→Nginx→Docker→日志→数据库→诊断报告")
+        super().__init__("商城打不开诊断", "检查DNS->服务器->端口->Nginx->Docker->日志->数据库->诊断报告")
 
     async def run(self) -> dict:
         async with httpx.AsyncClient(timeout=10, follow_redirects=True) as c:
@@ -132,10 +132,10 @@ class ServerHealthRunbook(Runbook):
 
 
 class DiskFullRunbook(Runbook):
-    """磁盘快满 — 分析大文件/清理日志/压缩"""
+    """磁盘快满 -- 分析大文件/清理日志/压缩"""
 
     def __init__(self):
-        super().__init__("磁盘清理", "分析磁盘使用→定位大文件→清理日志→压缩备份")
+        super().__init__("磁盘清理", "分析磁盘使用->定位大文件->清理日志->压缩备份")
 
     async def run(self) -> dict:
         from executor import execute
@@ -164,7 +164,7 @@ class DiskFullRunbook(Runbook):
         # 最终
         disk2 = psutil.disk_usage("/")
         freed = disk.used - disk2.used
-        self._add_step("清理结果", True, f"释放 {freed/1024**3:.2f}GB，使用率 {disk.percent}% → {disk2.percent}%")
+        self._add_step("清理结果", True, f"释放 {freed/1024**3:.2f}GB,使用率 {disk.percent}% -> {disk2.percent}%")
 
         return self._report()
 
@@ -196,7 +196,7 @@ class RotationCheckRunbook(Runbook):
                     ok = r.status_code < 400
                     if ok: ok_count += 1
                     d["health"] = "ok" if ok else "error"
-                    self._add_step(d["domain"], ok, f"状态码 {r.status_code}", " → ".join(chain + [str(r.url)])[:200])
+                    self._add_step(d["domain"], ok, f"状态码 {r.status_code}", " -> ".join(chain + [str(r.url)])[:200])
                 except Exception as e:
                     d["health"] = "error"
                     self._add_step(d["domain"], False, str(e)[:100])
@@ -208,10 +208,10 @@ class RotationCheckRunbook(Runbook):
 
 
 class CustomerOrderRunbook(Runbook):
-    """客服订单查询 — 查用户→查订单→查支付→回复"""
+    """客服订单查询 -- 查用户->查订单->查支付->回复"""
 
     def __init__(self, user_id: str = "", order_id: str = ""):
-        super().__init__("客服订单查询", "确认用户身份→查询订单→支付状态→判断异常→生成回复")
+        super().__init__("客服订单查询", "确认用户身份->查询订单->支付状态->判断异常->生成回复")
         self.user_id = user_id
         self.order_id = order_id
 
@@ -242,8 +242,8 @@ class CustomerOrderRunbook(Runbook):
 
         # 自动生成回复建议
         if self._failed:
-            self._add_step("回复建议", True, "订单查询异常，建议转人工客服处理")
+            self._add_step("回复建议", True, "订单查询异常,建议转人工客服处理")
         else:
-            self._add_step("回复建议", True, "订单信息已获取，可自动回复客户")
+            self._add_step("回复建议", True, "订单信息已获取,可自动回复客户")
 
         return self._report()

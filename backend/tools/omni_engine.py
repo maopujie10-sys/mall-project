@@ -1,4 +1,4 @@
-"""全能引擎 — 预测告警 + 智能定价 + 自修复 + 知识图谱"""
+"""全能引擎 -- 预测告警 + 智能定价 + 自修复 + 知识图谱"""
 import json, os, time
 from datetime import datetime, timedelta
 from collections import defaultdict
@@ -7,7 +7,7 @@ from tools.logger import get_logger
 logger = get_logger("engine")
 
 class PredictEngine:
-    """预测引擎 — 基于历史趋势的智能告警"""
+    """预测引擎 -- 基于历史趋势的智能告警"""
     _history = defaultdict(list)  # {metric: [(timestamp, value), ...]}
     _max_history = 1000
 
@@ -19,7 +19,7 @@ class PredictEngine:
 
     @classmethod
     def predict(cls, metric: str, minutes_ahead: int = 30) -> dict:
-        """预测未来趋势，返回是否可能超标"""
+        """预测未来趋势,返回是否可能超标"""
         data = cls._history.get(metric, [])
         if len(data) < 10:
             return {"predictable": False, "reason": "数据不足"}
@@ -39,7 +39,7 @@ class PredictEngine:
         }
 
 class SmartPricing:
-    """智能定价 — 竞品监控+自动调价"""
+    """智能定价 -- 竞品监控+自动调价"""
     _rules = []
     _price_history = {}
 
@@ -53,7 +53,7 @@ class SmartPricing:
 
     @classmethod
     def analyze_competitor(cls, product_id: str, our_price: float, competitor_prices: list) -> dict:
-        """分析竞品价格，建议调整"""
+        """分析竞品价格,建议调整"""
         if not competitor_prices:
             return {"action": "hold", "reason": "无竞品数据"}
         avg_comp = sum(competitor_prices) / len(competitor_prices)
@@ -101,7 +101,7 @@ class SelfHealing:
         return {"healed": True, "results": results}
 
 class KnowledgeGraph:
-    """知识图谱 — 关联商品/用户/订单/域名"""
+    """知识图谱 -- 关联商品/用户/订单/域名"""
     _nodes = {}
     _edges = []
 
@@ -133,11 +133,11 @@ class KnowledgeGraph:
         return results
 
 class BusinessEngine:
-    """业务增长引擎 — 数据驱动的运营建议"""
+    """业务增长引擎 -- 数据驱动的运营建议"""
     
     @classmethod
     def analyze_sales(cls, orders: list) -> dict:
-        """分析销售数据，推荐爆品"""
+        """分析销售数据,推荐爆品"""
         if not orders: return {"top_products": [], "trending": [], "suggestion": "暂无订单数据"}
         product_sales = defaultdict(lambda: {"count": 0, "revenue": 0})
         for o in orders:

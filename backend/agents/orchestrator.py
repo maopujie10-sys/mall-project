@@ -1,4 +1,4 @@
-"""Agent 协作编排器 — 多Agent协同完成任务"""
+"""Agent 协作编排器 -- 多Agent协同完成任务"""
 import asyncio, json, time
 from typing import List, Dict, Any, Optional
 from dataclasses import dataclass, field
@@ -55,7 +55,7 @@ class AgentOrchestrator:
             from agents.multi_model import ModelRouter
             mr = ModelRouter()
 
-            prompt = f"""你是一个任务拆解专家。根据用户目标，将任务拆解为可执行的步骤。
+            prompt = f"""你是一个任务拆解专家.根据用户目标,将任务拆解为可执行的步骤.
 每个步骤指定一个Agent角色: master(总控)/analyzer(分析)/executor(执行)/reviewer(审查)/reporter(报告)
 
 用户目标: {goal}
@@ -87,7 +87,7 @@ class AgentOrchestrator:
                         params=step.get("params", {})
                     ))
         except Exception as e:
-            logger.warning(f"LLM规划失败，使用默认步骤: {e}")
+            logger.warning(f"LLM规划失败,使用默认步骤: {e}")
             # 默认步骤
             task.steps = [
                 TaskStep(id=f"{task.id}_s1", agent_role=AgentRole.ANALYZER, action=f"分析: {goal}"),
@@ -135,7 +135,7 @@ class AgentOrchestrator:
         return task
 
     async def _execute_step(self, step: TaskStep, task: CollaborationTask) -> Any:
-        """执行单个步骤，路由到对应Agent"""
+        """执行单个步骤,路由到对应Agent"""
         role = step.agent_role
 
         if role == AgentRole.ANALYZER:
@@ -150,7 +150,7 @@ class AgentOrchestrator:
             return {"role": role.value, "action": step.action, "status": "ok"}
 
     async def _run_analyzer(self, step: TaskStep, task: CollaborationTask) -> Dict:
-        """分析Agent — 使用LLM深度分析"""
+        """分析Agent -- 使用LLM深度分析"""
         try:
             from agents.multi_model import ModelRouter
             resp = await ModelRouter.smart_chat(
@@ -162,7 +162,7 @@ class AgentOrchestrator:
             return {"analysis": f"分析完成(本地): {step.action}", "error": str(e)}
 
     async def _run_executor(self, step: TaskStep, task: CollaborationTask) -> Dict:
-        """执行Agent — 调用具体工具"""
+        """执行Agent -- 调用具体工具"""
         from tools.omni_engine import SelfHealing, BusinessEngine
 
         action_lower = step.action.lower()
@@ -187,13 +187,13 @@ class AgentOrchestrator:
             return {"type": "manual", "result": f"任务需要人工执行: {step.action}"}
 
     async def _run_reviewer(self, step: TaskStep, task: CollaborationTask) -> Dict:
-        """审查Agent — 检查执行结果"""
+        """审查Agent -- 检查执行结果"""
         prev_results = [s.result for s in task.steps if s.status == "done" and s.id != step.id]
 
         try:
             from agents.multi_model import ModelRouter
             resp = await ModelRouter.smart_chat(
-                messages=[{"role": "user", "content": f"请审查以下任务执行结果:\n目标: {task.goal}\n执行结果: {prev_results}\n请评估是否达成目标，有无遗漏或风险"}],
+                messages=[{"role": "user", "content": f"请审查以下任务执行结果:\n目标: {task.goal}\n执行结果: {prev_results}\n请评估是否达成目标,有无遗漏或风险"}],
                 mode="fast"
             )
             return {"review": resp.get("content", ""), "passed": "失败" not in resp.get("content", "")}

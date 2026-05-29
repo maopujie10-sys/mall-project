@@ -1,11 +1,11 @@
-"""AI 自我进化引擎 — 记忆/学习/优化/进化
+"""AI 自我进化引擎 -- 记忆/学习/优化/进化
 
 AI 不再是「死」的:
-  ✅ 记住所有行动 + 结果（什么成功、什么失败）
-  ✅ 自动评估策略效果（哪个采集源更好？哪种商品更受欢迎？）
-  ✅ 从用户纠正中学习（说「不对，做这个」AI 就记住）
-  ✅ 意图规则自动优化（常用指令优先级自动提升）
-  ✅ 生成进化报告（AI 自己告诉你它学到了什么）
+  ✅ 记住所有行动 + 结果(什么成功、什么失败)
+  ✅ 自动评估策略效果(哪个采集源更好?哪种商品更受欢迎?)
+  ✅ 从用户纠正中学习(说「不对,做这个」AI 就记住)
+  ✅ 意图规则自动优化(常用指令优先级自动提升)
+  ✅ 生成进化报告(AI 自己告诉你它学到了什么)
 """
 import os
 import json
@@ -84,7 +84,7 @@ class EvolutionEngine:
     @staticmethod
     def log_action(action_type: str, action_name: str, input_params: dict = None,
                    result_status: str = "success", result_detail: str = "", duration_ms: float = 0):
-        """记录每次 AI 行动 — AI 的「记忆」"""
+        """记录每次 AI 行动 -- AI 的「记忆」"""
         db = _get_db()
         db.execute(
             "INSERT INTO actions (action_type, action_name, input_params, result_status, result_detail, duration_ms) VALUES (?,?,?,?,?,?)",
@@ -124,7 +124,7 @@ class EvolutionEngine:
 
     @staticmethod
     def learn(category: str, key: str, value: str = None, score: float = None):
-        """AI 学到新知识 — 比如「eBay 采集电子产品成功率 85%」"""
+        """AI 学到新知识 -- 比如「eBay 采集电子产品成功率 85%」"""
         db = _get_db()
         existing = db.execute("SELECT * FROM learning WHERE category=? AND key=?", (category, key)).fetchone()
         if existing:
@@ -159,7 +159,7 @@ class EvolutionEngine:
 
     @staticmethod
     def learn_from_correction(original_action: str, user_said: str, correct_approach: str, context: str = ""):
-        """用户纠正 AI 时，AI 记住正确的做法"""
+        """用户纠正 AI 时,AI 记住正确的做法"""
         db = _get_db()
         db.execute(
             "INSERT INTO corrections (original_action, user_said, correct_approach, context) VALUES (?,?,?,?)",
@@ -192,7 +192,7 @@ class EvolutionEngine:
 
     @staticmethod
     def evolve_report() -> dict:
-        """AI 自我进化报告 — AI 告诉你它学到了什么"""
+        """AI 自我进化报告 -- AI 告诉你它学到了什么"""
         db = _get_db()
 
         # 行动统计
@@ -228,18 +228,18 @@ class EvolutionEngine:
         # 进化建议
         suggestions = []
         if last_week_rate > success_rate:
-            suggestions.append(f"📈 AI 近期成功率提升 {last_week_rate - success_rate:.1f}%，说明正在变聪明")
+            suggestions.append(f"📈 AI 近期成功率提升 {last_week_rate - success_rate:.1f}%,说明正在变聪明")
         if learned_corrections < corrections:
-            suggestions.append(f"🧠 还有 {corrections - learned_corrections} 条用户纠正待学习，请说「AI学习纠正」")
+            suggestions.append(f"🧠 还有 {corrections - learned_corrections} 条用户纠正待学习,请说「AI学习纠正」")
         for ca in cat_performance:
             rate = ca["ok"] / ca["total"] * 100 if ca["total"] > 0 else 0
             if rate > 80:
-                suggestions.append(f"✅ 采集源 {ca['platform']} 成功率 {rate:.0f}%，建议继续使用")
+                suggestions.append(f"✅ 采集源 {ca['platform']} 成功率 {rate:.0f}%,建议继续使用")
             elif rate < 50 and ca["total"] > 3:
-                suggestions.append(f"⚠️ 采集源 {ca['platform']} 成功率仅 {rate:.0f}%，建议降低优先级")
+                suggestions.append(f"⚠️ 采集源 {ca['platform']} 成功率仅 {rate:.0f}%,建议降低优先级")
 
         if total_actions < 10:
-            suggestions.append("💡 AI 行动记录还很少，多用几次 AI 会越来越懂你")
+            suggestions.append("💡 AI 行动记录还很少,多用几次 AI 会越来越懂你")
 
         return {
             "generated_at": datetime.now().isoformat(),
@@ -260,7 +260,7 @@ class EvolutionEngine:
         }
 
     # ═══════════════════════════════════════
-    #  快速记录（供其他模块调用）
+    #  快速记录(供其他模块调用)
     # ═══════════════════════════════════════
 
     @staticmethod

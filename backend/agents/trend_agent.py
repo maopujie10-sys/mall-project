@@ -1,5 +1,5 @@
-"""Trend Agent — 热点监控 / 舆情分析 / 趋势预测
-监控：抖音/B站/微博/X/YouTube/Google Trends"""
+"""Trend Agent -- 热点监控 / 舆情分析 / 趋势预测
+监控:抖音/B站/微博/X/YouTube/Google Trends"""
 import httpx
 import asyncio
 from datetime import datetime
@@ -63,7 +63,7 @@ class TrendItem:
 
     @staticmethod
     async def predict_trend(topic: str) -> dict:
-        """趋势预测 — 基于关键词分析热度走向"""
+        """趋势预测 -- 基于关键词分析热度走向"""
         scores = {"上升": 0, "稳定": 0, "下降": 0}
         try:
             import httpx
@@ -101,7 +101,7 @@ class TrendAgent:
         for pf in platforms_to_fetch:
             if pf not in TrendAgent.PLATFORMS:
                 continue
-            # 模拟热点数据（生产环境接入真实API）
+            # 模拟热点数据(生产环境接入真实API)
             results[pf] = {
                 "platform": pf,
                 "name": TrendAgent.PLATFORMS[pf]["name"],

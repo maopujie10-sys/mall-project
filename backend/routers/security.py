@@ -1,4 +1,4 @@
-"""安全中心 — IP封禁/防火墙/安全评分/威胁检测/安全审计"""
+"""安全中心 -- IP封禁/防火墙/安全评分/威胁检测/安全审计"""
 import json, os
 from datetime import datetime, timedelta
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -17,7 +17,7 @@ def _get_firewall_rules():
     return state._data.setdefault("firewall_rules", [])
 
 def _calc_security_score():
-    """计算安全评分（0-100）"""
+    """计算安全评分(0-100)"""
     score = 100
     bl = _get_blacklist()
     fw = _get_firewall_rules()
@@ -63,7 +63,7 @@ async def list_blocked(_=Depends(verify_token)):
 
 @router.post("/blacklist/block")
 async def block_ip(req: BlockRequest, _=Depends(verify_token)):
-    """封禁IP（内存+iptables）"""
+    """封禁IP(内存+iptables)"""
     await handle_risk("L3", f"封禁IP: {req.ip}", need_confirm=True)
     expires = (datetime.now() + timedelta(hours=req.hours)).isoformat()
     _get_blacklist().append({"ip": req.ip, "reason": req.reason, "blocked_at": datetime.now().isoformat(), "expires_at": expires})
@@ -124,7 +124,7 @@ async def generate_token(req: JWTRequest, _=Depends(verify_token)):
 
 @router.get("/threats")
 async def threat_detection(_=Depends(verify_token)):
-    """威胁检测（检查异常登录/端口扫描等）"""
+    """威胁检测(检查异常登录/端口扫描等)"""
     await handle_risk("L1", "威胁检测")
     threats = []
     # 检测SSH暴力破解

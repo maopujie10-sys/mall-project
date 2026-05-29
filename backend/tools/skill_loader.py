@@ -1,4 +1,4 @@
-"""技能包加载引擎 — 真正的技能分发系统
+"""技能包加载引擎 -- 真正的技能分发系统
 支持 ZIP 包安装、版本管理、依赖解析、热加载"""
 import os
 import json
@@ -60,9 +60,9 @@ async def install_from_zip(zip_path: str, source: str = "upload") -> dict:
             if existing:
                 from packaging.version import parse as vp
                 if existing.get("version", "0") >= manifest.get("version", "0"):
-                    return {"ok": False, "error": f"已安装版本 {existing['version']}，无需降级"}
+                    return {"ok": False, "error": f"已安装版本 {existing['version']},无需降级"}
 
-            # 安全校验：检查是否有危险文件
+            # 安全校验:检查是否有危险文件
             dangerous = [n for n in zf.namelist() if n.startswith("..") or "/.." in n or n.startswith("/")]
             if dangerous:
                 return {"ok": False, "error": f"ZIP 包包含危险路径: {dangerous}"}
@@ -85,7 +85,7 @@ async def install_from_zip(zip_path: str, source: str = "upload") -> dict:
             entry = manifest.get("entry", "main.py")
             entry_path = os.path.join(target, entry)
             if not os.path.exists(entry_path):
-                return {"ok": True, "warning": f"入口文件 {entry} 不存在，需手动创建", "skill_id": skill_id, "manifest": manifest}
+                return {"ok": True, "warning": f"入口文件 {entry} 不存在,需手动创建", "skill_id": skill_id, "manifest": manifest}
 
             return {"ok": True, "skill_id": skill_id, "manifest": manifest, "path": target}
 
@@ -98,7 +98,7 @@ async def install_from_zip(zip_path: str, source: str = "upload") -> dict:
 
 
 async def uninstall(skill_id: str) -> dict:
-    """卸载技能（删除文件）"""
+    """卸载技能(删除文件)"""
     target = _skill_path(skill_id)
     if not os.path.exists(target):
         return {"ok": False, "error": "技能未安装"}
@@ -110,7 +110,7 @@ async def uninstall(skill_id: str) -> dict:
 
 
 async def load_skill_module(skill_id: str) -> Optional[object]:
-    """动态加载技能模块（热加载）"""
+    """动态加载技能模块(热加载)"""
     manifest = get_manifest(skill_id)
     if not manifest:
         return None

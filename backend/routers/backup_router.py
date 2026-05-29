@@ -1,4 +1,4 @@
-"""备份恢复系统 — 校验+一键恢复+保留策略"""
+"""备份恢复系统 -- 校验+一键恢复+保留策略"""
 import os, hashlib, glob, json, subprocess
 from datetime import datetime, timedelta
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -42,7 +42,7 @@ async def verify_backup(backup_name: str, _=Depends(verify_token)):
 
 @router.post("/restore/{backup_name}")
 async def restore_backup(backup_name: str, target_db: str = "", _=Depends(verify_token)):
-    """一键恢复数据库（需审批L4）"""
+    """一键恢复数据库(需审批L4)"""
     await handle_risk("L4", f"恢复数据库: {backup_name}", need_confirm=True)
     backup_path = os.path.join(BACKUP_DIR, backup_name)
     if not os.path.exists(backup_path):

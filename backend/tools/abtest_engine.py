@@ -1,4 +1,4 @@
-"""A/B测试引擎 — 自动分流+对比+AI决策"""
+"""A/B测试引擎 -- 自动分流+对比+AI决策"""
 import time, random, hashlib
 from collections import defaultdict
 from typing import Dict, List
@@ -77,10 +77,10 @@ class ABTestEngine:
         # AI决策
         try:
             from agents.multi_model import ModelRouter
-            resp = await ModelRouter.smart_chat(messages=[{"role":"user","content":f"分析以下A/B测试结果，推荐最佳变体:\n{json.dumps(analysis, ensure_ascii=False)}"}], mode="fast")
+            resp = await ModelRouter.smart_chat(messages=[{"role":"user","content":f"分析以下A/B测试结果,推荐最佳变体:\n{json.dumps(analysis, ensure_ascii=False)}"}], mode="fast")
             analysis["ai_decision"] = resp.get("content", "")
         except:
-            analysis["ai_decision"] = "AI分析不可用，请查看原始数据"
+            analysis["ai_decision"] = "AI分析不可用,请查看原始数据"
 
         return {"ok": True, **analysis}
 
@@ -91,16 +91,16 @@ class ABTestEngine:
 
 abtest_engine = ABTestEngine()
 
-    @classmethod
-    def save(cls):
+@classmethod
+def save(cls):
         """持久化到SQLite"""
         from tools.memory_store import memory_store
         import json
         data = {"experiments": cls._experiments}
         memory_store.set_knowledge("abtest_data", json.dumps(data, ensure_ascii=False, default=str))
 
-    @classmethod
-    def load(cls):
+@classmethod
+def load(cls):
         """从SQLite恢复"""
         from tools.memory_store import memory_store
         import json

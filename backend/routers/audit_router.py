@@ -1,4 +1,4 @@
-"""审计日志 — 全量操作追踪/查询/导出"""
+"""审计日志 -- 全量操作追踪/查询/导出"""
 from datetime import datetime
 from fastapi import APIRouter, Depends, Query
 from auth import verify_token
@@ -11,7 +11,7 @@ MAX_LOG = 500
 
 
 def log_action(action: str, target: str, detail: str = "", risk: str = "L1", user: str = "AI") -> dict:
-    """记录审计日志（其他模块可调用）"""
+    """记录审计日志(其他模块可调用)"""
     entry = {
         "id": datetime.now().strftime("%Y%m%d%H%M%S%f")[:-3],
         "time": datetime.now().isoformat(),
@@ -39,7 +39,7 @@ async def get_audit_logs(
     date_to: str = "",
     _=Depends(verify_token)
 ):
-    """查询审计日志，支持分页和过滤"""
+    """查询审计日志,支持分页和过滤"""
     await handle_risk("L1", "查看审计日志")
     logs = state._data.get("audit_logs", [])
     # 过滤

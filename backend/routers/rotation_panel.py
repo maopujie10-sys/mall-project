@@ -1,6 +1,6 @@
 from tools.logger import get_logger
 logger = get_logger('rotation')
-"""域名轮值管理 — 真正的健康检测/自动切换/权重轮值"""
+"""域名轮值管理 -- 真正的健康检测/自动切换/权重轮值"""
 import asyncio
 import ssl as ssl_mod
 import socket
@@ -34,7 +34,7 @@ def _get_domains():
 
 
 async def _check_one(d: dict) -> dict:
-    """检测单个域名，返回带实时指标的结果"""
+    """检测单个域名,返回带实时指标的结果"""
     import httpx
     domain = d["domain"]
     url = f"https://{domain}"
@@ -121,7 +121,7 @@ async def _enrich_domain(d: dict) -> dict:
 
 
 async def _check_all():
-    """给调度器用的全量检测（无需鉴权），同时执行自动轮值"""
+    """给调度器用的全量检测(无需鉴权),同时执行自动轮值"""
     logger.info(f"[Rotation] 开始全量域名检测 {datetime.now().strftime('%H:%M:%S')}")
     domains = _get_domains()
     changed = False
@@ -144,11 +144,11 @@ async def _check_all():
         d["ssl_days"] = ssl_info.get("days_left", 0)
         if d["health"] != old_health:
             changed = True
-            logger.info(f"[Rotation] {d['domain']}: {old_health} → {d['health']}")
-    # 自动轮值：如果主域名挂了，切换到下一个健康域名
+            logger.info(f"[Rotation] {d['domain']}: {old_health} -> {d['health']}")
+    # 自动轮值:如果主域名挂了,切换到下一个健康域名
     rotated = await _auto_rotate()
     if rotated:
-        logger.info(f"[Rotation] 自动轮值 → {rotated}")
+        logger.info(f"[Rotation] 自动轮值 -> {rotated}")
     if changed or rotated:
         state._save()
     logger.info(f"[Rotation] 检测完成: {sum(1 for d in domains if d.get('health')=='ok')}/{len(domains)} 健康")
@@ -156,20 +156,20 @@ async def _check_all():
 
 
 async def _auto_rotate() -> str:
-    """自动轮值逻辑：按权重选择最健康的域名"""
+    """自动轮值逻辑:按权重选择最健康的域名"""
     domains = _get_domains()
     primary = next((d for d in domains if d.get("type") == "主域名"), None)
-    # 主域名健康 → 不切换
+    # 主域名健康 -> 不切换
     if primary and primary.get("health") == "ok" and primary.get("active"):
         return ""
-    # 主域名挂了或没设 → 选权重最高的健康域名
+    # 主域名挂了或没设 -> 选权重最高的健康域名
     healthy = [d for d in domains if d.get("active") and d.get("health") == "ok" and d.get("type") != "主域名"]
     if not healthy:
         return ""
-    # 按权重降序，同权重随机
+    # 按权重降序,同权重随机
     healthy.sort(key=lambda d: (-d.get("weight", 1), d["domain"]))
     best = healthy[0]
-    # 如果主域名存在但不健康，停用它，激活最佳替补
+    # 如果主域名存在但不健康,停用它,激活最佳替补
     if primary and primary.get("health") != "ok":
         primary["active"] = False
     best["active"] = True
@@ -180,13 +180,13 @@ async def _auto_rotate() -> str:
 
 @router.get("/domains")
 async def get_domains(_=Depends(verify_token)):
-    """获取域名列表（返回上次检测的缓存数据，实时检测用 /check-all）"""
+    """获取域名列表(返回上次检测的缓存数据,实时检测用 /check-all)"""
     await handle_risk("L1", "查看轮值域名列表")
     domains = _get_domains()
     results = []
     for d in domains:
         entry = dict(d)
-        # 用 _check_all 缓存的检测数据（last_check/latency/ip/status_code/ssl_*）
+        # 用 _check_all 缓存的检测数据(last_check/latency/ip/status_code/ssl_*)
         if d.get("last_check"):
             entry["latency_ms"] = d.get("latency", 0)
             entry["ip_addr"] = d.get("ip", "")
@@ -261,7 +261,7 @@ async def toggle_domain(req: ToggleRequest, _=Depends(verify_token)):
 
 @router.post("/check")
 async def check_domain(req: CheckRequest, _=Depends(verify_token)):
-    """检测单个域名（真实 HTTP 检测）"""
+    """检测单个域名(真实 HTTP 检测)"""
     await handle_risk("L1", f"域名检测", req.domain)
     for d in _get_domains():
         if d["domain"] == req.domain:
@@ -318,7 +318,7 @@ async def rotation_report(_=Depends(verify_token)):
 
 @router.post("/weight")
 async def set_weight(req: WeightRequest, _=Depends(verify_token)):
-    """调整域名权重（权重越高越优先被选为轮值目标）"""
+    """调整域名权重(权重越高越优先被选为轮值目标)"""
     await handle_risk("L2", "调整域名权重", f"{req.domain}={req.weight}")
     for d in _get_domains():
         if d["domain"] == req.domain:
@@ -463,10 +463,10 @@ async def remove_subdomain(group_id: str, host: str, _=Depends(verify_token)):
     raise HTTPException(404, "轮值组不存在")
 
 
-# 公开端点(落地页用，无需鉴权)
+# 公开端点(落地页用,无需鉴权)
 @router.get("/two-level/public-config")
 async def get_public_config():
-    """公开配置(落地页调用，不含敏感信息)"""
+    """公开配置(落地页调用,不含敏感信息)"""
     config = _get_config()
     return {
         "primary": config["primary"],
@@ -499,7 +499,7 @@ async def auto_discover_domains(_=Depends(verify_token)):
         return {"ok": False, "error": "无法获取本服务器公网IP"}
     existing = _get_domains()
     existing_domains = {d["domain"] for d in existing}
-    # 从现有域名衍生候选域名（tld轮值）
+    # 从现有域名衍生候选域名(tld轮值)
     candidates = set()
     for d in existing:
         parts = d["domain"].split(".")

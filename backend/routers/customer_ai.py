@@ -1,4 +1,4 @@
-"""AI智能客服2.0 — 多轮对话+知识库RAG+意图识别+智能转人工+工单创建"""
+"""AI智能客服2.0 -- 多轮对话+知识库RAG+意图识别+智能转人工+工单创建"""
 import json, re, os
 from datetime import datetime
 from fastapi import APIRouter, Depends, Query
@@ -12,16 +12,16 @@ router = APIRouter(prefix="/agent/customer", tags=["CustomerAI"])
 
 # ===== 知识库 =====
 FAQ_KNOWLEDGE = {
-    "退货": "退货政策：收到商品7天内可申请退货。商品需保持原包装、未使用。请到'我的订单'页面申请退货，客服会在24小时内审核。退货地址将以站内信形式发送。",
-    "退款": "退款时效：退货审核通过后，退款将在3-7个工作日内原路返回。支付宝/微信1-3天，银行卡3-7天，信用卡7-15天。",
-    "发货": "发货时效：现货商品下单后24-48小时内发货。预售商品按页面标注时间发货。海外直邮商品3-5个工作日发货。",
-    "物流": "物流查询：请到'我的订单'点击'查看物流'。国际物流通常7-15天，国内物流3-5天。如超过预计时间未收到，请联系客服。",
-    "换货": "换货政策：支持同款换色/换码。请在'我的订单'选择'申请换货'。换货运费由平台承担（质量问题）或用户承担（个人原因）。",
-    "支付": "支持支付方式：支付宝、微信支付、银行卡、Binance Pay、Huobi Pay、OKX Wallet。如支付失败请检查银行卡限额或切换支付方式。",
-    "优惠券": "优惠券使用：在结算页面选择可用优惠券。满减券需达到最低消费金额。优惠券不可叠加使用，每笔订单限用一张。",
-    "会员": "会员等级：普通/银卡/金卡/钻石。升级依据为累计消费金额。金卡及以上享专属客服、优先发货、生日礼包。",
-    "投诉": "投诉处理：请描述您的问题，我们会升级给高级客服处理。一般2小时内响应，24小时内给出解决方案。如不满意可申请平台介入。",
-    "联系": "客服工作时间：周一至周日 9:00-22:00。在线客服即时回复，电话客服：400-xxx-xxxx。英文客服：support@tiktook.eu.cc。",
+    "退货": "退货政策:收到商品7天内可申请退货.商品需保持原包装、未使用.请到'我的订单'页面申请退货,客服会在24小时内审核.退货地址将以站内信形式发送.",
+    "退款": "退款时效:退货审核通过后,退款将在3-7个工作日内原路返回.支付宝/微信1-3天,银行卡3-7天,信用卡7-15天.",
+    "发货": "发货时效:现货商品下单后24-48小时内发货.预售商品按页面标注时间发货.海外直邮商品3-5个工作日发货.",
+    "物流": "物流查询:请到'我的订单'点击'查看物流'.国际物流通常7-15天,国内物流3-5天.如超过预计时间未收到,请联系客服.",
+    "换货": "换货政策:支持同款换色/换码.请在'我的订单'选择'申请换货'.换货运费由平台承担(质量问题)或用户承担(个人原因).",
+    "支付": "支持支付方式:支付宝、微信支付、银行卡、Binance Pay、Huobi Pay、OKX Wallet.如支付失败请检查银行卡限额或切换支付方式.",
+    "优惠券": "优惠券使用:在结算页面选择可用优惠券.满减券需达到最低消费金额.优惠券不可叠加使用,每笔订单限用一张.",
+    "会员": "会员等级:普通/银卡/金卡/钻石.升级依据为累计消费金额.金卡及以上享专属客服、优先发货、生日礼包.",
+    "投诉": "投诉处理:请描述您的问题,我们会升级给高级客服处理.一般2小时内响应,24小时内给出解决方案.如不满意可申请平台介入.",
+    "联系": "客服工作时间:周一至周日 9:00-22:00.在线客服即时回复,电话客服:400-xxx-xxxx.英文客服:support@tiktook.eu.cc.",
 }
 
 # 意图->知识库映射
@@ -71,7 +71,7 @@ def _get_knowledge(intent: str, message: str) -> str:
     """获取相关知识"""
     if intent in FAQ_KNOWLEDGE:
         return FAQ_KNOWLEDGE[intent]
-    # 通用意图：匹配所有FAQ
+    # 通用意图:匹配所有FAQ
     msg_lower = message.lower()
     matches = []
     for topic, answer in FAQ_KNOWLEDGE.items():
@@ -92,10 +92,10 @@ async def _get_rag_context(message: str) -> str:
 # ===== 对话引擎 =====
 @router.post("/chat")
 async def customer_chat(req: CustomerChatRequest, _=Depends(verify_token)):
-    """AI客服对话 — 多轮+知识库+意图+智能转人工"""
+    """AI客服对话 -- 多轮+知识库+意图+智能转人工"""
     message = req.message.strip()
     if not message:
-        return {"reply": "您好，请问有什么可以帮您的？", "intent": "greeting"}
+        return {"reply": "您好,请问有什么可以帮您的?", "intent": "greeting"}
 
     # 会话管理
     session_id = req.session_id or f"cs_{datetime.now().strftime('%Y%m%d%H%M%S')}"
@@ -125,9 +125,9 @@ async def customer_chat(req: CustomerChatRequest, _=Depends(verify_token)):
             }
             tickets.insert(0, ticket)
             state._save()
-            reply = f"我已将您的问题升级给人工客服，工单号 {ticket['id']}。\n\n您可以继续描述问题，或等待客服主动联系您。工作时间9:00-22:00，通常2小时内回复。"
+            reply = f"我已将您的问题升级给人工客服,工单号 {ticket['id']}.\n\n您可以继续描述问题,或等待客服主动联系您.工作时间9:00-22:00,通常2小时内回复."
         else:
-            reply = f"您的工单已提交，人工客服会尽快回复。如需紧急处理，请拨打客服电话。"
+            reply = f"您的工单已提交,人工客服会尽快回复.如需紧急处理,请拨打客服电话."
     else:
         # 知识库回复
         kb = _get_knowledge(intent, message)
@@ -138,14 +138,14 @@ async def customer_chat(req: CustomerChatRequest, _=Depends(verify_token)):
         if kb:
             # 根据意图和对话轮次生成自然回复
             greetings = {
-                1: f"您好！关于{intent}的问题，我来为您解答：\n\n{kb}\n\n还有其他问题吗？",
-                2: f"补充说明：\n\n{kb}\n\n需要进一步帮助吗？",
+                1: f"您好!关于{intent}的问题,我来为您解答:\n\n{kb}\n\n还有其他问题吗?",
+                2: f"补充说明:\n\n{kb}\n\n需要进一步帮助吗?",
             }
             turn = len([m for m in session["messages"] if m["role"] == "user"])
             reply = greetings.get(turn, kb)
         else:
             # 通用回复
-            reply = f"您好！我是AI客服，可以帮您解答以下问题：\n\n• 退货/退款政策\n• 发货/物流查询\n• 支付/换货\n• 优惠券/会员\n• 投诉/人工客服\n\n请告诉我您遇到了什么问题？"
+            reply = f"您好!我是AI客服,可以帮您解答以下问题:\n\n• 退货/退款政策\n• 发货/物流查询\n• 支付/换货\n• 优惠券/会员\n• 投诉/人工客服\n\n请告诉我您遇到了什么问题?"
 
     session["messages"].append({"role": "assistant", "content": reply, "time": datetime.now().isoformat()})
     if len(session["messages"]) > 20:

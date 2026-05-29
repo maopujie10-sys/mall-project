@@ -1,4 +1,4 @@
-"""Docker 容器管理 — 列表/详情/日志"""
+"""Docker 容器管理 -- 列表/详情/日志"""
 import subprocess
 from fastapi import APIRouter, Depends, HTTPException
 from auth import verify_token

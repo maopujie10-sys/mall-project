@@ -1,4 +1,4 @@
-"""请求追踪查看API — 实时链路追踪面板"""
+"""请求追踪查看API -- 实时链路追踪面板"""
 from fastapi import APIRouter, Depends, Query
 from auth import verify_token, require_role
 from tools.trace import get_recent_traces, get_trace_stats
@@ -15,7 +15,7 @@ async def trace_recent(limit: int = Query(100, ge=1, le=500), status: str = Quer
 
 @router.get("/stats")
 async def trace_stats(_=Depends(verify_token)):
-    """追踪统计 — 错误率/响应时间分布"""
+    """追踪统计 -- 错误率/响应时间分布"""
     return {"ok": True, "stats": get_trace_stats()}
 
 

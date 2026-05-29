@@ -1,4 +1,4 @@
-"""服务器管理 v2 — CPU/内存/磁盘/进程/文件/日志/自动治理"""
+"""服务器管理 v2 -- CPU/内存/磁盘/进程/文件/日志/自动治理"""
 import os, psutil, shutil, subprocess
 from datetime import datetime, timedelta
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Query
@@ -11,7 +11,7 @@ router = APIRouter(prefix="/server", tags=["Server"])
 # ===== ===== 状态监控 ===== =====
 @router.get("/status")
 async def server_status(_=Depends(verify_token)):
-    """完整服务器状态（含内存详情+Swap+进程数+运行时间）"""
+    """完整服务器状态(含内存详情+Swap+进程数+运行时间)"""
     await handle_risk("L1", "查看服务器状态")
     cpu = psutil.cpu_percent(interval=0.3)
     mem = psutil.virtual_memory()
@@ -22,7 +22,7 @@ async def server_status(_=Depends(verify_token)):
     # 内存详情
     mem_detail = {k: round(v/(1024**3),1) for k,v in {"total":mem.total,"available":mem.available,"used":mem.used,"free":mem.free,"buffers":mem.buffers or 0,"cached":mem.cached or 0}.items()}
     mem_detail["percent"] = mem.percent
-    # 缓存占用量（可释放部分）
+    # 缓存占用量(可释放部分)
     cache_gb = round((mem.cached or 0) / (1024**3), 1)
     buffer_gb = round((mem.buffers or 0) / (1024**3), 1)
     reclaimable_gb = round((mem.cached + (mem.buffers or 0)) / (1024**3), 1)
@@ -61,7 +61,7 @@ async def memory_top(limit: int = 20, _=Depends(verify_token)):
 
 @router.get("/memory/trend")
 async def memory_trend(hours: int = 24, _=Depends(verify_token)):
-    """内存使用趋势（历史数据）"""
+    """内存使用趋势(历史数据)"""
     await handle_risk("L1", "查看内存趋势")
     history = state._data.get("metrics_history", [])
     cutoff = (datetime.now() - timedelta(hours=hours)).isoformat()
@@ -74,7 +74,7 @@ async def memory_trend(hours: int = 24, _=Depends(verify_token)):
         if t not in seen:
             aggregated.append({"time":t,"cpu":p.get("cpu",0),"memory":p.get("memory",0)})
             seen.add(t)
-    # 预测趋势（简单线性回归）
+    # 预测趋势(简单线性回归)
     mem_values = [p.get("memory",0) for p in aggregated[-60:]]
     if len(mem_values) > 5:
         trend = round((mem_values[-1] - mem_values[0]) / max(len(mem_values),1), 2)
@@ -87,7 +87,7 @@ async def memory_trend(hours: int = 24, _=Depends(verify_token)):
 
 @router.get("/memory/leaks")
 async def memory_leaks(_=Depends(verify_token)):
-    """检测内存泄漏（持续增长的进程）"""
+    """检测内存泄漏(持续增长的进程)"""
     await handle_risk("L1", "内存泄漏检测")
     history = state._data.get("process_memory_history", [])[-10:]
     if len(history) < 2: return {"leaks": [], "note": "需运行一段时间后检测"}
@@ -114,7 +114,7 @@ async def memory_leaks(_=Depends(verify_token)):
 # ===== ===== 内存自动释放 ===== =====
 @router.post("/memory/release")
 async def memory_release(mode: str = "safe", _=Depends(verify_token)):
-    """释放内存（safe=只清缓存, aggressive=清缓存+杀空闲进程, max=清缓存+杀进程+停服务）"""
+    """释放内存(safe=只清缓存, aggressive=清缓存+杀空闲进程, max=清缓存+杀进程+停服务)"""
     await handle_risk("L2" if mode=="safe" else "L3", f"释放内存[{mode}]")
     before = psutil.virtual_memory()
     results = []; freed_mb = 0
@@ -134,7 +134,7 @@ async def memory_release(mode: str = "safe", _=Depends(verify_token)):
                 info = p.info
                 idle_hours = (datetime.now().timestamp() - (info.get("create_time") or 0))/3600
                 mem_mb = round((p.memory_info().rss or 0)/(1024**2),1)
-                # 杀：CPU<1% + 内存>100MB + 运行>24h
+                # 杀:CPU<1% + 内存>100MB + 运行>24h
                 if info.get("cpu_percent",0) < 1 and mem_mb > 100 and idle_hours > 24 and info.get("name") not in ("systemd","sshd","nginx"):
                     p.terminate()
                     killed += 1
@@ -202,7 +202,7 @@ async def server_ports(_=Depends(verify_token)):
 
 @router.get("/processes")
 async def server_processes(_=Depends(verify_token)):
-    """进程列表（Top20 CPU）"""
+    """进程列表(Top20 CPU)"""
     await handle_risk("L1","查看进程")
     procs = []
     for p in psutil.process_iter(["pid","name","cpu_percent","memory_percent"]):

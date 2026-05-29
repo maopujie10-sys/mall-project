@@ -1,5 +1,5 @@
-"""Self-Healing Agent — 自动检测异常/自动修复/自动回滚/自动恢复
-职责：7x24巡检、故障自动诊断、智能修复、服务自动恢复"""
+"""Self-Healing Agent -- 自动检测异常/自动修复/自动回滚/自动恢复
+职责:7x24巡检、故障自动诊断、智能修复、服务自动恢复"""
 import json
 import os
 import time
@@ -24,7 +24,7 @@ class Anomaly:
 
 
 class SelfHealingAgent:
-    """Self-Healing Agent — 数字免疫系统"""
+    """Self-Healing Agent -- 数字免疫系统"""
 
     HEAL_DIR = "memory"
     ANOMALY_FILE = "memory/anomalies.json"
@@ -65,9 +65,9 @@ class SelfHealingAgent:
             cpu = psutil.cpu_percent(interval=1)
             checks_total += 1
             if cpu > 95:
-                issues.append({"severity": "P1", "source": "CPU", "detail": f"CPU使用率 {cpu}%，危急"})
+                issues.append({"severity": "P1", "source": "CPU", "detail": f"CPU使用率 {cpu}%,危急"})
             elif cpu > 80:
-                issues.append({"severity": "P2", "source": "CPU", "detail": f"CPU使用率 {cpu}%，偏高"})
+                issues.append({"severity": "P2", "source": "CPU", "detail": f"CPU使用率 {cpu}%,偏高"})
             else:
                 checks_passed += 1
         except Exception:
@@ -79,9 +79,9 @@ class SelfHealingAgent:
             mem = psutil.virtual_memory().percent
             checks_total += 1
             if mem > 95:
-                issues.append({"severity": "P1", "source": "Memory", "detail": f"内存使用率 {mem}%，危急"})
+                issues.append({"severity": "P1", "source": "Memory", "detail": f"内存使用率 {mem}%,危急"})
             elif mem > 85:
-                issues.append({"severity": "P2", "source": "Memory", "detail": f"内存使用率 {mem}%，偏高"})
+                issues.append({"severity": "P2", "source": "Memory", "detail": f"内存使用率 {mem}%,偏高"})
             else:
                 checks_passed += 1
         except Exception:
@@ -93,9 +93,9 @@ class SelfHealingAgent:
             disk = psutil.disk_usage("/").percent
             checks_total += 1
             if disk > 95:
-                issues.append({"severity": "P1", "source": "Disk", "detail": f"磁盘使用率 {disk}%，危急"})
+                issues.append({"severity": "P1", "source": "Disk", "detail": f"磁盘使用率 {disk}%,危急"})
             elif disk > 85:
-                issues.append({"severity": "P2", "source": "Disk", "detail": f"磁盘使用率 {disk}%，偏高"})
+                issues.append({"severity": "P2", "source": "Disk", "detail": f"磁盘使用率 {disk}%,偏高"})
             else:
                 checks_passed += 1
         except Exception:
@@ -255,7 +255,7 @@ class SelfHealingAgent:
                     except Exception:
                         pass
                 if high_procs:
-                    return {"fixed": False, "error": f"高占用进程: {', '.join(high_procs[:5])}，需人工介入"}
+                    return {"fixed": False, "error": f"高占用进程: {', '.join(high_procs[:5])},需人工介入"}
             except Exception:
                 pass
             return {"fixed": False, "error": "资源问题需人工排查"}

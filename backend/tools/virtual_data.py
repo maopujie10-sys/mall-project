@@ -1,4 +1,4 @@
-"""企业级虚拟数据引擎 — 让商城像真实大平台一样活起来"""
+"""企业级虚拟数据引擎 -- 让商城像真实大平台一样活起来"""
 import random
 import hashlib
 import json
@@ -47,18 +47,18 @@ PAY_METHODS = ["微信支付","支付宝","银行卡","USDT","余额支付"]
 ACTIVITY_TYPES = ["登录","浏览商品","搜索","加入购物车","下单","支付","充值","提现","签到","分享","评价","收藏","关注商家","领取优惠券","参与活动"]
 COMPLAINT_REASONS = ["物流太慢","商品与描述不符","质量问题","发错货","客服态度差","不想要了","重复下单","地址填错"]
 CUSTOMER_MESSAGES = [
-    ("你好，这个什么时候发货？","发货咨询"),
-    ("我已经付款了，能改地址吗？","订单修改"),
-    ("收到的商品有划痕，我要退货","质量问题"),
-    ("优惠券怎么用不了？","优惠券问题"),
-    ("退款什么时候到账？","退款咨询"),
-    ("这个能便宜点吗？","价格咨询"),
+    ("你好,这个什么时候发货?","发货咨询"),
+    ("我已经付款了,能改地址吗?","订单修改"),
+    ("收到的商品有划痕,我要退货","质量问题"),
+    ("优惠券怎么用不了?","优惠券问题"),
+    ("退款什么时候到账?","退款咨询"),
+    ("这个能便宜点吗?","价格咨询"),
     ("帮我查下物流到哪了","物流查询"),
     ("颜色和图片不一样啊","商品问题"),
-    ("怎么注册不了账号？","账户问题"),
+    ("怎么注册不了账号?","账户问题"),
     ("有没有免息分期","支付问题"),
-    ("好评返现有吗？","活动咨询"),
-    ("可以开发票吗？","发票问题"),
+    ("好评返现有吗?","活动咨询"),
+    ("可以开发票吗?","发票问题"),
 ]
 
 # ═══════════════════════════════════════
@@ -100,7 +100,7 @@ def gen_uuid():
 # ═══════════════════════════════════════
 
 class UserGenerator:
-    """用户数据生成 — 真实中文用户"""
+    """用户数据生成 -- 真实中文用户"""
 
     @staticmethod
     def generate(count=1000) -> list[dict]:
@@ -134,7 +134,7 @@ class UserGenerator:
         return users
 
 class ProductGenerator:
-    """商品数据生成 — 多品类真实商品"""
+    """商品数据生成 -- 多品类真实商品"""
 
     @staticmethod
     def generate(count=500) -> list[dict]:
@@ -160,7 +160,7 @@ class ProductGenerator:
                 "rating": round(random.uniform(3.5, 5.0), 1),
                 "rating_count": random.randint(10, sales//2) if sales > 20 else random.randint(1, 10),
                 "images": [f"https://picsum.photos/seed/{pid}{j}/800/800" for j in range(1,random.randint(3,6))],
-                "description": f"<p>{brand}正品{base['name']}，品质保证，全国联保。</p><p>支持7天无理由退换，免费包邮。</p>",
+                "description": f"<p>{brand}正品{base['name']},品质保证,全国联保.</p><p>支持7天无理由退换,免费包邮.</p>",
                 "status": 1 if stock > 0 and random.random() < 0.9 else 0,
                 "is_hot": sales > 500,
                 "is_new": random.random() < 0.15,
@@ -222,7 +222,7 @@ class WalletActivityGenerator:
         return txns
 
 class KlineGenerator:
-    """K线行情数据生成 — 让交易图表有真实波动"""
+    """K线行情数据生成 -- 让交易图表有真实波动"""
 
     @staticmethod
     def generate(symbols=None, days=90) -> dict:
@@ -270,7 +270,7 @@ class CustomerServiceGenerator:
                 "category": msg_pair[1],
                 "is_read": random.random() < 0.8,
                 "replied": random.random() < 0.7,
-                "reply": f"您好，{msg_pair[1]}已收到，我们会尽快处理。" if random.random() < 0.7 else "",
+                "reply": f"您好,{msg_pair[1]}已收到,我们会尽快处理." if random.random() < 0.7 else "",
                 "created_at": created.strftime("%Y-%m-%d %H:%M:%S"),
                 "replied_at": reply_time.strftime("%Y-%m-%d %H:%M:%S"),
             })
@@ -300,17 +300,17 @@ class ContentGenerator:
     @staticmethod
     def generate(count=30) -> list[dict]:
         titles = [
-            "🎉 平台周年庆，全场8折起！",
+            "🎉 平台周年庆,全场8折起!",
             "🔥 新用户注册即送100元体验金",
             "📢 系统升级维护公告",
             "💎 VIP会员权益全新升级",
-            "🎁 邀请好友，双方各得50元",
+            "🎁 邀请好友,双方各得50元",
             "🏆 交易大赛火热进行中",
             "📱 APP新版本已上线",
             "🛡️ 关于账户安全的温馨提示",
-            "🚀 新币上线：SHIB/USDT交易对开放",
-            "💹 行情分析：BTC突破关键阻力位",
-            "🎊 国庆特惠，全场满减",
+            "🚀 新币上线:SHIB/USDT交易对开放",
+            "💹 行情分析:BTC突破关键阻力位",
+            "🎊 国庆特惠,全场满减",
             "📊 2025年度交易报告已生成",
         ]
         contents = []
@@ -391,7 +391,7 @@ class VirtualDataEngine:
 
     @staticmethod
     def generate_realtime_activity(count=20) -> list[dict]:
-        """生成实时活动日志 — 模拟平台有人正在使用"""
+        """生成实时活动日志 -- 模拟平台有人正在使用"""
         users = random.sample(list(range(10001, 11001)), min(count, 1000))
         activities = []
         now = datetime.now()

@@ -1,17 +1,17 @@
-"""全品类采集 — 覆盖所有二级分类，采集后替换旧商品"""
+"""全品类采集 -- 覆盖所有二级分类,采集后替换旧商品"""
 import asyncio, sys, hashlib, time, gc, os, random
 import psutil
 sys.path.insert(0, ".")
 
-# 内存安全配置（多进程分片模式）
+# 内存安全配置(多进程分片模式)
 MEMORY_LIMIT_PCT = 75
 MEMORY_CHECK_INTERVAL = 20
 SEARCH_DELAY_BASE = 0.08
 SEARCH_DELAY_MAX = 10
 PRODUCT_DELAY = 0.01
-CONCURRENCY = 20           # 产品页并发数（单进程最大）
+CONCURRENCY = 20           # 产品页并发数(单进程最大)
 CATEGORY_PAUSE = 0.1
-MAX_PAGES = 20             # 每个关键词搜索页数（深挖全量）
+MAX_PAGES = 20             # 每个关键词搜索页数(深挖全量)
 IMPORT_BATCH_SIZE = 30
 
 SHARD_INDEX = 0
@@ -41,7 +41,7 @@ async def check_memory():
         print(f"[内存] 恢复: {mem.percent}%", flush=True)
     return mem.percent
 
-# 每个二级分类 → Amazon搜索关键词
+# 每个二级分类 -> Amazon搜索关键词
 SUBCAT_KEYWORDS = {
     # Computer Peripherals
     "Computer Assembly Accessories": ["pc fan", "thermal paste", "sata cable"],
@@ -260,7 +260,7 @@ SUBCAT_KEYWORDS = {
 
 TOTAL = sum(len(v) for v in SUBCAT_KEYWORDS.values())
 
-# 自动扩充关键词：中性修饰词+品牌，覆盖全量而非仅最新/最热
+# 自动扩充关键词:中性修饰词+品牌,覆盖全量而非仅最新/最热
 def expand_keywords(keywords):
     modifiers = ["best", "top rated", "cheap", "popular", "budget"]
     brands = ["logitech","samsung","sony","apple","anker","jbl","bose","dyson",
@@ -344,9 +344,9 @@ async def run(ppk=80):
                     await check_memory()
                 if cat_imported >= ppk:
                     break
-                # 已刮空品类跳过：3个关键词总计<5新品
+                # 已刮空品类跳过:3个关键词总计<5新品
                 if cat_kw >= 3 and cat_imported < 5:
-                    _log(f"  ⚡ {subcat} {cat_kw}关键词仅{cat_imported}新品，跳过")
+                    _log(f"  ⚡ {subcat} {cat_kw}关键词仅{cat_imported}新品,跳过")
                     break
                 cat_kw += 1
                 stats["kws"] += 1
@@ -404,7 +404,7 @@ async def run(ppk=80):
                     if not products:
                         continue
 
-                    # 限制COS并发连接数，所有产品图片并发下载
+                    # 限制COS并发连接数,所有产品图片并发下载
                     dl_sem = asyncio.Semaphore(12)
                     async def _dl_limited(img_url, idx, pid):
                         async with dl_sem:
@@ -417,7 +417,7 @@ async def run(ppk=80):
                         for p in products[:need]
                         for i, u in enumerate(p.images[:3])], return_exceptions=True)
 
-                    # 将结果分配回各产品，收集可入库的
+                    # 将结果分配回各产品,收集可入库的
                     dl_idx = 0
                     ready_products = []
                     for p in products[:need]:
@@ -432,7 +432,7 @@ async def run(ppk=80):
                         p.cos_images = uploaded
                         ready_products.append(p)
 
-                    # 分批入库，控制每批内存
+                    # 分批入库,控制每批内存
                     imported_now = 0
                     review_total = 0
                     sku_total = 0
@@ -492,7 +492,7 @@ if __name__ == "__main__":
                 pass
             i += 1
 
-    # 分片：抽取该进程负责的品类
+    # 分片:抽取该进程负责的品类
     import itertools
     cats = list(SUBCAT_KEYWORDS.items())
     shard_cats = dict(cats[shard_idx::shard_total])
@@ -500,7 +500,7 @@ if __name__ == "__main__":
     SUBCAT_KEYWORDS.update(shard_cats)
     TOTAL = sum(len(v) for v in SUBCAT_KEYWORDS.values())
 
-    # 更新分片相关的全局变量(必须通过__main__，因为直接运行时模块名不是full_scrape)
+    # 更新分片相关的全局变量(必须通过__main__,因为直接运行时模块名不是full_scrape)
     main_mod = sys.modules["__main__"]
     main_mod.SHARD_INDEX = shard_idx
     main_mod.SHARD_TOTAL = shard_total

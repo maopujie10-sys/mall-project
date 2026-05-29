@@ -1,4 +1,4 @@
-"""全站服务状态 — 检查 mall-app 连通性"""
+"""全站服务状态 -- 检查 mall-app 连通性"""
 from fastapi import APIRouter, Depends
 from auth import verify_token
 from config import MALL_BASE_URL

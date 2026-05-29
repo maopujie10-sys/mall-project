@@ -1,4 +1,4 @@
-"""冒烟测试 — 启动后验证所有核心功能"""
+"""冒烟测试 -- 启动后验证所有核心功能"""
 import asyncio, sys, os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -17,7 +17,7 @@ def check(name: str, condition: bool, detail: str = ""):
 async def main():
     global passed, failed
     print("=" * 50)
-    print("Friday AI OS — 冒烟测试")
+    print("Friday AI OS -- 冒烟测试")
     print("=" * 50)
     
     # 1. 配置检查

@@ -1,4 +1,4 @@
-"""Multi-Model Router — 多模型智能路由
+"""Multi-Model Router -- 多模型智能路由
 支持: Ollama本地(免费) / DeepSeek / Claude / GPT / Gemini"""
 
 import os
@@ -39,7 +39,7 @@ def _get_model_client():
     return _model_client
 
 class ModelRouter:
-    """多模型智能路由器 — 本地优先 + 云端降级"""
+    """多模型智能路由器 -- 本地优先 + 云端降级"""
 
     OLLAMA_HOST = os.getenv("OLLAMA_HOST", "http://localhost:11434")
 
@@ -56,7 +56,7 @@ class ModelRouter:
         "gemini-flash": ModelConfig("google", "gemini-2.0-flash", "GEMINI_API_KEY", "https://generativelanguage.googleapis.com", 0.001, 1048576),
     }
 
-    # 路由策略：本地优先 → 云端降级
+    # 路由策略:本地优先 -> 云端降级
     MODE_ROUTING = {
         ModelMode.QUALITY: ["ollama-qwen", "claude-sonnet", "gpt-4o"],
         ModelMode.FAST: ["ollama-qwen", "gemini-flash", "deepseek-v3"],
@@ -78,7 +78,7 @@ class ModelRouter:
 
     @staticmethod
     def route(mode: ModelMode, preferred: str = None) -> ModelConfig:
-        """根据模式智能选择模型 — 本地免费优先"""
+        """根据模式智能选择模型 -- 本地免费优先"""
         if preferred and preferred in ModelRouter.MODELS:
             return ModelRouter.MODELS[preferred]
 
@@ -88,14 +88,14 @@ class ModelRouter:
             if c not in ModelRouter.MODELS:
                 continue
             cfg = ModelRouter.MODELS[c]
-            # 本地模型：无需 API Key，直接可用
+            # 本地模型:无需 API Key,直接可用
             if cfg.is_local:
                 return cfg
-            # 云端模型：需要配置 API Key
+            # 云端模型:需要配置 API Key
             if os.getenv(cfg.api_key_env, ""):
                 return cfg
 
-        # 兜底：返回第一个配置的模型
+        # 兜底:返回第一个配置的模型
         for name, config in ModelRouter.MODELS.items():
             if config.is_local or os.getenv(config.api_key_env, ""):
                 return config
@@ -124,7 +124,7 @@ class ModelRouter:
 
     @staticmethod
     async def chat(model_id: str = None, messages: list = None, **kwargs) -> dict:
-        """统一聊天接口 — 支持 Ollama(OpenAI兼容) 和云端 API。model_id为None时自动选最佳模型"""
+        """统一聊天接口 -- 支持 Ollama(OpenAI兼容) 和云端 API.model_id为None时自动选最佳模型"""
         if model_id is None or messages is None:
             return await cls.smart_chat(messages or [], **kwargs)
         cfg = ModelRouter.MODELS.get(model_id)
@@ -189,7 +189,7 @@ class FridayModes:
 
     @staticmethod
     async def vote(prompt, models=None):
-        """多模型投票：3个模型同时回答，取最优"""
+        """多模型投票:3个模型同时回答,取最优"""
         import asyncio, httpx, os
         candidates = models or ["deepseek-chat", "gpt-4o-mini"]
         async def ask(model):

@@ -1,4 +1,4 @@
-"""AI 内容工厂 API — 文案/作图/视频生成"""
+"""AI 内容工厂 API -- 文案/作图/视频生成"""
 from fastapi import APIRouter, Depends, Query
 from pydantic import BaseModel
 from auth import verify_token

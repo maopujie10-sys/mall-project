@@ -1,4 +1,4 @@
-"""运营日报 — 自动生成每日运营数据报告"""
+"""运营日报 -- 自动生成每日运营数据报告"""
 import httpx
 from datetime import datetime
 from fastapi import APIRouter, Depends
@@ -84,7 +84,7 @@ async def trend_analysis(_=Depends(verify_token)):
     await handle_risk("L1", "异常趋势分析")
     reports = _get_reports()
     if len(reports) < 2:
-        return {"trend": "数据不足，至少需要2天的日报才能分析趋势"}
+        return {"trend": "数据不足,至少需要2天的日报才能分析趋势"}
     recent = reports[:7]
     alert_counts = [r["data"].get("alerts_today", 0) for r in recent]
     avg = sum(alert_counts) / len(alert_counts)

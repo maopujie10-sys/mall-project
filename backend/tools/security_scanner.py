@@ -1,4 +1,4 @@
-"""安全渗透自检引擎 — AI定期扫描漏洞+自动修复+报告"""
+"""安全渗透自检引擎 -- AI定期扫描漏洞+自动修复+报告"""
 import os, re, subprocess, json, time
 from tools.logger import get_logger
 
@@ -68,7 +68,8 @@ class SecurityScanner:
         scanned = 0
         for root, _, files in os.walk(backend_dir):
             for f in files:
-                scanned += 1; if f.endswith('.py'):
+                scanned += 1
+                if f.endswith('.py'):
                     fpath = os.path.join(root, f)
                     try:
                         with open(fpath, 'r', encoding='utf-8') as fp:
@@ -79,8 +80,7 @@ class SecurityScanner:
                     except:
                         pass
 
-        return {"name": "SQL注入风险检查", "pass": len(risks) == 0, "severity": "high" if risks else "low", "detail": f"扫描{scanned}个Python文件, 发现{len(risks)}个潜在风险" if risks else f"扫描{scanned}个文件, 未发现SQL注入风险", "files": risks[:5]}
-                "severity": "high" if risks else "low",
+        return {"name": "SQL??????", "pass": len(risks) == 0, "severity": "high" if risks else "low", "detail": f"??{scanned}?Python??"}
     @classmethod
     async def check_xss_risk(cls) -> Dict:
         """检查XSS风险"""

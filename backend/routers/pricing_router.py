@@ -1,4 +1,4 @@
-"""AI智能定价API — 单品定价+批量定价+历史查询+定价统计"""
+"""AI智能定价API -- 单品定价+批量定价+历史查询+定价统计"""
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
 from typing import Optional

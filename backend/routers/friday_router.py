@@ -1,4 +1,4 @@
-"""Friday AI OS — Agent API路由"""
+"""Friday AI OS -- Agent API路由"""
 from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect, Query
 from pydantic import BaseModel
 from typing import Optional
@@ -20,7 +20,7 @@ router = APIRouter(prefix="/agent/friday", tags=["Friday AI OS"])
 # ===== WebSocket =====
 @router.websocket("/ws")
 async def friday_websocket(ws: WebSocket):
-    """WebSocket入口 — 先验证Token再建立连接"""
+    """WebSocket入口 -- 先验证Token再建立连接"""
     client_id = "friday-console"
     # 首次消息必须是Token验证
     try:
@@ -146,7 +146,7 @@ async def test_model_speed(model_id: str, _=Depends(verify_token)):
     start = __import__("time").time()
     try:
         resp = await ModelRouter.route(
-            prompt='你好，请回复"hello"测试响应速度',
+            prompt='你好,请回复"hello"测试响应速度',
             model_id=model_id or None
         )
         elapsed = round(__import__("time").time() - start, 2)
@@ -297,7 +297,7 @@ async def vision_faces(image_url: str = Query(...), _=Depends(verify_token)):
 
 @router.post("/vision/upload")
 async def vision_upload(url: str = Query(""), file: bytes = None, _=Depends(verify_token)):
-    """上传图片并分析（支持文件上传或URL）"""
+    """上传图片并分析(支持文件上传或URL)"""
     if url:
         return await VisionAgent.analyze_image(image_url=url)
     if file:

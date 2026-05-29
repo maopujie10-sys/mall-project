@@ -1,11 +1,11 @@
-"""商城AI全自动运维引擎 — AI自主分析/决策/执行
+"""商城AI全自动运维引擎 -- AI自主分析/决策/执行
 
-AI 能自己：
-  1. 扫描全站商品 → 分析活跃度 → 发现死商品/热商品
-  2. 死商品自动下架 → 从采集库选新商品替换
-  3. 发现品类缺口 → 自动触发采集任务
-  4. 智能调整库存 → 热销品加库存、滞销品降库存
-  5. 生成运营报告 → AI 告诉你需要做什么
+AI 能自己:
+  1. 扫描全站商品 -> 分析活跃度 -> 发现死商品/热商品
+  2. 死商品自动下架 -> 从采集库选新商品替换
+  3. 发现品类缺口 -> 自动触发采集任务
+  4. 智能调整库存 -> 热销品加库存、滞销品降库存
+  5. 生成运营报告 -> AI 告诉你需要做什么
 """
 import random
 import hashlib
@@ -74,11 +74,11 @@ CROSS_SELL_KEYWORDS = {
 }
 
 class MallBrain:
-    """商城AI大脑 — 分析/决策/执行一体"""
+    """商城AI大脑 -- 分析/决策/执行一体"""
 
     @staticmethod
     async def scan_products() -> list[ProductHealth]:
-        """扫描全站商品，分析每个商品的健康度"""
+        """扫描全站商品,分析每个商品的健康度"""
         try:
             async with httpx.AsyncClient(timeout=10) as c:
                 r = await c.get(f"{MALL_BASE_URL}/api/products", params={"page": 1, "size": 500})
@@ -117,7 +117,7 @@ class MallBrain:
                 score += min(30, sales / 100)
             elif sales > 10:
                 score += sales / 10
-            # 库存扣分（没货）
+            # 库存扣分(没货)
             if stock == 0:
                 score -= 40
             elif stock < 10:
@@ -133,13 +133,13 @@ class MallBrain:
 
             # 判定状态
             if score >= 80:
-                status, rec = "hot", "🔥 热销品，建议补货并推广"
+                status, rec = "hot", "🔥 热销品,建议补货并推广"
             elif score >= 50:
-                status, rec = "warm", "👍 正常品，维持库存"
+                status, rec = "warm", "👍 正常品,维持库存"
             elif score >= 30:
-                status, rec = "cold", "❄️ 冷门品，考虑降价促销或替换"
+                status, rec = "cold", "❄️ 冷门品,考虑降价促销或替换"
             else:
-                status, rec = "dead", "💀 死品，建议下架并从采集库替换新品"
+                status, rec = "dead", "💀 死品,建议下架并从采集库替换新品"
 
             results.append(ProductHealth(
                 product_id=pid, title=title, category=cat,
@@ -152,7 +152,7 @@ class MallBrain:
 
     @staticmethod
     def find_category_gaps(products: list[ProductHealth]) -> list[CategoryGap]:
-        """发现品类缺口 — 哪些品类商品太少"""
+        """发现品类缺口 -- 哪些品类商品太少"""
         from collections import Counter
         cat_count = Counter(p.category for p in products)
         gaps = []
@@ -191,24 +191,24 @@ class MallBrain:
 
         # 死品处理建议
         if dead:
-            suggestions.append(f"发现 {len(dead)} 个死品，建议下架并从采集库自动替换")
+            suggestions.append(f"发现 {len(dead)} 个死品,建议下架并从采集库自动替换")
             auto_actions.append(f"auto_replace_dead: {len(dead)} products")
 
         # 品类缺口建议
         for g in gaps[:5]:
-            suggestions.append(f"品类「{g.category}」缺口 {g.gap} 个商品，建议启动采集")
+            suggestions.append(f"品类「{g.category}」缺口 {g.gap} 个商品,建议启动采集")
             auto_actions.append(f"auto_scrape_category: {g.category}(gap={g.gap})")
 
         # 库存建议
         low_stock = [p for p in products if p.status == "hot" and p.stock < 20]
         if low_stock:
-            suggestions.append(f"有 {len(low_stock)} 个热销品库存不足，建议补货")
+            suggestions.append(f"有 {len(low_stock)} 个热销品库存不足,建议补货")
             auto_actions.append(f"auto_replenish: {len(low_stock)} products")
 
         # 价格建议
         overpriced = [p for p in products if p.status == "cold" and p.price > 1000 and p.sales < 5]
         if overpriced:
-            suggestions.append(f"有 {len(overpriced)} 个商品价格偏高且无销量，建议降价促销")
+            suggestions.append(f"有 {len(overpriced)} 个商品价格偏高且无销量,建议降价促销")
 
         return MallReport(
             generated_at=datetime.now().isoformat(),
@@ -223,7 +223,7 @@ class MallBrain:
 
     @staticmethod
     async def execute_auto_actions(report: MallReport, dry_run: bool = False) -> dict:
-        """执行AI自动决策 — 下架死品/采集新品/补库存"""
+        """执行AI自动决策 -- 下架死品/采集新品/补库存"""
         results = {"executed": [], "skipped": [], "dry_run": dry_run}
 
         for action in report.auto_actions:
@@ -265,7 +265,7 @@ class MallBrain:
 # ═══════════════════════════════════════
 
 async def daily_health_check():
-    """每日自动健康检查 — 可被定时任务调用"""
+    """每日自动健康检查 -- 可被定时任务调用"""
     products = await MallBrain.scan_products()
     report = MallBrain.generate_report(products)
     state._data["daily_health_report"] = {

@@ -1,4 +1,4 @@
-"""数字生命体 API — 状态/情绪/洞察/梦境/进化"""
+"""数字生命体 API -- 状态/情绪/洞察/梦境/进化"""
 from fastapi import APIRouter, Depends
 from auth import verify_token
 from digital_lifeform import DigitalLifeform

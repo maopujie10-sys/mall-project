@@ -1,4 +1,4 @@
-"""仪表盘API — 实时指标采集/历史趋势/系统健康分"""
+"""仪表盘API -- 实时指标采集/历史趋势/系统健康分"""
 import os, time
 from datetime import datetime, timedelta
 from fastapi import APIRouter, Depends

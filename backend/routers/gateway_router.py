@@ -1,4 +1,4 @@
-"""消息网关 — 统一多平台接入: 微信/企微/钉钉/Telegram/Slack"""
+"""消息网关 -- 统一多平台接入: 微信/企微/钉钉/Telegram/Slack"""
 import json, hashlib, os, httpx
 from config import AGENT_TOKEN
 from datetime import datetime
@@ -24,13 +24,13 @@ class MessageGateway:
     
     @staticmethod
     async def handle_message(platform: str, user_id: str, text: str, extra: dict = None) -> dict:
-        """统一处理入口: 任何平台消息 → AI回复"""
+        """统一处理入口: 任何平台消息 -> AI回复"""
         logger.info(f"[{platform}] {user_id}: {text[:100]}")
         try:
             # 调用AI对话
             from routers.agent_chat import agent_chat as _chat
             from routers.agent_chat import ChatRequest
-            # 简化调用 — 直接走HTTP内部调用
+            # 简化调用 -- 直接走HTTP内部调用
             async with httpx.AsyncClient() as client:
                 r = await client.post(
                     "http://127.0.0.1:9000/agent/chat",
@@ -42,7 +42,7 @@ class MessageGateway:
                     data = r.json(); reply_text = data.get("response") or data.get("reply") or str(data)[:500]; return {"ok": True, "reply": reply_text}
         except Exception as e:
             logger.info(f"Gateway AI call error: {e}")
-        return {"ok": False, "reply": "抱歉,我暂时无法处理您的请求。请稍后再试。"}
+        return {"ok": False, "reply": "抱歉,我暂时无法处理您的请求.请稍后再试."}
 
 # ===== 微信公众号 =====
 @router.get("/wechat")

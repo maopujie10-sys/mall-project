@@ -1,4 +1,4 @@
-"""Docker服务重启 — 通过docker compose重启容器"""
+"""Docker服务重启 -- 通过docker compose重启容器"""
 from fastapi import APIRouter, Depends, HTTPException
 from auth import verify_token
 from risk import handle_risk

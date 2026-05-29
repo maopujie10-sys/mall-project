@@ -1,4 +1,4 @@
-"""Dashboard WebSocket — 实时推送系统指标+告警+订单+生命体状态"""
+"""Dashboard WebSocket -- 实时推送系统指标+告警+订单+生命体状态"""
 import asyncio, json
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from websocket_manager import ws_manager
@@ -20,7 +20,7 @@ async def dashboard_websocket(ws: WebSocket):
     try:
         while True:
             try:
-                # 接收客户端消息（心跳/ping）
+                # 接收客户端消息(心跳/ping)
                 data = await asyncio.wait_for(ws.receive_text(), timeout=60)
                 msg = json.loads(data) if data else {}
                 msg_type = msg.get("type", "")

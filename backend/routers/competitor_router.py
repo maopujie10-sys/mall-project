@@ -1,4 +1,4 @@
-"""竞品监控增强 — 价格变动告警+新品发现+促销追踪+趋势分析"""
+"""竞品监控增强 -- 价格变动告警+新品发现+促销追踪+趋势分析"""
 from datetime import datetime, timedelta
 from fastapi import APIRouter, Depends, Query
 from pydantic import BaseModel

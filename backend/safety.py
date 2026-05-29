@@ -1,4 +1,4 @@
-"""熔断机制 + 防循环 — 防止AI无限重试和雪崩"""
+"""熔断机制 + 防循环 -- 防止AI无限重试和雪崩"""
 from datetime import datetime, timedelta
 from collections import defaultdict
 from state import state
@@ -6,18 +6,18 @@ from state import state
 
 class CircuitBreaker:
     """
-    熔断器。
-    - 同一操作连续失败 N 次后熔断，切换到只读模式
-    - 熔断后冷却一段时间自动半开，重试成功则恢复
+    熔断器.
+    - 同一操作连续失败 N 次后熔断,切换到只读模式
+    - 熔断后冷却一段时间自动半开,重试成功则恢复
     """
 
     STATE_CLOSED = "closed"       # 正常
     STATE_OPEN = "open"           # 熔断
-    STATE_HALF_OPEN = "half_open"  # 半开（尝试恢复）
+    STATE_HALF_OPEN = "half_open"  # 半开(尝试恢复)
 
     def __init__(self, threshold: int = 2, cooldown_s: int = 300):
         self.threshold = threshold          # 连续失败次数阈值
-        self.cooldown_s = cooldown_s        # 熔断冷却时间（秒）
+        self.cooldown_s = cooldown_s        # 熔断冷却时间(秒)
         self._failures: dict[str, list[datetime]] = defaultdict(list)
         self._states: dict[str, str] = {}
 
@@ -76,8 +76,8 @@ class CircuitBreaker:
 # ===== 防循环机制 =====
 class AntiLoop:
     """
-    防循环 — 防止AI反复执行同一操作。
-    规则：
+    防循环 -- 防止AI反复执行同一操作.
+    规则:
     - 同一容器 10 分钟内最多重启 1 次
     - 同一故障最多自动修复 2 次
     - 同一域名不得反复暂停恢复
@@ -97,7 +97,7 @@ class AntiLoop:
 
     def check(self, action_key: str, max_count: int = 1, window_min: int = 10) -> bool:
         """
-        检查是否允许执行。
+        检查是否允许执行.
         返回 True=允许, False=被限制
         """
         self._clean(action_key, window_min)

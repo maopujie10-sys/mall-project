@@ -1,4 +1,4 @@
-"""直接写入Mall数据库 — 去重/上架/SKU生成/评论"""
+"""直接写入Mall数据库 -- 去重/上架/SKU生成/评论"""
 import hashlib
 import time
 import gc
@@ -6,9 +6,9 @@ import pymysql
 from datetime import datetime
 from typing import Optional
 
-# 默认卖家ID（系统中已有9063个商品的老卖家）
+# 默认卖家ID(系统中已有9063个商品的老卖家)
 DEFAULT_SELLER_ID = "e7a5a8828bd3e591018c05838c120853"
-# 默认分类ID（Digital Products，采集商品通用兜底）
+# 默认分类ID(Digital Products,采集商品通用兜底)
 DEFAULT_CATEGORY_ID = "ff80808184809ef9018480a468c30000"
 
 DB_CONFIG = {
@@ -20,10 +20,10 @@ DB_CONFIG = {
     "charset": "utf8mb4",
 }
 
-_cat_cache = {}  # category_path → CATEGORY_ID
+_cat_cache = {}  # category_path -> CATEGORY_ID
 _pool_conn = None  # 持久连接复用
 
-# Amazon广告跳转链域名（URL带独特追踪参数，无法做URL去重，必须走标题去重）
+# Amazon广告跳转链域名(URL带独特追踪参数,无法做URL去重,必须走标题去重)
 _AD_TRACKING_DOMAINS = [
     "aax-us-east-retail-direct.amazon.com",
     "aax-events-cell01-cf.us-east.ono.axp.amazon-adsystem.com",
@@ -69,7 +69,7 @@ def _now_ts() -> int:
 
 
 def _ensure_review_table(conn=None):
-    """创建评论表（如不存在）"""
+    """创建评论表(如不存在)"""
     own = conn is None
     if own:
         conn = _conn()
@@ -96,7 +96,7 @@ def _ensure_review_table(conn=None):
 
 
 def _find_category(category_path: list[str], subcat_name: str = "", conn=None) -> str:
-    """尝试从品类路径匹配系统分类，失败返回默认分类"""
+    """尝试从品类路径匹配系统分类,失败返回默认分类"""
     if not category_path and not subcat_name:
         return DEFAULT_CATEGORY_ID
 
@@ -146,13 +146,13 @@ def _find_category(category_path: list[str], subcat_name: str = "", conn=None) -
 
 
 def check_duplicate(title: str, source_url: str = "", conn=None) -> Optional[str]:
-    """检查重复 — URL精确匹配或标题模糊匹配，返回已存在的GOODS_ID"""
+    """检查重复 -- URL精确匹配或标题模糊匹配,返回已存在的GOODS_ID"""
     own = conn is None
     if own:
         conn = _conn()
     try:
         cur = conn.cursor()
-        # URL去重（跳过广告追踪链，它们URL不唯一）
+        # URL去重(跳过广告追踪链,它们URL不唯一)
         if source_url and not _is_ad_tracking_url(source_url):
             cur.execute(
                 "SELECT UUID FROM T_MALL_SYSTEM_GOODS WHERE LINK = %s LIMIT 1",
@@ -181,7 +181,7 @@ def check_duplicate(title: str, source_url: str = "", conn=None) -> Optional[str
 
 
 def import_product(product: dict, seller_id: str = DEFAULT_SELLER_ID, subcat_name: str = "", conn=None) -> dict:
-    """导入单个采集商品到Mall数据库 — 直接上架
+    """导入单个采集商品到Mall数据库 -- 直接上架
 
     写入表: T_MALL_SYSTEM_GOODS, T_MALL_SYSTEM_GOODS_LANG,
             T_MALL_SELLER_GOODS, T_MALL_GOODS_SKU, T_MALL_GOODS_REVIEW
@@ -235,7 +235,7 @@ def import_product(product: dict, seller_id: str = DEFAULT_SELLER_ID, subcat_nam
             VALUES (%s, %s, %s, 1, %s, %s, %s, {', '.join(['%s']*len(img_values))})
         """, [goods_id, price, category_id, now_dt, now_ts, source_url] + img_values)
 
-        # 2. T_MALL_SYSTEM_GOODS_LANG — 标题+描述（中英文）
+        # 2. T_MALL_SYSTEM_GOODS_LANG -- 标题+描述(中英文)
         lang_id = _uuid(f"{goods_id}_cn")
         desc_text = description[:8000]
         cur.execute("""INSERT INTO T_MALL_SYSTEM_GOODS_LANG
@@ -251,7 +251,7 @@ def import_product(product: dict, seller_id: str = DEFAULT_SELLER_ID, subcat_nam
             ON DUPLICATE KEY UPDATE NAME=%s, DES=%s""",
             (lang_id_en, goods_id, title, desc_text, title, desc_text))
 
-        # 3. T_MALL_SELLER_GOODS — 直接上架
+        # 3. T_MALL_SELLER_GOODS -- 直接上架
         sg_id = _uuid(f"{goods_id}_seller")
         rec_time = now_ts
         new_time = now_ts
@@ -265,7 +265,7 @@ def import_product(product: dict, seller_id: str = DEFAULT_SELLER_ID, subcat_nam
             (sg_id, seller_id, category_id, goods_id, sell_price, price,
              rec_time, new_time, now_dt, now_ts, now_ts))
 
-        # 4. T_MALL_GOODS_SKU — 多SKU（从采集的规格生成）
+        # 4. T_MALL_GOODS_SKU -- 多SKU(从采集的规格生成)
         sku_data_base = f"平台:{platform}"
         if brand:
             sku_data_base += f"|品牌:{brand}"
@@ -351,7 +351,7 @@ def import_product(product: dict, seller_id: str = DEFAULT_SELLER_ID, subcat_nam
 
 
 def import_batch(products: list[dict], seller_id: str = DEFAULT_SELLER_ID, subcat_name: str = "") -> dict:
-    """批量导入 — 复用单连接，导完触发GC"""
+    """批量导入 -- 复用单连接,导完触发GC"""
     imported = []
     skipped = []
     failed = []

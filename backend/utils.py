@@ -1,9 +1,9 @@
-"""变更预览 + 数据脱敏 — 通用工具模块"""
+"""变更预览 + 数据脱敏 -- 通用工具模块"""
 import re
 
 # ===== 数据脱敏 =====
 def mask_sensitive(text: str) -> str:
-    """脱敏敏感信息：手机号/邮箱/密码/Token/API Key"""
+    """脱敏敏感信息:手机号/邮箱/密码/Token/API Key"""
     if not text:
         return text
     # 手机号: 138****1234
@@ -20,7 +20,7 @@ def mask_sensitive(text: str) -> str:
 
 # ===== 变更预览 =====
 def diff_text(old: str, new: str, context: int = 3) -> dict:
-    """生成文本变更预览（简易diff）"""
+    """生成文本变更预览(简易diff)"""
     if old == new:
         return {"has_diff": False, "diff": "无变更"}
 

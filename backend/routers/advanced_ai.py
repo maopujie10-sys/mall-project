@@ -1,4 +1,4 @@
-"""高级AI引擎 — 实时语音打断 / 视频流分析 / 深度研究 / 数据可视化 / 文件导出 / 网页抓取 / 浏览器自动化 / 长上下文"""
+﻿"""高级AI引擎 -- 实时语音打断 / 视频流分析 / 深度研究 / 数据可视化 / 文件导出 / 网页抓取 / 浏览器自动化 / 长上下文"""
 import json, os, re, io, base64, asyncio, tempfile, subprocess
 from pathlib import Path
 from datetime import datetime
@@ -12,7 +12,7 @@ DEEPSEEK_BASE_URL = os.getenv("DEEPSEEK_BASE_URL", "https://api.deepseek.com/v1"
 # 模型路由: deepseek-开头的走DeepSeek, 其他走OpenAI
 CHEAP_MODEL = os.getenv("CHEAP_MODEL", "deepseek-chat")
 SMART_MODEL = os.getenv("SMART_MODEL", "gpt-4o")
-# ===== 模型市场 — AI自己选模型 =====
+# ===== 模型市场 -- AI自己选模型 =====
 AVAILABLE_MODELS = {
     # 便宜梯队 (简单任务)
     "deepseek-chat":       {"provider": "deepseek", "cost": "0.14/1M",  "strength": "日常对话/简单操作/快速响应"},
@@ -74,7 +74,7 @@ async def _call_ai(messages, model=None, max_tokens=1000, temperature=0.7):
 # ===== 1. 实时语音打断 WebSocket =====
 @router.websocket("/voice/live")
 async def live_voice(ws: WebSocket):
-    """实时语音对话 — 支持打断/情感/自然对话"""
+    """实时语音对话 -- 支持打断/情感/自然对话"""
     await ws.accept()
     conversation = []
     current_task = None
@@ -117,7 +117,7 @@ async def live_voice(ws: WebSocket):
                 conversation.append({"role":"user","content":text})
                 await ws.send_json({"type":"status","text":"思考中..."})
                 
-                msgs = [{"role":"system","content":"你是Friday AI助手。用自然的口语回复，带适当的情感。可以笑、叹气、惊讶。回复简洁自然，像朋友聊天。不要用markdown。"}]
+                msgs = [{"role":"system","content":"你是Friday AI助手.用自然的口语回复,带适当的情感.可以笑、叹气、惊讶.回复简洁自然,像朋友聊天.不要用markdown."}]
                 msgs.extend(conversation[-15:])
                 
                 current_task = asyncio.create_task(stream_ai_reply(msgs))
@@ -140,12 +140,12 @@ class FrameRequest(BaseModel):
 
 @router.post("/vision/live")
 async def live_vision(req: FrameRequest, _=Depends(verify_token)):
-    """实时视频帧分析 — 连续帧理解"""
-    prompt = "你正在看实时视频流。请用一句话描述画面内容，如果有值得注意的变化请指出。"
-    if req.context: prompt = f"之前你看到：{req.context}\n继续观察："
+    """实时视频帧分析 -- 连续帧理解"""
+    prompt = "你正在看实时视频流.请用一句话描述画面内容,如果有值得注意的变化请指出."
+    if req.context: prompt = f"之前你看到:{req.context}\n继续观察:"
     
     result = await _call_ai([
-        {"role":"system","content":"你是实时视频分析AI。简洁描述画面。"},
+        {"role":"system","content":"你是实时视频分析AI.简洁描述画面."},
         {"role":"user","content":[
             {"type":"text","text":prompt},
             {"type":"image_url","image_url":{"url":f"data:image/jpeg;base64,{req.image_base64}"}}
@@ -160,11 +160,11 @@ class ResearchRequest(BaseModel):
 
 @router.post("/research")
 async def deep_research(req: ResearchRequest, _=Depends(verify_token)):
-    """多步自主研究 — 搜索→分析→综合→报告"""
+    """多步自主研究 -- 搜索->分析->综合->报告"""
     import httpx
     
     # Step 1: 生成搜索子问题
-    questions_prompt = f"将研究主题拆分为{min(req.depth*2,5)}个具体子问题，只返回问题列表，每行一个。\n主题：{req.topic}"
+    questions_prompt = f"将研究主题拆分为{min(req.depth*2,5)}个具体子问题,只返回问题列表,每行一个.\n主题:{req.topic}"
     sub_questions = await _call_ai([{"role":"user","content":questions_prompt}], max_tokens=300)
     questions = [q.strip().lstrip('0123456789.-) ') for q in sub_questions.split('\n') if q.strip()][:5]
     
@@ -183,7 +183,7 @@ async def deep_research(req: ResearchRequest, _=Depends(verify_token)):
                 if summary_text:
                     # Step 3: AI分析每个子问题
                     analysis = await _call_ai([
-                        {"role":"user","content":f"子问题：{q}\n搜索结果：{summary_text}\n请用2-3句话总结关键发现。"}
+                        {"role":"user","content":f"子问题:{q}\n搜索结果:{summary_text}\n请用2-3句话总结关键发现."}
                     ], max_tokens=200)
                     findings.append({"question":q,"sources":len(snippets),"finding":analysis})
         except: findings.append({"question":q,"sources":0,"finding":"搜索失败"})
@@ -191,8 +191,8 @@ async def deep_research(req: ResearchRequest, _=Depends(verify_token)):
     # Step 4: 综合报告
     findings_text = "\n".join([f"## {f['question']}\n{f['finding']}" for f in findings])
     report = await _call_ai([
-        {"role":"system","content":"你是资深研究员。根据以下研究发现，生成一份结构化的研究报告。要有摘要、关键发现、结论。"},
-        {"role":"user","content":f"研究主题：{req.topic}\n\n研究发现：\n{findings_text}\n\n请生成完整研究报告。"}
+        {"role":"system","content":"你是资深研究员.根据以下研究发现,生成一份结构化的研究报告.要有摘要、关键发现、结论."},
+        {"role":"user","content":f"研究主题:{req.topic}\n\n研究发现:\n{findings_text}\n\n请生成完整研究报告."}
     ], max_tokens=2000)
     
     return {"ok":True,"topic":req.topic,"questions":questions,"findings":findings,"report":report}
@@ -204,7 +204,7 @@ class DataAnalyzeRequest(BaseModel):
 
 @router.post("/data/analyze")
 async def analyze_data(req: DataAnalyzeRequest, _=Depends(verify_token)):
-    """上传CSV→AI自动分析→文本+图表数据"""
+    """上传CSV->AI自动分析->文本+图表数据"""
     if not req.csv_data:
         return {"ok":False,"error":"需要CSV数据"}
     
@@ -237,7 +237,7 @@ async def analyze_data(req: DataAnalyzeRequest, _=Depends(verify_token)):
 
 用户问题: {req.question}
 
-请给出：1)数据概览 2)关键洞察 3)异常发现 4)建议。简洁专业。"""
+请给出:1)数据概览 2)关键洞察 3)异常发现 4)建议.简洁专业."""
     
     insight = await _call_ai([{"role":"user","content":prompt}], max_tokens=800)
     
@@ -315,7 +315,7 @@ async def scrape_url(req: ScrapeRequest, _=Depends(verify_token)):
             
             # AI总结
             summary = await _call_ai([
-                {"role":"system","content":"你是网页总结专家。用3-5句话总结核心内容，提取关键信息。"},
+                {"role":"system","content":"你是网页总结专家.用3-5句话总结核心内容,提取关键信息."},
                 {"role":"user","content":f"URL: {req.url}\n\n内容:\n{text[:5000]}"}
             ], max_tokens=300)
             
@@ -326,7 +326,7 @@ async def scrape_url(req: ScrapeRequest, _=Depends(verify_token)):
     except Exception as e:
         return {"ok":False,"error":str(e)}
 
-# ===== 7. AI浏览器Agent — 自然语言操控浏览器 =====
+# ===== 7. AI浏览器Agent -- 自然语言操控浏览器 =====
 class BrowserAgentRequest(BaseModel):
     command: str  # 自然语言指令
     headless: bool = True
@@ -334,12 +334,12 @@ class BrowserAgentRequest(BaseModel):
 
 @router.post("/browser/agent")
 async def browser_agent(req: BrowserAgentRequest, _=Depends(verify_token)):
-    """AI浏览器Agent — 自然语言→步骤拆解→Playwright执行→AI视觉理解"""
+    """AI浏览器Agent -- 自然语言->步骤拆解->Playwright执行->AI视觉理解"""
     import httpx
     
     # Step 1: AI拆解任务为步骤
-    plan_prompt = f"""你是一个浏览器自动化专家。将以下任务拆解为具体的浏览器操作步骤。
-返回JSON数组，每步格式: {{"action":"navigate/click/type/wait/screenshot/extract/scroll","target":"选择器或URL","value":"输入值或说明","reason":"为什么这步"}}
+    plan_prompt = f"""你是一个浏览器自动化专家.将以下任务拆解为具体的浏览器操作步骤.
+返回JSON数组,每步格式: {{"action":"navigate/click/type/wait/screenshot/extract/scroll","target":"选择器或URL","value":"输入值或说明","reason":"为什么这步"}}
 
 任务: {req.command}
 
@@ -352,7 +352,7 @@ async def browser_agent(req: BrowserAgentRequest, _=Depends(verify_token)):
 - extract: 提取页面数据(说明要提取什么)
 - scroll: 向下滚动
 
-只返回JSON数组，不要其他内容。最多{req.max_steps}步。"""
+只返回JSON数组,不要其他内容.最多{req.max_steps}步."""
 
     plan_text = await _call_ai([{"role":"user","content":plan_prompt}], max_tokens=800, temperature=0.3)
     
@@ -457,8 +457,8 @@ async def browser_agent(req: BrowserAgentRequest, _=Depends(verify_token)):
         # Step 3: AI总结执行结果
         result_summary = json.dumps([{"step":r.get("step"),"action":r.get("action"),"ok":r.get("ok"),"detail":str(r)[:200]} for r in results], ensure_ascii=False)
         summary = await _call_ai([
-            {"role":"system","content":"你是浏览器自动化结果分析师。简明总结执行结果，提取关键数据和发现。"},
-            {"role":"user","content":f"任务: {req.command}\n步骤计划: {plan_text[:500]}\n执行结果: {result_summary}\n\n请用3-5句话总结完成了什么，提取了哪些关键信息。"}
+            {"role":"system","content":"你是浏览器自动化结果分析师.简明总结执行结果,提取关键数据和发现."},
+            {"role":"user","content":f"任务: {req.command}\n步骤计划: {plan_text[:500]}\n执行结果: {result_summary}\n\n请用3-5句话总结完成了什么,提取了哪些关键信息."}
         ], max_tokens=300)
         
         return {
@@ -481,7 +481,7 @@ async def browser_agent(req: BrowserAgentRequest, _=Depends(verify_token)):
 # ===== 浏览器Agent快捷任务 =====
 @router.post("/browser/quick")
 async def browser_quick(req: dict, _=Depends(verify_token)):
-    """快捷浏览器任务 — 竞品采集/商品截图/页面监控"""
+    """快捷浏览器任务 -- 竞品采集/商品截图/页面监控"""
     task_type = req.get("type","")
     url = req.get("url","")
     selector = req.get("selector","")
@@ -503,7 +503,7 @@ class MemoryRequest(BaseModel):
 
 @router.post("/memory/compress")
 async def compress_memory(req: MemoryRequest, _=Depends(verify_token)):
-    """压缩长对话为摘要 — 突破上下文限制"""
+    """压缩长对话为摘要 -- 突破上下文限制"""
     try:
         from routers.agent_chat import _cdb
         c = _cdb()
@@ -511,12 +511,12 @@ async def compress_memory(req: MemoryRequest, _=Depends(verify_token)):
         c.close()
         
         if len(msgs) < 20:
-            return {"ok":True,"compressed":False,"message":"对话较短，无需压缩"}
+            return {"ok":True,"compressed":False,"message":"对话较短,无需压缩"}
         
         full_text = "\n".join([f"{r[0]}: {r[1][:200]}" for r in msgs])
         summary = await _call_ai([
-            {"role":"system","content":"你是对话摘要专家。将以下长对话压缩为简洁摘要，保留关键信息、决策、待办事项。"},
-            {"role":"user","content":f"对话({len(msgs)}条消息):\n{full_text[:4000]}\n\n请生成摘要(不超过300字)。"}
+            {"role":"system","content":"你是对话摘要专家.将以下长对话压缩为简洁摘要,保留关键信息、决策、待办事项."},
+            {"role":"user","content":f"对话({len(msgs)}条消息):\n{full_text[:4000]}\n\n请生成摘要(不超过300字)."}
         ], max_tokens=400)
         
         return {"ok":True,"compressed":True,"original_messages":len(msgs),"summary":summary}
@@ -530,7 +530,7 @@ connected_remotes = {}  # {client_id: websocket}
 
 @router.websocket("/remote/ws")
 async def remote_control_ws(ws: WebSocket):
-    """远程电脑控制WebSocket - 本地Agent连接后，AI可操控本地电脑"""
+    """远程电脑控制WebSocket - 本地Agent连接后,AI可操控本地电脑"""
     await ws.accept()
     client_id = None
     try:
@@ -587,13 +587,12 @@ async def execute_remote(req: dict, _=Depends(verify_token)):
 # ===== 本地Agent下载 v2.0 =====
 async def download_agent_script():
     """下载本地Agent脚本 v2.0 - 人类级电脑操控"""
-    script = """"""
-Friday AI 本地智能Agent v2.0 — 人类级电脑操控
-能力: 视觉理解 · 智能定位 · 任务拆解 · 自纠错 · 多应用操控
+    script = '''
+Friday AI 本地智能Agent v2.0 -- 人类级电脑操控
+能力: 视觉理解 - 智能定位 - 任务拆解 - 自纠错 - 多应用操控
 用法: pip install websockets pyautogui pillow psutil playwright pytesseract opencv-python
       playwright install chromium
       python friday_agent.py
-"""
 import asyncio, json, base64, os, sys, io, subprocess, re, time
 from pathlib import Path
 from datetime import datetime
@@ -602,11 +601,11 @@ import socket
 # ===== 配置 =====
 SERVER = os.getenv("FRIDAY_SERVER", "wss://tiktook.eu.cc/agent/advanced/remote/ws")
 CLIENT_ID = socket.gethostname()
-VISION_ENABLED = True  # 是否启用视觉理解（截图发给服务器AI分析）
+VISION_ENABLED = True  # 是否启用视觉理解(截图发给服务器AI分析)
 
 # ===== 截图 =====
 def screenshot_to_base64():
-    """截取全屏 → base64"""
+    """截取全屏 -> base64"""
     try:
         from PIL import ImageGrab
         img = ImageGrab.grab()
@@ -619,11 +618,11 @@ def screenshot_to_base64():
 # ===== 智能元素定位 =====
 def find_element(description, screenshot_b64=None):
     """
-    智能查找屏幕元素，支持多种方式：
-    - "坐标:500,400" → 直接返回坐标
-    - "文本:登录" → OCR查找包含"登录"的文字位置
-    - "图片:button.png" → 图像模板匹配
-    - "区域:左上角" → 返回预设区域坐标
+    智能查找屏幕元素,支持多种方式:
+    - "坐标:500,400" -> 直接返回坐标
+    - "文本:登录" -> OCR查找包含"登录"的文字位置
+    - "图片:button.png" -> 图像模板匹配
+    - "区域:左上角" -> 返回预设区域坐标
     返回 {"x":int, "y":int, "method":str} 或 None
     """
     if not description:
@@ -632,12 +631,12 @@ def find_element(description, screenshot_b64=None):
     desc = str(description).strip()
     
     # 方式1: 直接坐标
-    coord_match = re.match(r'坐标[:：]\s*(\d+)\s*[,，]\s*(\d+)', desc)
+    coord_match = re.match(r'坐标[::]\s*(\d+)\s*[,,]\s*(\d+)', desc)
     if coord_match:
         return {"x": int(coord_match.group(1)), "y": int(coord_match.group(2)), "method": "coordinate"}
     
     # 方式2: OCR文字查找
-    text_match = re.match(r'文本[:：]\s*(.+)', desc)
+    text_match = re.match(r'文本[::]\s*(.+)', desc)
     if text_match:
         target_text = text_match.group(1).strip()
         try:
@@ -657,13 +656,13 @@ def find_element(description, screenshot_b64=None):
                     if data['conf'][i] > 30:  # 置信度>30%
                         return {"x": x, "y": y, "method": f"ocr:{text}", "confidence": data['conf'][i]}
         except ImportError:
-            pass  # OCR不可用，降级
+            pass  # OCR不可用,降级
         except Exception:
             pass
         return None  # 找不到文字
     
     # 方式3: 图像模板匹配
-    img_match = re.match(r'图片[:：]\s*(.+)', desc)
+    img_match = re.match(r'图片[::]\s*(.+)', desc)
     if img_match:
         template_path = img_match.group(1).strip()
         try:
@@ -692,7 +691,7 @@ def find_element(description, screenshot_b64=None):
 
 # ===== 动作执行 =====
 async def execute_action(action, params, ws=None):
-    """执行单个操控动作，返回结果"""
+    """执行单个操控动作,返回结果"""
     try:
         if action == "screenshot":
             b64 = screenshot_to_base64()
@@ -854,7 +853,7 @@ async def execute_action(action, params, ws=None):
                 async with async_playwright() as p:
                     browser = await p.chromium.launch(headless=False)
                     page = await browser.new_page()
-                    # 简化版：让AI先拆步骤
+                    # 简化版:让AI先拆步骤
                     await page.goto("https://www.google.com")
                     await page.fill('textarea[name="q"]', command)
                     await page.press('textarea[name="q"]', "Enter")
@@ -980,7 +979,7 @@ async def main():
                         print(f"[未知消息] {msg_type}")
         
         except websockets.exceptions.ConnectionClosed:
-            print(f"[断开] 连接关闭，5秒后重连...")
+            print(f"[断开] 连接关闭,5秒后重连...")
         except Exception as e:
             print(f"[错误] {str(e)[:200]}, 5秒后重连...")
         
@@ -992,7 +991,7 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         print(f"\n[退出] Agent已停止")
     except Exception as e:
-        print(f"\n[致命错误] {e}")"""
+        print(f"\n[致命错误] {e}")'''
     return {
         "ok": True,
         "version": "2.0",
@@ -1003,7 +1002,7 @@ if __name__ == "__main__":
     }
 
 
-# ===== 人形Agent（升级版）=====
+# ===== 人形Agent(升级版)=====
 @router.post("/agent/human")
 async def human_like_agent(req: dict, _=Depends(verify_token)):
     """人类级电脑操控 - 智能路由: 代码任务直接执行, GUI任务视觉操控, 自动省钱"""
@@ -1026,7 +1025,7 @@ async def human_like_agent(req: dict, _=Depends(verify_token)):
     
     if "code" in task_type:
         # ===== 代码/服务器任务: 零截图,直接执行 =====
-        code_prompt = f"""你是服务器管理AI。完成这个任务,回复JSON:
+        code_prompt = f"""你是服务器管理AI.完成这个任务,回复JSON:
 {{"steps":[{{"action":"run_command|read_file|write_file|search|done","params":{{}},"reason":"为什么"}}],"summary":"总结"}}
 可用操作: run_command(执行shell), read_file(读文件), write_file(写文件), search(搜索内容), done(完成)
 任务: {command}
@@ -1077,7 +1076,7 @@ JSON:"""
         
         # 做一次最终总结 (便宜模型)
         summary = await _call_ai([
-            {"role":"user","content":f"任务:{command}\n执行结果:\n"+'\n'.join(results)+"\n\n请一句话总结完成情况。"}
+            {"role":"user","content":f"任务:{command}\n执行结果:\n"+'\n'.join(results)+"\n\n请一句话总结完成情况."}
         ], model=CHEAP_MODEL, max_tokens=100, temperature=0)
         
         token_estimate = len(classify_prompt) + len(plan) + len(summary) + 300
@@ -1089,9 +1088,9 @@ JSON:"""
         }
     
     # ===== GUI任务: 视觉操控(优化版) =====
-    system_prompt = """你是电脑操控AI。看到截图后回复JSON: {"observation":"看到了什么","thought":"思考","action":"操作名","target":"元素描述(文本:xxx/坐标:x,y)","params":{},"confidence":0.8}
+    system_prompt = """你是电脑操控AI.看到截图后回复JSON: {"observation":"看到了什么","thought":"思考","action":"操作名","target":"元素描述(文本:xxx/坐标:x,y)","params":{},"confidence":0.8}
 操作: click|double_click|type_text|press_key|scroll|move|wait|open_app|close_window|switch_window|select_all|copy|paste|undo|save|run_command|done|fail
-原则: 用target描述元素(如"文本:登录"), 操作后验证, 卡住换策略。"""
+原则: 用target描述元素(如"文本:登录"), 操作后验证, 卡住换策略."""
     
     cycle = 0
     last_screenshot = None
@@ -1138,7 +1137,7 @@ JSON:"""
         
         # 模型选择: 前3步用CHEAP_MODEL(默认deepseek-chat), 卡住了用SMART_MODEL
         use_model = pick_model(need_vision=True, step_count=cycle)
-        user_prompt = f"任务: {command}\n第{cycle}/{max_cycles}步。\n之前操作: {json.dumps(action_log[-3:],ensure_ascii=False)}\n分析截图,用target描述元素。"
+        user_prompt = f"任务: {command}\n第{cycle}/{max_cycles}步.\n之前操作: {json.dumps(action_log[-3:],ensure_ascii=False)}\n分析截图,用target描述元素."
         
         ai_response = await _call_ai([
             {"role":"system","content":system_prompt},

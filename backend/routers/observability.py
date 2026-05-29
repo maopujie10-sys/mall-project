@@ -1,4 +1,4 @@
-"""可观测性 — Prometheus指标导出 + 系统资源实时监控"""
+"""可观测性 -- Prometheus指标导出 + 系统资源实时监控"""
 import time, psutil
 from datetime import datetime
 from fastapi import APIRouter, Depends

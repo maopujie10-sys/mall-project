@@ -1,4 +1,4 @@
-"""GitHub MCP Router — GitHub API路由"""
+"""GitHub MCP Router -- GitHub API路由"""
 from fastapi import APIRouter, Depends
 from auth import verify_token
 from risk import handle_risk

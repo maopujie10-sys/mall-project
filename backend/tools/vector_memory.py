@@ -1,10 +1,10 @@
-"""向量语义记忆 — 302AI嵌入+向量存储+语义搜索"""
+"""向量语义记忆 -- 302AI嵌入+向量存储+语义搜索"""
 import json, os, math
 from datetime import datetime
 from state import state
 
 class VectorMemory:
-    """轻量级向量记忆系统（无需numpy）"""
+    """轻量级向量记忆系统(无需numpy)"""
 
     @staticmethod
     def _cosine_sim(a, b):
@@ -39,7 +39,7 @@ class VectorMemory:
 
     @staticmethod
     async def remember(text: str, metadata: dict = None):
-        """保存记忆（自动生成向量）"""
+        """保存记忆(自动生成向量)"""
         vec = await VectorMemory.embed(text)
         if not vec:
             return False
@@ -57,7 +57,7 @@ class VectorMemory:
 
     @staticmethod
     def search(query: str, limit: int = 5) -> list:
-        """语义搜索（关键词预过滤+向量排序）"""
+        """语义搜索(关键词预过滤+向量排序)"""
         memories = VectorMemory.get_all()
         if not memories:
             return []
@@ -74,7 +74,7 @@ class VectorMemory:
 
     @staticmethod
     async def semantic_search(query: str, limit: int = 5) -> list:
-        """语义搜索（需在线嵌入）"""
+        """语义搜索(需在线嵌入)"""
         q_vec = await VectorMemory.embed(query)
         if not q_vec:
             return VectorMemory.search(query, limit)

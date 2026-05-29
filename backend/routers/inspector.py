@@ -1,4 +1,4 @@
-"""自动巡检 — 定时检查服务器/Docker/Nginx/网站/域名状态"""
+"""自动巡检 -- 定时检查服务器/Docker/Nginx/网站/域名状态"""
 import httpx
 from datetime import datetime
 from fastapi import APIRouter, Depends
@@ -64,7 +64,7 @@ async def run_inspection(_=Depends(verify_token)):
         tasks[:] = tasks[:50]
     _save()
 
-    # 如果有失败项，自动创建告警
+    # 如果有失败项,自动创建告警
     if report["failed"] > 0:
         from routers.alert import _get_alerts, _send_alert_notification
         alerts = _get_alerts()
@@ -97,11 +97,11 @@ async def inspection_history(_=Depends(verify_token)):
 
 @router.post("/schedule")
 async def schedule_inspection(_=Depends(verify_token)):
-    """设置定时巡检（通过APScheduler），预留接口"""
+    """设置定时巡检(通过APScheduler),预留接口"""
     await handle_risk("L2", "设置定时巡检")
     return {
         "scheduled": True,
-        "note": "定时任务需在服务启动时通过APScheduler配置，当前为手动触发模式",
+        "note": "定时任务需在服务启动时通过APScheduler配置,当前为手动触发模式",
         "interval": "建议: 每30分钟自动巡检一次",
     }
 

@@ -1,4 +1,4 @@
-"""AI异常订单检测API — 单笔分析+批量扫描+规则查询"""
+"""AI异常订单检测API -- 单笔分析+批量扫描+规则查询"""
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
 from typing import Optional
@@ -36,7 +36,7 @@ async def check_order(req: OrderCheckRequest, _=Depends(verify_token)):
 
 @router.post("/quick-scan")
 async def quick_scan(req: OrderCheckRequest, _=Depends(verify_token)):
-    """快速扫描（不调AI）"""
+    """快速扫描(不调AI)"""
     result = fraud_detector.quick_scan(req.model_dump())
     return {"ok": True, "data": result}
 

@@ -1,4 +1,4 @@
-"""Memory Agent API — 记忆系统入口"""
+"""Memory Agent API -- 记忆系统入口"""
 from fastapi import APIRouter, Depends, Query
 from pydantic import BaseModel
 from typing import Optional

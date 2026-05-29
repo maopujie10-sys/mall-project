@@ -1,4 +1,4 @@
-"""AI商品文案生成 — 多语言标题/描述/SEO/v2 支持全球语言"""
+"""AI商品文案生成 -- 多语言标题/描述/SEO/v2 支持全球语言"""
 from fastapi import APIRouter, Depends, Query
 from auth import verify_token
 from risk import handle_risk
@@ -53,7 +53,7 @@ Return JSON only:
                             "lang_name": lang_name, "generated_by": "ai", **result}
     except: pass
 
-    # 内置模板（多语言）
+    # 内置模板(多语言)
     tones = {"professional": {"zh":"专业","en":"Professional","ja":"プロフェッショナル","ko":"프로페셔널"},
              "friendly": {"zh":"亲切","en":"Friendly","ja":"フレンドリー","ko":"친근한"},
              "luxury": {"zh":"高端","en":"Luxury","ja":"ラグジュアリー","ko":"럭셔리"},
@@ -64,13 +64,13 @@ Return JSON only:
     # 语言特定模板
     templates = {
         "zh": {"title": f"{category} | {product_name}" if category else product_name,
-               "desc": f"【{tone_label}品质】{product_name}\n核心特点: {'、'.join(features_list[:5])}\n品质保证，值得信赖。",
+               "desc": f"【{tone_label}品质】{product_name}\n核心特点: {'、'.join(features_list[:5])}\n品质保证,值得信赖.",
                "lang": "中文"},
         "en": {"title": f"{category} | {product_name}" if category else product_name,
                "desc": f"[{tone_label} Quality] {product_name}\nKey Features: {', '.join(features_list[:5])}\nPremium quality, trusted worldwide.",
                "lang": "English"},
         "ja": {"title": f"{product_name} | {category}" if category else product_name,
-               "desc": f"【{tone_label}品質】{product_name}\n主な特徴: {'、'.join(features_list[:5])}\n高品質で信頼できる製品です。",
+               "desc": f"【{tone_label}品質】{product_name}\n主な特徴: {'、'.join(features_list[:5])}\n高品質で信頼できる製品です.",
                "lang": "日本語"},
         "ko": {"title": f"{product_name} | {category}" if category else product_name,
                "desc": f"【{tone_label} 품질】{product_name}\n주요 특징: {', '.join(features_list[:5])}\n고품질, 신뢰할 수 있는 제품.",

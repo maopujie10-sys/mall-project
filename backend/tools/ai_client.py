@@ -1,4 +1,4 @@
-"""统一AI客户端 — 多provider自动路由, 被agent_chat.py和advanced_ai.py共用"""
+"""统一AI客户端 -- 多provider自动路由, 被agent_chat.py和advanced_ai.py共用"""
 import os, json, httpx
 from config import OPENAI_API_KEY, OPENAI_BASE_URL, DEEPSEEK_API_KEY
 
@@ -13,7 +13,7 @@ AVAILABLE_MODELS = {
     "gpt-4o":              {"provider": "openai",   "cost": "2.50/1M",  "vision": True},
 }
 
-# 默认模型（环境变量可覆盖）
+# 默认模型(环境变量可覆盖)
 DEFAULT_MODEL = os.getenv("CHEAP_MODEL", "deepseek-chat")
 SMART_MODEL = os.getenv("SMART_MODEL", "gpt-4o")
 
@@ -29,13 +29,13 @@ def pick_model(task_complexity="auto", need_vision=False, step_count=0):
         # 视觉任务需要多模态模型
         if OPENAI_API_KEY:
             return "gpt-4o-mini" if task_complexity != "hard" else "gpt-4o"
-        return DEFAULT_MODEL  # 降级（可能不支持视觉）
+        return DEFAULT_MODEL  # 降级(可能不支持视觉)
     if task_complexity == "hard" or step_count > 5:
         return SMART_MODEL
     return DEFAULT_MODEL
 
 async def call_ai(messages, model=None, max_tokens=1000, temperature=0.7):
-    """调用AI — 自动路由provider"""
+    """调用AI -- 自动路由provider"""
     if model is None:
         model = DEFAULT_MODEL
     
@@ -62,7 +62,7 @@ async def call_ai(messages, model=None, max_tokens=1000, temperature=0.7):
         return f"API错误:{r.status_code}"
 
 async def stream_ai(messages, model=None, temperature=0.8):
-    """流式调用AI — 逐token返回"""
+    """流式调用AI -- 逐token返回"""
     if model is None:
         model = DEFAULT_MODEL
     
@@ -91,7 +91,7 @@ async def stream_ai(messages, model=None, temperature=0.8):
                         pass
 
 async def vision_analyze(image_base64, question="描述这张图片", model="gpt-4o-mini"):
-    """视觉分析 — 需要多模态模型"""
+    """视觉分析 -- 需要多模态模型"""
     if not OPENAI_API_KEY:
         return {"ok": False, "error": "视觉分析需要OPENAI_API_KEY"}
     

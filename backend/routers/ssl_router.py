@@ -1,4 +1,4 @@
-"""SSL 证书管理 — 自动签发/续签/状态查询"""
+"""SSL 证书管理 -- 自动签发/续签/状态查询"""
 import os
 import subprocess
 from datetime import datetime
@@ -17,7 +17,7 @@ class SSLIssueRequest(BaseModel):
 
 
 def _cert_valid(domain: str) -> dict:
-    """检查本地证书有效性（openssl 命令）"""
+    """检查本地证书有效性(openssl 命令)"""
     fp = os.path.join(CERT_DIR, domain, "fullchain.cer")
     if not os.path.exists(fp):
         return {"ok": False, "reason": "证书文件不存在", "days_left": 0}
@@ -38,10 +38,10 @@ def _cert_valid(domain: str) -> dict:
 
 
 def _issue(domain: str, email: str) -> dict:
-    """通过 acme.sh 签发证书（standalone 模式需 80 端口）"""
+    """通过 acme.sh 签发证书(standalone 模式需 80 端口)"""
     ac = os.path.expanduser("~/.acme.sh/acme.sh")
     if not os.path.exists(ac):
-        return {"ok": False, "error": "acme.sh 未安装，请执行: curl https://get.acme.sh | sh"}
+        return {"ok": False, "error": "acme.sh 未安装,请执行: curl https://get.acme.sh | sh"}
     fp = os.path.join(CERT_DIR, domain, "fullchain.cer")
     kp = os.path.join(CERT_DIR, domain, "private.key")
     os.makedirs(os.path.dirname(fp), exist_ok=True)

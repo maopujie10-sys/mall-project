@@ -1,4 +1,4 @@
-"""自助运维 — 一键诊断/修复入口"""
+"""自助运维 -- 一键诊断/修复入口"""
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from typing import Optional
@@ -47,7 +47,7 @@ async def run_runbook(runbook_id: str, user_id: Optional[str] = None, order_id: 
 
     report = await rb.run()
 
-    # 如果有失败步骤，自动创建告警
+    # 如果有失败步骤,自动创建告警
     if report["failed"] > 0:
         from routers.alert import _get_alerts
         from datetime import datetime

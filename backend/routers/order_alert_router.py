@@ -1,4 +1,4 @@
-"""订单异常预警 — 退款突增/库存告急/物流延迟 → 多渠道推送/v1"""
+"""订单异常预警 -- 退款突增/库存告急/物流延迟 -> 多渠道推送/v1"""
 from fastapi import APIRouter, Depends
 from auth import verify_token
 from risk import handle_risk
@@ -99,7 +99,7 @@ def _simulate_check() -> list:
     # 退款率
     refund = random.uniform(5, 25)
     if refund > 15:
-        issues.append({"level":"P1","title":"退款率异常","detail":f"今日退款率{round(refund,1)}%，超过阈值15%", "metric":"refund_rate","value":round(refund,1)})
+        issues.append({"level":"P1","title":"退款率异常","detail":f"今日退款率{round(refund,1)}%,超过阈值15%", "metric":"refund_rate","value":round(refund,1)})
     # 库存
     stock = random.randint(3, 50)
     if stock < 10:

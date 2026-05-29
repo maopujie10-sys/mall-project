@@ -1,5 +1,5 @@
-"""Master Agent — Friday AI OS 总控大脑
-职责：任务拆解、Agent调度、上下文管理、长期目标追踪
+"""Master Agent -- Friday AI OS 总控大脑
+职责:任务拆解、Agent调度、上下文管理、长期目标追踪
 v2: Claude 真实AI推理 + 关键词兜底"""
 import json
 import httpx
@@ -19,7 +19,7 @@ class Task:
     completed_at: str = ""
 
 class MasterAgent:
-    """总控Agent — AI推理 + 规则兜底双引擎"""
+    """总控Agent -- AI推理 + 规则兜底双引擎"""
 
     AGENTS = {
         "code": "代码编写/修复/Bug分析",
@@ -34,7 +34,7 @@ class MasterAgent:
 
     @staticmethod
     async def analyze_intent(message: str, use_ai: bool = True) -> dict:
-        """分析用户意图 — AI推理优先，关键词兜底"""
+        """分析用户意图 -- AI推理优先,关键词兜底"""
         if use_ai:
             ai_result = await MasterAgent._ai_analyze(message)
             if ai_result and ai_result.get("agents"):
@@ -53,14 +53,14 @@ class MasterAgent:
             return None
 
         agent_desc = "\n".join([f"- {k}: {v}" for k, v in MasterAgent.AGENTS.items()])
-        prompt = f"""你是 Friday AI OS 的总控大脑。分析用户消息，返回需要调用的Agent列表。
+        prompt = f"""你是 Friday AI OS 的总控大脑.分析用户消息,返回需要调用的Agent列表.
 
 可用Agent:
 {agent_desc}
 
 用户消息: {message}
 
-返回纯JSON（不要markdown包裹）:
+返回纯JSON(不要markdown包裹):
 {{"intent": "简短意图描述", "agents": ["agent1","agent2"], "complexity": "low/medium/high", "reasoning": "推理依据"}}"""
 
         try:
@@ -95,7 +95,7 @@ class MasterAgent:
 
     @staticmethod
     def _keyword_analyze(message: str) -> dict:
-        """关键词匹配 — AI不可用时的兜底方案"""
+        """关键词匹配 -- AI不可用时的兜底方案"""
         msg_lower = message.lower()
         agents_needed = []
 
@@ -151,7 +151,7 @@ class MasterAgent:
 目标: {goal}
 可用Agent: {agent_list}
 
-返回JSON数组（不要markdown包裹）:
+返回JSON数组(不要markdown包裹):
 [{{"step": 1, "agent": "agent名", "action": "具体操作", "detail": "详细说明"}}]"""
 
             async with httpx.AsyncClient(timeout=20) as c:

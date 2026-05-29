@@ -1,4 +1,4 @@
-"""AI 自我进化 API — 记忆/学习/进化报告"""
+"""AI 自我进化 API -- 记忆/学习/进化报告"""
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from typing import Optional
@@ -16,7 +16,7 @@ class CorrectionRequest(BaseModel):
 
 @router.get("/report")
 async def evolution_report(_=Depends(verify_token)):
-    """AI自我进化报告 — AI告诉你它学到了什么"""
+    """AI自我进化报告 -- AI告诉你它学到了什么"""
     await handle_risk("L1", "查看AI进化报告")
     return {"ok": True, "report": EvolutionEngine.evolve_report()}
 
@@ -43,7 +43,7 @@ async def knowledge_base(_=Depends(verify_token), category: Optional[str] = None
 
 @router.post("/learn")
 async def learn_from_user(req: CorrectionRequest, _=Depends(verify_token)):
-    """用户纠正AI — AI记住正确做法"""
+    """用户纠正AI -- AI记住正确做法"""
     await handle_risk("L2", "AI学习用户纠正", req.user_said[:50])
     EvolutionEngine.learn_from_correction(
         original_action=req.original_action,
@@ -51,7 +51,7 @@ async def learn_from_user(req: CorrectionRequest, _=Depends(verify_token)):
         correct_approach=req.correct_approach,
         context=req.context,
     )
-    return {"ok": True, "message": "AI已记住你的纠正，下次不会再犯"}
+    return {"ok": True, "message": "AI已记住你的纠正,下次不会再犯"}
 
 @router.get("/corrections")
 async def pending_corrections(_=Depends(verify_token)):

@@ -1,4 +1,4 @@
-"""全能引擎API — 知识图谱 + 业务增长 + 自主编程"""
+"""全能引擎API -- 知识图谱 + 业务增长 + 自主编程"""
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from typing import Optional
@@ -129,18 +129,18 @@ class CodeRequest(BaseModel):
 
 @router.post("/code/generate")
 async def generate_code(req: CodeRequest, _=Depends(verify_token)):
-    """AI自主编程 — 根据需求生成代码"""
+    """AI自主编程 -- 根据需求生成代码"""
     try:
         import httpx, os
         key = os.getenv("DEEPSEEK_API_KEY") or os.getenv("OPENAI_API_KEY")
         if not key:
             return {"ok": False, "error": "未配置AI API Key"}
         
-        prompt = f"""你是一个高级{req.language}程序员。请根据以下需求生成代码:
+        prompt = f"""你是一个高级{req.language}程序员.请根据以下需求生成代码:
 需求: {req.requirement}
 文件: {req.file_path or '自动判断'}
 
-请输出完整的、可直接运行的代码。只输出代码，不要解释。"""
+请输出完整的、可直接运行的代码.只输出代码,不要解释."""
         
         async with httpx.AsyncClient(timeout=60) as client:
             r = await client.post(

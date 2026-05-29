@@ -1,6 +1,6 @@
-"""Redis 任务队列 — 替代内存队列的持久化任务系统
+"""Redis 任务队列 -- 替代内存队列的持久化任务系统
 
-当 Redis 可用时使用 Redis 队列，否则回退到内存队列。
+当 Redis 可用时使用 Redis 队列,否则回退到内存队列.
 """
 import json
 import os

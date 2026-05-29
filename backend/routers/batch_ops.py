@@ -1,4 +1,4 @@
-"""批量修改引擎 — 批量操作商品/上下架/换图 + L3审批 + 回滚"""
+"""批量修改引擎 -- 批量操作商品/上下架/换图 + L3审批 + 回滚"""
 import httpx
 from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException
@@ -67,7 +67,7 @@ async def _proxy_batch(action: str, ids: list, value: str = None, field: str = N
 
 @router.post("/submit")
 async def submit_batch(req: BatchAction, _=Depends(verify_token)):
-    """提交批量操作（进入审批流程）"""
+    """提交批量操作(进入审批流程)"""
     if len(req.ids) > MAX_BATCH:
         raise HTTPException(400, f"单次最多操作 {MAX_BATCH} 条")
     if len(req.ids) == 0:
@@ -103,7 +103,7 @@ async def submit_batch(req: BatchAction, _=Depends(verify_token)):
     if len(jobs) > 50: jobs[:] = jobs[:50]
     state._save()
 
-    return {"job_id": job["id"], "status": "pending_approval", "total": len(req.ids), "message": "已提交审批，请在审批中心处理"}
+    return {"job_id": job["id"], "status": "pending_approval", "total": len(req.ids), "message": "已提交审批,请在审批中心处理"}
 
 @router.get("/jobs")
 async def list_jobs(_=Depends(verify_token)):

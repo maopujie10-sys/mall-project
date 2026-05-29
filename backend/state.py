@@ -53,7 +53,7 @@ class _AgentState:
         self._ensure_limits()
 
     def _ensure_limits(self):
-        """强制所有key不超限（已知key按KEY_LIMITS，未知key默认上限1000）"""
+        """强制所有key不超限(已知key按KEY_LIMITS,未知key默认上限1000)"""
         for key in list(self._data.keys()):
             val = self._data[key]
             limit = KEY_LIMITS.get(key, 1000)
@@ -75,7 +75,7 @@ class _AgentState:
         return data
 
     def _atomic_save_json(self):
-        """原子写入：写临时文件 → rename"""
+        """原子写入:写临时文件 -> rename"""
         try:
             fd, tmp = tempfile.mkstemp(suffix=".json", dir=os.path.dirname(STATE_FILE))
             with os.fdopen(fd, "w", encoding="utf-8") as f:
@@ -88,7 +88,7 @@ class _AgentState:
                 pass
 
     def _save_db(self):
-        """SQLite持久化（复用连接+批量操作）"""
+        """SQLite持久化(复用连接+批量操作)"""
         global _db_conn
         try:
             if _db_conn is None:
@@ -132,7 +132,7 @@ class _AgentState:
             pass
 
     def _save(self):
-        """统一持久化入口：JSON原子写入 + SQLite"""
+        """统一持久化入口:JSON原子写入 + SQLite"""
         self._ensure_limits()
         self._atomic_save_json()
         self._save_db()
@@ -206,7 +206,7 @@ class _AgentState:
         return entry
 
     def set_data(self, key: str, value, max_size: int = None):
-        """安全设置_data中的key，带上限控制"""
+        """安全设置_data中的key,带上限控制"""
         self._data[key] = value
         if max_size and isinstance(value, list) and len(value) > max_size:
             self._data[key] = value[-max_size:]
@@ -218,7 +218,7 @@ class _AgentState:
         self._save()
 
     def append_data(self, key: str, item, max_size: int = None):
-        """安全追加到列表型key，超过上限自动裁剪"""
+        """安全追加到列表型key,超过上限自动裁剪"""
         lst = self._data.setdefault(key, [])
         lst.append(item)
         limit = max_size or KEY_LIMITS.get(key)

@@ -1,4 +1,4 @@
-"""Google Authenticator TOTP双重验证 — 纯Python实现(无需pyotp)"""
+"""Google Authenticator TOTP双重验证 -- 纯Python实现(无需pyotp)"""
 import hmac, hashlib, struct, base64, time, os, io
 from typing import Optional
 
@@ -23,7 +23,7 @@ def get_totp_token(secret: str, interval: int = 30) -> str:
     return str(code).zfill(6)
 
 def verify_totp(secret: str, token: str, window: int = 1) -> bool:
-    """验证TOTP令牌（允许前后window个周期）"""
+    """验证TOTP令牌(允许前后window个周期)"""
     for i in range(-window, window + 1):
         expected = get_totp_token(secret, time.time() + i * 30)
         if token == expected:
@@ -35,7 +35,7 @@ def get_provisioning_uri(secret: str, account: str = "admin@friday-ai") -> str:
     return f"otpauth://totp/FridayAI:{account}?secret={secret}&issuer=FridayAI&algorithm=SHA1&digits=6&period=30"
 
 def generate_qr_svg(uri: str) -> str:
-    """生成QR码SVG（用于扫码绑定）"""
+    """生成QR码SVG(用于扫码绑定)"""
     try:
         import qrcode
         qr = qrcode.make(uri)

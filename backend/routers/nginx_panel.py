@@ -1,4 +1,4 @@
-"""Nginx 全功能管理 — 状态/配置/站点/上游/日志/SSL"""
+"""Nginx 全功能管理 -- 状态/配置/站点/上游/日志/SSL"""
 import json
 from fastapi import APIRouter, Depends, HTTPException, Query
 from auth import verify_token
@@ -54,7 +54,7 @@ async def nginx_sites(_=Depends(verify_token)):
 
 @router.get("/errors")
 async def nginx_errors(_=Depends(verify_token)):
-    """Nginx错误统计（最近100条按类型分组）"""
+    """Nginx错误统计(最近100条按类型分组)"""
     await handle_risk("L1", "查看Nginx错误统计")
     result = await execute("tail -n 100 /var/log/nginx/error.log 2>/dev/null")
     if not result["success"] or not result["stdout"].strip():

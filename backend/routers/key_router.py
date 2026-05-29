@@ -1,4 +1,4 @@
-"""API Key 管理 API — 后台增删改查+热切换"""
+"""API Key 管理 API -- 后台增删改查+热切换"""
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from tools.key_manager import key_manager

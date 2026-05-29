@@ -1,7 +1,7 @@
-"""变更预览 — 修改前后 diff 对比
+"""变更预览 -- 修改前后 diff 对比
 
-用于审批中心展示修改前后的差异。
-支持文本 diff、JSON diff、配置 diff。
+用于审批中心展示修改前后的差异.
+支持文本 diff、JSON diff、配置 diff.
 """
 import difflib
 import json
@@ -9,7 +9,7 @@ from typing import Optional
 
 
 def text_diff(before: str, after: str, context_lines: int = 3) -> str:
-    """生成文本差异对比（unified diff 格式）"""
+    """生成文本差异对比(unified diff 格式)"""
     before_lines = before.splitlines(keepends=True)
     after_lines = after.splitlines(keepends=True)
     diff = difflib.unified_diff(
@@ -21,7 +21,7 @@ def text_diff(before: str, after: str, context_lines: int = 3) -> str:
 
 
 def json_diff(before: dict, after: dict) -> dict:
-    """对比两个 JSON 对象，返回变更字段列表"""
+    """对比两个 JSON 对象,返回变更字段列表"""
     changes = []
     all_keys = set(before.keys()) | set(after.keys())
     for key in sorted(all_keys):
@@ -42,7 +42,7 @@ def generate_diff_preview(
     after: dict,
     risk_level: str = "L3"
 ) -> dict:
-    """生成变更预览数据，供审批中心展示"""
+    """生成变更预览数据,供审批中心展示"""
     changes = json_diff(before, after)
     return {
         "action": action_name,

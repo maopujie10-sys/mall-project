@@ -1,4 +1,4 @@
-"""Playwright Agent — 浏览器自动化
+"""Playwright Agent -- 浏览器自动化
 v2: 浏览器实例池 + 截图自动清理 + 并发控制"""
 import os, asyncio, json, time
 from datetime import datetime, timedelta
@@ -16,7 +16,7 @@ class BrowserTask:
 
 
 class PlaywrightAgent:
-    """浏览器自动化Agent — 复用浏览器实例"""
+    """浏览器自动化Agent -- 复用浏览器实例"""
 
     BROWSER_READY = False
     _browser = None
@@ -27,7 +27,7 @@ class PlaywrightAgent:
 
     @staticmethod
     async def _get_browser():
-        """获取或创建浏览器实例（复用）"""
+        """获取或创建浏览器实例(复用)"""
         if PlaywrightAgent._browser is not None:
             try:
                 # 检查浏览器是否还活着
@@ -81,11 +81,11 @@ class PlaywrightAgent:
 
     @staticmethod
     async def screenshot(url: str, full_page: bool = True) -> dict:
-        """网页截图（复用浏览器实例）"""
+        """网页截图(复用浏览器实例)"""
         async with PlaywrightAgent._semaphore:
             browser = await PlaywrightAgent._get_browser()
             if not browser:
-                return {"ok": False, "error": "Playwright未安装，请运行: pip install playwright && playwright install chromium"}
+                return {"ok": False, "error": "Playwright未安装,请运行: pip install playwright && playwright install chromium"}
 
             await PlaywrightAgent._cleanup_old_screenshots()
             try:
@@ -102,7 +102,7 @@ class PlaywrightAgent:
 
     @staticmethod
     async def scrape_page(url: str, selectors: dict = None) -> dict:
-        """抓取网页内容（复用浏览器实例）"""
+        """抓取网页内容(复用浏览器实例)"""
         async with PlaywrightAgent._semaphore:
             browser = await PlaywrightAgent._get_browser()
             if not browser:
@@ -134,7 +134,7 @@ class PlaywrightAgent:
 
     @staticmethod
     async def search_and_scrape(keyword: str, site: str = "ebay") -> dict:
-        """搜索商品（复用浏览器实例）"""
+        """搜索商品(复用浏览器实例)"""
         search_urls = {
             "ebay": f"https://www.ebay.com/sch/i.html?_nkw={keyword}",
             "amazon": f"https://www.amazon.com/s?k={keyword}",

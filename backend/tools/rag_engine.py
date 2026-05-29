@@ -1,4 +1,4 @@
-"""RAG 知识引擎 v2 — 语义搜索 + 智能问答 + 自动上下文注入"""
+"""RAG 知识引擎 v2 -- 语义搜索 + 智能问答 + 自动上下文注入"""
 import os, json, hashlib, re
 from typing import List, Dict
 from tools.logger import get_logger
@@ -6,13 +6,13 @@ from tools.logger import get_logger
 logger = get_logger("rag")
 
 class RAGEngine:
-    """检索增强生成引擎 — 文档摄入/语义搜索/智能问答"""
+    """检索增强生成引擎 -- 文档摄入/语义搜索/智能问答"""
     _docs: List[Dict] = []
     _index: Dict[str, List[int]] = {}  # keyword -> doc indices
 
     @classmethod
     def ingest_text(cls, text: str, source: str = "", metadata: Dict = None) -> str:
-        """摄入文档 — 智能分段+关键词索引"""
+        """摄入文档 -- 智能分段+关键词索引"""
         doc_id = hashlib.md5(f"{source}:{text[:100]}".encode()).hexdigest()[:12]
         
         # 智能分段: 按段落、标题、列表分
@@ -23,15 +23,15 @@ class RAGEngine:
                 continue
             if len(para) > 2000:
                 # 长段落按句号分
-                sentences = re.split(r'[。！？\n](?![」』）\)])', para)
+                sentences = re.split(r'[.!?\n](?![」』)\)])', para)
                 current = ""
                 for s in sentences:
                     if len(current) + len(s) < 1500:
-                        current += s + "。"
+                        current += s + "."
                     else:
                         if current.strip():
                             chunks.append(current.strip())
-                        current = s + "。"
+                        current = s + "."
                 if current.strip():
                     chunks.append(current.strip())
             else:
@@ -51,7 +51,7 @@ class RAGEngine:
             for w in words:
                 cls._index.setdefault(w, []).append(len(cls._docs) - 1)
         
-        logger.info(f"RAG摄入: {source} → {len(chunks)}段")
+        logger.info(f"RAG摄入: {source} -> {len(chunks)}段")
         return doc_id
 
     @classmethod
@@ -96,7 +96,7 @@ class RAGEngine:
 
     @classmethod
     def build_context(cls, query: str, top_k: int = 5, max_tokens: int = 3000) -> str:
-        """构建RAG上下文 — 可直接注入到AI prompt"""
+        """构建RAG上下文 -- 可直接注入到AI prompt"""
         results = cls.search(query, top_k)
         if not results:
             return ""
@@ -115,16 +115,16 @@ class RAGEngine:
 
     @classmethod
     async def ask(cls, question: str, top_k: int = 5) -> Dict:
-        """RAG问答 — 搜索+AI回答"""
+        """RAG问答 -- 搜索+AI回答"""
         docs = cls.search(question, top_k)
         if not docs:
-            return {"ok": True, "answer": "知识库中没有找到相关信息。", "sources": []}
+            return {"ok": True, "answer": "知识库中没有找到相关信息.", "sources": []}
         
         context = "\n\n".join([f"[{d['doc'].get('source','未知')}]: {d['doc']['content'][:600]}" for d in docs])
         
         try:
             from tools.ai_client import call_ai
-            prompt = f"基于以下知识库内容回答问题。如果知识库没有相关信息，请如实说明。\n\n知识库:\n{context}\n\n问题: {question}\n\n回答:"
+            prompt = f"基于以下知识库内容回答问题.如果知识库没有相关信息,请如实说明.\n\n知识库:\n{context}\n\n问题: {question}\n\n回答:"
             answer = await call_ai([{"role": "user", "content": prompt}], max_tokens=500, temperature=0.3)
             return {
                 "ok": True,

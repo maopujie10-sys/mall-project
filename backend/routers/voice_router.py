@@ -1,4 +1,4 @@
-"""语音对话 WebSocket — 实时音频→STT→LLM→TTS"""
+"""语音对话 WebSocket -- 实时音频->STT->LLM->TTS"""
 import json, base64, asyncio
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Depends, Query
 from tools.logger import get_logger
@@ -31,7 +31,7 @@ async def voice_websocket(ws: WebSocket):
                 # 调用AI处理语音消息
                 try:
                     from routers.agent_chat import agent_chat, ChatRequest
-                    # 将音频作为文本消息处理（浏览器端做STT）
+                    # 将音频作为文本消息处理(浏览器端做STT)
                     text = data.get("text", "")
                     if not text:
                         # 没有文本则用音频base64作为消息
@@ -46,7 +46,7 @@ async def voice_websocket(ws: WebSocket):
                     await ws.send_json({"type": "reply_text", "text": reply})
                     await ws.send_json({"type": "status", "message": "生成语音..."})
                     
-                    # 生成TTS音频（使用浏览器端speechSynthesis，这里返回文本即可）
+                    # 生成TTS音频(使用浏览器端speechSynthesis,这里返回文本即可)
                     await ws.send_json({
                         "type": "voice_reply",
                         "text": reply,

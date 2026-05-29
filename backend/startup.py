@@ -1,4 +1,4 @@
-"""AI 启动自检 + 长期记忆预热 — 启动即加载历史经验"""
+"""AI 启动自检 + 长期记忆预热 -- 启动即加载历史经验"""
 import os
 import json
 from datetime import datetime
@@ -21,7 +21,7 @@ async def startup_self_check():
             "total_actions": total_actions,
             "knowledge_items": total_learned,
             "corrections": total_corrections,
-            "status": "🧠 长期记忆在线" if total_actions > 0 else "📝 记忆库为空，等待首次使用",
+            "status": "🧠 长期记忆在线" if total_actions > 0 else "📝 记忆库为空,等待首次使用",
         }
         print(f"[AI大脑] 记忆: {total_actions}条行动, {total_learned}条知识, {total_corrections}条纠正")
     except Exception as e:
@@ -65,7 +65,7 @@ async def startup_self_check():
         results["evolution_suggestions"] = []
 
     
-    # 5. Git记忆同步 — 拉取另一端AI的记忆
+    # 5. Git记忆同步 -- 拉取另一端AI的记忆
     try:
         from tools.memory_sync import MemorySync
         sync_result = MemorySync.sync_pull()
@@ -82,13 +82,13 @@ async def startup_self_check():
         results["memory_sync"] = {"ok": False, "error": str(e)}
 
     all_ok = all(v.get("ok", True) for v in results.values() if isinstance(v, dict))
-    summary = "✅ AI大脑启动完成，全系统正常" if all_ok else "⚠️ AI大脑启动完成，部分模块需关注"
+    summary = "✅ AI大脑启动完成,全系统正常" if all_ok else "⚠️ AI大脑启动完成,部分模块需关注"
 
     print(f"[AI大脑] {summary}")
     return {"ok": all_ok, "summary": summary, "details": results, "started_at": datetime.now().isoformat()}
 
 async def startup_warmup():
-    """启动预热 — 加载历史经验到工作记忆"""
+    """启动预热 -- 加载历史经验到工作记忆"""
     print("[AI大脑] 🔥 加载历史经验...")
     knowledge = {}
     try:

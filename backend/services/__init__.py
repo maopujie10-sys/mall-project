@@ -1,5 +1,5 @@
-"""服务层 — 核心业务逻辑
-从 Router 中抽离，可复用、可测试"""
+"""服务层 -- 核心业务逻辑
+从 Router 中抽离,可复用、可测试"""
 from datetime import datetime
 from typing import Optional
 from tools.memory_store import memory_store
@@ -76,7 +76,7 @@ class MemoryService:
 
 
 class DiaryService:
-    """日记服务 — 自动生成每日报告"""
+    """日记服务 -- 自动生成每日报告"""
 
     @staticmethod
     def generate_daily() -> dict:
@@ -105,7 +105,7 @@ class DiaryService:
             "topics_discussed": sorted(topic_counts.items(), key=lambda x: x[1], reverse=True)[:5],
             "highlights": highlights or ["平静的一天"],
             "mood": DigitalLifeform.get_mood(),
-            "summary": f"今日共{len(recent)}段对话，关注{topic_counts}",
+            "summary": f"今日共{len(recent)}段对话,关注{topic_counts}",
         }
 
     @staticmethod

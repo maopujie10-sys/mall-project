@@ -1,4 +1,4 @@
-"""网络工具 — Ping/DNS/端口扫描/TraceRoute"""
+"""网络工具 -- Ping/DNS/端口扫描/TraceRoute"""
 import asyncio, socket, subprocess
 from fastapi import APIRouter, Depends, HTTPException
 from auth import verify_token

@@ -1,4 +1,4 @@
-"""系统设置 — 环境变量/API密钥/通用配置管理"""
+"""系统设置 -- 环境变量/API密钥/通用配置管理"""
 import os
 from fastapi import APIRouter, Depends
 from auth import verify_token
@@ -20,7 +20,7 @@ ALLOWED_ENV_KEYS = [
 
 @router.get("/env")
 async def get_settings(_=Depends(verify_token)):
-    """获取系统环境变量（白名单）"""
+    """获取系统环境变量(白名单)"""
     await handle_risk("L1", "查看系统设置")
     envs = {}
     for key in ALLOWED_ENV_KEYS:

@@ -1,4 +1,4 @@
-"""预测引擎 — 时序预测(销量/流量/库存/异常)"""
+"""预测引擎 -- 时序预测(销量/流量/库存/异常)"""
 import time, json, asyncio
 from collections import defaultdict
 from typing import List, Dict
@@ -7,7 +7,7 @@ from tools.logger import get_logger
 logger = get_logger("predict")
 
 class PredictEngine:
-    """AI预测引擎 — 移动平均 + 趋势 + 异常检测"""
+    """AI预测引擎 -- 移动平均 + 趋势 + 异常检测"""
     _history: Dict[str, List[Dict]] = defaultdict(list)
 
     @classmethod
@@ -109,16 +109,16 @@ class PredictEngine:
 
 predict_engine = PredictEngine()
 
-    @classmethod
-    def save(cls):
+@classmethod
+def save(cls):
         """持久化到SQLite"""
         from tools.memory_store import memory_store
         import json
         data = {k: v[-200:] for k, v in cls._history.items()}
         memory_store.set_knowledge("predict_history", json.dumps(data, ensure_ascii=False))
 
-    @classmethod
-    def load(cls):
+@classmethod
+def load(cls):
         """从SQLite恢复"""
         from tools.memory_store import memory_store
         import json

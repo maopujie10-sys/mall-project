@@ -1,5 +1,5 @@
-"""GitHub MCP Agent — GitHub API 集成
-能力：仓库状态/Issues/PRs/Workflows/代码搜索"""
+"""GitHub MCP Agent -- GitHub API 集成
+能力:仓库状态/Issues/PRs/Workflows/代码搜索"""
 import os
 import httpx
 from datetime import datetime
@@ -21,7 +21,7 @@ class RepoInfo:
     updated_at: str
 
 class GitHubAgent:
-    """GitHub 操作Agent — 真实API调用"""
+    """GitHub 操作Agent -- 真实API调用"""
 
     @staticmethod
     def _headers():

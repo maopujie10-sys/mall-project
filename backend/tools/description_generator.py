@@ -1,4 +1,4 @@
-"""AI商品描述生成器 — 多语言SEO描述+卖点提取+批量生成"""
+"""AI商品描述生成器 -- 多语言SEO描述+卖点提取+批量生成"""
 import os, httpx, json
 from datetime import datetime
 from typing import Optional
@@ -21,10 +21,10 @@ LANGUAGES = {
 
 # 描述模板
 DESC_TEMPLATES = {
-    "standard": "标准电商描述（标题+卖点+规格+使用场景）",
-    "seo": "SEO优化描述（关键词丰富+结构化+适合搜索引擎）",
-    "social": "社交媒体风格（活泼+emoji+hashtag）",
-    "minimalist": "极简风格（一句话卖点+关键参数）",
+    "standard": "标准电商描述(标题+卖点+规格+使用场景)",
+    "seo": "SEO优化描述(关键词丰富+结构化+适合搜索引擎)",
+    "social": "社交媒体风格(活泼+emoji+hashtag)",
+    "minimalist": "极简风格(一句话卖点+关键参数)",
 }
 
 
@@ -92,7 +92,7 @@ SEO关键词: {", ".join(keywords) if keywords else "自动生成"}
     @classmethod
     async def batch_generate(cls, products: list, languages: list = None,
                               style: str = "standard") -> list:
-        """批量生成（最多20个）"""
+        """批量生成(最多20个)"""
         results = []
         for p in products[:20]:
             try:
@@ -113,7 +113,7 @@ SEO关键词: {", ".join(keywords) if keywords else "自动生成"}
     @classmethod
     async def extract_features(cls, product_name: str, raw_description: str = "") -> dict:
         """AI提取商品卖点"""
-        prompt = f"""分析商品"{product_name}",提取核心卖点和关键词。
+        prompt = f"""分析商品"{product_name}",提取核心卖点和关键词.
 {"参考描述: "+raw_description[:500] if raw_description else ""}
 
 输出JSON: {{"features":["卖点1","卖点2",...], "keywords":["关键词1",...], "target_audience":"目标人群", "price_range":"建议价位"}}"""
@@ -124,14 +124,14 @@ SEO关键词: {", ".join(keywords) if keywords else "自动生成"}
     @classmethod
     async def optimize_title(cls, title: str, keywords: list = None,
                                target_lang: str = "zh") -> str:
-        """AI优化商品标题（SEO友好）"""
+        """AI优化商品标题(SEO友好)"""
         kw = ", ".join(keywords or [])
         prompt = f"""优化以下商品标题为SEO友好版本(语言:{LANGUAGES.get(target_lang,target_lang)}):
 原标题: {title}
 关键词: {kw or "自动提取"}
 要求: 50字以内, 包含核心关键词, 有吸引力, 不说"批发""厂家直销"
 
-只返回优化后的标题,不返回其他内容。"""
+只返回优化后的标题,不返回其他内容."""
 
         result = await cls._call_ai(prompt, max_tokens=80)
         if result and isinstance(result, str):
@@ -152,7 +152,7 @@ SEO关键词: {", ".join(keywords) if keywords else "自动生成"}
                     json={
                         "model": AI_MODEL,
                         "messages": [
-                            {"role": "system", "content": "你是电商文案专家。只返回要求的JSON格式，不返回多余内容。"},
+                            {"role": "system", "content": "你是电商文案专家.只返回要求的JSON格式,不返回多余内容."},
                             {"role": "user", "content": prompt}
                         ],
                         "temperature": 0.7,
@@ -177,9 +177,9 @@ SEO关键词: {", ".join(keywords) if keywords else "自动生成"}
         feat_text = "、".join(features) if features else "高品质、热销爆款"
         return {
             "title": f"【热卖】{name} {category}",
-            "subtitle": f"精选{category}，品质保证",
+            "subtitle": f"精选{category},品质保证",
             "bullets": [f"✓ {f}" for f in (features or ["品质保证", "快速发货", "售后无忧"])][:5],
-            "description": f"{name} — {feat_text}。适用于日常使用，性价比超高。",
+            "description": f"{name} -- {feat_text}.适用于日常使用,性价比超高.",
             "tags": [category, "热卖", "品质"],
             "seo_keywords": f"{name},{category},热卖,品质",
             "lang": lang,

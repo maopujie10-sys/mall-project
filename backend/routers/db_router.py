@@ -1,4 +1,4 @@
-"""数据库管理 — 状态/表信息/查询/优化"""
+"""数据库管理 -- 状态/表信息/查询/优化"""
 import os
 import subprocess
 from datetime import datetime

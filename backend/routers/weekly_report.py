@@ -1,4 +1,4 @@
-"""AI运营周报 — 自动汇总本周订单/销售额/Top商品/异常/流量/竞品动态"""
+"""AI运营周报 -- 自动汇总本周订单/销售额/Top商品/异常/流量/竞品动态"""
 import httpx
 from datetime import datetime, timedelta
 from fastapi import APIRouter, Depends

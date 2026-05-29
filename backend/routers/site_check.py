@@ -1,4 +1,4 @@
-"""网站访问检测 — 域名解析/HTTPS/页面访问/SSL证书"""
+"""网站访问检测 -- 域名解析/HTTPS/页面访问/SSL证书"""
 import httpx
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
@@ -46,7 +46,7 @@ async def ssl_check(req: DomainRequest, _=Depends(verify_token)):
     await handle_risk("L1", "SSL证书检测", req.domain)
     result = await execute(f"openssl s_client -connect {req.domain}:443 -servername {req.domain} </dev/null 2>/dev/null | openssl x509 -noout -dates -subject 2>/dev/null")
     if not result["success"] or not result["stdout"].strip():
-        return {"domain": req.domain, "error": "无法获取SSL证书信息，请确认域名和443端口可访问"}
+        return {"domain": req.domain, "error": "无法获取SSL证书信息,请确认域名和443端口可访问"}
     lines = [l.strip() for l in result["stdout"].split("\n") if l.strip()]
     info = {}
     for l in lines:

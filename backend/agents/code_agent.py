@@ -1,10 +1,10 @@
-"""Code Agent — 代码编写/修复/Bug分析/测试"""
+"""Code Agent -- 代码编写/修复/Bug分析/测试"""
 import os
 import re
 from datetime import datetime
 
 class CodeAgent:
-    """代码Agent — 读代码、写代码、修Bug、生成接口"""
+    """代码Agent -- 读代码、写代码、修Bug、生成接口"""
 
     @staticmethod
     async def analyze_file(filepath: str) -> dict:

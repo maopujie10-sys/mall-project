@@ -1,4 +1,4 @@
-"""商城结构认知 — 扫描商城结构/接口/数据库/业务流程"""
+"""商城结构认知 -- 扫描商城结构/接口/数据库/业务流程"""
 import httpx
 from datetime import datetime
 from fastapi import APIRouter, Depends
@@ -39,7 +39,7 @@ async def scan_structure(_=Depends(verify_token)):
 
     ok_count = sum(1 for v in results["status"].values() if v["ok"])
     total = len(results["status"])
-    results["summary"] = f"检测 {total} 个端点，{ok_count} 个正常，{total - ok_count} 个异常"
+    results["summary"] = f"检测 {total} 个端点,{ok_count} 个正常,{total - ok_count} 个异常"
 
     # 保存扫描记录
     maps = _get_maps()

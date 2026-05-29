@@ -1,4 +1,4 @@
-"""AI商品图处理 — 去背景/水印/批量裁剪/生成展示图/v1"""
+"""AI商品图处理 -- 去背景/水印/批量裁剪/生成展示图/v1"""
 import base64, os, json, asyncio
 from fastapi import APIRouter, Depends, UploadFile, File, Form
 from auth import verify_token
@@ -16,7 +16,7 @@ class BatchRequest(BaseModel):
 
 @router.post("/remove-bg")
 async def remove_background(url: str = Form(""), file: UploadFile = None, _=Depends(verify_token)):
-    """去背景 — 调用AI抠图"""
+    """去背景 -- 调用AI抠图"""
     await handle_risk("L1", "AI抠图")
     try:
         if file:

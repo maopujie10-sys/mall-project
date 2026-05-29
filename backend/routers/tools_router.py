@@ -1,4 +1,4 @@
-"""AI工具箱 — 代码解释器 / 联网搜索 / 图片生成 / 用量统计 / 评测"""
+"""AI工具箱 -- 代码解释器 / 联网搜索 / 图片生成 / 用量统计 / 评测"""
 import json, os, sys, io, re, base64, asyncio, subprocess, tempfile, shutil
 from pathlib import Path
 from datetime import datetime
@@ -49,7 +49,7 @@ async def run_code(req: CodeRequest, _=Depends(verify_token)):
     stderr = io.StringIO()
     try:
         code_clean = req.code.replace('\r\n','\n')[:5000]
-        # 安全检查：禁止危险操作
+        # 安全检查:禁止危险操作
         dangerous = ['__import__','eval(','exec(','compile(','open(','os.','subprocess','shutil','socket','urllib','requests','httpx','importlib','ctypes','multiprocessing','threading','signal','atexit','sys.exit','os.system','os.popen','os.exec']
         for d in dangerous:
             if d in code_clean:
@@ -83,7 +83,7 @@ class SearchRequest(BaseModel):
 
 @router.post("/search")
 async def web_search(req: SearchRequest, _=Depends(verify_token)):
-    """DuckDuckGo实时搜索（无需API Key）"""
+    """DuckDuckGo实时搜索(无需API Key)"""
     try:
         import httpx
         async with httpx.AsyncClient(timeout=15) as client:
@@ -172,13 +172,13 @@ async def evaluate_answer(req: EvalRequest, _=Depends(verify_token)):
     try:
         import httpx
         base = OPENAI_BASE_URL or "https://api.openai.com/v1"
-        prompt = f"评分标准：准确性/完整性/相关性/简洁性 各25分。\n问题：{req.question}\n回答：{req.answer}"
-        if req.expected: prompt += f"\n期望答案：{req.expected}"
-        prompt += "\n请给出总分(1-10)和简短评语。格式：分数: X/10 评语: ..."
+        prompt = f"评分标准:准确性/完整性/相关性/简洁性 各25分.\n问题:{req.question}\n回答:{req.answer}"
+        if req.expected: prompt += f"\n期望答案:{req.expected}"
+        prompt += "\n请给出总分(1-10)和简短评语.格式:分数: X/10 评语: ..."
         async with httpx.AsyncClient(timeout=30) as c:
             r = await c.post(f"{base}/chat/completions",
                 headers={"Authorization":f"Bearer {OPENAI_API_KEY}","Content-Type":"application/json"},
-                json={"model":"gpt-3.5-turbo","messages":[{"role":"system","content":"你是AI评测专家。"},{"role":"user","content":prompt}],"temperature":0.3,"max_tokens":200})
+                json={"model":"gpt-3.5-turbo","messages":[{"role":"system","content":"你是AI评测专家."},{"role":"user","content":prompt}],"temperature":0.3,"max_tokens":200})
             if r.status_code == 200:
                 d = r.json()
                 result = d.get("choices",[{}])[0].get("message",{}).get("content","")

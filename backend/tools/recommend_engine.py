@@ -1,4 +1,4 @@
-"""推荐引擎 — 协同过滤 + 向量相似度"""
+"""推荐引擎 -- 协同过滤 + 向量相似度"""
 import math, json
 from collections import defaultdict, Counter
 from typing import List, Dict
@@ -26,7 +26,7 @@ class RecommendEngine:
         """为用户推荐商品"""
         user_items = set(a["item_id"] for a in cls._user_actions.get(user_id, []))
 
-        # 协同过滤：找相似用户
+        # 协同过滤:找相似用户
         similar_users = cls._find_similar_users(user_id)
         candidate_items = Counter()
         for su, sim in similar_users[:20]:
@@ -98,16 +98,16 @@ class RecommendEngine:
 
 recommend_engine = RecommendEngine()
 
-    @classmethod
-    def save(cls):
+@classmethod
+def save(cls):
         """持久化到SQLite"""
         from tools.memory_store import memory_store
         import json
         data = {"actions": dict(cls._user_actions), "features": cls._item_features}
         memory_store.set_knowledge("recommend_data", json.dumps(data, ensure_ascii=False))
 
-    @classmethod
-    def load(cls):
+@classmethod
+def load(cls):
         """从SQLite恢复"""
         from tools.memory_store import memory_store
         import json

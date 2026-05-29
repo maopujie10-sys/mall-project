@@ -1,4 +1,4 @@
-"""自动巡检 — 站点监控/SEO/性能检测 + 定时自愈"""
+"""自动巡检 -- 站点监控/SEO/性能检测 + 定时自愈"""
 import httpx
 import asyncio
 from datetime import datetime
@@ -25,7 +25,7 @@ def _get_schedule():
 
 @router.post("/visit")
 async def visit_pages(_=Depends(verify_token)):
-    """自动巡检 — 站点监控/SEO/性能检测 + 定时自愈"""
+    """自动巡检 -- 站点监控/SEO/性能检测 + 定时自愈"""
     await handle_risk("L2", "�Զ���վ-ҳ�����")
     logs = _get_logs()
     results = []
@@ -44,7 +44,7 @@ async def visit_pages(_=Depends(verify_token)):
 
 @router.post("/sitemap-gen")
 async def generate_sitemap(_=Depends(verify_token)):
-    """自动巡检 — 站点监控/SEO/性能检测 + 定时自愈"""
+    """自动巡检 -- 站点监控/SEO/性能检测 + 定时自愈"""
     await handle_risk("L1", "����SEO Sitemap")
     async with httpx.AsyncClient(timeout=10) as c:
         try:
@@ -58,20 +58,20 @@ async def generate_sitemap(_=Depends(verify_token)):
 
 @router.get("/logs")
 async def autopilot_logs(_=Depends(verify_token)):
-    """自动巡检 — 站点监控/SEO/性能检测 + 定时自愈"""
+    """自动巡检 -- 站点监控/SEO/性能检测 + 定时自愈"""
     await handle_risk("L1", "�鿴��վ��־")
     return {"logs": _get_logs()[:20]}
 
 @router.get("/schedule")
 async def get_schedule(_=Depends(verify_token)):
-    """自动巡检 — 站点监控/SEO/性能检测 + 定时自愈"""
+    """自动巡检 -- 站点监控/SEO/性能检测 + 定时自愈"""
     await handle_risk("L1", "�鿴��ʱ����")
     sched = _get_schedule()
     return sched
 
 @router.post("/schedule")
 async def set_schedule(_=Depends(verify_token), enabled: bool = True, interval: int = 30):
-    """自动巡检 — 站点监控/SEO/性能检测 + 定时自愈"""
+    """自动巡检 -- 站点监控/SEO/性能检测 + 定时自愈"""
     await handle_risk("L2", f"���ö�ʱ����", f"enabled={enabled} interval={interval}min")
     sched = _get_schedule()
     sched["enabled"] = enabled
@@ -82,7 +82,7 @@ async def set_schedule(_=Depends(verify_token), enabled: bool = True, interval: 
 
 @router.post("/full-auto")
 async def full_auto_pilot(_=Depends(verify_token)):
-    """自动巡检 — 站点监控/SEO/性能检测 + 定时自愈"""
+    """自动巡检 -- 站点监控/SEO/性能检测 + 定时自愈"""
     await handle_risk("L2", "һ���Զ���վ")
     logs = _get_logs()
 

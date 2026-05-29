@@ -40,7 +40,7 @@ async def set_mode(req: SetModeRequest, _=Depends(verify_token)):
 async def emergency_stop(_=Depends(verify_token)):
     state.mode = "human_control"
     state.add_emergency("human_control", "紧急停止 - 用户触发")
-    return {"mode": "human_control", "message": "AI已暂停，所有自动操作已停止"}
+    return {"mode": "human_control", "message": "AI已暂停,所有自动操作已停止"}
 
 @router.get("/approvals")
 async def list_approvals(_=Depends(verify_token)):

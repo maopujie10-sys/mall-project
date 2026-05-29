@@ -1,4 +1,4 @@
-"""风险等级控制 — L1自动 / L2记录+通知 / L3需审批 / L4强制接管"""
+"""风险等级控制 -- L1自动 / L2记录+通知 / L3需审批 / L4强制接管"""
 import httpx
 from datetime import datetime
 from config import TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID
@@ -9,16 +9,16 @@ RISK_LEVELS = {"L1", "L2", "L3", "L4"}
 
 async def handle_risk(level: str, action_name: str, detail: str = "") -> dict:
     """
-    风险等级拦截器。
-    - L1: 自动放行，仅打印日志
+    风险等级拦截器.
+    - L1: 自动放行,仅打印日志
     - L2: 放行 + 记录任务 + 推送 Telegram 通知
-    - L3: 创建待审批项，等待用户确认后方可执行
-    - L4: 强制切换人工接管模式，禁止自动执行
+    - L3: 创建待审批项,等待用户确认后方可执行
+    - L4: 强制切换人工接管模式,禁止自动执行
 
     返回:
       L1/L2: {"allowed": True, "risk": level, "task_id": "..."}
       L3:    {"allowed": False, "risk": "L3", "approval_id": "...", "message": "需审批确认"}
-      L4:    {"allowed": False, "risk": "L4", "message": "高风险操作，已强制人工接管"}
+      L4:    {"allowed": False, "risk": "L4", "message": "高风险操作,已强制人工接管"}
     """
     if level not in RISK_LEVELS:
         level = "L1"
@@ -40,7 +40,7 @@ async def handle_risk(level: str, action_name: str, detail: str = "") -> dict:
             "allowed": False,
             "risk": "L3",
             "approval_id": task_id,
-            "message": "此操作需要审批确认，请前往审批中心处理",
+            "message": "此操作需要审批确认,请前往审批中心处理",
         }
 
     if level == "L4":
@@ -51,7 +51,7 @@ async def handle_risk(level: str, action_name: str, detail: str = "") -> dict:
         return {
             "allowed": False,
             "risk": "L4",
-            "message": "高风险操作，已强制切换为人工接管模式，自动执行已停止",
+            "message": "高风险操作,已强制切换为人工接管模式,自动执行已停止",
             "mode": "human_control",
         }
 

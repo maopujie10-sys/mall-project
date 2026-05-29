@@ -1,4 +1,4 @@
-"""APScheduler 定时任务 — 巡检/备份/轮值/客服报告/商城扫描/日记
+"""APScheduler 定时任务 -- 巡检/备份/轮值/客服报告/商城扫描/日记
 定时任务清单:
   - 每30分钟 服务器巡检 (CPU/Docker/Nginx/网站)
   - 每日凌晨2点 数据库备份
@@ -15,7 +15,7 @@ from apscheduler.triggers.cron import CronTrigger
 from tools.logger import get_logger
 from tools.alert_push import push_weekly_report
 
-# 最小间隔保护(秒) — 防止任何定时任务低于此频率
+# 最小间隔保护(秒) -- 防止任何定时任务低于此频率
 MIN_SCHEDULE_INTERVAL = 60
 
 scheduler = AsyncIOScheduler()
@@ -23,7 +23,7 @@ logger = get_logger("scheduler")
 
 
 async def patrol_task():
-    """服务器巡检 — CPU/Docker/Nginx/网站"""
+    """服务器巡检 -- CPU/Docker/Nginx/网站"""
     now_str = datetime.now().strftime("%H:%M:%S")
     logger.info(f"服务器巡检 {now_str}")
     try:
@@ -71,7 +71,7 @@ async def rotation_check_task():
         from routers.rotation_panel import _check_all
         result = await _check_all()
         if result.get("rotated_to"):
-            logger.info(f"自动轮值 → {result['rotated_to']}")
+            logger.info(f"自动轮值 -> {result['rotated_to']}")
         logger.info(f"域名健康: {result.get('checked', 0)} 个已检测")
     except Exception as e:
         logger.info(f"域名轮值异常: {e}")

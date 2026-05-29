@@ -1,5 +1,5 @@
-"""Memory Sync Engine — 跨设备/跨AI记忆同步
-通过Git仓库同步FRIDAY.md + memory/目录，实现电脑和服务器AI共享记忆"""
+"""Memory Sync Engine -- 跨设备/跨AI记忆同步
+通过Git仓库同步FRIDAY.md + memory/目录,实现电脑和服务器AI共享记忆"""
 
 import os
 import json
@@ -34,7 +34,7 @@ class MemorySync:
 
     @staticmethod
     def identify_self() -> str:
-        """识别当前运行环境：local（电脑）或 server（服务器）"""
+        """识别当前运行环境:local(电脑)或 server(服务器)"""
         hostname = os.uname().nodename if hasattr(os, "uname") else os.getenv("COMPUTERNAME", "unknown")
         if any(kw in hostname.lower() for kw in ["server", "vps", "cloud", "ecs", "prod"]):
             return "server"
@@ -42,11 +42,11 @@ class MemorySync:
 
     @staticmethod
     def generate_friday_md() -> str:
-        """生成FRIDAY.md — AI自我描述文档"""
+        """生成FRIDAY.md -- AI自我描述文档"""
         identity = MemorySync.identify_self()
         emoji = "💻" if identity == "local" else "🖥️"
 
-        content = f"""# {emoji} Friday AI OS — 数字生命体档案
+        content = f"""# {emoji} Friday AI OS -- 数字生命体档案
 
 > 自动生成于 {datetime.now().strftime('%Y-%m-%d %H:%M')} | 运行环境: {identity}
 
@@ -92,7 +92,7 @@ class MemorySync:
             from tools.memory_personality import PersonalityEngine
             journals = PersonalityEngine.get_journal_history(3)
             for j in journals:
-                content += f"- **{j['date']}** {j.get('mood','')} — {j.get('summary','')[:150] if j.get('summary') else ''}\n"
+                content += f"- **{j['date']}** {j.get('mood','')} -- {j.get('summary','')[:150] if j.get('summary') else ''}\n"
         except Exception:
             content += "*(暂无日记)*\n"
 
@@ -100,12 +100,12 @@ class MemorySync:
 ## 🔄 同步说明
 
 - 本文件由 AI 自动生成和维护
-- 电脑端写入 `FRIDAY.md`，服务器端写入 `FRIDAY_SERVER.md`
+- 电脑端写入 `FRIDAY.md`,服务器端写入 `FRIDAY_SERVER.md`
 - git push/pull 后双方可见对方记忆
 - `memory/` 目录存放详细日记和交接文档
 
 ---
-*Friday AI OS v3.0 · 超级AI数字生命体*
+*Friday AI OS v3.0 - 超级AI数字生命体*
 """
         return content
 
@@ -122,7 +122,7 @@ class MemorySync:
             for j in journals:
                 filename = f"daily-{j['date']}.md"
                 filepath = MEMORY_DIR / filename
-                md = f"# 📝 Friday AI 日记 — {j['date']}\n\n"
+                md = f"# 📝 Friday AI 日记 -- {j['date']}\n\n"
                 md += f"心情: {j.get('mood', '😐')}\n\n"
                 md += f"## 摘要\n{j.get('summary', '')}\n\n"
                 if j.get('highlights'):
@@ -164,7 +164,7 @@ class MemorySync:
 
     @staticmethod
     def sync_push() -> dict:
-        """推送到GitHub — 共享记忆给另一端的AI"""
+        """推送到GitHub -- 共享记忆给另一端的AI"""
         identity = MemorySync.identify_self()
 
         # 生成文档
@@ -185,7 +185,7 @@ class MemorySync:
 
         # git commit
         if ok:
-            msg = f"[Friday AI {identity}] 记忆同步 — {timestamp}"
+            msg = f"[Friday AI {identity}] 记忆同步 -- {timestamp}"
             ok, out, err = MemorySync._run_git(["commit", "-m", msg, "--allow-empty"])
             results.append({"step": "commit", "ok": ok, "detail": out or err})
 
@@ -204,7 +204,7 @@ class MemorySync:
 
     @staticmethod
     def sync_pull() -> dict:
-        """从GitHub拉取 — 获取另一端AI的最新记忆"""
+        """从GitHub拉取 -- 获取另一端AI的最新记忆"""
         # git pull
         ok, out, err = MemorySync._run_git(["pull", "origin", "HEAD"], timeout=30)
 

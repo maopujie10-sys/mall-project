@@ -1,5 +1,5 @@
-"""DevOps Agent — 服务器/Docker/Nginx/部署自动化
-职责：SSH控制、Docker运维、Linux管理、Nginx配置、自动部署、自动恢复"""
+"""DevOps Agent -- 服务器/Docker/Nginx/部署自动化
+职责:SSH控制、Docker运维、Linux管理、Nginx配置、自动部署、自动恢复"""
 import os
 import time
 from datetime import datetime
@@ -33,7 +33,7 @@ class DockerService:
 
 
 class DevOpsAgent:
-    """DevOps Agent — 基础设施全自动运维"""
+    """DevOps Agent -- 基础设施全自动运维"""
 
     @staticmethod
     async def check_server_health(host: str = "localhost") -> dict:
@@ -76,13 +76,13 @@ class DevOpsAgent:
         """根据健康状态生成建议"""
         suggestions = []
         if health.cpu_percent > 70:
-            suggestions.append("CPU使用率偏高，建议检查高占用进程")
+            suggestions.append("CPU使用率偏高,建议检查高占用进程")
         if health.mem_percent > 80:
-            suggestions.append("内存使用率偏高，建议检查内存泄漏或增加内存")
+            suggestions.append("内存使用率偏高,建议检查内存泄漏或增加内存")
         if health.disk_percent > 80:
-            suggestions.append("磁盘使用率偏高，建议清理日志或扩容")
+            suggestions.append("磁盘使用率偏高,建议清理日志或扩容")
         if health.cpu_percent > 90:
-            suggestions.append("⚠️ CPU危急！建议立即排查")
+            suggestions.append("⚠️ CPU危急!建议立即排查")
         return suggestions
 
     @staticmethod
@@ -225,7 +225,7 @@ class DevOpsAgent:
 
     @staticmethod
     async def auto_heal_check() -> dict:
-        """自动修复检查 — 检测常见问题并尝试修复"""
+        """自动修复检查 -- 检测常见问题并尝试修复"""
         fixes_applied = []
         issues_found = []
 

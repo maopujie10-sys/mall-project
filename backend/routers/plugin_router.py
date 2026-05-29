@@ -1,4 +1,4 @@
-"""技能市场 API — 技能注册/下载/安装/卸载/配置 v2（30+真实技能）"""
+"""技能市场 API -- 技能注册/下载/安装/卸载/配置 v2(30+真实技能)"""
 from fastapi import APIRouter, Depends, HTTPException
 from auth import verify_token
 from risk import handle_risk
@@ -13,10 +13,10 @@ router = APIRouter(prefix="/agent/plugins", tags=["Plugins"])
 SKILLS_MARKETPLACE = [
     # 监控类
     {"id":"server-monitor","name":"📊 服务器监控","version":"2.0","desc":"CPU/内存/磁盘/进程/端口实时监控","author":"Friday","category":"监控","stars":95,"downloads":1280,"tags":["server","monitor","cpu","memory"]},
-    {"id":"docker-manager","name":"🐳 Docker管理","version":"1.5","desc":"容器全生命周期管理：列表/日志/重启/镜像","author":"Friday","category":"监控","stars":88,"downloads":960,"tags":["docker","container"]},
+    {"id":"docker-manager","name":"🐳 Docker管理","version":"1.5","desc":"容器全生命周期管理:列表/日志/重启/镜像","author":"Friday","category":"监控","stars":88,"downloads":960,"tags":["docker","container"]},
     {"id":"nginx-manager","name":"🔧 Nginx管理","version":"1.3","desc":"Nginx状态/配置/reload/日志查看","author":"Friday","category":"监控","stars":82,"downloads":720,"tags":["nginx","web"]},
     {"id":"site-checker","name":"🌐 站点监控","version":"1.1","desc":"多站点可用性检测/SSL证书监控","author":"Friday","category":"监控","stars":76,"downloads":540,"tags":["site","ssl","uptime"]},
-    {"id":"alert-center","name":"🔔 告警中心","version":"1.2","desc":"统一告警管理：规则/通知/历史","author":"Friday","category":"监控","stars":79,"downloads":610,"tags":["alert","notify"]},
+    {"id":"alert-center","name":"🔔 告警中心","version":"1.2","desc":"统一告警管理:规则/通知/历史","author":"Friday","category":"监控","stars":79,"downloads":610,"tags":["alert","notify"]},
 
     # 自动化类
     {"id":"auto-backup","name":"💾 自动备份","version":"1.0","desc":"定时数据库/文件自动备份与恢复","author":"Friday","category":"自动化","stars":91,"downloads":1100,"tags":["backup","cron"]},
@@ -39,7 +39,7 @@ SKILLS_MARKETPLACE = [
     {"id":"data-analytics","name":"📊 数据分析","version":"1.1","desc":"商城运营数据分析与报表","author":"Friday","category":"商城","stars":81,"downloads":630,"tags":["analytics","report","stats"]},
 
     # AI/模型类
-    {"id":"ai-chat","name":"💬 AI对话","version":"2.0","desc":"多模型AI对话（Ollama/DeepSeek/Claude/GPT）","author":"Friday","category":"AI","stars":96,"downloads":3200,"tags":["chat","ai","llm"]},
+    {"id":"ai-chat","name":"💬 AI对话","version":"2.0","desc":"多模型AI对话(Ollama/DeepSeek/Claude/GPT)","author":"Friday","category":"AI","stars":96,"downloads":3200,"tags":["chat","ai","llm"]},
     {"id":"vision-agent","name":"👁️ 视觉识别","version":"1.2","desc":"OCR文字识别/图片分析/物体检测","author":"Friday","category":"AI","stars":84,"downloads":"760","tags":["ocr","vision","image"]},
     {"id":"trend-agent","name":"📈 趋势分析","version":"1.1","desc":"YouTube/X/Google多平台热点趋势","author":"Friday","category":"AI","stars":79,"downloads":540,"tags":["trend","social","hot"]},
     {"id":"code-agent","name":"💻 代码助手","version":"1.0","desc":"代码分析/生成/搜索/API生成","author":"Friday","category":"AI","stars":73,"downloads":390,"tags":["code","dev","api"]},
@@ -47,7 +47,7 @@ SKILLS_MARKETPLACE = [
 
     # 轮值/域名类
     {"id":"rotation-system","name":"🌐 域名轮值","version":"2.0","desc":"企业级域名轮值/健康检测/自动切换","author":"Friday","category":"网络","stars":92,"downloads":1150,"tags":["rotation","domain","dns"]},
-    {"id":"ssl-manager","name":"🔒 SSL证书","version":"1.2","desc":"自动签发/续签/状态监控（acme.sh）","author":"Friday","category":"网络","stars":86,"downloads":880,"tags":["ssl","cert","https"]},
+    {"id":"ssl-manager","name":"🔒 SSL证书","version":"1.2","desc":"自动签发/续签/状态监控(acme.sh)","author":"Friday","category":"网络","stars":86,"downloads":880,"tags":["ssl","cert","https"]},
     {"id":"dns-manager","name":"📡 DNS管理","version":"0.8","desc":"DNS解析记录管理","author":"Friday","category":"网络","stars":68,"downloads":320,"tags":["dns","domain","resolve"]},
 
     # 开发工具
@@ -106,7 +106,7 @@ async def market_plugins(category: str = "", search: str = "", _=Depends(verify_
 
 @router.post("/install")
 async def install_plugin(plugin_id: str, _=Depends(verify_token)):
-    """安装技能（注册工具到系统）"""
+    """安装技能(注册工具到系统)"""
     await handle_risk("L2", f"安装技能 {plugin_id}")
     skill = next((s for s in SKILLS_MARKETPLACE if s["id"] == plugin_id), None)
     if not skill:
@@ -187,14 +187,14 @@ def _register_tools(plugin_id: str, skill: dict):
 import os, json, tempfile
 from tools.skill_loader import install_from_zip, uninstall, list_installed, create_skill_package
 
-# 社区技能市场（示例技能包，用户可发布自己的）
+# 社区技能市场(示例技能包,用户可发布自己的)
 # 实际部署时可改为从远程仓库拉取
 COMMUNITY_SKILLS = [
     {
         "id": "seo-optimizer",
         "name": "🔍 SEO优化器",
         "version": "1.0.0",
-        "desc": "自动分析商品页面SEO，生成优化建议，提升搜索引擎排名",
+        "desc": "自动分析商品页面SEO,生成优化建议,提升搜索引擎排名",
         "author": "Friday社区",
         "category": "商城",
         "stars": 78,
@@ -208,7 +208,7 @@ COMMUNITY_SKILLS = [
         "id": "price-predictor",
         "name": "📈 价格预测",
         "version": "0.9.0",
-        "desc": "基于历史数据和市场趋势，AI预测商品最优定价策略",
+        "desc": "基于历史数据和市场趋势,AI预测商品最优定价策略",
         "author": "Friday社区",
         "category": "商城",
         "stars": 82,
@@ -230,13 +230,13 @@ COMMUNITY_SKILLS = [
         "tags": ["wechat","push","alert"],
         "updated_at": "2026-05-25",
         "size_kb": 28,
-        "readme": "需在.env配置WECOM_WEBHOOK，安装后自动注册通知渠道"
+        "readme": "需在.env配置WECOM_WEBHOOK,安装后自动注册通知渠道"
     },
     {
         "id": "log-analyzer",
         "name": "📋 日志分析器",
         "version": "1.1.0",
-        "desc": "智能分析Nginx/MySQL/Python日志，自动发现异常和性能瓶颈",
+        "desc": "智能分析Nginx/MySQL/Python日志,自动发现异常和性能瓶颈",
         "author": "Friday社区",
         "category": "开发",
         "stars": 74,
@@ -250,7 +250,7 @@ COMMUNITY_SKILLS = [
         "id": "auto-translator",
         "name": "🌍 AI翻译官",
         "version": "1.0.0",
-        "desc": "批量翻译商品标题/描述到50+语言，保留SEO关键词",
+        "desc": "批量翻译商品标题/描述到50+语言,保留SEO关键词",
         "author": "Friday社区",
         "category": "工具",
         "stars": 86,
@@ -264,7 +264,7 @@ COMMUNITY_SKILLS = [
         "id": "screenshot-bot",
         "name": "📸 截图机器人",
         "version": "1.0.0",
-        "desc": "定时截取网页/竞品页面快照，监控页面变更",
+        "desc": "定时截取网页/竞品页面快照,监控页面变更",
         "author": "Friday社区",
         "category": "工具",
         "stars": 71,
@@ -367,7 +367,7 @@ async def install_community_skill(skill_id:str,_=Depends(verify_token)):
 
 @router.post("/publish")
 async def publish_skill(file: bytes = None, download_url: str = "", _=Depends(verify_token)):
-    """发布技能（上传 ZIP 包或从 URL 下载）"""
+    """发布技能(上传 ZIP 包或从 URL 下载)"""
     await handle_risk("L2", "发布技能")
     import tempfile
 
@@ -402,7 +402,7 @@ async def publish_skill(file: bytes = None, download_url: str = "", _=Depends(ve
 
 @router.get("/installed/packages")
 async def installed_packages(_=Depends(verify_token)):
-    """已安装的技能包列表（区别于内置技能）"""
+    """已安装的技能包列表(区别于内置技能)"""
     await handle_risk("L1", "查看已安装技能包")
     skills = list_installed()
     return {"ok": True, "skills": skills, "count": len(skills)}

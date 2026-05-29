@@ -1,4 +1,4 @@
-"""消息通知 — Telegram / SMTP 邮件 / 钉钉 / 企业微信"""
+"""消息通知 -- Telegram / SMTP 邮件 / 钉钉 / 企业微信"""
 from datetime import datetime
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
@@ -84,7 +84,7 @@ CHANNEL_MAP = {
 
 @router.post("/send")
 async def send_notification(req: NotifyRequest, _=Depends(verify_token)):
-    """消息通知 — Telegram / SMTP 邮件 / 钉钉 / 企业微信"""
+    """消息通知 -- Telegram / SMTP 邮件 / 钉钉 / 企业微信"""
     await handle_risk("L1", f"����֪ͨ ({req.channel})", req.message[:50])
 
     if req.channel == "all":

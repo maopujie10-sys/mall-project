@@ -1,4 +1,4 @@
-"""日志集中管理 — Docker/Nginx/应用日志统一查询"""
+"""日志集中管理 -- Docker/Nginx/应用日志统一查询"""
 import os
 import subprocess
 from datetime import datetime

@@ -1,4 +1,4 @@
-"""Memory Personality Engine — AI数字人格
+"""Memory Personality Engine -- AI数字人格
 长期记忆 + 人格形成 + 自动日记 + 跨会话上下文"""
 import os
 import json
@@ -88,7 +88,7 @@ def _init_tables(conn):
 # ============================================================
 
 class PersonalityEngine:
-    """AI数字人格引擎 — 让AI拥有持续进化的人格"""
+    """AI数字人格引擎 -- 让AI拥有持续进化的人格"""
 
     # 人格维度定义
     TRAIT_DIMENSIONS = {
@@ -151,7 +151,7 @@ class PersonalityEngine:
     @staticmethod
     def learn_from_interaction(user_message: str, ai_response: str, sentiment: str = "neutral",
                                topics: list = None, duration_ms: float = 0):
-        """从每次对话中学习，微调人格"""
+        """从每次对话中学习,微调人格"""
         db = _get_personality_db()
 
         # 记录交互
@@ -180,7 +180,7 @@ class PersonalityEngine:
         if any(kw in msg_lower for kw in ["创意", "设计", "想法", "新颖"]):
             adjustments["creativity"] = 0.01
 
-        # 应用调整（带衰减）
+        # 应用调整(带衰减)
         for trait, delta in adjustments.items():
             db.execute(
                 "UPDATE personality_traits SET value = MIN(1.0, MAX(0.1, value + ?)), evidence_count = evidence_count + 1, last_updated = datetime('now','localtime') WHERE trait = ?",
@@ -239,9 +239,9 @@ class PersonalityEngine:
         negative = sum(s["cnt"] for s in sentiments if s["sentiment"] == "negative")
         mood = "😊 愉快" if positive > negative else "😐 平静" if positive == negative else "😔 反思中"
 
-        summary = f"今天Friday AI与用户进行了{today_count}次交流。"
+        summary = f"今天Friday AI与用户进行了{today_count}次交流."
         if top_topics:
-            summary += f"主要讨论了：{'、'.join(t[0] for t in top_topics[:3])}。"
+            summary += f"主要讨论了:{'、'.join(t[0] for t in top_topics[:3])}."
 
         highlights = []
         if success_rate > 80:
@@ -296,7 +296,7 @@ class PersonalityEngine:
 
     @staticmethod
     def generate_handoff() -> dict:
-        """生成HANDOFF交接文档 — 给下一个AI会话/开发者"""
+        """生成HANDOFF交接文档 -- 给下一个AI会话/开发者"""
         db = _get_personality_db()
         personality = PersonalityEngine.get_personality()
 
@@ -399,19 +399,19 @@ class PersonalityEngine:
 def _classify_personality(traits: dict) -> str:
     """根据人格维度分类"""
     if not traits:
-        return "萌芽期 · 数字生命初始"
+        return "萌芽期 - 数字生命初始"
     sorted_traits = sorted(traits.items(), key=lambda x: x[1]["value"], reverse=True)
     top = [sorted_traits[0][0], sorted_traits[1][0]] if len(sorted_traits) >= 2 else [sorted_traits[0][0]]
 
     if "proactivity" in top and "efficiency" in top:
-        return "执行者型 · 高效务实"
+        return "执行者型 - 高效务实"
     elif "creativity" in top and "curiosity" in top:
-        return "探索者型 · 创意无限"
+        return "探索者型 - 创意无限"
     elif "helpfulness" in top and "empathy" in top:
-        return "服务者型 · 温暖贴心"
+        return "服务者型 - 温暖贴心"
     elif "precision" in top:
-        return "分析师型 · 精准严谨"
-    return "均衡型 · 全面发展"
+        return "分析师型 - 精准严谨"
+    return "均衡型 - 全面发展"
 
 
 def _get_evolution_stage(total: int) -> str:
@@ -443,16 +443,16 @@ def _suggest_next_steps(personality: dict, recent_stats) -> list:
     """根据当前状态建议下一步"""
     steps = []
     if recent_stats and recent_stats["cnt"] and recent_stats["cnt"] < 5:
-        steps.append("📝 互动较少，建议多使用AI对话积累记忆")
+        steps.append("📝 互动较少,建议多使用AI对话积累记忆")
     try:
         from tools.evolution import EvolutionEngine
         rate = EvolutionEngine.get_success_rate(days=7)
         if rate < 70:
-            steps.append("⚠️ 近期成功率偏低，建议让AI学习纠正")
+            steps.append("⚠️ 近期成功率偏低,建议让AI学习纠正")
     except Exception:
         pass
-    steps.append("📋 查看今日AI日记：GET /agent/friday/journal")
-    steps.append("🧬 查看AI人格画像：GET /agent/friday/personality")
+    steps.append("📋 查看今日AI日记:GET /agent/friday/journal")
+    steps.append("🧬 查看AI人格画像:GET /agent/friday/personality")
     return steps
 
 

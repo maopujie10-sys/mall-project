@@ -1,4 +1,4 @@
-"""AI内容工厂 — 商品描述+营销文案+社媒帖子+翻译"""
+"""AI内容工厂 -- 商品描述+营销文案+社媒帖子+翻译"""
 import json, re
 from tools.logger import get_logger
 
@@ -16,7 +16,7 @@ class ContentFactory:
             return resp.get("content", "")
         except Exception as e:
             logger.error(f"生成商品描述失败: {e}")
-            return f"【{product_info.get('name','')}】高品质{product_info.get('category','')}，价格{product_info.get('price','')}，{product_info.get('features','')}"
+            return f"【{product_info.get('name','')}】高品质{product_info.get('category','')},价格{product_info.get('price','')},{product_info.get('features','')}"
 
     @classmethod
     async def generate_marketing_copy(cls, campaign: dict) -> str:
@@ -26,7 +26,7 @@ class ContentFactory:
             resp = await ModelRouter.smart_chat(messages=[{"role":"user","content":f"为以下营销活动写一条吸引人的推广文案(50-100字),带emoji:\n活动:{campaign.get('name','')}\n优惠:{campaign.get('discount','')}\n目标人群:{campaign.get('audience','')}\n平台:{campaign.get('platform','全平台')}"}], mode="fast")
             return resp.get("content", "")
         except:
-            return f'🎉 {campaign.get("name","")}来啦！{campaign.get("discount","")}，限时优惠！'
+            return f'🎉 {campaign.get("name","")}来啦!{campaign.get("discount","")},限时优惠!'
 
     @classmethod
     async def generate_social_post(cls, topic: dict) -> str:

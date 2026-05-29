@@ -1,4 +1,4 @@
-"""安全执行器 — SSH/subprocess + 命令白名单/黑名单"""
+"""安全执行器 -- SSH/subprocess + 命令白名单/黑名单"""
 import subprocess
 import os
 import shlex
@@ -69,13 +69,13 @@ def _check_command(cmd_str: str):
                     ok = True
                     break
             if not ok:
-                raise SecurityError(f"命令 {base} 参数不在允许范围内。允许: {', '.join(allowed_args)}")
+                raise SecurityError(f"命令 {base} 参数不在允许范围内.允许: {', '.join(allowed_args)}")
     return parts
 
 
 async def execute(cmd_str: str, timeout: int = 30) -> dict:
     """
-    安全执行本地命令。
+    安全执行本地命令.
     返回: {"success": bool, "stdout": str, "stderr": str, "exit_code": int}
     """
     try:
@@ -112,8 +112,8 @@ async def execute_ssh(
     timeout: int = 30,
 ) -> dict:
     """
-    通过 SSH 远程执行命令。
-    支持密码认证和密钥认证两种方式。
+    通过 SSH 远程执行命令.
+    支持密码认证和密钥认证两种方式.
     """
     from config import SSH_HOST, SSH_PORT, SSH_USER, SSH_KEY_PATH
 
@@ -156,7 +156,7 @@ async def execute_ssh(
 
 async def execute_db(sql: str, db_name: str = "mall") -> dict:
     """
-    通过 MySQL 客户端执行数据库查询。
+    通过 MySQL 客户端执行数据库查询.
     返回: {"success": bool, "rows": list, "error": str}
     """
     from config import MALL_DB_HOST, MALL_DB_PORT, MALL_DB_USER, MALL_DB_PASSWORD, MALL_DB_NAME

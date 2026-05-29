@@ -1,5 +1,5 @@
-"""记忆持久化存储 — 对话不再因重启丢失
-SQLite + JSON 双层，支持语义标签和重要性评分"""
+"""记忆持久化存储 -- 对话不再因重启丢失
+SQLite + JSON 双层,支持语义标签和重要性评分"""
 import sqlite3
 import json
 import os

@@ -1,4 +1,4 @@
-"""AI智能定价引擎 — 竞品分析+成本计算+AI推荐定价+价格历史追踪"""
+"""AI智能定价引擎 -- 竞品分析+成本计算+AI推荐定价+价格历史追踪"""
 import json, os, httpx
 from datetime import datetime
 from dataclasses import dataclass, field
@@ -22,10 +22,10 @@ CATEGORY_MARGIN = {
 
 # 竞争强度调整系数
 COMPETITION_ADJUST = {
-    "low": 1.15,     # 竞争低 → 加价15%
+    "low": 1.15,     # 竞争低 -> 加价15%
     "medium": 1.00,  # 正常
-    "high": 0.88,    # 竞争高 → 降价12%
-    "extreme": 0.80, # 极度竞争 → 降价20%
+    "high": 0.88,    # 竞争高 -> 降价12%
+    "extreme": 0.80, # 极度竞争 -> 降价20%
 }
 
 @dataclass
@@ -52,7 +52,7 @@ class PricingEngine:
 
     @classmethod
     async def analyze_competitors(cls, product_name: str, category: str = "其他") -> dict:
-        """分析竞品价格 — 从已采集数据+实时搜索"""
+        """分析竞品价格 -- 从已采集数据+实时搜索"""
         from state import state
         products = state._data.get("scraped_products", [])
 
@@ -150,7 +150,7 @@ class PricingEngine:
         profit = round(market_price - cost, 2)
         margin = round(profit / market_price, 3) if market_price > 0 else 0
 
-        # 7. AI推理 — 给出定价理由
+        # 7. AI推理 -- 给出定价理由
         ai_reasoning = await cls._ai_price_reasoning(
             product_name, category, cost, market_price, competitor, margin
         )
@@ -199,7 +199,7 @@ class PricingEngine:
         if not (DEEPSEEK_KEY or OPENAI_KEY):
             return cls._rule_based_reasoning(category, cost, recommended, competitor, margin)
 
-        prompt = f"""你是电商定价专家。分析以下商品并给出定价理由(50字以内):
+        prompt = f"""你是电商定价专家.分析以下商品并给出定价理由(50字以内):
 
 商品: {product_name}
 类目: {category}
@@ -210,7 +210,7 @@ class PricingEngine:
 竞争强度: {competitor.get("level", "unknown")}
 利润率: {margin:.0%}
 
-请给出简洁的定价理由。"""
+请给出简洁的定价理由."""
 
         try:
             key = DEEPSEEK_KEY or OPENAI_KEY
@@ -219,7 +219,7 @@ class PricingEngine:
                 r = await c.post(api_url,
                     headers={"Authorization": f"Bearer {key}"},
                     json={"model": AI_MODEL, "messages": [
-                        {"role": "system", "content": "你是电商定价专家。回复简洁，50字以内。"},
+                        {"role": "system", "content": "你是电商定价专家.回复简洁,50字以内."},
                         {"role": "user", "content": prompt}
                     ], "temperature": 0.5, "max_tokens": 100})
                 if r.status_code == 200:
@@ -232,7 +232,7 @@ class PricingEngine:
     @classmethod
     def _rule_based_reasoning(cls, category: str, cost: float, price: float,
                                competitor: dict, margin: float) -> str:
-        """基于规则的定价理由（AI不可用时的降级）"""
+        """基于规则的定价理由(AI不可用时的降级)"""
         parts = []
         parts.append(f"{category}类目基准利润率{CATEGORY_MARGIN.get(category,0.30):.0%}")
         if competitor["count"] > 0:

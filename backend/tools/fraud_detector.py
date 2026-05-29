@@ -1,4 +1,4 @@
-"""AI异常订单检测 — 刷单识别+欺诈检测+风险评分"""
+"""AI异常订单检测 -- 刷单识别+欺诈检测+风险评分"""
 import os, httpx, json, math
 from datetime import datetime, timedelta
 from collections import defaultdict
@@ -16,7 +16,7 @@ RISK_RULES = {
     "same_ip_multi_account": {"weight": 35, "desc": "同IP多账号"},
     "address_mismatch": {"weight": 15, "desc": "收货地址异常"},
     "abnormal_hour": {"weight": 10, "desc": "深夜异常下单"},
-    "price_anomaly": {"weight": 20, "desc": "价格异常（远低于市场价）"},
+    "price_anomaly": {"weight": 20, "desc": "价格异常(远低于市场价)"},
     "refund_rate_high": {"weight": 25, "desc": "退货率异常高"},
     "device_fingerprint": {"weight": 20, "desc": "设备指纹重复"},
 }
@@ -56,7 +56,7 @@ class FraudDetector:
                           "detail": f"同IP下{ip_accounts}个账号"})
             details["ip_multi"] = ip_accounts
 
-        # 4. 地址异常 — 地址与IP不匹配
+        # 4. 地址异常 -- 地址与IP不匹配
         if order.get("ip_country") and order.get("ship_country"):
             if order["ip_country"] != order["ship_country"]:
                 risk_score += RISK_RULES["address_mismatch"]["weight"]
@@ -91,7 +91,7 @@ class FraudDetector:
             flags.append({"rule": "device_fingerprint",
                           "detail": f"同设备{device_count}笔订单"})
 
-        # AI综合分析（如果有API Key）
+        # AI综合分析(如果有API Key)
         ai_analysis = ""
         if (DEEPSEEK_KEY or OPENAI_KEY) and risk_score > 40:
             ai_analysis = await cls._ai_fraud_analysis(order, flags, risk_score)
@@ -141,7 +141,7 @@ class FraudDetector:
 
     @classmethod
     def quick_scan(cls, order: dict) -> dict:
-        """快速扫描（不调AI，毫秒级）"""
+        """快速扫描(不调AI,毫秒级)"""
         risk = 0
         flags = []
 
@@ -177,7 +177,7 @@ class FraudDetector:
 已触发风险规则: {json.dumps([f['detail'] for f in flags], ensure_ascii=False)}
 风险评分: {score}/100
 
-请用一句话判断是否存在欺诈,给出建议(30字以内)。"""
+请用一句话判断是否存在欺诈,给出建议(30字以内)."""
 
         try:
             key = DEEPSEEK_KEY or OPENAI_KEY
@@ -186,7 +186,7 @@ class FraudDetector:
                 r = await c.post(api_url,
                     headers={"Authorization": f"Bearer {key}"},
                     json={"model": "deepseek-chat", "messages": [
-                        {"role": "system", "content": "你是电商反欺诈专家。回复简洁，30字以内。"},
+                        {"role": "system", "content": "你是电商反欺诈专家.回复简洁,30字以内."},
                         {"role": "user", "content": prompt}
                     ], "temperature": 0.3, "max_tokens": 80})
                 if r.status_code == 200:
@@ -198,10 +198,10 @@ class FraudDetector:
     @classmethod
     def _get_recommendation(cls, level: str, score: float) -> str:
         if level == "high":
-            return "建议人工审核，暂不发货"
+            return "建议人工审核,暂不发货"
         elif level == "medium":
-            return "建议关注，可正常发货但标记观察"
-        return "正常订单，可发货"
+            return "建议关注,可正常发货但标记观察"
+        return "正常订单,可发货"
 
     @classmethod
     def get_rules(cls) -> dict:

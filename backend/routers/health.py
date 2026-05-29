@@ -1,4 +1,4 @@
-"""全链路健康检查 — MySQL/Redis/Docker/Nginx/Tomcat/磁盘/内存"""
+"""全链路健康检查 -- MySQL/Redis/Docker/Nginx/Tomcat/磁盘/内存"""
 import socket, os, subprocess, asyncio
 from datetime import datetime
 from fastapi import APIRouter
@@ -98,7 +98,7 @@ async def health_check():
 
 @router.get("/full")
 async def full_health_check():
-    """全链路健康检查 — 所有依赖项"""
+    """全链路健康检查 -- 所有依赖项"""
     results = await asyncio.gather(
         _check_mysql(), _check_redis(), _check_docker(),
         _check_nginx(), _check_tomcat(), _check_disk(), _check_memory(),

@@ -1,4 +1,4 @@
-"""AI 商城大脑 API — 商品扫描/运营报告/自动执行"""
+"""AI 商城大脑 API -- 商品扫描/运营报告/自动执行"""
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from auth import verify_token
@@ -41,7 +41,7 @@ async def generate_report(_=Depends(verify_token)):
 
 @router.post("/auto")
 async def auto_execute(req: AutoActionRequest, _=Depends(verify_token)):
-    """AI自动执行运营建议，dry_run=True时仅预览"""
+    """AI自动执行运营建议,dry_run=True时仅预览"""
     risk_level = "L1" if req.dry_run else "L3"
     await handle_risk(risk_level, "AI自动执行运营操作", f"dry_run={req.dry_run}")
     products = await MallBrain.scan_products()
@@ -82,5 +82,5 @@ async def brain_summary(_=Depends(verify_token)):
         "top_gaps": [g["category"] for g in report.category_gaps[:3]],
         "top_suggestion": report.suggestions[0] if report.suggestions else "暂无建议",
         "ready_actions": len(report.auto_actions),
-        "next": "等待 AI 自动执行下轮运营操作，或手动触发 /auto 接口执行建议动作",
+        "next": "等待 AI 自动执行下轮运营操作,或手动触发 /auto 接口执行建议动作",
     }

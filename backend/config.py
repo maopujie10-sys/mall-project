@@ -1,4 +1,4 @@
-"""配置中心 — 支持多环境"""
+"""配置中心 -- 支持多环境"""
 import os, sys
 from dotenv import load_dotenv
 
@@ -10,7 +10,7 @@ ENV = os.getenv("APP_ENV", "development")
 AGENT_TOKEN = os.getenv("X_AGENT_TOKEN", "friday-agent-token")
 if not AGENT_TOKEN or AGENT_TOKEN == "change-me-in-production":
     if ENV == "production":
-        print("[Agent] 错误: X_AGENT_TOKEN 未配置，生产环境必须设置强密码")
+        print("[Agent] 错误: X_AGENT_TOKEN 未配置,生产环境必须设置强密码")
         sys.exit(1)
 
 # ===== Claude =====

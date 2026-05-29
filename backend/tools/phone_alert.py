@@ -1,13 +1,13 @@
-"""电话告警服务 — 通过语音电话通知紧急事件/v1"""
+"""电话告警服务 -- 通过语音电话通知紧急事件/v1"""
 import json, os
 from datetime import datetime
 from state import state
 from typing import Optional
 
 class PhoneAlert:
-    """电话告警服务 — 服务器挂了/订单暴跌 → 直接打电话"""
+    """电话告警服务 -- 服务器挂了/订单暴跌 -> 直接打电话"""
     
-    # 告警级别对应的电话号码（需在.env配置）
+    # 告警级别对应的电话号码(需在.env配置)
     ALERT_PHONES = {
         "P0": os.getenv("ALERT_PHONE_P0", ""),   # 紧急: 老板
         "P1": os.getenv("ALERT_PHONE_P1", ""),   # 重要: 技术主管
@@ -35,7 +35,7 @@ class PhoneAlert:
         event_key = f"phone_alert_{title[:30]}"
         last_sent = state._data.get(event_key)
         
-        # 防重复：同一事件15分钟内不重复打
+        # 防重复:同一事件15分钟内不重复打
         if last_sent:
             from datetime import timedelta
             last = datetime.fromisoformat(last_sent)
@@ -51,17 +51,17 @@ class PhoneAlert:
         
         if simulate:
             # 模拟电话拨打
-            call_result["transcript"] = f"[AI语音] 您好，这里是Friday AI OS告警系统。{title}：{message[:100]}。请尽快处理。"
+            call_result["transcript"] = f"[AI语音] 您好,这里是Friday AI OS告警系统.{title}:{message[:100]}.请尽快处理."
             call_result["answered"] = True
         else:
-            # 真实电话拨打（通过Twilio或第三方API）
+            # 真实电话拨打(通过Twilio或第三方API)
             try:
                 api_key = os.getenv("VOICE_API_KEY", "")
                 if api_key:
                     import httpx
                     async with httpx.AsyncClient(timeout=10) as c:
                         await c.post("https://api.voiceprovider.com/call",
-                            json={"phone": target_phone, "message": f"【Friday告警】{title}：{message[:200]}"},
+                            json={"phone": target_phone, "message": f"【Friday告警】{title}:{message[:200]}"},
                             headers={"Authorization": f"Bearer {api_key}"})
                     call_result["status"] = "calling"
             except Exception as e:
@@ -86,21 +86,21 @@ class PhoneAlert:
             disk = psutil.disk_usage("/")
             cpu = psutil.cpu_percent(interval=0.5)
             
-            # 内存>90% → P0
+            # 内存>90% -> P0
             if mem.percent > 90:
-                r = await PhoneAlert.send_alert("P0", "内存危急", f"内存使用率{mem.percent}%，需要立即处理")
+                r = await PhoneAlert.send_alert("P0", "内存危急", f"内存使用率{mem.percent}%,需要立即处理")
                 alerts.append(r)
-            # 磁盘>95% → P0
+            # 磁盘>95% -> P0
             if disk.percent > 95:
-                r = await PhoneAlert.send_alert("P0", "磁盘危急", f"磁盘使用率{disk.percent}%，即将写满")
+                r = await PhoneAlert.send_alert("P0", "磁盘危急", f"磁盘使用率{disk.percent}%,即将写满")
                 alerts.append(r)
-            # CPU>95% → P1
+            # CPU>95% -> P1
             if cpu > 95:
-                r = await PhoneAlert.send_alert("P1", "CPU过载", f"CPU使用率{cpu}%，高负载运行")
+                r = await PhoneAlert.send_alert("P1", "CPU过载", f"CPU使用率{cpu}%,高负载运行")
                 alerts.append(r)
-            # 磁盘>90% → P2（仅记录）
+            # 磁盘>90% -> P2(仅记录)
             if disk.percent > 90 and mem.percent <= 90:
-                await PhoneAlert.send_alert("P2", "磁盘告警", f"磁盘使用率{disk.percent}%，建议清理")
+                await PhoneAlert.send_alert("P2", "磁盘告警", f"磁盘使用率{disk.percent}%,建议清理")
         except: pass
         return {"ok": True, "alerts": alerts, "checked_at": datetime.now().isoformat()}
 

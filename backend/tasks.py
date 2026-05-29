@@ -1,4 +1,4 @@
-"""任务队列 + 任务锁 — 排队/优先级/暂停/取消/超时/并发锁"""
+"""任务队列 + 任务锁 -- 排队/优先级/暂停/取消/超时/并发锁"""
 from datetime import datetime, timedelta
 from typing import Optional
 from state import state
@@ -14,14 +14,14 @@ TASK_FAILED = "failed"
 
 
 class TaskQueue:
-    """内存任务队列，支持优先级/暂停/取消/超时"""
+    """内存任务队列,支持优先级/暂停/取消/超时"""
 
     def __init__(self):
         self._tasks: list[dict] = []
         self._counter = 0
 
     def enqueue(self, name: str, risk: str = "L1", priority: int = 5, timeout_s: int = 60) -> str:
-        """添加任务到队列，priority 越小优先级越高"""
+        """添加任务到队列,priority 越小优先级越高"""
         self._counter += 1
         task = {
             "id": f"q_{self._counter}_{int(datetime.now().timestamp())}",
@@ -92,20 +92,20 @@ class TaskQueue:
 
 # ===== 任务锁 =====
 class TaskLock:
-    """任务锁，防止并发冲突"""
+    """任务锁,防止并发冲突"""
 
     def __init__(self):
         self._locks: dict[str, str] = {}  # lock_name -> task_id
 
     def acquire(self, lock_name: str, task_id: str) -> bool:
-        """获取锁，成功返回 True"""
+        """获取锁,成功返回 True"""
         if lock_name not in self._locks:
             self._locks[lock_name] = task_id
             return True
         return False
 
     def release(self, lock_name: str, task_id: str) -> bool:
-        """释放锁，只有持有者才能释放"""
+        """释放锁,只有持有者才能释放"""
         if self._locks.get(lock_name) == task_id:
             del self._locks[lock_name]
             return True
@@ -115,7 +115,7 @@ class TaskLock:
         return lock_name in self._locks
 
     def force_release(self, lock_name: str):
-        """强制释放锁（管理员操作）"""
+        """强制释放锁(管理员操作)"""
         self._locks.pop(lock_name, None)
 
     def list_locks(self) -> dict:

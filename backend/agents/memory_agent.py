@@ -1,5 +1,5 @@
-"""Memory Agent — 长期记忆/用户习惯/项目状态/Bug历史/自动总结
-职责：记录一切、检索历史、学习模式、关联知识"""
+"""Memory Agent -- 长期记忆/用户习惯/项目状态/Bug历史/自动总结
+职责:记录一切、检索历史、学习模式、关联知识"""
 import json
 import os
 import hashlib
@@ -23,7 +23,7 @@ class Memory:
 
 
 class MemoryAgent:
-    """Memory Agent — 数字大脑的海马体"""
+    """Memory Agent -- 数字大脑的海马体"""
 
     MEMORY_DIR = os.getenv("APP_MEMORY_DIR", "memory")
     MEMORY_FILE = os.path.join(os.getenv("APP_MEMORY_DIR", "memory"), "agent_memory.json")
@@ -67,7 +67,7 @@ class MemoryAgent:
         memories.insert(0, mem)
         # 限制总数
         if len(memories) > 10000:
-            # 保留重要的，删除旧的
+            # 保留重要的,删除旧的
             memories.sort(key=lambda x: (x.get("importance", 1), x.get("access_count", 0)), reverse=True)
             memories = memories[:10000]
         MemoryAgent._save_memories(memories)
@@ -150,7 +150,7 @@ class MemoryAgent:
     def _extract_keywords(text: str) -> list:
         """简单关键词提取"""
         stop_words = {"的", "了", "是", "在", "我", "有", "和", "就", "不", "人", "都", "一", "一个", "上", "也", "很", "到", "说", "要", "去", "你", "会", "着", "没有", "看", "好", "自己", "这"}
-        words = text.replace("，", " ").replace("。", " ").replace("？", " ").replace("！", " ").split()
+        words = text.replace(",", " ").replace(".", " ").replace("?", " ").replace("!", " ").split()
         keywords = [w for w in words if len(w) >= 2 and w not in stop_words]
         return keywords[:10]
 

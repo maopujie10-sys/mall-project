@@ -1,4 +1,4 @@
-"""AI客服自动回复 — 规则引擎/常见问题/转人工/v1"""
+"""AI客服自动回复 -- 规则引擎/常见问题/转人工/v1"""
 from fastapi import APIRouter, Depends
 from auth import verify_token
 from risk import handle_risk
@@ -31,7 +31,7 @@ async def auto_reply(req: AutoReplyRequest, _=Depends(verify_token)):
             _log_conversation(req.message, reply, "rule")
             return {"ok": True, "reply": reply, "matched": True, "method": "rule",
                     "confidence": "high", "transfer": False}
-    # AI自动回复（无规则匹配时）
+    # AI自动回复(无规则匹配时)
     from agents.multi_model import ModelRouter, ModelMode
     try:
         config = ModelRouter.route(ModelMode.BALANCE)
@@ -40,7 +40,7 @@ async def auto_reply(req: AutoReplyRequest, _=Depends(verify_token)):
             resp = await c.post(f"{config.base_url}/chat/completions",
                 headers={"Authorization": f"Bearer {config.api_key}"},
                 json={"model": config.model_name, "messages": [
-                    {"role":"system","content":"你是Friday AI商城的智能客服。请用中文友好回复客户咨询。如果客户问的是退款、退货、投诉等需要人工处理的问题，在回复结尾加 [转人工]。"},
+                    {"role":"system","content":"你是Friday AI商城的智能客服.请用中文友好回复客户咨询.如果客户问的是退款、退货、投诉等需要人工处理的问题,在回复结尾加 [转人工]."},
                     {"role":"user","content": req.message}], "max_tokens": 300})
             data = resp.json()
             reply = data.get("choices",[{}])[0].get("message",{}).get("content","")
@@ -50,7 +50,7 @@ async def auto_reply(req: AutoReplyRequest, _=Depends(verify_token)):
             return {"ok": True, "reply": reply, "matched": True, "method": "ai",
                     "confidence": "medium", "transfer": need_transfer}
     except Exception as e:
-        fallback = f"感谢您的咨询，我正在查询相关信息，请稍候。如急需帮助请联系人工客服。"
+        fallback = f"感谢您的咨询,我正在查询相关信息,请稍候.如急需帮助请联系人工客服."
         _log_conversation(req.message, fallback, "fallback")
         return {"ok": True, "reply": fallback, "matched": False, "method": "fallback", "transfer": True}
 

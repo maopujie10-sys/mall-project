@@ -1,4 +1,4 @@
-"""SQL 安全执行器 — 受控数据库工具 + 字段级保护 + 真实MySQL执行"""
+"""SQL 安全执行器 -- 受控数据库工具 + 字段级保护 + 真实MySQL执行"""
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from typing import Optional
@@ -54,7 +54,7 @@ async def execute_query(req: SQLRequest, _=Depends(verify_token)):
                 if field.lower() in req.sql.lower():
                     return {
                         "ok": False,
-                        "error": f"查询涉及保护字段 {table}.{field}，已拦截",
+                        "error": f"查询涉及保护字段 {table}.{field},已拦截",
                         "protected_field": f"{table}.{field}",
                     }
 
@@ -62,7 +62,7 @@ async def execute_query(req: SQLRequest, _=Depends(verify_token)):
     if not MALL_DB_HOST or not MALL_DB_USER:
         return {
             "ok": True,
-            "note": "MySQL客户端未配置数据库连接（需要安装mysql-client并配置MALL_DB_*环境变量）",
+            "note": "MySQL客户端未配置数据库连接(需要安装mysql-client并配置MALL_DB_*环境变量)",
             "sql": req.sql[:100],
             "rows": [],
             "fields": [],

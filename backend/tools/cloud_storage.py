@@ -1,4 +1,4 @@
-"""腾讯云 COS 图片存储工具 — 上传/下载/删除/签名URL"""
+"""腾讯云 COS 图片存储工具 -- 上传/下载/删除/签名URL"""
 import os
 import hashlib
 import httpx
@@ -30,7 +30,7 @@ def _cos_sign(method: str, path: str, headers: dict, expire: int = 3600) -> str:
     return auth
 
 async def upload_image(file_path: str, cos_key: str = None, content_type: str = "image/jpeg") -> dict:
-    """上传图片到 COS，返回 {"ok": True, "url": "https://..."} 或 {"ok": False, "error": "..."}"""
+    """上传图片到 COS,返回 {"ok": True, "url": "https://..."} 或 {"ok": False, "error": "..."}"""
     if not COS_SECRET_ID or not COS_SECRET_KEY:
         return {"ok": False, "error": "COS 密钥未配置"}
 

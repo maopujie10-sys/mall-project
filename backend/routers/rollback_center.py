@@ -1,4 +1,4 @@
-"""备份回滚中心 API — 数据库备份/恢复/Nginx配置备份/项目备份"""
+"""备份回滚中心 API -- 数据库备份/恢复/Nginx配置备份/项目备份"""
 import os, json, subprocess
 from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException
@@ -53,7 +53,7 @@ async def list_backups(_=Depends(verify_token)):
 
 @router.post("/backups")
 async def create_backup(req: CreateBackupRequest, _=Depends(verify_token)):
-    """创建备份：支持数据库/Nginx配置/项目文件"""
+    """创建备份:支持数据库/Nginx配置/项目文件"""
     await handle_risk("L2", f"创建备份: {req.name} ({req.target})")
 
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -79,7 +79,7 @@ async def create_backup(req: CreateBackupRequest, _=Depends(verify_token)):
                     result["success"] = True
                     result["size"] = os.path.getsize(backup_file)
             except Exception as e2:
-                result["error"] = f"数据库备份失败，请检查mysqldump是否可用: {str(e2)}"
+                result["error"] = f"数据库备份失败,请检查mysqldump是否可用: {str(e2)}"
 
     elif req.target == "nginx":
         backup_file = os.path.join(BACKUP_DIR, f"nginx_conf_{timestamp}.tar.gz")
@@ -185,13 +185,13 @@ async def rollback(backup_id: str, _=Depends(verify_token)):
                 except Exception as e:
                     result["error"] = str(e)
             else:
-                result["info"] = "不支持的备份类型，请手动恢复"
+                result["info"] = "不支持的备份类型,请手动恢复"
 
             return {
                 "backup_id": backup_id,
                 "status": "completed" if result["success"] else "failed",
                 "result": result,
-                "note": "回滚操作已完成，请验证数据完整性",
+                "note": "回滚操作已完成,请验证数据完整性",
             }
     raise HTTPException(404, "备份记录未找到")
 
@@ -214,7 +214,7 @@ async def delete_backup(backup_id: str, _=Depends(verify_token)):
 
 @router.post("/cleanup")
 async def cleanup_old_backups(_=Depends(verify_token)):
-    """清理过期备份（超过7天）"""
+    """清理过期备份(超过7天)"""
     await handle_risk("L2", "清理过期备份")
     records = _load_backups()
     now = datetime.now().timestamp()

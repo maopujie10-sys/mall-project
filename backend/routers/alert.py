@@ -1,4 +1,4 @@
-"""告警中心 — P1~P4 告警分级/触发/通知"""
+"""告警中心 -- P1~P4 告警分级/触发/通知"""
 from datetime import datetime
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
@@ -63,7 +63,7 @@ async def list_alerts(_=Depends(verify_token), level: str = None):
 async def create_alert(req: AlertCreateRequest, _=Depends(verify_token)):
     await handle_risk("L1", f"创建告警 [{req.level}]", req.title)
     if req.level not in ALERT_LEVELS:
-        return {"error": f"无效等级: {req.level}，可选: {list(ALERT_LEVELS.keys())}"}
+        return {"error": f"无效等级: {req.level},可选: {list(ALERT_LEVELS.keys())}"}
 
     alerts = _get_alerts()
     alert = {

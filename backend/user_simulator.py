@@ -1,4 +1,4 @@
-"""模拟用户测试 — AI 自动测试业务流程
+"""模拟用户测试 -- AI 自动测试业务流程
 
 检测: 首页/注册/登录/商品列表/商品详情/下单/客服/后台登录
 """
@@ -9,7 +9,7 @@ from config import MALL_BASE_URL
 
 
 class UserSimulator:
-    """模拟用户 — 自动执行业务流程测试"""
+    """模拟用户 -- 自动执行业务流程测试"""
 
     @staticmethod
     async def test_homepage() -> dict:

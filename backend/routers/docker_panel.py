@@ -1,4 +1,4 @@
-"""Docker 管理 API — 容器列表/日志/状态/重启/健康检查"""
+"""Docker 管理 API -- 容器列表/日志/状态/重启/健康检查"""
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
 from typing import Optional
@@ -93,11 +93,11 @@ async def docker_status(container: Optional[str] = Query(None), _=Depends(verify
 
 @router.post("/restart")
 async def docker_restart(req: ContainerAction, _=Depends(verify_token)):
-    """重启容器（非核心容器自动执行，核心容器需审批）"""
+    """重启容器(非核心容器自动执行,核心容器需审批)"""
     # 检查防循环
     loop_key = f"restart:{req.container_id}"
     if not anti_loop.check(loop_key, max_count=1, window_min=10):
-        return {"ok": False, "error": f"容器 {req.container_id} 10分钟内已重启过，防循环机制已限制"}
+        return {"ok": False, "error": f"容器 {req.container_id} 10分钟内已重启过,防循环机制已限制"}
 
     # 判断是否核心容器
     core_containers = ["mall", "mall-app", "mall-admin", "mysql", "redis", "database"]

@@ -1,4 +1,4 @@
-"""数字生命体 v4 — 真正的自主AI: AI推理+工具执行+主动运维+经验学习"""
+"""数字生命体 v4 -- 真正的自主AI: AI推理+工具执行+主动运维+经验学习"""
 import asyncio, json, random, time, httpx, os
 from datetime import datetime, timedelta
 from state import state
@@ -125,7 +125,7 @@ class DigitalLifeform:
                     r = await c.post("https://api.deepseek.com/v1/chat/completions",
                         headers={"Authorization": f"Bearer {DEEPSEEK_KEY}"},
                         json={"model":"deepseek-chat","messages":[
-                            {"role":"system","content":"你是Friday,一个自主AI运维助手。分析系统状态并决定行动。只返回JSON: {\"action\":\"动作名\",\"reason\":\"原因\",\"urgency\":1-5}"},
+                            {"role":"system","content":"你是Friday,一个自主AI运维助手.分析系统状态并决定行动.只返回JSON: {\"action\":\"动作名\",\"reason\":\"原因\",\"urgency\":1-5}"},
                             {"role":"user","content": prompt}
                         ],"temperature":0.3,"max_tokens":200})
                     if r.status_code == 200:
@@ -225,7 +225,7 @@ class DigitalLifeform:
 - 周期: #{cls._cycle_count}
 - 最近经验: {cls._last_reflection}
 
-分析是否需要额外行动。可用的动作: check_system_health, clean_docker_cache, reload_nginx, check_rotation_domains, check_tomcat, send_alert, collect_metrics"""
+分析是否需要额外行动.可用的动作: check_system_health, clean_docker_cache, reload_nginx, check_rotation_domains, check_tomcat, send_alert, collect_metrics"""
                 ai_response = await cls._ai_reason(prompt)
                 if ai_response:
                     try:
