@@ -32,4 +32,17 @@ export default defineConfig({
       }
     }
   }
+,
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor-vue': ['vue', 'vue-router', 'pinia'],
+          'vendor-ui': ['element-plus'],
+          'vendor-3d': ['three'],
+          'vendor-charts': ['echarts'],
+        }
+      }
+    }
+  }
 })

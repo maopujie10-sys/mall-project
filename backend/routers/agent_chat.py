@@ -14,6 +14,8 @@ from config import CLAUDE_API_KEY, CLAUDE_MODEL, OPENAI_BASE_URL, DEEPSEEK_API_K
 import sqlite3, hashlib, base64, uuid
 from pathlib import Path
 from fastapi import UploadFile, File, Form
+import os
+_cheap_model = os.getenv("CHEAP_MODEL", "deepseek-chat")
 
 # ===== 对话会话管理 (SQLite) =====
 CONV_DB = Path(__file__).parent.parent / "data" / "conversations.db"
@@ -347,19 +349,6 @@ async def agent_chat(req: ChatRequest, _=Depends(verify_token)):
     return {"response": ai_text or "已收到,正在处理...", "tool": tool_name, "risk": "L1", "mode": state.mode}
 
 # ===== 流式对话 =====
-@router.post("/chat/stream")
-async def agent_chat_stream(req: ChatRequest, _=Depends(verify_token)):
-    """流式SSE对话"""
-    async def generate():
-        try:
-            result = await agent_chat(req)
-            yield f"data: {json.dumps(result, ensure_ascii=False)}\n\n"
-            yield "data: [DONE]\n\n"
-        except Exception as e:
-            yield f"data: {json.dumps({'error': str(e)}, ensure_ascii=False)}\n\n"
-    return StreamingResponse(generate(), media_type="text/event-stream",
-        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
-
 # ===== 已对话历史 =====
 _chat_histories = {}  # user_id -> [messages]
 
@@ -404,28 +393,8 @@ async def confirm_task(req: ConfirmRequest, _=Depends(verify_token)):
             return {"ok": True, "status": a["status"]}
     return {"ok": False, "error": "未找到该任务"}
 
-# ===== 图片分析 =====
-class ImageChatRequest(BaseModel):
-    image_base64: str
-    question: str = "请描述这张图片"
-
-@router.post("/chat/vision")
-async def agent_chat_vision(req: ImageChatRequest, _=Depends(verify_token)):
-    """AI图片分析"""
-    try:
-        from agents.vision_agent import analyze_image
-        result = await analyze_image(req.image_base64, req.question)
-        DigitalLifeform.remember_conversation(f"[图片] {req.question}", str(result)[:300])
-        return {"ok": True, "reply": str(result)}
-    except Exception as e:
-        return {"ok": False, "error": str(e)}
 
 
-# ===== v7 新增: 真SSE流式+会话+Vision+Prompt =====
-import uuid, base64, sqlite3
-from pathlib import Path
-from fastapi import UploadFile, File, Form
-import httpx
 
 CONV_DB = Path(__file__).parent.parent / "data" / "conversations.db"
 def _cdb():
@@ -439,7 +408,7 @@ def _cdb():
 async def chat_stream(req: ChatRequest, _=Depends(verify_token)):
     """SSE逐token流式输出"""
     key=OPENAI_API_KEY or DEEPSEEK_API_KEY; url=OPENAI_BASE_URL or "https://api.openai.com/v1"
-    m=req.model or "gpt-3.5-turbo"
+    m=req.model or _cheap_model
     ctx=await _get_context(req.message);sc=SYSTEM_PROMPT
     if ctx:sc+="\n\n"+ctx
     msgs=[{"role":"system","content":sc}]
@@ -473,7 +442,7 @@ async def cv(img:str=Form(...),q:str=Form("描述图片"),_=Depends(verify_token
     try:
         async with httpx.AsyncClient(timeout=60)as c:
             r=await c.post(f"{u}/chat/completions",headers={"Authorization":f"Bearer {k}","Content-Type":"application/json"},
-                json={"model":"gpt-4o-mini","messages":[{"role":"user","content":[{"type":"text","text":q},{"type":"image_url","image_url":{"url":f"data:image/jpeg;base64,{img}"}}]}]})
+                json={"model":"gpt-4o-mini" if OPENAI_API_KEY else "gpt-4o","messages":[{"role":"user","content":[{"type":"text","text":q},{"type":"image_url","image_url":{"url":f"data:image/jpeg;base64,{img}"}}]}]})
             if r.status_code==200:
                 d=r.json();return{"ok":True,"reply":d.get("choices",[{}])[0].get("message",{}).get("content","无法分析")}
             return{"ok":False,"error":f"API:{r.status_code}"}
