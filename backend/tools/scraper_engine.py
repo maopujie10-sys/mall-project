@@ -468,6 +468,16 @@ class eBayAdapter:
             print(f"[eBay API] 提取失败 ({item_id}): {e}")
             return None
 
+    async def extract_concurrent(self, item_ids: list[str], session: httpx.AsyncClient = None, concurrency: int = 3) -> list:
+        """并发提取多个eBay商品 — Semaphore控并发"""
+        sem = asyncio.Semaphore(concurrency)
+        async def _one(iid):
+            async with sem:
+                return await self.extract_product(iid, session=session)
+        tasks = [_one(iid) for iid in item_ids]
+        results = await asyncio.gather(*tasks, return_exceptions=True)
+        return [r for r in results if r is not None and not isinstance(r, Exception) and r.title and r.images]
+
 class BaseScrapeAdapter:
     """反反爬采集基类 — 所有 HTML 爬虫适配器继承此类"""
     

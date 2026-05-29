@@ -263,13 +263,18 @@ async def run(ppk=5):
     import httpx, random, hashlib
     from tools.scraper_engine import download_and_upload
 
+    # 配置eBay API密钥
+    os.environ.setdefault("EBAY_PRODUCTION_APP_ID", "xiangjik-wode-PRD-31836c410-f08421d0")
+    os.environ.setdefault("EBAY_DEV_ID", "835cbbd1-c1c7-4ebb-8f8e-9928d4057b4b")
+
     _log(f"===== 全品类采集 启动 =====")
     _log(f"品类数: {len(SUBCAT_KEYWORDS)} | 关键词数: {TOTAL} | 每品类目标: {ppk}")
     _log(f"搜索间隔: {SEARCH_DELAY_BASE}s(自适应) | 产品延迟: {PRODUCT_DELAY}s | 并发: {CONCURRENCY}")
 
     stats = {"cats": 0, "kws": 0, "found": 0, "imported": 0, "skipped": 0, "failed": 0}
     amazon_adapter = ADAPTERS["amazon"]
-    search_delay = SEARCH_DELAY_BASE  # 自适应延迟，初始8s
+    ebay_adapter = ADAPTERS.get("ebay")
+    search_delay = SEARCH_DELAY_BASE
 
     async with httpx.AsyncClient(timeout=30, follow_redirects=True, verify=False) as session:
         for subcat, keywords in SUBCAT_KEYWORDS.items():
@@ -288,78 +293,97 @@ async def run(ppk=5):
                     break
                 stats["kws"] += 1
 
+                # ── 双平台搜索 ──
+                all_fresh = []  # (platform_name, search_items)   items=URLs or itemIds
+                need = ppk - cat_imported
+
+                # Amazon
                 await asyncio.sleep(search_delay)
                 try:
-                    urls = await amazon_adapter.search(kw, max_pages=1, session=session)
+                    amz_urls = await amazon_adapter.search(kw, max_pages=1, session=session)
                 except Exception as e:
-                    _log(f"  {kw}: 搜索异常 {e}")
+                    _log(f"  [Amazon] {kw}: 搜索异常 {e}")
                     search_delay = min(search_delay * 1.3, SEARCH_DELAY_MAX)
-                    continue
-                if not urls:
-                    _log(f"  {kw}: 0结果")
+                    amz_urls = []
+                if amz_urls:
+                    fresh = [u for u in amz_urls[:need+2] if u not in seen_urls]
+                    for u in fresh:
+                        seen_urls.add(u)
+                    if fresh:
+                        all_fresh.append(("amazon", fresh))
+                    search_delay = max(SEARCH_DELAY_BASE, search_delay * 0.95)
+                else:
                     search_delay = min(search_delay * 1.1, SEARCH_DELAY_MAX)
-                    continue
-                # 搜索正常，逐渐缩短延迟
-                search_delay = max(SEARCH_DELAY_BASE, search_delay * 0.95)
-                _log(f"  搜索: {kw} → {len(urls)}链接 (延迟{search_delay:.0f}s)")
 
-                need = ppk - cat_imported
-                fresh_urls = [u for u in urls[:need+2] if u not in seen_urls]
-                for u in fresh_urls:
-                    seen_urls.add(u)
+                # eBay (补充，每关键词限5个itemId)
+                if ebay_adapter and cat_imported < ppk:
+                    await asyncio.sleep(2)  # eBay API短间隔
+                    try:
+                        ebay_ids = await ebay_adapter.search(kw, max_pages=1, session=session)
+                    except Exception:
+                        ebay_ids = []
+                    if ebay_ids:
+                        fresh_ebay = [i for i in ebay_ids[:5] if i not in seen_urls]
+                        for i in fresh_ebay:
+                            seen_urls.add(i)
+                        if fresh_ebay:
+                            all_fresh.append(("ebay", fresh_ebay))
 
-                if not fresh_urls:
-                    _log(f"  全部已采集过")
-                    continue
-
-                # ── 并发提取产品页 ──
-                products = await amazon_adapter.extract_concurrent(
-                    fresh_urls[:need+2], session=session, concurrency=CONCURRENCY
-                )
-                for p in products:
-                    p.id = hashlib.md5(p.source_url.encode()).hexdigest()[:16]
-
-                if not products:
-                    _log(f"  产品提取为空")
-                    await asyncio.sleep(PRODUCT_DELAY)
+                if not all_fresh:
+                    _log(f"  {kw}: 双平台0结果")
                     continue
 
-                # 上传图片+流式导入
-                imported_now = 0
-                review_total = 0
-                sku_total = 0
-                for p in products[:need]:
-                    uploaded = []
-                    # 并发下载图片
-                    async def _dl(img_url, idx):
-                        try:
-                            return await download_and_upload(img_url, p.id, idx, session)
-                        except Exception:
-                            return img_url  # fallback:保留原始URL
-                    tasks = [_dl(u, i) for i, u in enumerate(p.images[:8])]
-                    results = await asyncio.gather(*tasks, return_exceptions=True)
-                    for r in results:
-                        if isinstance(r, str) and r:
-                            uploaded.append(r)
-                    p.cos_images = uploaded
-                    if not uploaded:
+                # ── 并发提取+导入 ──
+                for platform, items in all_fresh:
+                    if cat_imported >= ppk:
+                        break
+                    adapter = amazon_adapter if platform == "amazon" else ebay_adapter
+                    products = await adapter.extract_concurrent(
+                        items[:need+2], session=session, concurrency=CONCURRENCY
+                    )
+                    for p in products:
+                        p.id = hashlib.md5(p.source_url.encode()).hexdigest()[:16]
+
+                    if not products:
                         continue
 
-                    pd_dict = p.to_dict()
-                    result = import_batch([pd_dict], subcat_name=subcat)
-                    if result["imported"]:
-                        imported_now += 1
-                        stats["imported"] += 1
-                        detail = result["details"]["imported"][0] if result["details"]["imported"] else {}
-                        review_total += detail.get("reviews_count", 0)
-                        sku_total += detail.get("skus_count", 0)
-                    elif result["skipped_duplicate"]:
-                        stats["skipped"] += 1
-                    else:
-                        stats["failed"] += 1
+                    imported_now = 0
+                    review_total = 0
+                    sku_total = 0
+                    for p in products[:need]:
+                        uploaded = []
+                        async def _dl(img_url, idx):
+                            try:
+                                return await download_and_upload(img_url, p.id, idx, session)
+                            except Exception:
+                                return img_url
+                        tasks = [_dl(u, i) for i, u in enumerate(p.images[:8])]
+                        results = await asyncio.gather(*tasks, return_exceptions=True)
+                        for r in results:
+                            if isinstance(r, str) and r:
+                                uploaded.append(r)
+                        p.cos_images = uploaded
+                        if not uploaded:
+                            continue
 
-                cat_imported += imported_now
-                _log(f"  +{imported_now}新品(重{stats['skipped']}) | 评论{review_total} SKU{sku_total}")
+                        pd_dict = p.to_dict()
+                        result = import_batch([pd_dict], subcat_name=subcat)
+                        if result["imported"]:
+                            imported_now += 1
+                            stats["imported"] += 1
+                            detail = result["details"]["imported"][0] if result["details"]["imported"] else {}
+                            review_total += detail.get("reviews_count", 0)
+                            sku_total += detail.get("skus_count", 0)
+                        elif result["skipped_duplicate"]:
+                            stats["skipped"] += 1
+                        else:
+                            stats["failed"] += 1
+
+                    cat_imported += imported_now
+                    tag = "[A]" if platform == "amazon" else "[e]"
+                    _log(f"  {tag} +{imported_now}新品 | 评论{review_total} SKU{sku_total}")
+                    need = ppk - cat_imported
+
                 await asyncio.sleep(PRODUCT_DELAY)
 
             if cat_imported == 0:
