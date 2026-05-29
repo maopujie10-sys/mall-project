@@ -1,4 +1,4 @@
-﻿"""系统设置 — 环境变量/API密钥/通用配置管理"""
+锘?""绯荤粺璁剧疆 鈥?鐜鍙橀噺/API瀵嗛挜/閫氱敤閰嶇疆绠＄悊"""
 import os
 from fastapi import APIRouter, Depends
 from auth import verify_token
@@ -7,7 +7,7 @@ from state import state
 
 router = APIRouter(prefix="/settings", tags=["Settings"])
 
-# 安全暴露的环境变量白名单
+# 瀹夊叏鏆撮湶鐨勭幆澧冨彉閲忕櫧鍚嶅崟
 ALLOWED_ENV_KEYS = [
     "APP_ENV", "AGENT_TOKEN", "MALL_BASE_URL",
     "CLAUDE_API_KEY", "DEEPSEEK_API_KEY", "OPENAI_API_KEY", "GEMINI_API_KEY",
@@ -20,13 +20,13 @@ ALLOWED_ENV_KEYS = [
 
 @router.get("/env")
 async def get_settings(_=Depends(verify_token)):
-    """获取系统环境变量（白名单）"""
-    await handle_risk("L1", "查看系统设置")
+    """鑾峰彇绯荤粺鐜鍙橀噺锛堢櫧鍚嶅崟锛?""
+    await handle_risk("L1", "鏌ョ湅绯荤粺璁剧疆")
     envs = {}
     for key in ALLOWED_ENV_KEYS:
         val = os.getenv(key, "")
         if val:
-            # 隐藏密钥中间部分
+            # 闅愯棌瀵嗛挜涓棿閮ㄥ垎
             if "KEY" in key or "TOKEN" in key or "PASSWORD" in key:
                 envs[key] = val[:8] + "****" + val[-4:] if len(val) > 12 else "****"
             else:
@@ -36,16 +36,16 @@ async def get_settings(_=Depends(verify_token)):
 
 @router.get("/state")
 async def get_state_keys(_=Depends(verify_token)):
-    """查看系统状态数据key列表"""
-    await handle_risk("L1", "查看系统状态")
+    """鏌ョ湅绯荤粺鐘舵€佹暟鎹甼ey鍒楄〃"""
+    await handle_risk("L1", "鏌ョ湅绯荤粺鐘舵€?)
     keys = list(state._data.keys())
     sizes = {}
     for k in keys:
         v = state._data[k]
         if isinstance(v, list):
-            sizes[k] = f"{len(v)}条"
+            sizes[k] = f"{len(v)}鏉?
         elif isinstance(v, dict):
-            sizes[k] = f"{len(v)}项"
+            sizes[k] = f"{len(v)}椤?
         else:
             sizes[k] = str(type(v).__name__)
     return {"ok": True, "keys": [{"key": k, "size": sizes.get(k, "?")} for k in sorted(keys)], "count": len(keys)}
@@ -53,8 +53,8 @@ async def get_state_keys(_=Depends(verify_token)):
 
 @router.post("/state/clear")
 async def clear_state_key(key: str, _=Depends(verify_token)):
-    """清空指定状态数据"""
-    await handle_risk("L3", f"清空状态数据: {key}")
+    """娓呯┖鎸囧畾鐘舵€佹暟鎹?""
+    await handle_risk("L3", f"娓呯┖鐘舵€佹暟鎹? {key}")
     if key in state._data:
         if isinstance(state._data[key], list):
             state._data[key] = []
@@ -62,4 +62,4 @@ async def clear_state_key(key: str, _=Depends(verify_token)):
             state._data[key] = {}
         state._save()
         return {"ok": True, "key": key, "cleared": True}
-    return {"ok": False, "error": f"key不存在: {key}"}
+    return {"ok": False, "error": f"key涓嶅瓨鍦? {key}"}

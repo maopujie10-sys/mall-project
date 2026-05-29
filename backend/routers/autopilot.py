@@ -1,4 +1,4 @@
-﻿"""自动巡检 — 站点监控/SEO/性能检测 + 定时自愈"""
+锘?""鑷姩宸℃ 鈥?绔欑偣鐩戞帶/SEO/鎬ц兘妫€娴?+ 瀹氭椂鑷剤"""
 import httpx
 import asyncio
 from datetime import datetime
@@ -25,8 +25,8 @@ def _get_schedule():
 
 @router.post("/visit")
 async def visit_pages(_=Depends(verify_token)):
-    """自动巡检 — 站点监控/SEO/性能检测 + 定时自愈"""
-    await handle_risk("L2", "�Զ���վ-ҳ�����")
+    """鑷姩宸℃ 鈥?绔欑偣鐩戞帶/SEO/鎬ц兘妫€娴?+ 瀹氭椂鑷剤"""
+    await handle_risk("L2", "锟皆讹拷锟斤拷站-页锟斤拷锟斤拷锟?)
     logs = _get_logs()
     results = []
     async with httpx.AsyncClient(timeout=10) as c:
@@ -44,8 +44,8 @@ async def visit_pages(_=Depends(verify_token)):
 
 @router.post("/sitemap-gen")
 async def generate_sitemap(_=Depends(verify_token)):
-    """自动巡检 — 站点监控/SEO/性能检测 + 定时自愈"""
-    await handle_risk("L1", "����SEO Sitemap")
+    """鑷姩宸℃ 鈥?绔欑偣鐩戞帶/SEO/鎬ц兘妫€娴?+ 瀹氭椂鑷剤"""
+    await handle_risk("L1", "锟斤拷锟斤拷SEO Sitemap")
     async with httpx.AsyncClient(timeout=10) as c:
         try:
             r = await c.get(f"{MALL_BASE_URL}/api/products", params={"page": 1, "size": 100})
@@ -58,35 +58,35 @@ async def generate_sitemap(_=Depends(verify_token)):
 
 @router.get("/logs")
 async def autopilot_logs(_=Depends(verify_token)):
-    """自动巡检 — 站点监控/SEO/性能检测 + 定时自愈"""
-    await handle_risk("L1", "�鿴��վ��־")
+    """鑷姩宸℃ 鈥?绔欑偣鐩戞帶/SEO/鎬ц兘妫€娴?+ 瀹氭椂鑷剤"""
+    await handle_risk("L1", "锟介看锟斤拷站锟斤拷志")
     return {"logs": _get_logs()[:20]}
 
 @router.get("/schedule")
 async def get_schedule(_=Depends(verify_token)):
-    """自动巡检 — 站点监控/SEO/性能检测 + 定时自愈"""
-    await handle_risk("L1", "�鿴��ʱ����")
+    """鑷姩宸℃ 鈥?绔欑偣鐩戞帶/SEO/鎬ц兘妫€娴?+ 瀹氭椂鑷剤"""
+    await handle_risk("L1", "锟介看锟斤拷时锟斤拷锟斤拷")
     sched = _get_schedule()
     return sched
 
 @router.post("/schedule")
 async def set_schedule(_=Depends(verify_token), enabled: bool = True, interval: int = 30):
-    """自动巡检 — 站点监控/SEO/性能检测 + 定时自愈"""
-    await handle_risk("L2", f"���ö�ʱ����", f"enabled={enabled} interval={interval}min")
+    """鑷姩宸℃ 鈥?绔欑偣鐩戞帶/SEO/鎬ц兘妫€娴?+ 瀹氭椂鑷剤"""
+    await handle_risk("L2", f"锟斤拷锟矫讹拷时锟斤拷锟斤拷", f"enabled={enabled} interval={interval}min")
     sched = _get_schedule()
     sched["enabled"] = enabled
     sched["interval_minutes"] = interval
     sched["updated_at"] = datetime.now().isoformat()
     state._save()
-    return {"enabled": enabled, "interval_minutes": interval, "message": "��ʱ���������ã������������Ч��"}
+    return {"enabled": enabled, "interval_minutes": interval, "message": "锟斤拷时锟斤拷锟斤拷锟斤拷锟斤拷锟矫ｏ拷锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟叫э拷锟?}
 
 @router.post("/full-auto")
 async def full_auto_pilot(_=Depends(verify_token)):
-    """自动巡检 — 站点监控/SEO/性能检测 + 定时自愈"""
-    await handle_risk("L2", "һ���Զ���վ")
+    """鑷姩宸℃ 鈥?绔欑偣鐩戞帶/SEO/鎬ц兘妫€娴?+ 瀹氭椂鑷剤"""
+    await handle_risk("L2", "一锟斤拷锟皆讹拷锟斤拷站")
     logs = _get_logs()
 
-    # 1. ����ҳ��
+    # 1. 锟斤拷锟斤拷页锟斤拷
     visit_results = []
     async with httpx.AsyncClient(timeout=10) as c:
         for path in PAGES:
@@ -99,11 +99,11 @@ async def full_auto_pilot(_=Depends(verify_token)):
     ok_visits = sum(1 for r in visit_results if r["ok"])
     total_visits = len(visit_results)
 
-    # 2. ����Sitemap
+    # 2. 锟斤拷锟斤拷Sitemap
     try:
-        sitemap_result = "������"
+        sitemap_result = "锟斤拷锟斤拷锟斤拷"
     except Exception:
-        sitemap_result = "ʧ��"
+        sitemap_result = "失锟斤拷"
 
     record = {
         "time": datetime.now().strftime("%H:%M:%S"),
@@ -118,5 +118,5 @@ async def full_auto_pilot(_=Depends(verify_token)):
     return {
         "visit": {"ok": ok_visits, "total": total_visits, "results": visit_results},
         "sitemap": sitemap_result,
-        "status": "���" if ok_visits == total_visits else "�����쳣",
+        "status": "锟斤拷锟? if ok_visits == total_visits else "锟斤拷锟斤拷锟届常",
     }

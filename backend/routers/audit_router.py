@@ -1,4 +1,4 @@
-﻿"""审计日志 — 全量操作追踪/查询/导出"""
+锘?""瀹¤鏃ュ織 鈥?鍏ㄩ噺鎿嶄綔杩借釜/鏌ヨ/瀵煎嚭"""
 from datetime import datetime
 from fastapi import APIRouter, Depends, Query
 from auth import verify_token
@@ -11,7 +11,7 @@ MAX_LOG = 500
 
 
 def log_action(action: str, target: str, detail: str = "", risk: str = "L1", user: str = "AI") -> dict:
-    """记录审计日志（其他模块可调用）"""
+    """璁板綍瀹¤鏃ュ織锛堝叾浠栨ā鍧楀彲璋冪敤锛?""
     entry = {
         "id": datetime.now().strftime("%Y%m%d%H%M%S%f")[:-3],
         "time": datetime.now().isoformat(),
@@ -39,10 +39,10 @@ async def get_audit_logs(
     date_to: str = "",
     _=Depends(verify_token)
 ):
-    """查询审计日志，支持分页和过滤"""
-    await handle_risk("L1", "查看审计日志")
+    """鏌ヨ瀹¤鏃ュ織锛屾敮鎸佸垎椤靛拰杩囨护"""
+    await handle_risk("L1", "鏌ョ湅瀹¤鏃ュ織")
     logs = state._data.get("audit_logs", [])
-    # 过滤
+    # 杩囨护
     if action:
         logs = [l for l in logs if action.lower() in l["action"].lower()]
     if risk:
@@ -65,8 +65,8 @@ async def get_audit_logs(
 
 @router.get("/stats")
 async def audit_stats(_=Depends(verify_token)):
-    """审计统计"""
-    await handle_risk("L1", "查看审计统计")
+    """瀹¤缁熻"""
+    await handle_risk("L1", "鏌ョ湅瀹¤缁熻")
     logs = state._data.get("audit_logs", [])
     today = datetime.now().strftime("%Y-%m-%d")
     today_logs = [l for l in logs if l["time"].startswith(today)]

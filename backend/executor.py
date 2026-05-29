@@ -1,10 +1,10 @@
-﻿"""安全执行器 — SSH/subprocess + 命令白名单/黑名单"""
+閿?""鐎瑰鍙忛幍褑顢戦崳?閳?SSH/subprocess + 閸涙垝鎶ら惂钘夋倳閸?姒涙垵鎮曢崡?""
 import subprocess
 import os
 import shlex
 from typing import Optional
 
-# ===== 命令白名单 =====
+# ===== 閸涙垝鎶ら惂钘夋倳閸?=====
 COMMAND_WHITELIST = [
     "uptime", "free", "df", "docker", "nginx", "curl",
     "ss", "systemctl", "tail", "cat", "ls", "ps", "top",
@@ -12,7 +12,7 @@ COMMAND_WHITELIST = [
     "du", "grep", "wc", "sort", "head", "echo", "date",
 ]
 
-# ===== 危险命令黑名单 =====
+# ===== 閸楅亶娅撻崨鎴掓姢姒涙垵鎮曢崡?=====
 DANGEROUS_PATTERNS = [
     "rm -rf", "mkfs", "dd if=", "reboot", "shutdown",
     "DROP DATABASE", "DROP TABLE", "TRUNCATE", "DELETE FROM",
@@ -23,7 +23,7 @@ DANGEROUS_PATTERNS = [
     "wget.*| bash", "eval", "exec ",
 ]
 
-# ===== 命令参数例外 =====
+# ===== 閸涙垝鎶ら崣鍌涙殶娓氬顦?=====
 ALLOWED_OVERRIDES = {
     "df": ["-h"],
     "ps": ["aux", "ef"],
@@ -36,47 +36,42 @@ ALLOWED_OVERRIDES = {
 
 
 class SecurityError(Exception):
-    """安全违规异常"""
+    """鐎瑰鍙忔潻婵婎潐瀵倸鐖?""
     pass
 
 
 def _check_command(cmd_str: str):
-    """检查命令是否安全"""
+    """濡偓閺屻儱鎳℃禒銈嗘Ц閸氾箑鐣ㄩ崗?""
     parts = shlex.split(cmd_str)
     if not parts:
-        raise SecurityError("空命令")
+        raise SecurityError("缁屽搫鎳℃禒?)
 
     base = parts[0]
 
-    # 白名单检查
-    if base not in COMMAND_WHITELIST:
-        raise SecurityError(f"命令不在白名单中: {base}")
+    # 閻ц棄鎮曢崡鏇燁梾閺?    if base not in COMMAND_WHITELIST:
+        raise SecurityError(f"閸涙垝鎶ゆ稉宥呮躬閻ц棄鎮曢崡鏇氳厬: {base}")
 
-    # 黑名单检查
-    full_cmd = cmd_str.lower()
+    # 姒涙垵鎮曢崡鏇燁梾閺?    full_cmd = cmd_str.lower()
     for pattern in DANGEROUS_PATTERNS:
         if pattern.lower() in full_cmd:
-            raise SecurityError(f"命令包含危险操作: {pattern}")
+            raise SecurityError(f"閸涙垝鎶ら崠鍛儓閸楅亶娅撻幙宥勭稊: {pattern}")
 
-    # 例外规则检查
-    if base in ALLOWED_OVERRIDES:
+    # 娓氬顦荤憴鍕灟濡偓閺?    if base in ALLOWED_OVERRIDES:
         allowed_args = ALLOWED_OVERRIDES[base]
         if allowed_args:
             rest = parts[1:]
-            ok = not rest  # 无参数时允许
-            for arg in rest:
+            ok = not rest  # 閺冪姴寮弫鐗堟閸忎浇顔?            for arg in rest:
                 if any(arg.startswith(a) for a in allowed_args):
                     ok = True
                     break
             if not ok:
-                raise SecurityError(f"命令 {base} 参数不在允许范围内。允许: {', '.join(allowed_args)}")
+                raise SecurityError(f"閸涙垝鎶?{base} 閸欏倹鏆熸稉宥呮躬閸忎浇顔忛懠鍐ㄦ纯閸愬懌鈧倸鍘戠拋? {', '.join(allowed_args)}")
     return parts
 
 
 async def execute(cmd_str: str, timeout: int = 30) -> dict:
     """
-    安全执行本地命令。
-    返回: {"success": bool, "stdout": str, "stderr": str, "exit_code": int}
+    鐎瑰鍙忛幍褑顢戦張顒€婀撮崨鎴掓姢閵?    鏉╂柨娲? {"success": bool, "stdout": str, "stderr": str, "exit_code": int}
     """
     try:
         parts = _check_command(cmd_str)
@@ -97,9 +92,9 @@ async def execute(cmd_str: str, timeout: int = 30) -> dict:
             "exit_code": result.returncode,
         }
     except subprocess.TimeoutExpired:
-        return {"success": False, "stdout": "", "stderr": f"执行超时 ({timeout}s)", "exit_code": -1}
+        return {"success": False, "stdout": "", "stderr": f"閹笛嗩攽鐡掑懏妞?({timeout}s)", "exit_code": -1}
     except FileNotFoundError:
-        return {"success": False, "stdout": "", "stderr": f"命令未找到: {parts[0]}", "exit_code": -1}
+        return {"success": False, "stdout": "", "stderr": f"閸涙垝鎶ら張顏呭閸? {parts[0]}", "exit_code": -1}
     except Exception as e:
         return {"success": False, "stdout": "", "stderr": str(e), "exit_code": -1}
 
@@ -112,9 +107,7 @@ async def execute_ssh(
     timeout: int = 30,
 ) -> dict:
     """
-    通过 SSH 远程执行命令。
-    支持密码认证和密钥认证两种方式。
-    """
+    闁俺绻?SSH 鏉╂粎鈻奸幍褑顢戦崨鎴掓姢閵?    閺€顖涘瘮鐎靛棛鐖滅拋銈堢槈閸滃苯鐦戦柦銉吇鐠囦椒琚辩粔宥嗘煙瀵繈鈧?    """
     from config import SSH_HOST, SSH_PORT, SSH_USER, SSH_KEY_PATH
 
     host = host or SSH_HOST
@@ -123,11 +116,10 @@ async def execute_ssh(
     port = SSH_PORT
 
     if not host:
-        return {"success": False, "stdout": "", "stderr": "SSH 主机地址未配置 (SSH_HOST)", "exit_code": -1}
+        return {"success": False, "stdout": "", "stderr": "SSH 娑撶粯婧€閸︽澘娼冮張顏堝帳缂?(SSH_HOST)", "exit_code": -1}
 
     try:
-        # 尝试使用 SSH 命令直接连接
-        ssh_cmd = f"ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10"
+        # 鐏忔繆鐦担璺ㄦ暏 SSH 閸涙垝鎶ら惄瀛樺复鏉╃偞甯?        ssh_cmd = f"ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10"
         if key_path:
             ssh_cmd += f" -i {key_path}"
         ssh_cmd += f" -p {port} {user}@{host}"
@@ -147,17 +139,16 @@ async def execute_ssh(
             "exit_code": result.returncode,
         }
     except subprocess.TimeoutExpired:
-        return {"success": False, "stdout": "", "stderr": f"SSH 执行超时 ({timeout}s)", "exit_code": -1}
+        return {"success": False, "stdout": "", "stderr": f"SSH 閹笛嗩攽鐡掑懏妞?({timeout}s)", "exit_code": -1}
     except FileNotFoundError:
-        return {"success": False, "stdout": "", "stderr": "SSH 客户端未安装", "exit_code": -1}
+        return {"success": False, "stdout": "", "stderr": "SSH 鐎广垺鍩涚粩顖涙弓鐎瑰顥?, "exit_code": -1}
     except Exception as e:
-        return {"success": False, "stdout": "", "stderr": f"SSH 执行失败: {str(e)}", "exit_code": -1}
+        return {"success": False, "stdout": "", "stderr": f"SSH 閹笛嗩攽婢惰精瑙? {str(e)}", "exit_code": -1}
 
 
 async def execute_db(sql: str, db_name: str = "mall") -> dict:
     """
-    通过 MySQL 客户端执行数据库查询。
-    返回: {"success": bool, "rows": list, "error": str}
+    闁俺绻?MySQL 鐎广垺鍩涚粩顖涘⒔鐞涘本鏆熼幑顔肩氨閺屻儴顕楅妴?    鏉╂柨娲? {"success": bool, "rows": list, "error": str}
     """
     from config import MALL_DB_HOST, MALL_DB_PORT, MALL_DB_USER, MALL_DB_PASSWORD, MALL_DB_NAME
 
@@ -176,7 +167,7 @@ async def execute_db(sql: str, db_name: str = "mall") -> dict:
             "exit_code": result.returncode,
         }
     except subprocess.TimeoutExpired:
-        return {"success": False, "stdout": "", "stderr": "数据库查询超时", "exit_code": -1}
+        return {"success": False, "stdout": "", "stderr": "閺佺増宓佹惔鎾寸叀鐠囥垼绉撮弮?, "exit_code": -1}
     except Exception as e:
         return {"success": False, "stdout": "", "stderr": str(e), "exit_code": -1}
 

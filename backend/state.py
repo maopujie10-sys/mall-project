@@ -1,5 +1,5 @@
-﻿"""In-memory state with JSON persistence for Agent operational data.
-v2: 原子写入 + 全key上限控制 + 敏感数据保护 + 连接池"""
+閿?""In-memory state with JSON persistence for Agent operational data.
+v2: 閸樼喎鐡欓崘娆忓弳 + 閸忊暓ey娑撳﹪妾洪幒褍鍩?+ 閺佸繑鍔呴弫鐗堝祦娣囨繃濮?+ 鏉╃偞甯村Ч?""
 import json, os, tempfile
 import sqlite3
 from datetime import datetime
@@ -8,7 +8,7 @@ from typing import Optional
 _BASE = os.getenv("APP_STATE_DIR", os.path.dirname(os.path.abspath(__file__)))
 STATE_FILE = os.path.join(_BASE, "agent_state.json")
 
-# ===== 全局 key 上限控制 =====
+# ===== 閸忋劌鐪?key 娑撳﹪妾洪幒褍鍩?=====
 KEY_LIMITS = {
     "tasks": 200,
     "emergency_history": 50,
@@ -53,7 +53,7 @@ class _AgentState:
         self._ensure_limits()
 
     def _ensure_limits(self):
-        """强制所有key不超限（已知key按KEY_LIMITS，未知key默认上限1000）"""
+        """瀵搫鍩楅幍鈧張濉砮y娑撳秷绉撮梽鎰剁礄瀹歌尙鐓ey閹稿EY_LIMITS閿涘本婀惌顧眅y姒涙顓绘稉濠囨1000閿?""
         for key in list(self._data.keys()):
             val = self._data[key]
             limit = KEY_LIMITS.get(key, 1000)
@@ -66,7 +66,7 @@ class _AgentState:
                         del val[k]
 
     def _mask_sensitive(self, data):
-        """递归掩码敏感字段"""
+        """闁帒缍婇幒鈺冪垳閺佸繑鍔呯€涙顔?""
         if isinstance(data, dict):
             return {k: ("***masked***" if any(s in k.lower() for s in SENSITIVE_KEYS) else self._mask_sensitive(v))
                     for k, v in data.items()}
@@ -75,7 +75,7 @@ class _AgentState:
         return data
 
     def _atomic_save_json(self):
-        """原子写入：写临时文件 → rename"""
+        """閸樼喎鐡欓崘娆忓弳閿涙艾鍟撴稉瀛樻閺傚洣娆?閳?rename"""
         try:
             fd, tmp = tempfile.mkstemp(suffix=".json", dir=os.path.dirname(STATE_FILE))
             with os.fdopen(fd, "w", encoding="utf-8") as f:
@@ -88,7 +88,7 @@ class _AgentState:
                 pass
 
     def _save_db(self):
-        """SQLite持久化（复用连接+批量操作）"""
+        """SQLite閹镐椒绠欓崠鏍电礄婢跺秶鏁ゆ潻鐐村复+閹靛綊鍣洪幙宥勭稊閿?""
         global _db_conn
         try:
             if _db_conn is None:
@@ -104,10 +104,10 @@ class _AgentState:
                 )
             _db_conn.commit()
         except Exception:
-            pass  # SQLite不可用时静默降级
+            pass  # SQLite娑撳秴褰查悽銊︽闂堟瑩绮梽宥囬獓
 
     def _load(self):
-        """启动时恢复状态"""
+        """閸氼垰濮╅弮鑸典划婢跺秶濮搁幀?""
         try:
             if os.path.exists(STATE_FILE):
                 with open(STATE_FILE, encoding="utf-8") as f:
@@ -115,7 +115,7 @@ class _AgentState:
                     self._data.update(saved)
         except Exception:
             pass
-        # 尝试从数据库恢复JSON可能丢失的最新数据
+        # 鐏忔繆鐦禒搴㈡殶閹诡喖绨遍幁銏狀槻JSON閸欘垵鍏樻稉銏犮亼閻ㄥ嫭娓堕弬鐗堟殶閹?
         try:
             db_path = _get_db_path()
             if os.path.exists(db_path):
@@ -132,7 +132,7 @@ class _AgentState:
             pass
 
     def _save(self):
-        """统一持久化入口：JSON原子写入 + SQLite"""
+        """缂佺喍绔撮幐浣风畽閸栨牕鍙嗛崣锝忕窗JSON閸樼喎鐡欓崘娆忓弳 + SQLite"""
         self._ensure_limits()
         self._atomic_save_json()
         self._save_db()
@@ -194,7 +194,7 @@ class _AgentState:
     def tasks(self) -> list:
         return self._data.get("tasks", [])
 
-    def add_task(self, name: str, risk: str = "L1", status: str = "完成"):
+    def add_task(self, name: str, risk: str = "L1", status: str = "鐎瑰本鍨?):
         entry = {"id": f"task_{len(self._data.get('tasks',[]))+1}_{int(datetime.now().timestamp())}",
                  "name": name, "risk": risk, "status": status,
                  "time": datetime.now().strftime("%H:%M:%S")}
@@ -206,7 +206,7 @@ class _AgentState:
         return entry
 
     def set_data(self, key: str, value, max_size: int = None):
-        """安全设置_data中的key，带上限控制"""
+        """鐎瑰鍙忕拋鍓х枂_data娑擃厾娈慿ey閿涘苯鐢稉濠囨閹貉冨煑"""
         self._data[key] = value
         if max_size and isinstance(value, list) and len(value) > max_size:
             self._data[key] = value[-max_size:]
@@ -218,7 +218,7 @@ class _AgentState:
         self._save()
 
     def append_data(self, key: str, item, max_size: int = None):
-        """安全追加到列表型key，超过上限自动裁剪"""
+        """鐎瑰鍙忔潻钘夊閸掓澘鍨悰銊ョ€穔ey閿涘矁绉存潻鍥︾瑐闂勬劘鍤滈崝銊梿閸?""
         lst = self._data.setdefault(key, [])
         lst.append(item)
         limit = max_size or KEY_LIMITS.get(key)

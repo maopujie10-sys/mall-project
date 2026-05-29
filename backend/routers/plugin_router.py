@@ -1,4 +1,4 @@
-"""技能市场 API — 技能注册/下载/安装/卸载/配置 v2（30+真实技能）"""
+"""鎶€鑳藉競鍦?API 鈥?鎶€鑳芥敞鍐?涓嬭浇/瀹夎/鍗歌浇/閰嶇疆 v2锛?0+鐪熷疄鎶€鑳斤級"""
 from fastapi import APIRouter, Depends, HTTPException
 from auth import verify_token
 from risk import handle_risk
@@ -9,72 +9,72 @@ import datetime
 
 router = APIRouter(prefix="/agent/plugins", tags=["Plugins"])
 
-# ===== 技能市场注册表 =====
+# ===== 鎶€鑳藉競鍦烘敞鍐岃〃 =====
 SKILLS_MARKETPLACE = [
-    # 监控类
-    {"id":"server-monitor","name":"📊 服务器监控","version":"2.0","desc":"CPU/内存/磁盘/进程/端口实时监控","author":"Friday","category":"监控","stars":95,"downloads":1280,"tags":["server","monitor","cpu","memory"]},
-    {"id":"docker-manager","name":"🐳 Docker管理","version":"1.5","desc":"容器全生命周期管理：列表/日志/重启/镜像","author":"Friday","category":"监控","stars":88,"downloads":960,"tags":["docker","container"]},
-    {"id":"nginx-manager","name":"🔧 Nginx管理","version":"1.3","desc":"Nginx状态/配置/reload/日志查看","author":"Friday","category":"监控","stars":82,"downloads":720,"tags":["nginx","web"]},
-    {"id":"site-checker","name":"🌐 站点监控","version":"1.1","desc":"多站点可用性检测/SSL证书监控","author":"Friday","category":"监控","stars":76,"downloads":540,"tags":["site","ssl","uptime"]},
-    {"id":"alert-center","name":"🔔 告警中心","version":"1.2","desc":"统一告警管理：规则/通知/历史","author":"Friday","category":"监控","stars":79,"downloads":610,"tags":["alert","notify"]},
+    # 鐩戞帶绫?
+    {"id":"server-monitor","name":"馃搳 鏈嶅姟鍣ㄧ洃鎺?,"version":"2.0","desc":"CPU/鍐呭瓨/纾佺洏/杩涚▼/绔彛瀹炴椂鐩戞帶","author":"Friday","category":"鐩戞帶","stars":95,"downloads":1280,"tags":["server","monitor","cpu","memory"]},
+    {"id":"docker-manager","name":"馃惓 Docker绠＄悊","version":"1.5","desc":"瀹瑰櫒鍏ㄧ敓鍛藉懆鏈熺鐞嗭細鍒楄〃/鏃ュ織/閲嶅惎/闀滃儚","author":"Friday","category":"鐩戞帶","stars":88,"downloads":960,"tags":["docker","container"]},
+    {"id":"nginx-manager","name":"馃敡 Nginx绠＄悊","version":"1.3","desc":"Nginx鐘舵€?閰嶇疆/reload/鏃ュ織鏌ョ湅","author":"Friday","category":"鐩戞帶","stars":82,"downloads":720,"tags":["nginx","web"]},
+    {"id":"site-checker","name":"馃寪 绔欑偣鐩戞帶","version":"1.1","desc":"澶氱珯鐐瑰彲鐢ㄦ€ф娴?SSL璇佷功鐩戞帶","author":"Friday","category":"鐩戞帶","stars":76,"downloads":540,"tags":["site","ssl","uptime"]},
+    {"id":"alert-center","name":"馃敂 鍛婅涓績","version":"1.2","desc":"缁熶竴鍛婅绠＄悊锛氳鍒?閫氱煡/鍘嗗彶","author":"Friday","category":"鐩戞帶","stars":79,"downloads":610,"tags":["alert","notify"]},
 
-    # 自动化类
-    {"id":"auto-backup","name":"💾 自动备份","version":"1.0","desc":"定时数据库/文件自动备份与恢复","author":"Friday","category":"自动化","stars":91,"downloads":1100,"tags":["backup","cron"]},
-    {"id":"scraper-engine","name":"🕷️ 商品采集","version":"2.1","desc":"7平台商品自动采集与导入","author":"Friday","category":"自动化","stars":86,"downloads":890,"tags":["scraper","product","ebay"]},
-    {"id":"auto-pilot","name":"🤖 自动运维","version":"1.2","desc":"AI自动执行日常运维任务","author":"Friday","category":"自动化","stars":83,"downloads":670,"tags":["ops","auto","cron"]},
-    {"id":"cron-manager","name":"⏰ 定时任务","version":"1.0","desc":"可视化Cron任务管理/调度","author":"Friday","category":"自动化","stars":78,"downloads":520,"tags":["cron","schedule","timer"]},
-    {"id":"batch-ops","name":"📦 批量操作","version":"1.1","desc":"批量处理商品/订单/数据","author":"Friday","category":"自动化","stars":74,"downloads":430,"tags":["batch","bulk"]},
+    # 鑷姩鍖栫被
+    {"id":"auto-backup","name":"馃捑 鑷姩澶囦唤","version":"1.0","desc":"瀹氭椂鏁版嵁搴?鏂囦欢鑷姩澶囦唤涓庢仮澶?,"author":"Friday","category":"鑷姩鍖?,"stars":91,"downloads":1100,"tags":["backup","cron"]},
+    {"id":"scraper-engine","name":"馃暦锔?鍟嗗搧閲囬泦","version":"2.1","desc":"7骞冲彴鍟嗗搧鑷姩閲囬泦涓庡鍏?,"author":"Friday","category":"鑷姩鍖?,"stars":86,"downloads":890,"tags":["scraper","product","ebay"]},
+    {"id":"auto-pilot","name":"馃 鑷姩杩愮淮","version":"1.2","desc":"AI鑷姩鎵ц鏃ュ父杩愮淮浠诲姟","author":"Friday","category":"鑷姩鍖?,"stars":83,"downloads":670,"tags":["ops","auto","cron"]},
+    {"id":"cron-manager","name":"鈴?瀹氭椂浠诲姟","version":"1.0","desc":"鍙鍖朇ron浠诲姟绠＄悊/璋冨害","author":"Friday","category":"鑷姩鍖?,"stars":78,"downloads":520,"tags":["cron","schedule","timer"]},
+    {"id":"batch-ops","name":"馃摝 鎵归噺鎿嶄綔","version":"1.1","desc":"鎵归噺澶勭悊鍟嗗搧/璁㈠崟/鏁版嵁","author":"Friday","category":"鑷姩鍖?,"stars":74,"downloads":430,"tags":["batch","bulk"]},
 
-    # 安全类
-    {"id":"security-center","name":"🛡️ 安全中心","version":"2.0","desc":"IP封禁/权限管理/安全审计","author":"Friday","category":"安全","stars":90,"downloads":1050,"tags":["security","firewall","audit"]},
-    {"id":"approval-flow","name":"✅ 审批流程","version":"1.3","desc":"高危操作审批/多级审批流程","author":"Friday","category":"安全","stars":85,"downloads":780,"tags":["approval","review","audit"]},
-    {"id":"risk-scanner","name":"⚠️ 风险扫描","version":"1.1","desc":"自动扫描系统安全风险","author":"Friday","category":"安全","stars":77,"downloads":490,"tags":["risk","scan","vulnerability"]},
-    {"id":"emergency-kill","name":"🚨 急救开关","version":"1.0","desc":"一键切断AI写权限/紧急模式切换","author":"Friday","category":"安全","stars":93,"downloads":1350,"tags":["emergency","kill","safety"]},
+    # 瀹夊叏绫?
+    {"id":"security-center","name":"馃洝锔?瀹夊叏涓績","version":"2.0","desc":"IP灏佺/鏉冮檺绠＄悊/瀹夊叏瀹¤","author":"Friday","category":"瀹夊叏","stars":90,"downloads":1050,"tags":["security","firewall","audit"]},
+    {"id":"approval-flow","name":"鉁?瀹℃壒娴佺▼","version":"1.3","desc":"楂樺嵄鎿嶄綔瀹℃壒/澶氱骇瀹℃壒娴佺▼","author":"Friday","category":"瀹夊叏","stars":85,"downloads":780,"tags":["approval","review","audit"]},
+    {"id":"risk-scanner","name":"鈿狅笍 椋庨櫓鎵弿","version":"1.1","desc":"鑷姩鎵弿绯荤粺瀹夊叏椋庨櫓","author":"Friday","category":"瀹夊叏","stars":77,"downloads":490,"tags":["risk","scan","vulnerability"]},
+    {"id":"emergency-kill","name":"馃毃 鎬ユ晳寮€鍏?,"version":"1.0","desc":"涓€閿垏鏂瑼I鍐欐潈闄?绱ф€ユā寮忓垏鎹?,"author":"Friday","category":"瀹夊叏","stars":93,"downloads":1350,"tags":["emergency","kill","safety"]},
 
-    # 商城类
-    {"id":"mall-manager","name":"🏪 商城管理","version":"3.0","desc":"142个接口覆盖商品/订单/客服/财务/营销","author":"Friday","category":"商城","stars":97,"downloads":2100,"tags":["mall","shop","ecommerce"]},
-    {"id":"mall-brain","name":"🧠 AI大脑","version":"1.5","desc":"AI商品扫描/运营报告/自动执行","author":"Friday","category":"商城","stars":89,"downloads":920,"tags":["ai","brain","analysis"]},
-    {"id":"customer-service","name":"👥 客服系统","version":"1.2","desc":"工单管理/自动回复/满意度统计","author":"Friday","category":"商城","stars":80,"downloads":580,"tags":["cs","ticket","support"]},
-    {"id":"marketing-tools","name":"📢 营销工具","version":"1.0","desc":"优惠券/活动/推送管理","author":"Friday","category":"商城","stars":75,"downloads":450,"tags":["marketing","coupon","promo"]},
-    {"id":"data-analytics","name":"📊 数据分析","version":"1.1","desc":"商城运营数据分析与报表","author":"Friday","category":"商城","stars":81,"downloads":630,"tags":["analytics","report","stats"]},
+    # 鍟嗗煄绫?
+    {"id":"mall-manager","name":"馃彧 鍟嗗煄绠＄悊","version":"3.0","desc":"142涓帴鍙ｈ鐩栧晢鍝?璁㈠崟/瀹㈡湇/璐㈠姟/钀ラ攢","author":"Friday","category":"鍟嗗煄","stars":97,"downloads":2100,"tags":["mall","shop","ecommerce"]},
+    {"id":"mall-brain","name":"馃 AI澶ц剳","version":"1.5","desc":"AI鍟嗗搧鎵弿/杩愯惀鎶ュ憡/鑷姩鎵ц","author":"Friday","category":"鍟嗗煄","stars":89,"downloads":920,"tags":["ai","brain","analysis"]},
+    {"id":"customer-service","name":"馃懃 瀹㈡湇绯荤粺","version":"1.2","desc":"宸ュ崟绠＄悊/鑷姩鍥炲/婊℃剰搴︾粺璁?,"author":"Friday","category":"鍟嗗煄","stars":80,"downloads":580,"tags":["cs","ticket","support"]},
+    {"id":"marketing-tools","name":"馃摙 钀ラ攢宸ュ叿","version":"1.0","desc":"浼樻儬鍒?娲诲姩/鎺ㄩ€佺鐞?,"author":"Friday","category":"鍟嗗煄","stars":75,"downloads":450,"tags":["marketing","coupon","promo"]},
+    {"id":"data-analytics","name":"馃搳 鏁版嵁鍒嗘瀽","version":"1.1","desc":"鍟嗗煄杩愯惀鏁版嵁鍒嗘瀽涓庢姤琛?,"author":"Friday","category":"鍟嗗煄","stars":81,"downloads":630,"tags":["analytics","report","stats"]},
 
-    # AI/模型类
-    {"id":"ai-chat","name":"💬 AI对话","version":"2.0","desc":"多模型AI对话（Ollama/DeepSeek/Claude/GPT）","author":"Friday","category":"AI","stars":96,"downloads":3200,"tags":["chat","ai","llm"]},
-    {"id":"vision-agent","name":"👁️ 视觉识别","version":"1.2","desc":"OCR文字识别/图片分析/物体检测","author":"Friday","category":"AI","stars":84,"downloads":"760","tags":["ocr","vision","image"]},
-    {"id":"trend-agent","name":"📈 趋势分析","version":"1.1","desc":"YouTube/X/Google多平台热点趋势","author":"Friday","category":"AI","stars":79,"downloads":540,"tags":["trend","social","hot"]},
-    {"id":"code-agent","name":"💻 代码助手","version":"1.0","desc":"代码分析/生成/搜索/API生成","author":"Friday","category":"AI","stars":73,"downloads":390,"tags":["code","dev","api"]},
-    {"id":"playwright-agent","name":"🎭 浏览器自动化","version":"1.3","desc":"Playwright截图/抓取/搜索","author":"Friday","category":"AI","stars":87,"downloads":840,"tags":["playwright","browser","crawl"]},
+    # AI/妯″瀷绫?
+    {"id":"ai-chat","name":"馃挰 AI瀵硅瘽","version":"2.0","desc":"澶氭ā鍨婣I瀵硅瘽锛圤llama/DeepSeek/Claude/GPT锛?,"author":"Friday","category":"AI","stars":96,"downloads":3200,"tags":["chat","ai","llm"]},
+    {"id":"vision-agent","name":"馃憗锔?瑙嗚璇嗗埆","version":"1.2","desc":"OCR鏂囧瓧璇嗗埆/鍥剧墖鍒嗘瀽/鐗╀綋妫€娴?,"author":"Friday","category":"AI","stars":84,"downloads":"760","tags":["ocr","vision","image"]},
+    {"id":"trend-agent","name":"馃搱 瓒嬪娍鍒嗘瀽","version":"1.1","desc":"YouTube/X/Google澶氬钩鍙扮儹鐐硅秼鍔?,"author":"Friday","category":"AI","stars":79,"downloads":540,"tags":["trend","social","hot"]},
+    {"id":"code-agent","name":"馃捇 浠ｇ爜鍔╂墜","version":"1.0","desc":"浠ｇ爜鍒嗘瀽/鐢熸垚/鎼滅储/API鐢熸垚","author":"Friday","category":"AI","stars":73,"downloads":390,"tags":["code","dev","api"]},
+    {"id":"playwright-agent","name":"馃幁 娴忚鍣ㄨ嚜鍔ㄥ寲","version":"1.3","desc":"Playwright鎴浘/鎶撳彇/鎼滅储","author":"Friday","category":"AI","stars":87,"downloads":840,"tags":["playwright","browser","crawl"]},
 
-    # 轮值/域名类
-    {"id":"rotation-system","name":"🌐 域名轮值","version":"2.0","desc":"企业级域名轮值/健康检测/自动切换","author":"Friday","category":"网络","stars":92,"downloads":1150,"tags":["rotation","domain","dns"]},
-    {"id":"ssl-manager","name":"🔒 SSL证书","version":"1.2","desc":"自动签发/续签/状态监控（acme.sh）","author":"Friday","category":"网络","stars":86,"downloads":880,"tags":["ssl","cert","https"]},
-    {"id":"dns-manager","name":"📡 DNS管理","version":"0.8","desc":"DNS解析记录管理","author":"Friday","category":"网络","stars":68,"downloads":320,"tags":["dns","domain","resolve"]},
+    # 杞€?鍩熷悕绫?
+    {"id":"rotation-system","name":"馃寪 鍩熷悕杞€?,"version":"2.0","desc":"浼佷笟绾у煙鍚嶈疆鍊?鍋ュ悍妫€娴?鑷姩鍒囨崲","author":"Friday","category":"缃戠粶","stars":92,"downloads":1150,"tags":["rotation","domain","dns"]},
+    {"id":"ssl-manager","name":"馃敀 SSL璇佷功","version":"1.2","desc":"鑷姩绛惧彂/缁/鐘舵€佺洃鎺э紙acme.sh锛?,"author":"Friday","category":"缃戠粶","stars":86,"downloads":880,"tags":["ssl","cert","https"]},
+    {"id":"dns-manager","name":"馃摗 DNS绠＄悊","version":"0.8","desc":"DNS瑙ｆ瀽璁板綍绠＄悊","author":"Friday","category":"缃戠粶","stars":68,"downloads":320,"tags":["dns","domain","resolve"]},
 
-    # 开发工具
-    {"id":"db-manager","name":"🗄️ 数据库管理","version":"1.1","desc":"MySQL状态/表结构/查询/优化","author":"Friday","category":"开发","stars":83,"downloads":710,"tags":["db","mysql","sql"]},
-    {"id":"log-viewer","name":"📋 日志查看","version":"1.0","desc":"集中式系统日志查看与分析","author":"Friday","category":"开发","stars":76,"downloads":480,"tags":["log","debug","trace"]},
-    {"id":"file-manager","name":"📁 文件管理","version":"1.0","desc":"服务器文件浏览/上传/下载/编辑","author":"Friday","category":"开发","stars":80,"downloads":560,"tags":["file","upload","manager"]},
-    {"id":"api-explorer","name":"🔌 API探索","version":"0.9","desc":"API接口文档浏览与测试","author":"Friday","category":"开发","stars":72,"downloads":410,"tags":["api","docs","swagger"]},
-    {"id":"git-manager","name":"📦 Git管理","version":"0.7","desc":"Git仓库状态/提交/分支管理","author":"Friday","category":"开发","stars":65,"downloads":280,"tags":["git","version","code"]},
+    # 寮€鍙戝伐鍏?
+    {"id":"db-manager","name":"馃梽锔?鏁版嵁搴撶鐞?,"version":"1.1","desc":"MySQL鐘舵€?琛ㄧ粨鏋?鏌ヨ/浼樺寲","author":"Friday","category":"寮€鍙?,"stars":83,"downloads":710,"tags":["db","mysql","sql"]},
+    {"id":"log-viewer","name":"馃搵 鏃ュ織鏌ョ湅","version":"1.0","desc":"闆嗕腑寮忕郴缁熸棩蹇楁煡鐪嬩笌鍒嗘瀽","author":"Friday","category":"寮€鍙?,"stars":76,"downloads":480,"tags":["log","debug","trace"]},
+    {"id":"file-manager","name":"馃搧 鏂囦欢绠＄悊","version":"1.0","desc":"鏈嶅姟鍣ㄦ枃浠舵祻瑙?涓婁紶/涓嬭浇/缂栬緫","author":"Friday","category":"寮€鍙?,"stars":80,"downloads":560,"tags":["file","upload","manager"]},
+    {"id":"api-explorer","name":"馃攲 API鎺㈢储","version":"0.9","desc":"API鎺ュ彛鏂囨。娴忚涓庢祴璇?,"author":"Friday","category":"寮€鍙?,"stars":72,"downloads":410,"tags":["api","docs","swagger"]},
+    {"id":"git-manager","name":"馃摝 Git绠＄悊","version":"0.7","desc":"Git浠撳簱鐘舵€?鎻愪氦/鍒嗘敮绠＄悊","author":"Friday","category":"寮€鍙?,"stars":65,"downloads":280,"tags":["git","version","code"]},
 
-    # 社区
-    {"id":"team-collab","name":"👥 团队协作","version":"0.6","desc":"多用户协作/权限管理","author":"Friday","category":"社区","stars":60,"downloads":210,"tags":["team","user","collab"]},
-    {"id":"skill-devkit","name":"🧰 技能开发包","version":"0.5","desc":"自定义技能开发工具包/SDK","author":"Friday","category":"社区","stars":55,"downloads":150,"tags":["sdk","devkit","extend"]},
+    # 绀惧尯
+    {"id":"team-collab","name":"馃懃 鍥㈤槦鍗忎綔","version":"0.6","desc":"澶氱敤鎴峰崗浣?鏉冮檺绠＄悊","author":"Friday","category":"绀惧尯","stars":60,"downloads":210,"tags":["team","user","collab"]},
+    {"id":"skill-devkit","name":"馃О 鎶€鑳藉紑鍙戝寘","version":"0.5","desc":"鑷畾涔夋妧鑳藉紑鍙戝伐鍏峰寘/SDK","author":"Friday","category":"绀惧尯","stars":55,"downloads":150,"tags":["sdk","devkit","extend"]},
 ]
 
-# ===== 分类统计 =====
+# ===== 鍒嗙被缁熻 =====
 CATEGORIES = {}
 for s in SKILLS_MARKETPLACE:
     cat = s["category"]
     if cat not in CATEGORIES:
-        CATEGORIES[cat] = {"category": cat, "count": 0, "icon": s.get("icon", "📦")}
+        CATEGORIES[cat] = {"category": cat, "count": 0, "icon": s.get("icon", "馃摝")}
     CATEGORIES[cat]["count"] += 1
 
 
 @router.get("")
 async def list_plugins(_=Depends(verify_token)):
-    """获取所有已安装技能"""
-    await handle_risk("L1", "查看技能列表")
+    """鑾峰彇鎵€鏈夊凡瀹夎鎶€鑳?""
+    await handle_risk("L1", "鏌ョ湅鎶€鑳藉垪琛?)
     saved = state._data.get("plugins", [])
     merged = []
     for sp in SKILLS_MARKETPLACE:
@@ -88,8 +88,8 @@ async def list_plugins(_=Depends(verify_token)):
 
 @router.get("/marketplace")
 async def market_plugins(category: str = "", search: str = "", _=Depends(verify_token)):
-    """浏览技能市场"""
-    await handle_risk("L1", "浏览技能市场")
+    """娴忚鎶€鑳藉競鍦?""
+    await handle_risk("L1", "娴忚鎶€鑳藉競鍦?)
     saved = state._data.get("plugins", [])
     saved_ids = {s["id"] for s in saved}
     result = []
@@ -106,11 +106,11 @@ async def market_plugins(category: str = "", search: str = "", _=Depends(verify_
 
 @router.post("/install")
 async def install_plugin(plugin_id: str, _=Depends(verify_token)):
-    """安装技能（注册工具到系统）"""
-    await handle_risk("L2", f"安装技能 {plugin_id}")
+    """瀹夎鎶€鑳斤紙娉ㄥ唽宸ュ叿鍒扮郴缁燂級"""
+    await handle_risk("L2", f"瀹夎鎶€鑳?{plugin_id}")
     skill = next((s for s in SKILLS_MARKETPLACE if s["id"] == plugin_id), None)
     if not skill:
-        raise HTTPException(404, f"技能不存在: {plugin_id}")
+        raise HTTPException(404, f"鎶€鑳戒笉瀛樺湪: {plugin_id}")
     saved = state._data.setdefault("plugins", [])
     if any(s["id"] == plugin_id for s in saved):
         return {"ok": True, "plugin_id": plugin_id, "status": "already_installed"}
@@ -119,15 +119,15 @@ async def install_plugin(plugin_id: str, _=Depends(verify_token)):
         "installed_at": datetime.datetime.now().isoformat(),
     })
     state._save()
-    # 注册工具到工具注册中心
+    # 娉ㄥ唽宸ュ叿鍒板伐鍏锋敞鍐屼腑蹇?
     _register_tools(plugin_id, skill)
     return {"ok": True, "plugin_id": plugin_id, "status": "installed", "skill": skill}
 
 
 @router.post("/uninstall")
 async def uninstall_plugin(plugin_id: str, _=Depends(verify_token)):
-    """卸载技能"""
-    await handle_risk("L2", f"卸载技能 {plugin_id}")
+    """鍗歌浇鎶€鑳?""
+    await handle_risk("L2", f"鍗歌浇鎶€鑳?{plugin_id}")
     saved = state._data.setdefault("plugins", [])
     state._data["plugins"] = [s for s in saved if s["id"] != plugin_id]
     state._save()
@@ -136,8 +136,8 @@ async def uninstall_plugin(plugin_id: str, _=Depends(verify_token)):
 
 @router.post("/toggle")
 async def toggle_plugin(plugin_id: str, enabled: bool, _=Depends(verify_token)):
-    """启用/禁用技能"""
-    await handle_risk("L1", f"{'启用' if enabled else '禁用'}技能 {plugin_id}")
+    """鍚敤/绂佺敤鎶€鑳?""
+    await handle_risk("L1", f"{'鍚敤' if enabled else '绂佺敤'}鎶€鑳?{plugin_id}")
     saved = state._data.setdefault("plugins", [])
     found = next((s for s in saved if s["id"] == plugin_id), None)
     if found:
@@ -150,12 +150,12 @@ async def toggle_plugin(plugin_id: str, enabled: bool, _=Depends(verify_token)):
 
 @router.get("/categories")
 async def list_categories(_=Depends(verify_token)):
-    """获取技能分类"""
+    """鑾峰彇鎶€鑳藉垎绫?""
     return {"ok": True, "categories": list(CATEGORIES.values()), "total": len(SKILLS_MARKETPLACE)}
 
 
 def _register_tools(plugin_id: str, skill: dict):
-    """安装技能时注册对应工具"""
+    """瀹夎鎶€鑳芥椂娉ㄥ唽瀵瑰簲宸ュ叿"""
     from tools.registry import registry
     tool_map = {
         "server-monitor": ["server.status","server.ports","server.processes","server.disk","server.cleanup"],
@@ -183,96 +183,96 @@ def _register_tools(plugin_id: str, skill: dict):
                 category=skill["category"],
             ))
 
-# ===== 技能包分发系统 =====
+# ===== 鎶€鑳藉寘鍒嗗彂绯荤粺 =====
 import os, json, tempfile
 from tools.skill_loader import install_from_zip, uninstall, list_installed, create_skill_package
 
-# 社区技能市场（示例技能包，用户可发布自己的）
-# 实际部署时可改为从远程仓库拉取
+# 绀惧尯鎶€鑳藉競鍦猴紙绀轰緥鎶€鑳藉寘锛岀敤鎴峰彲鍙戝竷鑷繁鐨勶級
+# 瀹為檯閮ㄧ讲鏃跺彲鏀逛负浠庤繙绋嬩粨搴撴媺鍙?
 COMMUNITY_SKILLS = [
     {
         "id": "seo-optimizer",
-        "name": "🔍 SEO优化器",
+        "name": "馃攳 SEO浼樺寲鍣?,
         "version": "1.0.0",
-        "desc": "自动分析商品页面SEO，生成优化建议，提升搜索引擎排名",
-        "author": "Friday社区",
-        "category": "商城",
+        "desc": "鑷姩鍒嗘瀽鍟嗗搧椤甸潰SEO锛岀敓鎴愪紭鍖栧缓璁紝鎻愬崌鎼滅储寮曟搸鎺掑悕",
+        "author": "Friday绀惧尯",
+        "category": "鍟嗗煄",
         "stars": 78,
         "downloads": 340,
         "tags": ["seo","optimize","rank"],
         "updated_at": "2026-05-28",
         "size_kb": 45,
-        "readme": "安装后在AI对话中输入「SEO分析 [商品ID]」即可使用"
+        "readme": "瀹夎鍚庡湪AI瀵硅瘽涓緭鍏ャ€孲EO鍒嗘瀽 [鍟嗗搧ID]銆嶅嵆鍙娇鐢?
     },
     {
         "id": "price-predictor",
-        "name": "📈 价格预测",
+        "name": "馃搱 浠锋牸棰勬祴",
         "version": "0.9.0",
-        "desc": "基于历史数据和市场趋势，AI预测商品最优定价策略",
-        "author": "Friday社区",
-        "category": "商城",
+        "desc": "鍩轰簬鍘嗗彶鏁版嵁鍜屽競鍦鸿秼鍔匡紝AI棰勬祴鍟嗗搧鏈€浼樺畾浠风瓥鐣?,
+        "author": "Friday绀惧尯",
+        "category": "鍟嗗煄",
         "stars": 82,
         "downloads": 510,
         "tags": ["price","predict","strategy"],
         "updated_at": "2026-05-27",
         "size_kb": 62,
-        "readme": "安装后输入「价格预测 [商品ID]」即可使用"
+        "readme": "瀹夎鍚庤緭鍏ャ€屼环鏍奸娴?[鍟嗗搧ID]銆嶅嵆鍙娇鐢?
     },
     {
         "id": "wechat-push",
-        "name": "💬 微信推送",
+        "name": "馃挰 寰俊鎺ㄩ€?,
         "version": "1.2.0",
-        "desc": "订单状态变更/库存预警/系统告警实时推送企业微信",
-        "author": "Friday社区",
-        "category": "通知",
+        "desc": "璁㈠崟鐘舵€佸彉鏇?搴撳瓨棰勮/绯荤粺鍛婅瀹炴椂鎺ㄩ€佷紒涓氬井淇?,
+        "author": "Friday绀惧尯",
+        "category": "閫氱煡",
         "stars": 90,
         "downloads": 1280,
         "tags": ["wechat","push","alert"],
         "updated_at": "2026-05-25",
         "size_kb": 28,
-        "readme": "需在.env配置WECOM_WEBHOOK，安装后自动注册通知渠道"
+        "readme": "闇€鍦?env閰嶇疆WECOM_WEBHOOK锛屽畨瑁呭悗鑷姩娉ㄥ唽閫氱煡娓犻亾"
     },
     {
         "id": "log-analyzer",
-        "name": "📋 日志分析器",
+        "name": "馃搵 鏃ュ織鍒嗘瀽鍣?,
         "version": "1.1.0",
-        "desc": "智能分析Nginx/MySQL/Python日志，自动发现异常和性能瓶颈",
-        "author": "Friday社区",
-        "category": "开发",
+        "desc": "鏅鸿兘鍒嗘瀽Nginx/MySQL/Python鏃ュ織锛岃嚜鍔ㄥ彂鐜板紓甯稿拰鎬ц兘鐡堕",
+        "author": "Friday绀惧尯",
+        "category": "寮€鍙?,
         "stars": 74,
         "downloads": 290,
         "tags": ["log","analyze","debug"],
         "updated_at": "2026-05-20",
         "size_kb": 38,
-        "readme": "安装后在AI对话中输入「分析日志 [类型] [行数]」"
+        "readme": "瀹夎鍚庡湪AI瀵硅瘽涓緭鍏ャ€屽垎鏋愭棩蹇?[绫诲瀷] [琛屾暟]銆?
     },
     {
         "id": "auto-translator",
-        "name": "🌍 AI翻译官",
+        "name": "馃實 AI缈昏瘧瀹?,
         "version": "1.0.0",
-        "desc": "批量翻译商品标题/描述到50+语言，保留SEO关键词",
-        "author": "Friday社区",
-        "category": "工具",
+        "desc": "鎵归噺缈昏瘧鍟嗗搧鏍囬/鎻忚堪鍒?0+璇█锛屼繚鐣橲EO鍏抽敭璇?,
+        "author": "Friday绀惧尯",
+        "category": "宸ュ叿",
         "stars": 86,
         "downloads": 760,
         "tags": ["translate","i18n","seo"],
         "updated_at": "2026-05-18",
         "size_kb": 52,
-        "readme": "安装后在AI对话中输入「翻译 [商品ID] 到 [语言]」"
+        "readme": "瀹夎鍚庡湪AI瀵硅瘽涓緭鍏ャ€岀炕璇?[鍟嗗搧ID] 鍒?[璇█]銆?
     },
     {
         "id": "screenshot-bot",
-        "name": "📸 截图机器人",
+        "name": "馃摳 鎴浘鏈哄櫒浜?,
         "version": "1.0.0",
-        "desc": "定时截取网页/竞品页面快照，监控页面变更",
-        "author": "Friday社区",
-        "category": "工具",
+        "desc": "瀹氭椂鎴彇缃戦〉/绔炲搧椤甸潰蹇収锛岀洃鎺ч〉闈㈠彉鏇?,
+        "author": "Friday绀惧尯",
+        "category": "宸ュ叿",
         "stars": 71,
         "downloads": 210,
         "tags": ["screenshot","monitor","change"],
         "updated_at": "2026-05-15",
         "size_kb": 35,
-        "readme": "安装后输入「截图监控 [URL] 每小时」"
+        "readme": "瀹夎鍚庤緭鍏ャ€屾埅鍥剧洃鎺?[URL] 姣忓皬鏃躲€?
     },
 ]
 
@@ -367,8 +367,8 @@ async def install_community_skill(skill_id:str,_=Depends(verify_token)):
 
 @router.post("/publish")
 async def publish_skill(file: bytes = None, download_url: str = "", _=Depends(verify_token)):
-    """发布技能（上传 ZIP 包或从 URL 下载）"""
-    await handle_risk("L2", "发布技能")
+    """鍙戝竷鎶€鑳斤紙涓婁紶 ZIP 鍖呮垨浠?URL 涓嬭浇锛?""
+    await handle_risk("L2", "鍙戝竷鎶€鑳?)
     import tempfile
 
     if file:
@@ -388,9 +388,9 @@ async def publish_skill(file: bytes = None, download_url: str = "", _=Depends(ve
                     f.write(r.content)
         except Exception as e:
             os.unlink(tmp_path)
-            return {"ok": False, "error": f"下载失败: {str(e)}"}
+            return {"ok": False, "error": f"涓嬭浇澶辫触: {str(e)}"}
     else:
-        return {"ok": False, "error": "请上传 ZIP 文件或提供下载 URL"}
+        return {"ok": False, "error": "璇蜂笂浼?ZIP 鏂囦欢鎴栨彁渚涗笅杞?URL"}
 
     try:
         result = await install_from_zip(tmp_path, source="upload")
@@ -402,26 +402,26 @@ async def publish_skill(file: bytes = None, download_url: str = "", _=Depends(ve
 
 @router.get("/installed/packages")
 async def installed_packages(_=Depends(verify_token)):
-    """已安装的技能包列表（区别于内置技能）"""
-    await handle_risk("L1", "查看已安装技能包")
+    """宸插畨瑁呯殑鎶€鑳藉寘鍒楄〃锛堝尯鍒簬鍐呯疆鎶€鑳斤級"""
+    await handle_risk("L1", "鏌ョ湅宸插畨瑁呮妧鑳藉寘")
     skills = list_installed()
     return {"ok": True, "skills": skills, "count": len(skills)}
 
 
 @router.post("/uninstall/{skill_id}")
 async def uninstall_skill_package(skill_id: str, _=Depends(verify_token)):
-    """卸载已安装的技能包"""
-    await handle_risk("L2", f"卸载技能包 {skill_id}")
+    """鍗歌浇宸插畨瑁呯殑鎶€鑳藉寘"""
+    await handle_risk("L2", f"鍗歌浇鎶€鑳藉寘 {skill_id}")
     result = await uninstall(skill_id)
     return result
 
 
 @router.get("/installed/{skill_id}/readme")
 async def skill_readme(skill_id: str, _=Depends(verify_token)):
-    """获取已安装技能的 README"""
+    """鑾峰彇宸插畨瑁呮妧鑳界殑 README"""
     from tools.skill_loader import get_manifest
     manifest = get_manifest(skill_id)
     if not manifest:
-        raise HTTPException(404, "技能未安装")
-    readme = manifest.get("readme", "暂无说明文档")
+        raise HTTPException(404, "鎶€鑳芥湭瀹夎")
+    readme = manifest.get("readme", "鏆傛棤璇存槑鏂囨。")
     return {"ok": True, "skill_id": skill_id, "readme": readme}

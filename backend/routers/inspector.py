@@ -1,4 +1,4 @@
-"""自动巡检 — 定时检查服务器/Docker/Nginx/网站/域名状态"""
+"""鑷姩宸℃ 鈥?瀹氭椂妫€鏌ユ湇鍔″櫒/Docker/Nginx/缃戠珯/鍩熷悕鐘舵€?""
 import httpx
 from datetime import datetime
 from fastapi import APIRouter, Depends
@@ -18,14 +18,14 @@ def _save():
 
 @router.post("/run")
 async def run_inspection(_=Depends(verify_token)):
-    """手动触发一次全量巡检"""
-    await handle_risk("L2", "执行全量巡检")
+    """鎵嬪姩瑙﹀彂涓€娆″叏閲忓贰妫€"""
+    await handle_risk("L2", "鎵ц鍏ㄩ噺宸℃")
 
     tasks = _get_tasks()
     now = datetime.now().strftime("%H:%M:%S")
     results = []
 
-    # 1. 检查 mall-app 连通性
+    # 1. 妫€鏌?mall-app 杩為€氭€?
     mall_ok = False
     try:
         async with httpx.AsyncClient(timeout=10) as c:
@@ -33,25 +33,25 @@ async def run_inspection(_=Depends(verify_token)):
             mall_ok = r.status_code == 200
     except Exception:
         pass
-    results.append({"name": "商城连通性", "ok": mall_ok, "detail": "正常" if mall_ok else "不可达"})
+    results.append({"name": "鍟嗗煄杩為€氭€?, "ok": mall_ok, "detail": "姝ｅ父" if mall_ok else "涓嶅彲杈?})
 
-    # 2. 检查 agent 自身
-    results.append({"name": "Agent状态", "ok": True, "detail": "运行中"})
+    # 2. 妫€鏌?agent 鑷韩
+    results.append({"name": "Agent鐘舵€?, "ok": True, "detail": "杩愯涓?})
 
-    # 3. 检查待审批数量
+    # 3. 妫€鏌ュ緟瀹℃壒鏁伴噺
     pending = len(state.pending_approvals)
     if pending > 0:
-        results.append({"name": "待审批任务", "ok": True, "detail": f"{pending}项待处理"})
+        results.append({"name": "寰呭鎵逛换鍔?, "ok": True, "detail": f"{pending}椤瑰緟澶勭悊"})
 
-    # 4. 检查备份
+    # 4. 妫€鏌ュ浠?
     try:
         from routers.rollback_center import _load_backups
         backup_count = len(_load_backups())
     except Exception:
         backup_count = 0
-    results.append({"name": "备份记录", "ok": True, "detail": f"共{backup_count}条"})
+    results.append({"name": "澶囦唤璁板綍", "ok": True, "detail": f"鍏眥backup_count}鏉?})
 
-    # 记录本次巡检
+    # 璁板綍鏈宸℃
     report = {
         "time": now,
         "results": results,
@@ -64,7 +64,7 @@ async def run_inspection(_=Depends(verify_token)):
         tasks[:] = tasks[:50]
     _save()
 
-    # 如果有失败项，自动创建告警
+    # 濡傛灉鏈夊け璐ラ」锛岃嚜鍔ㄥ垱寤哄憡璀?
     if report["failed"] > 0:
         from routers.alert import _get_alerts, _send_alert_notification
         alerts = _get_alerts()
@@ -73,8 +73,8 @@ async def run_inspection(_=Depends(verify_token)):
             alert = {
                 "id": f"alert_inspect_{int(datetime.now().timestamp())}",
                 "level": "P3",
-                "level_name": "一般",
-                "title": f"巡检异常: {item['name']}",
+                "level_name": "涓€鑸?,
+                "title": f"宸℃寮傚父: {item['name']}",
                 "detail": item["detail"],
                 "source": "inspector",
                 "time": now,
@@ -91,17 +91,17 @@ async def run_inspection(_=Depends(verify_token)):
 
 @router.get("/history")
 async def inspection_history(_=Depends(verify_token)):
-    await handle_risk("L1", "查看巡检历史")
+    await handle_risk("L1", "鏌ョ湅宸℃鍘嗗彶")
     return {"history": _get_tasks()[:20]}
 
 
 @router.post("/schedule")
 async def schedule_inspection(_=Depends(verify_token)):
-    """设置定时巡检（通过APScheduler），预留接口"""
-    await handle_risk("L2", "设置定时巡检")
+    """璁剧疆瀹氭椂宸℃锛堥€氳繃APScheduler锛夛紝棰勭暀鎺ュ彛"""
+    await handle_risk("L2", "璁剧疆瀹氭椂宸℃")
     return {
         "scheduled": True,
-        "note": "定时任务需在服务启动时通过APScheduler配置，当前为手动触发模式",
-        "interval": "建议: 每30分钟自动巡检一次",
+        "note": "瀹氭椂浠诲姟闇€鍦ㄦ湇鍔″惎鍔ㄦ椂閫氳繃APScheduler閰嶇疆锛屽綋鍓嶄负鎵嬪姩瑙﹀彂妯″紡",
+        "interval": "寤鸿: 姣?0鍒嗛挓鑷姩宸℃涓€娆?,
     }
 

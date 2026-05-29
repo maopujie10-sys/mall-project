@@ -1,5 +1,4 @@
-﻿"""记忆持久化存储 — 对话不再因重启丢失
-SQLite + JSON 双层，支持语义标签和重要性评分"""
+锘?""璁板繂鎸佷箙鍖栧瓨鍌?鈥?瀵硅瘽涓嶅啀鍥犻噸鍚涪澶?SQLite + JSON 鍙屽眰锛屾敮鎸佽涔夋爣绛惧拰閲嶈鎬ц瘎鍒?""
 import sqlite3
 import json
 import os
@@ -10,7 +9,7 @@ MEMORY_DB = os.path.join(os.getenv("APP_MEMORY_DIR", os.path.join(os.path.dirnam
 
 
 class MemoryStore:
-    """持久化记忆存储"""
+    """鎸佷箙鍖栬蹇嗗瓨鍌?""
 
     def __init__(self):
         self._init_db()
@@ -54,19 +53,18 @@ class MemoryStore:
             conn.commit()
 
     def remember_conversation(self, role: str, content: str, topic: str = "", importance: float = 0.5):
-        """保存一段对话"""
+        """淇濆瓨涓€娈靛璇?""
         with sqlite3.connect(MEMORY_DB) as conn:
             conn.execute(
                 "INSERT INTO conversations (role, content, topic, importance) VALUES (?, ?, ?, ?)",
                 (role, content[:2000], topic[:100], importance),
             )
             conn.commit()
-            # 保留最近 5000 条
-            conn.execute("DELETE FROM conversations WHERE id NOT IN (SELECT id FROM conversations ORDER BY id DESC LIMIT 5000)")
+            # 淇濈暀鏈€杩?5000 鏉?            conn.execute("DELETE FROM conversations WHERE id NOT IN (SELECT id FROM conversations ORDER BY id DESC LIMIT 5000)")
             conn.commit()
 
     def recall_recent(self, limit: int = 50) -> list:
-        """获取最近对话"""
+        """鑾峰彇鏈€杩戝璇?""
         with sqlite3.connect(MEMORY_DB) as conn:
             rows = conn.execute(
                 "SELECT role, content, topic, created_at FROM conversations ORDER BY id DESC LIMIT ?",
@@ -75,7 +73,7 @@ class MemoryStore:
             return [{"role": r[0], "content": r[1], "topic": r[2], "time": r[3]} for r in rows]
 
     def recall_by_topic(self, topic: str, limit: int = 20) -> list:
-        """按主题检索对话"""
+        """鎸変富棰樻绱㈠璇?""
         with sqlite3.connect(MEMORY_DB) as conn:
             rows = conn.execute(
                 "SELECT role, content, topic, created_at FROM conversations WHERE topic LIKE ? ORDER BY id DESC LIMIT ?",
@@ -84,7 +82,7 @@ class MemoryStore:
             return [{"role": r[0], "content": r[1], "topic": r[2], "time": r[3]} for r in rows]
 
     def search(self, query: str, limit: int = 20) -> list:
-        """全文搜索对话"""
+        """鍏ㄦ枃鎼滅储瀵硅瘽"""
         with sqlite3.connect(MEMORY_DB) as conn:
             rows = conn.execute(
                 "SELECT role, content, topic, created_at FROM conversations WHERE content LIKE ? ORDER BY id DESC LIMIT ?",
@@ -93,7 +91,7 @@ class MemoryStore:
             return [{"role": r[0], "content": r[1], "topic": r[2], "time": r[3]} for r in rows]
 
     def get_stats(self) -> dict:
-        """记忆统计"""
+        """璁板繂缁熻"""
         with sqlite3.connect(MEMORY_DB) as conn:
             total = conn.execute("SELECT COUNT(*) FROM conversations").fetchone()[0]
             topics = conn.execute("SELECT topic, COUNT(*) as cnt FROM conversations WHERE topic != '' GROUP BY topic ORDER BY cnt DESC LIMIT 10").fetchall()
@@ -104,9 +102,9 @@ class MemoryStore:
                 "newest": conn.execute("SELECT created_at FROM conversations ORDER BY id DESC LIMIT 1").fetchone(),
             }
 
-    # ===== 学习日志 =====
+    # ===== 瀛︿範鏃ュ織 =====
     def log_learning(self, action: str, result: str, feedback: str = "", learned: str = ""):
-        """记录学习经验"""
+        """璁板綍瀛︿範缁忛獙"""
         with sqlite3.connect(MEMORY_DB) as conn:
             conn.execute(
                 "INSERT INTO learning_log (action, result, user_feedback, learned) VALUES (?, ?, ?, ?)",
@@ -115,7 +113,7 @@ class MemoryStore:
             conn.commit()
 
     def recall_learnings(self, action_hint: str = "", limit: int = 20) -> list:
-        """检索相关学习经验"""
+        """妫€绱㈢浉鍏冲涔犵粡楠?""
         with sqlite3.connect(MEMORY_DB) as conn:
             if action_hint:
                 rows = conn.execute(
@@ -129,9 +127,9 @@ class MemoryStore:
                 ).fetchall()
             return [{"action": r[0], "result": r[1], "feedback": r[2], "learned": r[3], "time": r[4]} for r in rows]
 
-    # ===== 知识库 =====
+    # ===== 鐭ヨ瘑搴?=====
     def set_knowledge(self, category: str, key: str, value: str, confidence: float = 0.5):
-        """存储一条知识"""
+        """瀛樺偍涓€鏉＄煡璇?""
         with sqlite3.connect(MEMORY_DB) as conn:
             conn.execute(
                 "INSERT OR REPLACE INTO knowledge (category, key, value, confidence) VALUES (?, ?, ?, ?)",
@@ -140,7 +138,7 @@ class MemoryStore:
             conn.commit()
 
     def get_knowledge(self, category: str = "", key: str = "") -> list:
-        """检索知识"""
+        """妫€绱㈢煡璇?""
         with sqlite3.connect(MEMORY_DB) as conn:
             if category and key:
                 rows = conn.execute(
@@ -157,12 +155,12 @@ class MemoryStore:
             return [{"category": r[0], "key": r[1], "value": r[2], "confidence": r[3]} for r in rows]
 
     def get_knowledge_categories(self) -> list:
-        """所有知识分类"""
+        """鎵€鏈夌煡璇嗗垎绫?""
         with sqlite3.connect(MEMORY_DB) as conn:
             rows = conn.execute("SELECT DISTINCT category, COUNT(*) FROM knowledge GROUP BY category").fetchall()
             return [{"category": r[0], "count": r[1]} for r in rows]
 
 
-# 全局单例
+# 鍏ㄥ眬鍗曚緥
 memory_store = MemoryStore()
 

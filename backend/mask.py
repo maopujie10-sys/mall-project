@@ -1,14 +1,11 @@
-﻿"""数据脱敏模块 — 敏感信息自动遮蔽
+閿?""閺佺増宓侀懘杈ㄦ櫛濡€虫健 閳?閺佸繑鍔呮穱鈩冧紖閼奉亜濮╅柆顔挎杸
 
-支持脱敏类型：
-  - 手机号: 138****5678
-  - 邮箱: abc***@example.com
-  - 密码/Token/API Key: 全部替换
-  - 支付信息: 遮盖
-  - 用户地址: 部分遮盖
-  - Cookie/Session: 遮盖
-
-用法:
+閺€顖涘瘮閼磋鲸鏅辩猾璇茬€烽敍?  - 閹靛婧€閸? 138****5678
+  - 闁喚顔? abc***@example.com
+  - 鐎靛棛鐖?Token/API Key: 閸忋劑鍎撮弴鎸庡床
+  - 閺€顖欑帛娣団剝浼? 闁喚娲?  - 閻劍鍩涢崷鏉挎絻: 闁劌鍨庨柆顔炬磰
+  - Cookie/Session: 闁喚娲?
+閻劍纭?
   from mask import mask_sensitive, mask_dict, mask_text
   clean = mask_sensitive(original_data)
 """
@@ -16,20 +13,20 @@ import re
 from typing import Any
 
 
-# ===== 脱敏规则 =====
+# ===== 閼磋鲸鏅辩憴鍕灟 =====
 
 def mask_phone(text: str) -> str:
-    """手机号: 13812345678 → 138****5678"""
+    """閹靛婧€閸? 13812345678 閳?138****5678"""
     return re.sub(r'(1[3-9]\d)\d{4}(\d{4})', r'\1****\2', text)
 
 
 def mask_email(text: str) -> str:
-    """邮箱: abc@gmail.com → a***@gmail.com"""
+    """闁喚顔? abc@gmail.com 閳?a***@gmail.com"""
     return re.sub(r'(\w)[\w.]*(@\w+\.\w+)', lambda m: m.group(1) + '***' + m.group(2), text)
 
 
 def mask_password(text: str) -> str:
-    """密码/密钥相关: 全部替换为 ***"""
+    """鐎靛棛鐖?鐎靛棝鎸滈惄绋垮彠: 閸忋劑鍎撮弴鎸庡床娑?***"""
     patterns = [
         (r'(password[\s=:]+)(\S+)', r'\1***'),
         (r'(passwd[\s=:]+)(\S+)', r'\1***'),
@@ -45,23 +42,23 @@ def mask_password(text: str) -> str:
 
 
 def mask_payment(text: str) -> str:
-    """支付/银行卡: 6222021234567890 → 6222********7890"""
+    """閺€顖欑帛/闁炬儼顢戦崡? 6222021234567890 閳?6222********7890"""
     text = re.sub(r'(\d{4})\d{8,12}(\d{4})', r'\1********\2', text)
     return text
 
 
 def mask_address(text: str) -> str:
-    """地址: 北京市朝阳区xxx路123号 → 北京市朝阳区***"""
-    return re.sub(r'(省|市|区|县|街道|镇)([\u4e00-\u9fa5\d\-]+?号?)', r'\1***', text)
+    """閸︽澘娼? 閸栨ぞ鍚敮鍌涙篂闂冨啿灏痻xx鐠?23閸?閳?閸栨ぞ鍚敮鍌涙篂闂冨啿灏?**"""
+    return re.sub(r'(閻簠鐢€堥崠绨楅崢绺风悰妤呬壕|闂€?([\u4e00-\u9fa5\d\-]+?閸?)', r'\1***', text)
 
 
 def mask_id_card(text: str) -> str:
-    """身份证: 110101199001011234 → 110101********1234"""
+    """闊偂鍞ょ拠? 110101199001011234 閳?110101********1234"""
     return re.sub(r'(\d{6})\d{8,10}(\d{4}[\dXx]?)', r'\1********\2', text)
 
 
 def mask_cookie(text: str) -> str:
-    """Cookie/Session: session=abc123 → session=***"""
+    """Cookie/Session: session=abc123 閳?session=***"""
     patterns = [
         (r'(session[=:]\s*)(\S+)', r'\1***'),
         (r'(cookie[=:]\s*)(\S+)', r'\1***'),
@@ -74,20 +71,17 @@ def mask_cookie(text: str) -> str:
 
 
 def mask_ip(text: str) -> str:
-    """IP 地址部分遮盖: 192.168.1.100 → 192.168.*.*"""
+    """IP 閸︽澘娼冮柈銊ュ瀻闁喚娲? 192.168.1.100 閳?192.168.*.*"""
     return re.sub(r'(\d{1,3}\.\d{1,3})\.\d{1,3}\.\d{1,3}', r'\1.*.*', text)
 
 
-# ===== 统一入口 =====
+# ===== 缂佺喍绔撮崗銉ュ經 =====
 
 def mask_text(text: str, level: str = "full") -> str:
-    """对文本进行脱敏处理
-    
+    """鐎佃鏋冮張顒冪箻鐞涘矁鍔氶弫蹇擃槱閻?    
     level:
-      "full" - 全部脱敏
-      "basic" - 仅密码/Token/密钥
-      "user" - 手机/邮箱/身份证/地址
-    """
+      "full" - 閸忋劑鍎撮懘杈ㄦ櫛
+      "basic" - 娴犲懎鐦戦惍?Token/鐎靛棝鎸?      "user" - 閹靛婧€/闁喚顔?闊偂鍞ょ拠?閸︽澘娼?    """
     if not text or not isinstance(text, str):
         return text
 
@@ -107,15 +101,14 @@ def mask_text(text: str, level: str = "full") -> str:
 
 
 def mask_dict(data: dict, level: str = "full") -> dict:
-    """对字典中所有字符串值进行脱敏"""
+    """鐎电懓鐡ч崗闀愯厬閹碘偓閺堝鐡х粭锔胯閸婅壈绻樼悰宀冨姎閺?""
     if not data:
         return data
     
     result = {}
     for key, value in data.items():
         if isinstance(value, str):
-            # 特殊处理已知敏感字段
-            if any(kw in key.lower() for kw in ("password", "passwd", "token", "secret", "key", "auth")):
+            # 閻楄鐣╂径鍕倞瀹歌尙鐓￠弫蹇斿妳鐎涙顔?            if any(kw in key.lower() for kw in ("password", "passwd", "token", "secret", "key", "auth")):
                 result[key] = "***"
             else:
                 result[key] = mask_text(value, level)
@@ -129,7 +122,7 @@ def mask_dict(data: dict, level: str = "full") -> dict:
 
 
 def mask_sensitive(data: Any, level: str = "full") -> Any:
-    """通用脱敏入口，自动判断类型"""
+    """闁氨鏁ら懘杈ㄦ櫛閸忋儱褰涢敍宀冨殰閸斻劌鍨介弬顓犺閸?""
     if isinstance(data, str):
         return mask_text(data, level)
     elif isinstance(data, dict):
@@ -139,7 +132,7 @@ def mask_sensitive(data: Any, level: str = "full") -> Any:
     return data
 
 
-# ===== 安全字段列表（供其他模块引用）=====
+# ===== 鐎瑰鍙忕€涙顔岄崚妤勩€冮敍鍫滅返閸忔湹绮Ο鈥虫健瀵洜鏁ら敍?====
 
 SENSITIVE_FIELDS = {
     "users": ["password", "pay_password", "balance", "phone", "email", "real_name", "id_card"],
@@ -149,15 +142,14 @@ SENSITIVE_FIELDS = {
     "recharge": ["payment_info"],
 }
 
-# ===== 脱敏中间件 =====
+# ===== 閼磋鲸鏅辨稉顓㈡？娴?=====
 
 class SensitiveMaskMiddleware:
-    """FastAPI 中间件：自动对响应中的敏感字段脱敏"""
+    """FastAPI 娑擃參妫挎禒璁圭窗閼奉亜濮╃€电懓鎼锋惔鏂捐厬閻ㄥ嫭鏅遍幇鐔风摟濞堜絻鍔氶弫?""
     
     @staticmethod
     async def mask_response(data: Any) -> Any:
         return mask_sensitive(data, level="full")
 
 
-# 快速调用别名
-mask = mask_text  # from mask import mask; mask("手机13812345678") → "手机138****5678"
+# 韫囶偊鈧喕鐨熼悽銊ュ焼閸?mask = mask_text  # from mask import mask; mask("閹靛婧€13812345678") 閳?"閹靛婧€138****5678"

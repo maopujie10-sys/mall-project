@@ -1,4 +1,4 @@
-﻿"""全链路请求追踪 + 全局异常处理 — trace_id贯穿每个请求,出问题秒定位"""
+锘?""鍏ㄩ摼璺姹傝拷韪?+ 鍏ㄥ眬寮傚父澶勭悊 鈥?trace_id璐┛姣忎釜璇锋眰,鍑洪棶棰樼瀹氫綅"""
 import time, uuid, traceback, json
 from datetime import datetime
 from fastapi import Request, Response
@@ -7,14 +7,14 @@ from tools.logger import get_logger
 
 logger = get_logger("trace")
 
-# 请求追踪存储（环形缓冲区）
+# 璇锋眰杩借釜瀛樺偍锛堢幆褰㈢紦鍐插尯锛?
 _trace_buffer = []
 MAX_TRACE = 1000
-_slow_threshold_ms = 1000  # 慢请求阈值
+_slow_threshold_ms = 1000  # 鎱㈣姹傞槇鍊?
 
 
 class TraceContext:
-    """请求追踪上下文"""
+    """璇锋眰杩借釜涓婁笅鏂?""
     __slots__ = ("trace_id", "path", "method", "start_time", "status", "error")
 
     def __init__(self, trace_id: str = ""):
@@ -43,31 +43,31 @@ class TraceContext:
 
 
 async def trace_middleware(request: Request, call_next):
-    """全链路请求追踪中间件 — 每个请求分配trace_id"""
+    """鍏ㄩ摼璺姹傝拷韪腑闂翠欢 鈥?姣忎釜璇锋眰鍒嗛厤trace_id"""
     trace_ctx = TraceContext()
     trace_ctx.path = request.url.path
     trace_ctx.method = request.method
     trace_ctx.start_time = time.time()
 
-    # 注入trace_id到request state
+    # 娉ㄥ叆trace_id鍒皉equest state
     request.state.trace_id = trace_ctx.trace_id
     request.state.trace_start = trace_ctx.start_time
 
-    # 记录请求
-    logger.info(f"[{trace_ctx.trace_id}] → {request.method} {request.url.path}")
+    # 璁板綍璇锋眰
+    logger.info(f"[{trace_ctx.trace_id}] 鈫?{request.method} {request.url.path}")
 
     try:
         response = await call_next(request)
         elapsed = round((time.time() - trace_ctx.start_time) * 1000, 1)
         trace_ctx.status = "ok"
 
-        # 在响应头注入trace_id
+        # 鍦ㄥ搷搴斿ご娉ㄥ叆trace_id
         response.headers["X-Trace-Id"] = trace_ctx.trace_id
         response.headers["X-Response-Time-Ms"] = str(elapsed)
 
-        # 慢请求告警
+        # 鎱㈣姹傚憡璀?
         if elapsed > _slow_threshold_ms:
-            logger.info(f"[{trace_ctx.trace_id}] ⚠️ 慢请求 {elapsed}ms {request.url.path}")
+            logger.info(f"[{trace_ctx.trace_id}] 鈿狅笍 鎱㈣姹?{elapsed}ms {request.url.path}")
             trace_ctx.status = "slow"
 
         _add_trace(trace_ctx.to_dict())
@@ -79,24 +79,24 @@ async def trace_middleware(request: Request, call_next):
         trace_ctx.error = str(e)[:500]
         _add_trace(trace_ctx.to_dict())
 
-        # 全局异常处理
-        logger.info(f"[{trace_ctx.trace_id}] ❌ 异常 {elapsed}ms {request.url.path}: {str(e)[:200]}")
+        # 鍏ㄥ眬寮傚父澶勭悊
+        logger.info(f"[{trace_ctx.trace_id}] 鉂?寮傚父 {elapsed}ms {request.url.path}: {str(e)[:200]}")
         traceback.print_exc()
 
         return JSONResponse(
             status_code=500,
             content={
                 "ok": False,
-                "error": "服务器内部错误",
+                "error": "鏈嶅姟鍣ㄥ唴閮ㄩ敊璇?,
                 "trace_id": trace_ctx.trace_id,
-                "detail": str(e)[:200] if isinstance(e, (ValueError, KeyError, TypeError)) else "请查看日志",
+                "detail": str(e)[:200] if isinstance(e, (ValueError, KeyError, TypeError)) else "璇锋煡鐪嬫棩蹇?,
             },
             headers={"X-Trace-Id": trace_ctx.trace_id}
         )
 
 
 def _add_trace(trace_dict: dict):
-    """添加追踪记录到环形缓冲区"""
+    """娣诲姞杩借釜璁板綍鍒扮幆褰㈢紦鍐插尯"""
     global _trace_buffer
     _trace_buffer.append(trace_dict)
     if len(_trace_buffer) > MAX_TRACE:
@@ -104,7 +104,7 @@ def _add_trace(trace_dict: dict):
 
 
 def get_recent_traces(limit: int = 100, status_filter: str = "") -> list:
-    """获取最近追踪记录"""
+    """鑾峰彇鏈€杩戣拷韪褰?""
     traces = list(_trace_buffer)
     if status_filter:
         traces = [t for t in traces if t.get("status") == status_filter]
@@ -112,7 +112,7 @@ def get_recent_traces(limit: int = 100, status_filter: str = "") -> list:
 
 
 def get_trace_stats() -> dict:
-    """追踪统计"""
+    """杩借釜缁熻"""
     if not _trace_buffer:
         return {"total": 0}
     total = len(_trace_buffer)

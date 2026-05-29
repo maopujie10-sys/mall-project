@@ -1,5 +1,5 @@
-"""Multi-Model Router — 多模型智能路由
-支持: Ollama本地(免费) / DeepSeek / Claude / GPT / Gemini"""
+"""Multi-Model Router 鈥?澶氭ā鍨嬫櫤鑳借矾鐢?
+鏀寔: Ollama鏈湴(鍏嶈垂) / DeepSeek / Claude / GPT / Gemini"""
 
 import os
 import httpx
@@ -24,7 +24,7 @@ class ModelConfig:
     api_base: str
     cost_per_1k: float
     max_tokens: int
-    is_local: bool = False  # 本地模型无需API Key
+    is_local: bool = False  # 鏈湴妯″瀷鏃犻渶API Key
 
 
 import httpx as _httpx
@@ -39,16 +39,16 @@ def _get_model_client():
     return _model_client
 
 class ModelRouter:
-    """多模型智能路由器 — 本地优先 + 云端降级"""
+    """澶氭ā鍨嬫櫤鑳借矾鐢卞櫒 鈥?鏈湴浼樺厛 + 浜戠闄嶇骇"""
 
     OLLAMA_HOST = os.getenv("OLLAMA_HOST", "http://localhost:11434")
 
     MODELS = {
-        # 本地免费模型(优先级最高)
+        # 鏈湴鍏嶈垂妯″瀷(浼樺厛绾ф渶楂?
         "ollama-qwen": ModelConfig("ollama", "qwen2.5:7b", "", OLLAMA_HOST + "/v1", 0.0, 32768, is_local=True),
         "ollama-r1": ModelConfig("ollama", "deepseek-r1:7b", "", OLLAMA_HOST + "/v1", 0.0, 32768, is_local=True),
         "ollama-llama": ModelConfig("ollama", "llama3:8b", "", OLLAMA_HOST + "/v1", 0.0, 32768, is_local=True),
-        # 云端模型(付费降级)
+        # 浜戠妯″瀷(浠樿垂闄嶇骇)
         "deepseek-v3": ModelConfig("deepseek", "deepseek-chat", "DEEPSEEK_API_KEY", "https://api.deepseek.com/v1", 0.001, 65536),
         "deepseek-r1": ModelConfig("deepseek", "deepseek-reasoner", "DEEPSEEK_API_KEY", "https://api.deepseek.com/v1", 0.002, 65536),
         "claude-sonnet": ModelConfig("anthropic", "claude-3-5-sonnet-20241022", "CLAUDE_API_KEY", "https://api.anthropic.com", 0.015, 200000),
@@ -56,7 +56,7 @@ class ModelRouter:
         "gemini-flash": ModelConfig("google", "gemini-2.0-flash", "GEMINI_API_KEY", "https://generativelanguage.googleapis.com", 0.001, 1048576),
     }
 
-    # 路由策略：本地优先 → 云端降级
+    # 璺敱绛栫暐锛氭湰鍦颁紭鍏?鈫?浜戠闄嶇骇
     MODE_ROUTING = {
         ModelMode.QUALITY: ["ollama-qwen", "claude-sonnet", "gpt-4o"],
         ModelMode.FAST: ["ollama-qwen", "gemini-flash", "deepseek-v3"],
@@ -68,7 +68,7 @@ class ModelRouter:
 
     @staticmethod
     async def _check_ollama() -> bool:
-        """检测 Ollama 是否在线"""
+        """妫€娴?Ollama 鏄惁鍦ㄧ嚎"""
         try:
             client = _get_model_client()
             r = await client.get(ModelRouter.OLLAMA_HOST + "/api/tags")
@@ -78,7 +78,7 @@ class ModelRouter:
 
     @staticmethod
     def route(mode: ModelMode, preferred: str = None) -> ModelConfig:
-        """根据模式智能选择模型 — 本地免费优先"""
+        """鏍规嵁妯″紡鏅鸿兘閫夋嫨妯″瀷 鈥?鏈湴鍏嶈垂浼樺厛"""
         if preferred and preferred in ModelRouter.MODELS:
             return ModelRouter.MODELS[preferred]
 
@@ -88,14 +88,14 @@ class ModelRouter:
             if c not in ModelRouter.MODELS:
                 continue
             cfg = ModelRouter.MODELS[c]
-            # 本地模型：无需 API Key，直接可用
+            # 鏈湴妯″瀷锛氭棤闇€ API Key锛岀洿鎺ュ彲鐢?
             if cfg.is_local:
                 return cfg
-            # 云端模型：需要配置 API Key
+            # 浜戠妯″瀷锛氶渶瑕侀厤缃?API Key
             if os.getenv(cfg.api_key_env, ""):
                 return cfg
 
-        # 兜底：返回第一个配置的模型
+        # 鍏滃簳锛氳繑鍥炵涓€涓厤缃殑妯″瀷
         for name, config in ModelRouter.MODELS.items():
             if config.is_local or os.getenv(config.api_key_env, ""):
                 return config
@@ -104,7 +104,7 @@ class ModelRouter:
 
     @staticmethod
     async def list_models() -> list:
-        """列出所有可用模型及状态"""
+        """鍒楀嚭鎵€鏈夊彲鐢ㄦā鍨嬪強鐘舵€?""
         ollama_online = await ModelRouter._check_ollama()
         models = []
         for name, cfg in ModelRouter.MODELS.items():
@@ -116,7 +116,7 @@ class ModelRouter:
                 "id": name,
                 "provider": cfg.provider,
                 "model": cfg.model_name,
-                "cost": "免费" if cfg.is_local else f"/1K tokens",
+                "cost": "鍏嶈垂" if cfg.is_local else f"/1K tokens",
                 "local": cfg.is_local,
                 "available": available,
             })
@@ -124,16 +124,16 @@ class ModelRouter:
 
     @staticmethod
     async def chat(model_id: str, messages: list, **kwargs) -> dict:
-        """统一聊天接口 — 支持 Ollama(OpenAI兼容) 和云端 API"""
+        """缁熶竴鑱婂ぉ鎺ュ彛 鈥?鏀寔 Ollama(OpenAI鍏煎) 鍜屼簯绔?API"""
         cfg = ModelRouter.MODELS.get(model_id)
         if not cfg:
-            return {"error": f"未知模型: {model_id}"}
+            return {"error": f"鏈煡妯″瀷: {model_id}"}
 
         headers = {"Content-Type": "application/json"}
         if not cfg.is_local:
             api_key = os.getenv(cfg.api_key_env, "")
             if not api_key:
-                return {"error": f"{cfg.provider} API Key 未配置"}
+                return {"error": f"{cfg.provider} API Key 鏈厤缃?}
             headers["Authorization"] = f"Bearer {api_key}"
 
         payload = {
@@ -151,7 +151,7 @@ class ModelRouter:
                 headers=headers,
             )
             if r.status_code != 200:
-                return {"error": f"{cfg.provider} 返回 {r.status_code}: {r.text[:200]}"}
+                return {"error": f"{cfg.provider} 杩斿洖 {r.status_code}: {r.text[:200]}"}
             data = r.json()
             return {
                 "model": model_id,
@@ -165,12 +165,12 @@ class ModelRouter:
 
 class FridayModes:
     MODES = {
-        "quality": {"desc": "高质量", "model": "ollama-qwen", "max_tokens": 4096},
-        "speed": {"desc": "超高速", "model": "ollama-qwen", "max_tokens": 512},
-        "cheap": {"desc": "省钱", "model": "ollama-qwen", "max_tokens": 256},
-        "dev": {"desc": "开发", "model": "ollama-r1", "max_tokens": 2048},
-        "ops": {"desc": "运维", "model": "ollama-qwen", "max_tokens": 1024},
-        "deep": {"desc": "深度推理", "model": "ollama-r1", "max_tokens": 8192},
+        "quality": {"desc": "楂樿川閲?, "model": "ollama-qwen", "max_tokens": 4096},
+        "speed": {"desc": "瓒呴珮閫?, "model": "ollama-qwen", "max_tokens": 512},
+        "cheap": {"desc": "鐪侀挶", "model": "ollama-qwen", "max_tokens": 256},
+        "dev": {"desc": "寮€鍙?, "model": "ollama-r1", "max_tokens": 2048},
+        "ops": {"desc": "杩愮淮", "model": "ollama-qwen", "max_tokens": 1024},
+        "deep": {"desc": "娣卞害鎺ㄧ悊", "model": "ollama-r1", "max_tokens": 8192},
     }
 
     @classmethod
@@ -186,7 +186,7 @@ class FridayModes:
 
     @staticmethod
     async def vote(prompt, models=None):
-        """多模型投票：3个模型同时回答，取最优"""
+        """澶氭ā鍨嬫姇绁細3涓ā鍨嬪悓鏃跺洖绛旓紝鍙栨渶浼?""
         import asyncio, httpx, os
         candidates = models or ["deepseek-chat", "gpt-4o-mini"]
         async def ask(model):

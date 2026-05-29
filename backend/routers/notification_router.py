@@ -1,4 +1,4 @@
-﻿"""通知中心 — 系统通知/审批提醒/告警推送"""
+锘?""閫氱煡涓績 鈥?绯荤粺閫氱煡/瀹℃壒鎻愰啋/鍛婅鎺ㄩ€?""
 from datetime import datetime
 from fastapi import APIRouter, Depends
 from auth import verify_token
@@ -11,7 +11,7 @@ MAX_NOTIFICATIONS = 200
 
 
 def push_notification(title: str, message: str, ntype: str = "info", link: str = ""):
-    """推送通知（其他模块可调用）"""
+    """鎺ㄩ€侀€氱煡锛堝叾浠栨ā鍧楀彲璋冪敤锛?""
     notif = {
         "id": datetime.now().strftime("%Y%m%d%H%M%S%f")[:-3],
         "time": datetime.now().isoformat(),
@@ -31,7 +31,7 @@ def push_notification(title: str, message: str, ntype: str = "info", link: str =
 
 @router.get("")
 async def list_notifications(unread_only: bool = False, limit: int = 50, _=Depends(verify_token)):
-    """获取通知列表"""
+    """鑾峰彇閫氱煡鍒楄〃"""
     notes = state._data.get("notifications_list", [])
     if unread_only:
         notes = [n for n in notes if not n.get("read")]
@@ -40,7 +40,7 @@ async def list_notifications(unread_only: bool = False, limit: int = 50, _=Depen
 
 @router.post("/read")
 async def mark_read(notification_id: str = "", all: bool = False, _=Depends(verify_token)):
-    """标记通知为已读"""
+    """鏍囪閫氱煡涓哄凡璇?""
     notes = state._data.get("notifications_list", [])
     if all:
         for n in notes:
@@ -55,8 +55,8 @@ async def mark_read(notification_id: str = "", all: bool = False, _=Depends(veri
 
 @router.post("/clear")
 async def clear_notifications(_=Depends(verify_token)):
-    """清空通知"""
-    await handle_risk("L2", "清空通知")
+    """娓呯┖閫氱煡"""
+    await handle_risk("L2", "娓呯┖閫氱煡")
     state._data["notifications_list"] = []
     state._save()
     return {"ok": True}

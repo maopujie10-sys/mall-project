@@ -1,11 +1,11 @@
-"""商城AI全自动运维引擎 — AI自主分析/决策/执行
+"""鍟嗗煄AI鍏ㄨ嚜鍔ㄨ繍缁村紩鎿?鈥?AI鑷富鍒嗘瀽/鍐崇瓥/鎵ц
 
-AI 能自己：
-  1. 扫描全站商品 → 分析活跃度 → 发现死商品/热商品
-  2. 死商品自动下架 → 从采集库选新商品替换
-  3. 发现品类缺口 → 自动触发采集任务
-  4. 智能调整库存 → 热销品加库存、滞销品降库存
-  5. 生成运营报告 → AI 告诉你需要做什么
+AI 鑳借嚜宸憋細
+  1. 鎵弿鍏ㄧ珯鍟嗗搧 鈫?鍒嗘瀽娲昏穬搴?鈫?鍙戠幇姝诲晢鍝?鐑晢鍝?
+  2. 姝诲晢鍝佽嚜鍔ㄤ笅鏋?鈫?浠庨噰闆嗗簱閫夋柊鍟嗗搧鏇挎崲
+  3. 鍙戠幇鍝佺被缂哄彛 鈫?鑷姩瑙﹀彂閲囬泦浠诲姟
+  4. 鏅鸿兘璋冩暣搴撳瓨 鈫?鐑攢鍝佸姞搴撳瓨銆佹粸閿€鍝侀檷搴撳瓨
+  5. 鐢熸垚杩愯惀鎶ュ憡 鈫?AI 鍛婅瘔浣犻渶瑕佸仛浠€涔?
 """
 import random
 import hashlib
@@ -16,13 +16,13 @@ import httpx
 from state import state
 from config import MALL_BASE_URL
 
-# ═══════════════════════════════════════
-#  数据结构
-# ═══════════════════════════════════════
+# 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺?
+#  鏁版嵁缁撴瀯
+# 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺?
 
 @dataclass
 class ProductHealth:
-    """商品健康度分析"""
+    """鍟嗗搧鍋ュ悍搴﹀垎鏋?""
     product_id: str
     title: str
     category: str
@@ -33,11 +33,11 @@ class ProductHealth:
     days_since_created: int = 0
     health_score: float = 50.0   # 0-100
     status: str = "normal"       # hot/warm/cold/dead
-    recommendation: str = ""     # AI建议
+    recommendation: str = ""     # AI寤鸿
 
 @dataclass
 class CategoryGap:
-    """品类缺口"""
+    """鍝佺被缂哄彛"""
     category: str
     current_count: int = 0
     target_count: int = 20
@@ -46,7 +46,7 @@ class CategoryGap:
 
 @dataclass
 class MallReport:
-    """商城运营报告"""
+    """鍟嗗煄杩愯惀鎶ュ憡"""
     generated_at: str = ""
     total_products: int = 0
     hot_products: int = 0
@@ -56,29 +56,29 @@ class MallReport:
     auto_actions: list[str] = field(default_factory=list)
     health_distribution: dict = field(default_factory=dict)
 
-# ═══════════════════════════════════════
-#  AI 分析引擎
-# ═══════════════════════════════════════
+# 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺?
+#  AI 鍒嗘瀽寮曟搸
+# 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺?
 
 CATEGORY_TARGETS = {
-    "手机数码": 50, "电脑办公": 40, "服饰鞋包": 80,
-    "家居电器": 60, "美妆个护": 70, "食品饮料": 40,
-    "母婴用品": 30, "运动户外": 35, "汽车用品": 25,
-    "图书文娱": 20, "珠宝配饰": 30, "宠物生活": 25,
+    "鎵嬫満鏁扮爜": 50, "鐢佃剳鍔炲叕": 40, "鏈嶉グ闉嬪寘": 80,
+    "瀹跺眳鐢靛櫒": 60, "缇庡涓姢": 70, "椋熷搧楗枡": 40,
+    "姣嶅┐鐢ㄥ搧": 30, "杩愬姩鎴峰": 35, "姹借溅鐢ㄥ搧": 25,
+    "鍥句功鏂囧ū": 20, "鐝犲疂閰嶉グ": 30, "瀹犵墿鐢熸椿": 25,
 }
 
 CROSS_SELL_KEYWORDS = {
-    "手机数码": ["手机壳","充电器","耳机","数据线","钢化膜","手机支架","蓝牙耳机","充电宝"],
-    "电脑办公": ["鼠标","键盘","U盘","鼠标垫","电脑包","显示器支架","摄像头"],
-    "服饰鞋包": ["袜子","帽子","围巾","手套","腰带","钱包","双肩包"],
+    "鎵嬫満鏁扮爜": ["鎵嬫満澹?,"鍏呯數鍣?,"鑰虫満","鏁版嵁绾?,"閽㈠寲鑶?,"鎵嬫満鏀灦","钃濈墮鑰虫満","鍏呯數瀹?],
+    "鐢佃剳鍔炲叕": ["榧犳爣","閿洏","U鐩?,"榧犳爣鍨?,"鐢佃剳鍖?,"鏄剧ず鍣ㄦ敮鏋?,"鎽勫儚澶?],
+    "鏈嶉グ闉嬪寘": ["琚滃瓙","甯藉瓙","鍥村肪","鎵嬪","鑵板甫","閽卞寘","鍙岃偐鍖?],
 }
 
 class MallBrain:
-    """商城AI大脑 — 分析/决策/执行一体"""
+    """鍟嗗煄AI澶ц剳 鈥?鍒嗘瀽/鍐崇瓥/鎵ц涓€浣?""
 
     @staticmethod
     async def scan_products() -> list[ProductHealth]:
-        """扫描全站商品，分析每个商品的健康度"""
+        """鎵弿鍏ㄧ珯鍟嗗搧锛屽垎鏋愭瘡涓晢鍝佺殑鍋ュ悍搴?""
         try:
             async with httpx.AsyncClient(timeout=10) as c:
                 r = await c.get(f"{MALL_BASE_URL}/api/products", params={"page": 1, "size": 500})
@@ -87,7 +87,7 @@ class MallBrain:
                 data = r.json()
                 products = data.get("list", data.get("rows", []))
         except Exception:
-            # 从本地 state 获取模拟数据
+            # 浠庢湰鍦?state 鑾峰彇妯℃嫙鏁版嵁
             products = state._data.get("scraped_products", [])[:200]
 
         results = []
@@ -96,7 +96,7 @@ class MallBrain:
         for p in products:
             pid = p.get("uuid", p.get("id", ""))
             title = p.get("title", p.get("name", ""))
-            cat = p.get("category", p.get("category_name", "未分类"))
+            cat = p.get("category", p.get("category_name", "鏈垎绫?))
             price = float(p.get("price", 0))
             sales = int(p.get("sales", p.get("sellCount", 0)))
             stock = int(p.get("stock", 0))
@@ -110,36 +110,36 @@ class MallBrain:
                 except Exception:
                     pass
 
-            # 健康度算法
+            # 鍋ュ悍搴︾畻娉?
             score = 50.0
-            # 销量加分
+            # 閿€閲忓姞鍒?
             if sales > 100:
                 score += min(30, sales / 100)
             elif sales > 10:
                 score += sales / 10
-            # 库存扣分（没货）
+            # 搴撳瓨鎵ｅ垎锛堟病璐э級
             if stock == 0:
                 score -= 40
             elif stock < 10:
                 score -= 10
-            # 太久没有销量
+            # 澶箙娌℃湁閿€閲?
             if days > 90 and sales < 5:
                 score -= 20
-            # 价格异常
+            # 浠锋牸寮傚父
             if price < 1:
                 score -= 15
 
             score = max(0, min(100, score))
 
-            # 判定状态
+            # 鍒ゅ畾鐘舵€?
             if score >= 80:
-                status, rec = "hot", "🔥 热销品，建议补货并推广"
+                status, rec = "hot", "馃敟 鐑攢鍝侊紝寤鸿琛ヨ揣骞舵帹骞?
             elif score >= 50:
-                status, rec = "warm", "👍 正常品，维持库存"
+                status, rec = "warm", "馃憤 姝ｅ父鍝侊紝缁存寔搴撳瓨"
             elif score >= 30:
-                status, rec = "cold", "❄️ 冷门品，考虑降价促销或替换"
+                status, rec = "cold", "鉂勶笍 鍐烽棬鍝侊紝鑰冭檻闄嶄环淇冮攢鎴栨浛鎹?
             else:
-                status, rec = "dead", "💀 死品，建议下架并从采集库替换新品"
+                status, rec = "dead", "馃拃 姝诲搧锛屽缓璁笅鏋跺苟浠庨噰闆嗗簱鏇挎崲鏂板搧"
 
             results.append(ProductHealth(
                 product_id=pid, title=title, category=cat,
@@ -152,7 +152,7 @@ class MallBrain:
 
     @staticmethod
     def find_category_gaps(products: list[ProductHealth]) -> list[CategoryGap]:
-        """发现品类缺口 — 哪些品类商品太少"""
+        """鍙戠幇鍝佺被缂哄彛 鈥?鍝簺鍝佺被鍟嗗搧澶皯"""
         from collections import Counter
         cat_count = Counter(p.category for p in products)
         gaps = []
@@ -174,7 +174,7 @@ class MallBrain:
 
     @staticmethod
     def generate_report(products: list[ProductHealth]) -> MallReport:
-        """生成完整的商城运营分析报告"""
+        """鐢熸垚瀹屾暣鐨勫晢鍩庤繍钀ュ垎鏋愭姤鍛?""
         hot = [p for p in products if p.status == "hot"]
         dead = [p for p in products if p.status == "dead"]
         gaps = MallBrain.find_category_gaps(products)
@@ -189,26 +189,26 @@ class MallBrain:
         suggestions = []
         auto_actions = []
 
-        # 死品处理建议
+        # 姝诲搧澶勭悊寤鸿
         if dead:
-            suggestions.append(f"发现 {len(dead)} 个死品，建议下架并从采集库自动替换")
+            suggestions.append(f"鍙戠幇 {len(dead)} 涓鍝侊紝寤鸿涓嬫灦骞朵粠閲囬泦搴撹嚜鍔ㄦ浛鎹?)
             auto_actions.append(f"auto_replace_dead: {len(dead)} products")
 
-        # 品类缺口建议
+        # 鍝佺被缂哄彛寤鸿
         for g in gaps[:5]:
-            suggestions.append(f"品类「{g.category}」缺口 {g.gap} 个商品，建议启动采集")
+            suggestions.append(f"鍝佺被銆寋g.category}銆嶇己鍙?{g.gap} 涓晢鍝侊紝寤鸿鍚姩閲囬泦")
             auto_actions.append(f"auto_scrape_category: {g.category}(gap={g.gap})")
 
-        # 库存建议
+        # 搴撳瓨寤鸿
         low_stock = [p for p in products if p.status == "hot" and p.stock < 20]
         if low_stock:
-            suggestions.append(f"有 {len(low_stock)} 个热销品库存不足，建议补货")
+            suggestions.append(f"鏈?{len(low_stock)} 涓儹閿€鍝佸簱瀛樹笉瓒筹紝寤鸿琛ヨ揣")
             auto_actions.append(f"auto_replenish: {len(low_stock)} products")
 
-        # 价格建议
+        # 浠锋牸寤鸿
         overpriced = [p for p in products if p.status == "cold" and p.price > 1000 and p.sales < 5]
         if overpriced:
-            suggestions.append(f"有 {len(overpriced)} 个商品价格偏高且无销量，建议降价促销")
+            suggestions.append(f"鏈?{len(overpriced)} 涓晢鍝佷环鏍煎亸楂樹笖鏃犻攢閲忥紝寤鸿闄嶄环淇冮攢")
 
         return MallReport(
             generated_at=datetime.now().isoformat(),
@@ -223,33 +223,33 @@ class MallBrain:
 
     @staticmethod
     async def execute_auto_actions(report: MallReport, dry_run: bool = False) -> dict:
-        """执行AI自动决策 — 下架死品/采集新品/补库存"""
+        """鎵цAI鑷姩鍐崇瓥 鈥?涓嬫灦姝诲搧/閲囬泦鏂板搧/琛ュ簱瀛?""
         results = {"executed": [], "skipped": [], "dry_run": dry_run}
 
         for action in report.auto_actions:
             if "auto_replace_dead" in action:
                 count = int(action.split(":")[1].split()[0])
                 if dry_run:
-                    results["executed"].append(f"DRY-RUN: 将下架 {count} 个死品并替换")
+                    results["executed"].append(f"DRY-RUN: 灏嗕笅鏋?{count} 涓鍝佸苟鏇挎崲")
                 else:
-                    results["executed"].append(f"已标记 {count} 个死品待替换")
+                    results["executed"].append(f"宸叉爣璁?{count} 涓鍝佸緟鏇挎崲")
 
             elif "auto_scrape_category" in action:
                 cat = action.split("(")[0].replace("auto_scrape_category: ", "")
                 gap = int(action.split("gap=")[1].rstrip(")"))
                 if dry_run:
-                    results["executed"].append(f"DRY-RUN: 将为「{cat}」采集 {min(gap, 30)} 个新品")
+                    results["executed"].append(f"DRY-RUN: 灏嗕负銆寋cat}銆嶉噰闆?{min(gap, 30)} 涓柊鍝?)
                 else:
                     keywords = CROSS_SELL_KEYWORDS.get(cat, [cat])
                     for kw in keywords[:3]:
-                        results["executed"].append(f"已启动采集: {cat} > {kw}")
+                        results["executed"].append(f"宸插惎鍔ㄩ噰闆? {cat} > {kw}")
 
             elif "auto_replenish" in action:
                 count = int(action.split(":")[1].split()[0])
                 if dry_run:
-                    results["executed"].append(f"DRY-RUN: 将为 {count} 个热销品补货")
+                    results["executed"].append(f"DRY-RUN: 灏嗕负 {count} 涓儹閿€鍝佽ˉ璐?)
                 else:
-                    results["executed"].append(f"已为 {count} 个热销品自动补货到安全库存")
+                    results["executed"].append(f"宸蹭负 {count} 涓儹閿€鍝佽嚜鍔ㄨˉ璐у埌瀹夊叏搴撳瓨")
 
         results["total"] = len(results["executed"])
         state._data["last_autopilot"] = {
@@ -260,12 +260,12 @@ class MallBrain:
         state._save()
         return results
 
-# ═══════════════════════════════════════
-#  定时巡检任务
-# ═══════════════════════════════════════
+# 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺?
+#  瀹氭椂宸℃浠诲姟
+# 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺?
 
 async def daily_health_check():
-    """每日自动健康检查 — 可被定时任务调用"""
+    """姣忔棩鑷姩鍋ュ悍妫€鏌?鈥?鍙瀹氭椂浠诲姟璋冪敤"""
     products = await MallBrain.scan_products()
     report = MallBrain.generate_report(products)
     state._data["daily_health_report"] = {

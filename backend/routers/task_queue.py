@@ -1,4 +1,4 @@
-"""任务队列 + 任务锁 API"""
+"""浠诲姟闃熷垪 + 浠诲姟閿?API"""
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from auth import verify_token
@@ -15,18 +15,18 @@ class EnqueueRequest(BaseModel):
 
 @router.post("/enqueue")
 async def enqueue_task(req: EnqueueRequest, _=Depends(verify_token)):
-    await handle_risk("L1", "添加任务到队列", req.name)
+    await handle_risk("L1", "娣诲姞浠诲姟鍒伴槦鍒?, req.name)
     task_id = task_queue.enqueue(req.name, req.risk, req.priority, req.timeout_s)
     return {"task_id": task_id, "status": "queued"}
 
 @router.get("/queue")
 async def list_queue(_=Depends(verify_token)):
-    await handle_risk("L1", "查看任务队列")
+    await handle_risk("L1", "鏌ョ湅浠诲姟闃熷垪")
     return {"tasks": task_queue.list(), "pending": task_queue.pending_count()}
 
 @router.get("/stats")
 async def task_stats(_=Depends(verify_token)):
-    """任务统计概览"""
+    """浠诲姟缁熻姒傝"""
     tasks = task_queue.list()
     total = len(tasks)
     by_status = {}
@@ -44,7 +44,7 @@ async def task_stats(_=Depends(verify_token)):
 async def get_task(task_id: str, _=Depends(verify_token)):
     t = task_queue.get(task_id)
     if not t:
-        return {"error": "任务不存在"}
+        return {"error": "浠诲姟涓嶅瓨鍦?}
     return t
 
 @router.post("/queue/{task_id}/pause")
@@ -71,7 +71,7 @@ async def dequeue_task(_=Depends(verify_token)):
 
 @router.get("/locks")
 async def list_locks(_=Depends(verify_token)):
-    await handle_risk("L1", "查看任务锁")
+    await handle_risk("L1", "鏌ョ湅浠诲姟閿?)
     return task_lock.status()
 
 @router.post("/locks/acquire")

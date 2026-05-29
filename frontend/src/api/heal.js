@@ -1,21 +1,21 @@
-﻿import { agentApi } from './index'
+锘縤mport { agentApi } from './index'
 
-// 执行巡检
+// 鎵ц宸℃
 export function runPatrol() {
   return agentApi.post('/heal/patrol')
 }
 
-// 自动修复
+// 鑷姩淇
 export function autoFix(anomalyId = null) {
   return agentApi.post('/heal/auto-fix' + (anomalyId ? '?anomaly_id=' + anomalyId : ''))
 }
 
-// 异常历史
+// 寮傚父鍘嗗彶
 export function getAnomalyHistory(days = 7) {
   return agentApi.get('/heal/history', { params: { days } })
 }
 
-// 标记解决
+// 鏍囪瑙ｅ喅
 export function resolveAnomaly(anomalyId, resolution = 'manual') {
   return agentApi.post('/heal/resolve', { anomaly_id: anomalyId, resolution })
 }

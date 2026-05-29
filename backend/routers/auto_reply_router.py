@@ -1,4 +1,4 @@
-﻿"""AI客服自动回复 — 规则引擎/常见问题/转人工/v1"""
+锘?""AI瀹㈡湇鑷姩鍥炲 鈥?瑙勫垯寮曟搸/甯歌闂/杞汉宸?v1"""
 from fastapi import APIRouter, Depends
 from auth import verify_token
 from risk import handle_risk
@@ -20,18 +20,18 @@ class AutoReplyRequest(BaseModel):
 
 @router.post("/reply")
 async def auto_reply(req: AutoReplyRequest, _=Depends(verify_token)):
-    """AI自动回复消息"""
-    await handle_risk("L1", "AI客服回复")
+    """AI鑷姩鍥炲娑堟伅"""
+    await handle_risk("L1", "AI瀹㈡湇鍥炲")
     rules = state._data.get("auto_reply_rules", [])
     msg_lower = req.message.lower()
-    # 规则匹配
+    # 瑙勫垯鍖归厤
     for rule in sorted(rules, key=lambda r: -r.get("priority", 0)):
         if rule.get("keyword","").lower() in msg_lower:
             reply = rule["reply"]
             _log_conversation(req.message, reply, "rule")
             return {"ok": True, "reply": reply, "matched": True, "method": "rule",
                     "confidence": "high", "transfer": False}
-    # AI自动回复（无规则匹配时）
+    # AI鑷姩鍥炲锛堟棤瑙勫垯鍖归厤鏃讹級
     from agents.multi_model import ModelRouter, ModelMode
     try:
         config = ModelRouter.route(ModelMode.BALANCE)
@@ -40,29 +40,29 @@ async def auto_reply(req: AutoReplyRequest, _=Depends(verify_token)):
             resp = await c.post(f"{config.base_url}/chat/completions",
                 headers={"Authorization": f"Bearer {config.api_key}"},
                 json={"model": config.model_name, "messages": [
-                    {"role":"system","content":"你是Friday AI商城的智能客服。请用中文友好回复客户咨询。如果客户问的是退款、退货、投诉等需要人工处理的问题，在回复结尾加 [转人工]。"},
+                    {"role":"system","content":"浣犳槸Friday AI鍟嗗煄鐨勬櫤鑳藉鏈嶃€傝鐢ㄤ腑鏂囧弸濂藉洖澶嶅鎴峰挩璇€傚鏋滃鎴烽棶鐨勬槸閫€娆俱€侀€€璐с€佹姇璇夌瓑闇€瑕佷汉宸ュ鐞嗙殑闂锛屽湪鍥炲缁撳熬鍔?[杞汉宸銆?},
                     {"role":"user","content": req.message}], "max_tokens": 300})
             data = resp.json()
             reply = data.get("choices",[{}])[0].get("message",{}).get("content","")
-            need_transfer = "[转人工]" in reply
-            if need_transfer: reply = reply.replace("[转人工]","").strip()
+            need_transfer = "[杞汉宸" in reply
+            if need_transfer: reply = reply.replace("[杞汉宸","").strip()
             _log_conversation(req.message, reply, "ai")
             return {"ok": True, "reply": reply, "matched": True, "method": "ai",
                     "confidence": "medium", "transfer": need_transfer}
     except Exception as e:
-        fallback = f"感谢您的咨询，我正在查询相关信息，请稍候。如急需帮助请联系人工客服。"
+        fallback = f"鎰熻阿鎮ㄧ殑鍜ㄨ锛屾垜姝ｅ湪鏌ヨ鐩稿叧淇℃伅锛岃绋嶅€欍€傚鎬ラ渶甯姪璇疯仈绯讳汉宸ュ鏈嶃€?
         _log_conversation(req.message, fallback, "fallback")
         return {"ok": True, "reply": fallback, "matched": False, "method": "fallback", "transfer": True}
 
 @router.get("/rules")
 async def list_rules(_=Depends(verify_token)):
-    """查看所有自动回复规则"""
+    """鏌ョ湅鎵€鏈夎嚜鍔ㄥ洖澶嶈鍒?""
     return {"ok": True, "rules": state._data.get("auto_reply_rules", [])}
 
 @router.post("/rules")
 async def create_rule(rule: RuleCreate, _=Depends(verify_token)):
-    """创建自动回复规则"""
-    await handle_risk("L2", f"创建自动回复规则: {rule.keyword}")
+    """鍒涘缓鑷姩鍥炲瑙勫垯"""
+    await handle_risk("L2", f"鍒涘缓鑷姩鍥炲瑙勫垯: {rule.keyword}")
     rules = state._data.setdefault("auto_reply_rules", [])
     rules.append({"id": f"R{datetime.now().strftime('%Y%m%d%H%M%S')}",
                   "keyword": rule.keyword, "reply": rule.reply,
@@ -73,8 +73,8 @@ async def create_rule(rule: RuleCreate, _=Depends(verify_token)):
 
 @router.delete("/rules/{rule_id}")
 async def delete_rule(rule_id: str, _=Depends(verify_token)):
-    """删除自动回复规则"""
-    await handle_risk("L2", f"删除自动回复规则: {rule_id}")
+    """鍒犻櫎鑷姩鍥炲瑙勫垯"""
+    await handle_risk("L2", f"鍒犻櫎鑷姩鍥炲瑙勫垯: {rule_id}")
     rules = state._data.setdefault("auto_reply_rules", [])
     state._data["auto_reply_rules"] = [r for r in rules if r.get("id") != rule_id]
     state._save()
@@ -82,12 +82,12 @@ async def delete_rule(rule_id: str, _=Depends(verify_token)):
 
 @router.get("/conversations")
 async def recent_conversations(limit: int = 20, _=Depends(verify_token)):
-    """最近对话记录"""
+    """鏈€杩戝璇濊褰?""
     return {"ok": True, "conversations": state._data.get("auto_reply_logs", [])[-limit:]}
 
 @router.get("/stats")
 async def auto_reply_stats(_=Depends(verify_token)):
-    """自动回复统计"""
+    """鑷姩鍥炲缁熻"""
     logs = state._data.get("auto_reply_logs", [])
     total = len(logs)
     rule_count = sum(1 for l in logs if l.get("method") == "rule")

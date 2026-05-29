@@ -1,4 +1,4 @@
-﻿"""企业级全量商品采集引擎 — 多平台/规格提取/SKU/OSS上传/去重"""
+锘?""浼佷笟绾у叏閲忓晢鍝侀噰闆嗗紩鎿?鈥?澶氬钩鍙?瑙勬牸鎻愬彇/SKU/OSS涓婁紶/鍘婚噸"""
 import os
 import re
 import json
@@ -17,9 +17,9 @@ from bs4 import BeautifulSoup
 from tools.cloud_storage import upload_image, upload_bytes
 from state import state
 
-# ═══════════════════════════════════════
-#  数据模型
-# ═══════════════════════════════════════
+# 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺?
+#  鏁版嵁妯″瀷
+# 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺?
 
 @dataclass
 class SpecItem:
@@ -38,7 +38,7 @@ class SkuItem:
 
 @dataclass
 class ReviewItem:
-    """用户评论"""
+    """鐢ㄦ埛璇勮"""
     reviewer: str = ""
     rating: float = 0.0
     title: str = ""
@@ -48,7 +48,7 @@ class ReviewItem:
 
 @dataclass
 class ScrapedProduct:
-    """标准化采集产品"""
+    """鏍囧噯鍖栭噰闆嗕骇鍝?""
     id: str = ""
     platform: str = ""
     source_url: str = ""
@@ -56,8 +56,8 @@ class ScrapedProduct:
     price: float = 0
     original_price: float = 0
     currency: str = "CNY"
-    images: list[str] = field(default_factory=list)       # 远程URL
-    cos_images: list[str] = field(default_factory=list)    # COS链接
+    images: list[str] = field(default_factory=list)       # 杩滅▼URL
+    cos_images: list[str] = field(default_factory=list)    # COS閾炬帴
     specs: list = field(default_factory=list)
     skus: list = field(default_factory=list)
     reviews: list = field(default_factory=list)
@@ -78,9 +78,9 @@ class ScrapedProduct:
         d["reviews"] = [asdict(r) if hasattr(r, '__dataclass_fields__') else r for r in self.reviews]
         return d
 
-# ═══════════════════════════════════════
-#  反反爬虫
-# ═══════════════════════════════════════
+# 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺?
+#  鍙嶅弽鐖櫕
+# 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺?
 
 USER_AGENTS = [
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124.0.0.0 Safari/537.36",
@@ -95,12 +95,12 @@ def random_ua():
 async def polite_delay():
     await asyncio.sleep(random.uniform(0.8, 2.5))
 
-# ═══════════════════════════════════════
-#  图片下载 + COS上传
-# ═══════════════════════════════════════
+# 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺?
+#  鍥剧墖涓嬭浇 + COS涓婁紶
+# 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺?
 
 async def download_and_upload(url: str, product_id: str, index: int, session: httpx.AsyncClient) -> Optional[str]:
-    """下载图片并通过 COS 签名URL上传，返回COS链接"""
+    """涓嬭浇鍥剧墖骞堕€氳繃 COS 绛惧悕URL涓婁紶锛岃繑鍥濩OS閾炬帴"""
     for attempt in range(3):
         try:
             r = await session.get(url, headers={"User-Agent": random_ua()}, timeout=15)
@@ -119,11 +119,11 @@ async def download_and_upload(url: str, product_id: str, index: int, session: ht
     return None
 
 
-# ═══════════════════════════════════════
-#  企业级反反爬引擎
-# ═══════════════════════════════════════
+# 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺?
+#  浼佷笟绾у弽鍙嶇埇寮曟搸
+# 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺?
 
-# 多地区 User-Agent 池
+# 澶氬湴鍖?User-Agent 姹?
 DESKTOP_UAS = [
     # Chrome Win/Mac/Linux
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
@@ -145,7 +145,7 @@ MOBILE_UAS = [
     "Mozilla/5.0 (Linux; Android 14; SM-S24 Ultra) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36",
 ]
 
-# Accept-Language 多语言池
+# Accept-Language 澶氳瑷€姹?
 ACCEPT_LANGUAGES = [
     "en-US,en;q=0.9,zh-CN;q=0.8,zh;q=0.7",
     "en-US,en;q=0.9",
@@ -153,7 +153,7 @@ ACCEPT_LANGUAGES = [
     "en-GB,en;q=0.9,zh-CN;q=0.8",
 ]
 
-# Referer 链
+# Referer 閾?
 REFERERS = [
     "https://www.google.com/",
     "https://www.bing.com/",
@@ -161,13 +161,13 @@ REFERERS = [
     "https://search.yahoo.com/search?p={keyword}",
 ]
 
-# 免费代理池（备用，建议配置付费代理）
+# 鍏嶈垂浠ｇ悊姹狅紙澶囩敤锛屽缓璁厤缃粯璐逛唬鐞嗭級
 FALLBACK_PROXIES = [
-    # 格式: "http://ip:port"
+    # 鏍煎紡: "http://ip:port"
 ]
 
 class AntiScrapEngine:
-    """企业级反反爬引擎 — IP轮换/指纹随机/智能延迟/指数退避"""
+    """浼佷笟绾у弽鍙嶇埇寮曟搸 鈥?IP杞崲/鎸囩汗闅忔満/鏅鸿兘寤惰繜/鎸囨暟閫€閬?""
 
     def __init__(self, domain: str, use_proxy: bool = False):
         self.domain = domain
@@ -179,10 +179,10 @@ class AntiScrapEngine:
         self._proxies = list(FALLBACK_PROXIES)
         self._ua_idx = 0
         self._cookie_jar = {}
-        self._domain_delays = {}  # 每个域名的延迟策略
+        self._domain_delays = {}  # 姣忎釜鍩熷悕鐨勫欢杩熺瓥鐣?
 
     def get_headers(self, keyword: str = "") -> dict:
-        """生成随机化请求头，模拟真实浏览器指纹"""
+        """鐢熸垚闅忔満鍖栬姹傚ご锛屾ā鎷熺湡瀹炴祻瑙堝櫒鎸囩汗"""
         self._ua_idx = (self._ua_idx + 1) % len(DESKTOP_UAS)
         ua = DESKTOP_UAS[self._ua_idx] if random.random() > 0.2 else random.choice(MOBILE_UAS)
 
@@ -209,27 +209,27 @@ class AntiScrapEngine:
         return headers
 
     def get_proxy(self) -> Optional[str]:
-        """轮换代理IP"""
+        """杞崲浠ｇ悊IP"""
         if not self.use_proxy or not self._proxies:
             return None
         self._proxy_idx = (self._proxy_idx + 1) % len(self._proxies)
         return self._proxies[self._proxy_idx]
 
     def set_proxies(self, proxies: list):
-        """设置代理池"""
+        """璁剧疆浠ｇ悊姹?""
         self._proxies = proxies
         self._proxy_idx = 0
         self.use_proxy = True
 
     async def smart_delay(self, is_search: bool = False):
-        """智能延迟：模拟人类浏览行为
-        - 搜索页：短间隔 0.5-1.5s
-        - 详情页：中长间隔 1-3s，偶尔5-8s（模拟阅读）
+        """鏅鸿兘寤惰繜锛氭ā鎷熶汉绫绘祻瑙堣涓?
+        - 鎼滅储椤碉細鐭棿闅?0.5-1.5s
+        - 璇︽儏椤碉細涓暱闂撮殧 1-3s锛屽伓灏?-8s锛堟ā鎷熼槄璇伙級
         """
         if is_search:
             base = random.uniform(0.5, 1.5)
         else:
-            # 80% 短间隔，15% 中间隔，5% 长间隔（模拟停下来看商品）
+            # 80% 鐭棿闅旓紝15% 涓棿闅旓紝5% 闀块棿闅旓紙妯℃嫙鍋滀笅鏉ョ湅鍟嗗搧锛?
             r = random.random()
             if r < 0.8:
                 base = random.uniform(1.0, 3.0)
@@ -238,14 +238,14 @@ class AntiScrapEngine:
             else:
                 base = random.uniform(6.0, 12.0)
 
-        # 加入微小随机抖动
+        # 鍔犲叆寰皬闅忔満鎶栧姩
         jitter = random.uniform(-0.3, 0.3)
         delay = max(0.3, base + jitter)
         await asyncio.sleep(delay)
 
     async def safe_request(self, session: httpx.AsyncClient, url: str, keyword: str = "",
                            max_retries: int = 3, is_search: bool = False) -> Optional[httpx.Response]:
-        """带反反爬保护的安全请求 — 自动重试+指数退避+IP轮换"""
+        """甯﹀弽鍙嶇埇淇濇姢鐨勫畨鍏ㄨ姹?鈥?鑷姩閲嶈瘯+鎸囨暟閫€閬?IP杞崲"""
         last_error = None
 
         for attempt in range(max_retries):
@@ -260,7 +260,7 @@ class AntiScrapEngine:
                     follow_redirects=True
                 )
 
-                # 检测是否被拦截
+                # 妫€娴嬫槸鍚﹁鎷︽埅
                 if r.status_code == 200:
                     text_lower = r.text[:500].lower()
                     blocked_signals = [
@@ -270,27 +270,27 @@ class AntiScrapEngine:
                         "please enable javascript"
                     ]
                     if any(sig in text_lower for sig in blocked_signals):
-                        raise Exception(f"被反爬拦截: {self.domain}")
+                        raise Exception(f"琚弽鐖嫤鎴? {self.domain}")
 
-                    # 检测空响应
+                    # 妫€娴嬬┖鍝嶅簲
                     if len(r.text) < 200:
-                        raise Exception(f"响应过短({len(r.text)}字节)，疑似拦截")
+                        raise Exception(f"鍝嶅簲杩囩煭({len(r.text)}瀛楄妭)锛岀枒浼兼嫤鎴?)
 
                     self._request_count += 1
                     self._session_requests += 1
                     return r
 
                 elif r.status_code == 429:
-                    # 限流 — 指数退避
+                    # 闄愭祦 鈥?鎸囨暟閫€閬?
                     wait = (2 ** attempt) + random.uniform(1, 5)
-                    print(f"[AntiScrap] {self.domain} 429限流，等待 {wait:.1f}s")
+                    print(f"[AntiScrap] {self.domain} 429闄愭祦锛岀瓑寰?{wait:.1f}s")
                     await asyncio.sleep(wait)
                     continue
 
                 elif r.status_code in (403, 503):
-                    # 被封 — 换IP+长等
+                    # 琚皝 鈥?鎹P+闀跨瓑
                     wait = (3 ** attempt) + random.uniform(5, 15)
-                    print(f"[AntiScrap] {self.domain} {r.status_code}被封，换IP等待 {wait:.1f}s")
+                    print(f"[AntiScrap] {self.domain} {r.status_code}琚皝锛屾崲IP绛夊緟 {wait:.1f}s")
                     await asyncio.sleep(wait)
                     continue
 
@@ -304,14 +304,14 @@ class AntiScrapEngine:
                     await asyncio.sleep(wait)
 
         if last_error:
-            print(f"[AntiScrap] {self.domain} 请求失败({max_retries}次重试): {last_error}")
+            print(f"[AntiScrap] {self.domain} 璇锋眰澶辫触({max_retries}娆￠噸璇?: {last_error}")
         return None
 
     async def rotate_session(self, session: httpx.AsyncClient):
-        """轮换会话指纹 — 清cookie换身份"""
+        """杞崲浼氳瘽鎸囩汗 鈥?娓卌ookie鎹㈣韩浠?""
         session.cookies.clear()
         self._session_requests = 0
-        # 随机切换UA池
+        # 闅忔満鍒囨崲UA姹?
         self._ua_idx = random.randint(0, len(DESKTOP_UAS) - 1)
 
     def stats(self) -> dict:
@@ -323,12 +323,12 @@ class AntiScrapEngine:
             "ua_idx": self._ua_idx,
         }
 
-# ═══════════════════════════════════════
-#  平台适配器
-# ═══════════════════════════════════════
+# 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺?
+#  骞冲彴閫傞厤鍣?
+# 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺?
 
 class eBayAdapter:
-    """eBay 真实API采集适配器 — Finding API + Shopping API"""
+    """eBay 鐪熷疄API閲囬泦閫傞厤鍣?鈥?Finding API + Shopping API"""
     name = "ebay"
 
     def __init__(self):
@@ -344,7 +344,7 @@ class eBayAdapter:
         self._search_cache = {}
 
     async def search(self, keyword: str, max_pages: int = 3, session: httpx.AsyncClient = None) -> list[str]:
-        """eBay Finding API 搜索，返回 itemId 列表"""
+        """eBay Finding API 鎼滅储锛岃繑鍥?itemId 鍒楄〃"""
         item_ids = []
         close_session = session is None
         if close_session:
@@ -369,13 +369,13 @@ class eBayAdapter:
                     item_ids.append(iid)
             self._search_cache = {it.get("itemId", [""])[0]: it for it in items if it.get("itemId")}
         except Exception as e:
-            print(f"[eBay API] 搜索失败: {e}")
+            print(f"[eBay API] 鎼滅储澶辫触: {e}")
         if close_session:
             await session.aclose()
         return item_ids
 
     async def extract_product(self, item_id: str, session: httpx.AsyncClient = None) -> Optional[ScrapedProduct]:
-        """eBay Shopping API GetSingleItem 获取商品详情"""
+        """eBay Shopping API GetSingleItem 鑾峰彇鍟嗗搧璇︽儏"""
         close_session = session is None
         if close_session:
             session = httpx.AsyncClient(timeout=20)
@@ -465,11 +465,11 @@ class eBayAdapter:
                 crawled_at=datetime.now().isoformat()
             )
         except Exception as e:
-            print(f"[eBay API] 提取失败 ({item_id}): {e}")
+            print(f"[eBay API] 鎻愬彇澶辫触 ({item_id}): {e}")
             return None
 
     async def extract_concurrent(self, item_ids: list[str], session: httpx.AsyncClient = None, concurrency: int = 3) -> list:
-        """并发提取多个eBay商品 — Semaphore控并发"""
+        """骞跺彂鎻愬彇澶氫釜eBay鍟嗗搧 鈥?Semaphore鎺у苟鍙?""
         sem = asyncio.Semaphore(concurrency)
         async def _one(iid):
             async with sem:
@@ -480,7 +480,7 @@ class eBayAdapter:
 
 
 class EbayHtmlAdapter:
-    """eBay HTML网页采集 — curl_cffi TLS指纹绕过反爬"""
+    """eBay HTML缃戦〉閲囬泦 鈥?curl_cffi TLS鎸囩汗缁曡繃鍙嶇埇"""
     name = "ebay_html"
 
     EBAY_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
@@ -513,7 +513,7 @@ class EbayHtmlAdapter:
             m = re.search(r'/itm/(\d{10,13})', a.get("href", ""))
             if m:
                 item_ids.add(m.group(1))
-        # 如果无结果，重置session（可能被限流）
+        # 濡傛灉鏃犵粨鏋滐紝閲嶇疆session锛堝彲鑳借闄愭祦锛?
         if not item_ids:
             self._session = None
         return list(item_ids)
@@ -531,7 +531,7 @@ class EbayHtmlAdapter:
 
         soup = BeautifulSoup(r.text, "lxml")
 
-        # 标题
+        # 鏍囬
         title = ""
         h1 = soup.select_one("h1")
         if h1:
@@ -540,7 +540,7 @@ class EbayHtmlAdapter:
             title_el = soup.select_one(".it-ttl") or soup.select_one("#itemTitle")
             title = title_el.get_text(strip=True) if title_el else ""
 
-        # 价格 — 优先JSON-LD
+        # 浠锋牸 鈥?浼樺厛JSON-LD
         price = 0.0
         org_price = 0.0
         for script in soup.select("script[type='application/ld+json']"):
@@ -563,7 +563,7 @@ class EbayHtmlAdapter:
                 if nums:
                     price = round(float(nums[0]) * 7.2, 2)
 
-        # 图片
+        # 鍥剧墖
         images = set()
         for img in soup.select("img"):
             src = img.get("src", "") or img.get("data-src", "") or img.get("data-original-src", "")
@@ -574,7 +574,7 @@ class EbayHtmlAdapter:
                     images.add(clean)
         images = list(images)[:20]
 
-        # 规格
+        # 瑙勬牸
         specs = []
         spec_rows = soup.select(".ux-labels-values") or soup.select(".ux-layout-section__row")
         for row in spec_rows:
@@ -586,7 +586,7 @@ class EbayHtmlAdapter:
                 if name and value and len(name) < 80 and len(value) < 200:
                     specs.append({"name": name, "values": [value]})
 
-        # 品牌
+        # 鍝佺墝
         brand = ""
         for row in spec_rows:
             txt = row.get_text(" ", strip=True).lower()
@@ -596,7 +596,7 @@ class EbayHtmlAdapter:
                     brand = vals[0].get_text(strip=True)[:100]
                     break
 
-        # 描述
+        # 鎻忚堪
         description = ""
         desc_iframe = soup.select_one("#desc_ifr") or soup.select_one("iframe[title*='description']")
         if desc_iframe:
@@ -643,7 +643,7 @@ class EbayHtmlAdapter:
 
 
 class BaseScrapeAdapter:
-    """反反爬采集基类 — 所有 HTML 爬虫适配器继承此类"""
+    """鍙嶅弽鐖噰闆嗗熀绫?鈥?鎵€鏈?HTML 鐖櫕閫傞厤鍣ㄧ户鎵挎绫?""
     
     def __init__(self, platform_name: str, domain: str):
         self.platform_name = platform_name
@@ -657,7 +657,7 @@ class BaseScrapeAdapter:
         await self.anti.smart_delay(is_search)
     
     def _parse_price(self, text: str) -> float:
-        """通用价格解析 — $19.99 / USD 19.99 / 12,99€ 等"""
+        """閫氱敤浠锋牸瑙ｆ瀽 鈥?$19.99 / USD 19.99 / 12,99鈧?绛?""
         if not text:
             return 0.0
         text = text.strip().replace(",", "").replace(" ", "")
@@ -667,16 +667,16 @@ class BaseScrapeAdapter:
         val = float(match.group())
         if any(c in text for c in ['$', 'USD', 'US$']):
             return round(val * 7.2, 2)
-        elif any(c in text for c in ['€', 'EUR']):
+        elif any(c in text for c in ['鈧?, 'EUR']):
             return round(val * 7.8, 2)
-        elif any(c in text for c in ['£', 'GBP']):
+        elif any(c in text for c in ['拢', 'GBP']):
             return round(val * 9.1, 2)
-        elif any(c in text for c in ['¥', 'CNY']):
+        elif any(c in text for c in ['楼', 'CNY']):
             return val
         return round(val * 7.2, 2)
 
     def _extract_images(self, soup, base_url: str, max_images: int = 20) -> list[str]:
-        """通用图片提取"""
+        """閫氱敤鍥剧墖鎻愬彇"""
         images = []
         for img in soup.select("img"):
             src = img.get("src", "") or img.get("data-src", "") or img.get("data-original", "")
@@ -696,7 +696,7 @@ class BaseScrapeAdapter:
         return images
 
 class AliExpressAdapter(BaseScrapeAdapter):
-    """AliExpress 速卖通 — 反反爬增强版"""
+    """AliExpress 閫熷崠閫?鈥?鍙嶅弽鐖寮虹増"""
     name = "aliexpress"
     
     def __init__(self):
@@ -773,7 +773,7 @@ class AliExpressAdapter(BaseScrapeAdapter):
 
 
 class AmazonAdapter(BaseScrapeAdapter):
-    """Amazon 全球站 — 反反爬增强版"""
+    """Amazon 鍏ㄧ悆绔?鈥?鍙嶅弽鐖寮虹増"""
     name = "amazon"
     
     def __init__(self):
@@ -815,7 +815,7 @@ class AmazonAdapter(BaseScrapeAdapter):
                 return None
 
             soup = BeautifulSoup(r.text, "lxml")
-            # 立即释放原始HTML，减小内存
+            # 绔嬪嵆閲婃斁鍘熷HTML锛屽噺灏忓唴瀛?
             page_text = r.text
             del r
 
@@ -845,7 +845,7 @@ class AmazonAdapter(BaseScrapeAdapter):
             brand = ""
             brand_el = soup.select_one("#bylineInfo")
             if brand_el:
-                brand = brand_el.get_text(strip=True).replace("Brand:", "").replace("品牌:", "").strip()
+                brand = brand_el.get_text(strip=True).replace("Brand:", "").replace("鍝佺墝:", "").strip()
             if not brand:
                 brand_el = soup.select_one("[data-feature-name='bylineInfo']")
                 if brand_el:
@@ -865,14 +865,14 @@ class AmazonAdapter(BaseScrapeAdapter):
                 if rc_nums:
                     rating_count = int(rc_nums[0].replace(",", ""))
 
-            # 品类路径
+            # 鍝佺被璺緞
             category_path = []
             for bc in soup.select("#wayfinding-breadcrumbs_feature_div a, #breadcrumb_feature_div a"):
                 cat_name = bc.get_text(strip=True)
                 if cat_name and cat_name not in category_path:
                     category_path.append(cat_name)
 
-            # 描述 — 优先A+内容，其次普通描述
+            # 鎻忚堪 鈥?浼樺厛A+鍐呭锛屽叾娆℃櫘閫氭弿杩?
             description = ""
             desc_el = soup.select_one("#productDescription p") or soup.select_one("#productDescription")
             if not desc_el:
@@ -884,12 +884,12 @@ class AmazonAdapter(BaseScrapeAdapter):
                 if feature_bullets:
                     description = "\n".join(li.get_text(strip=True) for li in feature_bullets[:20])
 
-            # SKU规格 — 从变体选择器提取（包括ASIN映射）
+            # SKU瑙勬牸 鈥?浠庡彉浣撻€夋嫨鍣ㄦ彁鍙栵紙鍖呮嫭ASIN鏄犲皠锛?
             specs = []
-            asin_map = {}  # 规格值 → ASIN
-            sku_dimensions = {}  # 规格名 → [值列表]
+            asin_map = {}  # 瑙勬牸鍊?鈫?ASIN
+            sku_dimensions = {}  # 瑙勬牸鍚?鈫?[鍊煎垪琛╙
 
-            # 从隐藏的twister数据提取变体ASIN映射
+            # 浠庨殣钘忕殑twister鏁版嵁鎻愬彇鍙樹綋ASIN鏄犲皠
             twister_data = soup.select_one("script[type='text/twister']")
             if not twister_data:
                 twister_data = soup.select_one("script:contains('dimensionToAsin')")
@@ -902,7 +902,7 @@ class AmazonAdapter(BaseScrapeAdapter):
                 if parent:
                     dim_name = parent.get("id", "").replace("variation_", "").replace("native_dropdown_", "")
                 if val and val not in ("Select", "-1", ""):
-                    dim_name = dim_name or "规格"
+                    dim_name = dim_name or "瑙勬牸"
                     if dim_name not in sku_dimensions:
                         sku_dimensions[dim_name] = []
                     if val not in sku_dimensions[dim_name]:
@@ -910,27 +910,27 @@ class AmazonAdapter(BaseScrapeAdapter):
                     if data_asin:
                         asin_map[val] = data_asin
 
-            # 从原生下拉框补充
+            # 浠庡師鐢熶笅鎷夋琛ュ厖
             for var_sel in soup.select("select[id*='native_dropdown'] option, .a-native-dropdown option"):
                 val = var_sel.get_text(strip=True)
                 name = var_sel.find_parent("select").get("data-a-native-class", "") or var_sel.find_parent("select").get("name", "")
                 if val and val != "-1" and val != "Select":
-                    name = name or "规格"
+                    name = name or "瑙勬牸"
                     if name not in sku_dimensions:
                         sku_dimensions[name] = []
                     if val not in sku_dimensions[name]:
                         sku_dimensions[name].append(val)
 
-            # 构建SpecItem列表
+            # 鏋勫缓SpecItem鍒楄〃
             spec_items = []
             for dim_name, values in sku_dimensions.items():
-                nice_name = {"color_name": "颜色", "size_name": "尺寸", "style_name": "款式"}.get(dim_name, dim_name)
+                nice_name = {"color_name": "棰滆壊", "size_name": "灏哄", "style_name": "娆惧紡"}.get(dim_name, dim_name)
                 spec_items.append(SpecItem(name=nice_name, values=values))
 
-            # 生成SKU（规格组合）
+            # 鐢熸垚SKU锛堣鏍肩粍鍚堬級
             skus = []
             for dim_name, values in sku_dimensions.items():
-                for val in values[:8]:  # 每维度最多8个值
+                for val in values[:8]:  # 姣忕淮搴︽渶澶?涓€?
                     img = ""
                     if "color" in dim_name.lower():
                         color_img = soup.select_one(f"img[alt*='{val}']")
@@ -942,7 +942,7 @@ class AmazonAdapter(BaseScrapeAdapter):
                         image=img, asin=asin_map.get(val, "")
                     ))
 
-            # 销量估算
+            # 閿€閲忎及绠?
             sales_count = 0
             sales_el = soup.select_one("#social-proofing-faceout-title-tk_bought, [data-csa-c-content-id*='bought']")
             if sales_el:
@@ -950,20 +950,20 @@ class AmazonAdapter(BaseScrapeAdapter):
                 if s_nums:
                     sales_count = int(s_nums[0].replace(",", ""))
 
-            # ── 用户评论抓取 ──
+            # 鈹€鈹€ 鐢ㄦ埛璇勮鎶撳彇 鈹€鈹€
             reviews = []
             review_cards = soup.select("div[data-hook='review']")
             if not review_cards:
                 review_cards = soup.select("#cm_cr-review_list [data-hook='review'], .review.aok-relative")
             for card in review_cards[:10]:
                 try:
-                    # 作者 — genome-widget 是Amazon最新版本
+                    # 浣滆€?鈥?genome-widget 鏄疉mazon鏈€鏂扮増鏈?
                     name_el = (card.select_one("[data-hook='genome-widget']")
                                or card.select_one(".a-profile-name")
                                or card.select_one("[data-hook='review-author']"))
                     rev_name = name_el.get_text(strip=True) if name_el else ""
 
-                    # 评分 — review-star-rating 容器内的 .a-icon-alt
+                    # 璇勫垎 鈥?review-star-rating 瀹瑰櫒鍐呯殑 .a-icon-alt
                     star_el = (card.select_one("[data-hook='review-star-rating'] .a-icon-alt")
                                or card.select_one(".a-icon-alt"))
                     rev_rating = 0.0
@@ -972,11 +972,11 @@ class AmazonAdapter(BaseScrapeAdapter):
                         if r_nums:
                             rev_rating = float(r_nums[0])
 
-                    # 标题 — reviewTitle (camelCase, 不是 review-title)
+                    # 鏍囬 鈥?reviewTitle (camelCase, 涓嶆槸 review-title)
                     title_el = card.select_one("[data-hook='reviewTitle']") or card.select_one(".review-title")
                     rev_title = title_el.get_text(strip=True) if title_el else ""
 
-                    # 正文 — reviewRichContentContainer 有完整内容
+                    # 姝ｆ枃 鈥?reviewRichContentContainer 鏈夊畬鏁村唴瀹?
                     body_el = (card.select_one("[data-hook='reviewRichContentContainer']")
                                or card.select_one("[data-hook='reviewTextContainer']")
                                or card.select_one(".review-text"))
@@ -984,7 +984,7 @@ class AmazonAdapter(BaseScrapeAdapter):
                     if body_el:
                         rev_body = body_el.get_text("\n", strip=True)[:1000]
 
-                    # 日期
+                    # 鏃ユ湡
                     date_el = card.select_one("[data-hook='review-date']") or card.select_one(".review-date")
                     rev_date = ""
                     if date_el:
@@ -994,7 +994,7 @@ class AmazonAdapter(BaseScrapeAdapter):
                         else:
                             rev_date = raw_date
 
-                    # 验证购买
+                    # 楠岃瘉璐拱
                     verified = bool(card.select_one("[data-hook='avp-badge']"))
 
                     if rev_name and rev_body:
@@ -1006,7 +1006,7 @@ class AmazonAdapter(BaseScrapeAdapter):
                 except Exception:
                     continue
 
-            # 清理HTML解析树释放内存
+            # 娓呯悊HTML瑙ｆ瀽鏍戦噴鏀惧唴瀛?
             soup.decompose()
             del soup, page_text
 
@@ -1023,7 +1023,7 @@ class AmazonAdapter(BaseScrapeAdapter):
             return None
 
     async def extract_concurrent(self, urls: list[str], session: httpx.AsyncClient, concurrency: int = 3) -> list:
-        """并发提取多个产品页 — semaphore控并发，失败的不返回"""
+        """骞跺彂鎻愬彇澶氫釜浜у搧椤?鈥?semaphore鎺у苟鍙戯紝澶辫触鐨勪笉杩斿洖"""
         sem = asyncio.Semaphore(concurrency)
 
         async def _one(url):
@@ -1036,7 +1036,7 @@ class AmazonAdapter(BaseScrapeAdapter):
 
 
 class WishAdapter(BaseScrapeAdapter):
-    """Wish 全球站 — 反反爬增强版"""
+    """Wish 鍏ㄧ悆绔?鈥?鍙嶅弽鐖寮虹増"""
     name = "wish"
     
     def __init__(self):
@@ -1101,7 +1101,7 @@ class WishAdapter(BaseScrapeAdapter):
 
 
 class ShopeeAdapter(BaseScrapeAdapter):
-    """Shopee 虾皮 — 反反爬增强版"""
+    """Shopee 铏剧毊 鈥?鍙嶅弽鐖寮虹増"""
     name = "shopee"
     
     def __init__(self):
@@ -1144,7 +1144,7 @@ class ShopeeAdapter(BaseScrapeAdapter):
             session = httpx.AsyncClient(timeout=25, follow_redirects=True)
         
         try:
-            # Shopee API 获取商品详情
+            # Shopee API 鑾峰彇鍟嗗搧璇︽儏
             match = re.search(r'/product/(\d+)/(\d+)', url)
             if match:
                 shopid, itemid = match.group(1), match.group(2)
@@ -1154,7 +1154,7 @@ class ShopeeAdapter(BaseScrapeAdapter):
                     data = r.json().get("data", {})
                     title = data.get("name", "")
                     price_raw = data.get("price", 0)
-                    price = round(float(price_raw) / 100000 * 0.2, 2) if price_raw else 0.0  # Shopee价格单位
+                    price = round(float(price_raw) / 100000 * 0.2, 2) if price_raw else 0.0  # Shopee浠锋牸鍗曚綅
                     images = []
                     for img in data.get("images", []):
                         img_url = f"https://cf.shopee.com/file/{img}"
@@ -1168,7 +1168,7 @@ class ShopeeAdapter(BaseScrapeAdapter):
                         sales_count=sales, crawled_at=datetime.now().isoformat()
                     )
             
-            # 降级：HTML爬取
+            # 闄嶇骇锛欻TML鐖彇
             r = await self._safe_get(session, url, max_retries=2)
             if not r:
                 return None
@@ -1186,7 +1186,7 @@ class ShopeeAdapter(BaseScrapeAdapter):
 
 
 class LazadaAdapter(BaseScrapeAdapter):
-    """Lazada 来赞达 — 反反爬增强版"""
+    """Lazada 鏉ヨ禐杈?鈥?鍙嶅弽鐖寮虹増"""
     name = "lazada"
     
     def __init__(self):
@@ -1253,12 +1253,12 @@ class LazadaAdapter(BaseScrapeAdapter):
             )
         except Exception:
             return None
-# ═══════════════════════════════════════
-#  采集引擎
+# 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺?
+#  閲囬泦寮曟搸
 
 
 class TikTokShopAdapter(BaseScrapeAdapter):
-    """TikTok Shop 海外抖音电商 — 反反爬增强版"""
+    """TikTok Shop 娴峰鎶栭煶鐢靛晢 鈥?鍙嶅弽鐖寮虹増"""
     name = "tiktok"
 
     def __init__(self):
@@ -1329,12 +1329,12 @@ class TikTokShopAdapter(BaseScrapeAdapter):
             return None
 
 
-# ═══════════════════════════════════════
-#  淘宝适配器
-# ═══════════════════════════════════════
+# 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺?
+#  娣樺疂閫傞厤鍣?
+# 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺?
 
 class TaobaoAdapter(BaseScrapeAdapter):
-    """淘宝/天猫 — 反反爬增强版"""
+    """娣樺疂/澶╃尗 鈥?鍙嶅弽鐖寮虹増"""
     name = "taobao"
     
     def __init__(self):
@@ -1400,12 +1400,12 @@ class TaobaoAdapter(BaseScrapeAdapter):
             return None
 
 
-# ═══════════════════════════════════════
-#  1688阿里巴巴适配器
-# ═══════════════════════════════════════
+# 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺?
+#  1688闃块噷宸村反閫傞厤鍣?
+# 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺?
 
 class Alibaba1688Adapter(BaseScrapeAdapter):
-    """1688阿里巴巴 — 反反爬增强版"""
+    """1688闃块噷宸村反 鈥?鍙嶅弽鐖寮虹増"""
     name = "alibaba1688"
     
     def __init__(self):
@@ -1470,33 +1470,33 @@ class Alibaba1688Adapter(BaseScrapeAdapter):
             return None
 
 
-# ═══════════════════════════════════════
-#  采集引擎
-# ═══════════════════════════════════════
+# 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺?
+#  閲囬泦寮曟搸
+# 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺?
 
 ADAPTERS = {
-    "ebay": eBayAdapter(),           # 官方API
-    "ebay_html": EbayHtmlAdapter(),  # HTML采集(curl_cffi TLS绕过)
-    "aliexpress": AliExpressAdapter(), # 反反爬
-    "amazon": AmazonAdapter(),        # 反反爬
-    "wish": WishAdapter(),            # 反反爬
-    "shopee": ShopeeAdapter(),        # 反反爬(API优先)
-    "lazada": LazadaAdapter(),        # 反反爬
-    "tiktok": TikTokShopAdapter(),    # 反反爬
-    "taobao": TaobaoAdapter(),          # 反反爬
-    "alibaba1688": Alibaba1688Adapter(), # 反反爬
+    "ebay": eBayAdapter(),           # 瀹樻柟API
+    "ebay_html": EbayHtmlAdapter(),  # HTML閲囬泦(curl_cffi TLS缁曡繃)
+    "aliexpress": AliExpressAdapter(), # 鍙嶅弽鐖?
+    "amazon": AmazonAdapter(),        # 鍙嶅弽鐖?
+    "wish": WishAdapter(),            # 鍙嶅弽鐖?
+    "shopee": ShopeeAdapter(),        # 鍙嶅弽鐖?API浼樺厛)
+    "lazada": LazadaAdapter(),        # 鍙嶅弽鐖?
+    "tiktok": TikTokShopAdapter(),    # 鍙嶅弽鐖?
+    "taobao": TaobaoAdapter(),          # 鍙嶅弽鐖?
+    "alibaba1688": Alibaba1688Adapter(), # 鍙嶅弽鐖?
 }
 
 PRIORITY_SOURCES = [
-    "ebay",      # 官方API — 稳定首选
-    "shopee",    # API+爬虫双模 — 东南亚货源王
-    "aliexpress", # 反反爬 — 中国直发全球
-    "amazon",    # 反反爬 — 全球最大
-    "wish",      # 反反爬 — 低价爆款
-    "lazada",    # 反反爬 — 东南亚老二
-    "tiktok",   # 反反爬 — 海外抖音电商新贵
-    "taobao",     # 反反爬 — 中国最大C2C
-    "alibaba1688", # 反反爬 — 中国最大B2B批发
+    "ebay",      # 瀹樻柟API 鈥?绋冲畾棣栭€?
+    "shopee",    # API+鐖櫕鍙屾ā 鈥?涓滃崡浜氳揣婧愮帇
+    "aliexpress", # 鍙嶅弽鐖?鈥?涓浗鐩村彂鍏ㄧ悆
+    "amazon",    # 鍙嶅弽鐖?鈥?鍏ㄧ悆鏈€澶?
+    "wish",      # 鍙嶅弽鐖?鈥?浣庝环鐖嗘
+    "lazada",    # 鍙嶅弽鐖?鈥?涓滃崡浜氳€佷簩
+    "tiktok",   # 鍙嶅弽鐖?鈥?娴峰鎶栭煶鐢靛晢鏂拌吹
+    "taobao",     # 鍙嶅弽鐖?鈥?涓浗鏈€澶2C
+    "alibaba1688", # 鍙嶅弽鐖?鈥?涓浗鏈€澶2B鎵瑰彂
 ]
 
 def _get_jobs():
@@ -1514,10 +1514,10 @@ def _job_progress(job_id: str, update: dict):
 import asyncio
 
 _scraper_lock = asyncio.Lock()
-_SCRAPE_TIMEOUT = 30  # 每个HTTP请求超时
+_SCRAPE_TIMEOUT = 30  # 姣忎釜HTTP璇锋眰瓒呮椂
 
 class ScraperEngine:
-    """商品采集引擎"""
+    """鍟嗗搧閲囬泦寮曟搸"""
 
     @staticmethod
     async def start_job(platform: str, keyword: str, max_items: int = 20, download_images: bool = True) -> dict:
@@ -1560,7 +1560,7 @@ class ScraperEngine:
 
     @staticmethod
     def import_to_mall(product_ids: list[str]) -> dict:
-        """真实导入：写入MySQL商城表，直接上架"""
+        """鐪熷疄瀵煎叆锛氬啓鍏ySQL鍟嗗煄琛紝鐩存帴涓婃灦"""
         from tools.mall_importer import import_product
         products = _get_products()
         results = {"imported": 0, "skipped": 0, "failed": 0, "details": []}
@@ -1582,7 +1582,7 @@ class ScraperEngine:
         return results
 
 async def _do_scrape(job_id: str, platform: str, keyword: str, max_items: int, download_images: bool):
-    """后台执行采集任务 + 自动导入上架"""
+    """鍚庡彴鎵ц閲囬泦浠诲姟 + 鑷姩瀵煎叆涓婃灦"""
     adapter = ADAPTERS.get(platform, ADAPTERS["ebay"])
     _job_progress(job_id, {"status": "searching"})
 
@@ -1602,7 +1602,7 @@ async def _do_scrape(job_id: str, platform: str, keyword: str, max_items: int, d
         if download_images:
             _job_progress(job_id, {"status": "uploading"})
             for p in products:
-                # 优先尝试COS上传，失败则用源URL
+                # 浼樺厛灏濊瘯COS涓婁紶锛屽け璐ュ垯鐢ㄦ簮URL
                 uploaded = []
                 for idx, img_url in enumerate(p.images[:8]):
                     cos_url = await download_and_upload(img_url, p.id, idx, session)
@@ -1615,7 +1615,7 @@ async def _do_scrape(job_id: str, platform: str, keyword: str, max_items: int, d
                 p.cos_images = uploaded
                 p.status = "uploaded"
 
-        # 自动导入上架
+        # 鑷姩瀵煎叆涓婃灦
         if products:
             _job_progress(job_id, {"status": "importing"})
             from tools.mall_importer import import_batch
@@ -1639,7 +1639,7 @@ async def _do_scrape(job_id: str, platform: str, keyword: str, max_items: int, d
                 "products": []
             })
 
-        # 同步到内存状态
+        # 鍚屾鍒板唴瀛樼姸鎬?
         all_products = _get_products()
         for p in products:
             all_products.insert(0, p.to_dict())

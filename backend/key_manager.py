@@ -1,4 +1,4 @@
-"""密钥管理 - 密钥轮换/审计/安全存储"""
+"""瀵嗛挜绠＄悊 - 瀵嗛挜杞崲/瀹¤/瀹夊叏瀛樺偍"""
 import os, secrets, re, json, shutil
 from datetime import datetime
 from pathlib import Path

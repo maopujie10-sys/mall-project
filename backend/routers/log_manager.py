@@ -1,4 +1,4 @@
-﻿"""日志集中管理 — Docker/Nginx/应用日志统一查询"""
+锘?""鏃ュ織闆嗕腑绠＄悊 鈥?Docker/Nginx/搴旂敤鏃ュ織缁熶竴鏌ヨ"""
 import os
 import subprocess
 from datetime import datetime
@@ -9,19 +9,19 @@ from risk import handle_risk
 router = APIRouter(prefix="/agent/logs", tags=["LogManager"])
 
 LOG_SOURCES = {
-    "docker-ai": {"name": "Docker - AI后端", "type": "docker", "container": "ai-backend"},
-    "docker-frontend": {"name": "Docker - AI前端", "type": "docker", "container": "ai-frontend"},
+    "docker-ai": {"name": "Docker - AI鍚庣", "type": "docker", "container": "ai-backend"},
+    "docker-frontend": {"name": "Docker - AI鍓嶇", "type": "docker", "container": "ai-frontend"},
     "docker-mysql": {"name": "Docker - MySQL", "type": "docker", "container": "mysql56"},
     "docker-redis": {"name": "Docker - Redis", "type": "docker", "container": "redis"},
-    "nginx-access": {"name": "Nginx - 访问日志", "type": "file", "path": "/usr/local/nginx/logs/access.log"},
-    "nginx-error": {"name": "Nginx - 错误日志", "type": "file", "path": "/usr/local/nginx/logs/error.log"},
-    "tomcat": {"name": "Tomcat - 应用日志", "type": "file", "path": "/opt/tomcat8/logs/catalina.out"},
-    "app": {"name": "AI应用日志", "type": "file", "path": "/home/data/projects/mall/mall-project/mall-app/logs/app.log"},
+    "nginx-access": {"name": "Nginx - 璁块棶鏃ュ織", "type": "file", "path": "/usr/local/nginx/logs/access.log"},
+    "nginx-error": {"name": "Nginx - 閿欒鏃ュ織", "type": "file", "path": "/usr/local/nginx/logs/error.log"},
+    "tomcat": {"name": "Tomcat - 搴旂敤鏃ュ織", "type": "file", "path": "/opt/tomcat8/logs/catalina.out"},
+    "app": {"name": "AI搴旂敤鏃ュ織", "type": "file", "path": "/home/data/projects/mall/mall-project/mall-app/logs/app.log"},
 }
 
 @router.get("/sources")
 async def list_sources(_=Depends(verify_token)):
-    """列出可用的日志源"""
+    """鍒楀嚭鍙敤鐨勬棩蹇楁簮"""
     sources = []
     for key, info in LOG_SOURCES.items():
         available = True
@@ -32,7 +32,7 @@ async def list_sources(_=Depends(verify_token)):
                 size = f"{os.path.getsize(path) / 1024:.1f} KB"
             else:
                 available = False
-                size = "不可用"
+                size = "涓嶅彲鐢?
         elif info["type"] == "docker":
             try:
                 result = subprocess.run(["docker", "inspect", info["container"]], capture_output=True, timeout=5)
@@ -50,11 +50,11 @@ async def view_logs(
     level: str = Query(""),  # ERROR/WARN/INFO/DEBUG
     _=Depends(verify_token),
 ):
-    """查看日志"""
-    await handle_risk("L1", f"查看日志: {source}")
+    """鏌ョ湅鏃ュ織"""
+    await handle_risk("L1", f"鏌ョ湅鏃ュ織: {source}")
     
     if source not in LOG_SOURCES:
-        return {"ok": False, "error": f"未知日志源: {source}"}
+        return {"ok": False, "error": f"鏈煡鏃ュ織婧? {source}"}
     
     info = LOG_SOURCES[source]
     raw_lines = []
@@ -65,20 +65,20 @@ async def view_logs(
             result = subprocess.run(cmd, capture_output=True, text=True, timeout=15)
             raw_lines = result.stdout.strip().split("\n") + result.stderr.strip().split("\n")
         except Exception as e:
-            return {"ok": False, "error": f"Docker日志读取失败: {str(e)[:100]}"}
+            return {"ok": False, "error": f"Docker鏃ュ織璇诲彇澶辫触: {str(e)[:100]}"}
     
     elif info["type"] == "file":
         path = info["path"]
         if not os.path.exists(path):
-            return {"ok": False, "error": f"日志文件不存在: {path}"}
+            return {"ok": False, "error": f"鏃ュ織鏂囦欢涓嶅瓨鍦? {path}"}
         try:
             with open(path, "r", encoding="utf-8", errors="ignore") as f:
                 all_lines = f.readlines()
                 raw_lines = [l.rstrip() for l in all_lines[-lines:]]
         except Exception as e:
-            return {"ok": False, "error": f"文件读取失败: {str(e)[:100]}"}
+            return {"ok": False, "error": f"鏂囦欢璇诲彇澶辫触: {str(e)[:100]}"}
     
-    # 过滤
+    # 杩囨护
     filtered = []
     for line in raw_lines:
         if not line.strip():
@@ -93,7 +93,7 @@ async def view_logs(
                 continue
         filtered.append(line)
     
-    # 分类统计
+    # 鍒嗙被缁熻
     stats = {"ERROR": 0, "WARN": 0, "INFO": 0, "DEBUG": 0, "OTHER": 0}
     for line in filtered:
         upper = line.upper()
@@ -125,14 +125,14 @@ async def search_logs(
     max_lines: int = Query(1000),
     _=Depends(verify_token),
 ):
-    """全文搜索日志"""
+    """鍏ㄦ枃鎼滅储鏃ュ織"""
     result = await view_logs(source=source, lines=max_lines, filter_text=keyword)
     return result
 
 @router.get("/recent-errors")
 async def recent_errors(hours: int = Query(24), _=Depends(verify_token)):
-    """获取最近N小时的错误日志汇总"""
-    await handle_risk("L1", "查看错误日志")
+    """鑾峰彇鏈€杩慛灏忔椂鐨勯敊璇棩蹇楁眹鎬?""
+    await handle_risk("L1", "鏌ョ湅閿欒鏃ュ織")
     all_errors = []
     for key, info in LOG_SOURCES.items():
         try:

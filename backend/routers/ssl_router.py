@@ -1,4 +1,4 @@
-﻿"""SSL 证书管理 — 自动签发/续签/状态查询"""
+锘?""SSL 璇佷功绠＄悊 鈥?鑷姩绛惧彂/缁/鐘舵€佹煡璇?""
 import os
 import subprocess
 from datetime import datetime
@@ -17,10 +17,10 @@ class SSLIssueRequest(BaseModel):
 
 
 def _cert_valid(domain: str) -> dict:
-    """检查本地证书有效性（openssl 命令）"""
+    """妫€鏌ユ湰鍦拌瘉涔︽湁鏁堟€э紙openssl 鍛戒护锛?""
     fp = os.path.join(CERT_DIR, domain, "fullchain.cer")
     if not os.path.exists(fp):
-        return {"ok": False, "reason": "证书文件不存在", "days_left": 0}
+        return {"ok": False, "reason": "璇佷功鏂囦欢涓嶅瓨鍦?, "days_left": 0}
     try:
         r = subprocess.run(
             ["openssl", "x509", "-enddate", "-noout", "-in", fp],
@@ -38,10 +38,10 @@ def _cert_valid(domain: str) -> dict:
 
 
 def _issue(domain: str, email: str) -> dict:
-    """通过 acme.sh 签发证书（standalone 模式需 80 端口）"""
+    """閫氳繃 acme.sh 绛惧彂璇佷功锛坰tandalone 妯″紡闇€ 80 绔彛锛?""
     ac = os.path.expanduser("~/.acme.sh/acme.sh")
     if not os.path.exists(ac):
-        return {"ok": False, "error": "acme.sh 未安装，请执行: curl https://get.acme.sh | sh"}
+        return {"ok": False, "error": "acme.sh 鏈畨瑁咃紝璇锋墽琛? curl https://get.acme.sh | sh"}
     fp = os.path.join(CERT_DIR, domain, "fullchain.cer")
     kp = os.path.join(CERT_DIR, domain, "private.key")
     os.makedirs(os.path.dirname(fp), exist_ok=True)
@@ -53,15 +53,15 @@ def _issue(domain: str, email: str) -> dict:
         r = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
         return {"ok": r.returncode == 0, "domain": domain, "detail": (r.stdout or r.stderr)[-300:]}
     except subprocess.TimeoutExpired:
-        return {"ok": False, "error": "签发超时(120s)"}
+        return {"ok": False, "error": "绛惧彂瓒呮椂(120s)"}
     except Exception as e:
         return {"ok": False, "error": str(e)}
 
 
 @router.post("/issue")
 async def ssl_issue(req: SSLIssueRequest, _=Depends(verify_token)):
-    """签发SSL证书"""
-    await handle_risk("L2", f"签发SSL: {req.domain}")
+    """绛惧彂SSL璇佷功"""
+    await handle_risk("L2", f"绛惧彂SSL: {req.domain}")
     v = _cert_valid(req.domain)
     if v.get("ok") and v.get("days_left", 0) > 60:
         return {"ok": True, "status": "already_valid", "domain": req.domain, "days_left": v["days_left"]}
@@ -70,11 +70,11 @@ async def ssl_issue(req: SSLIssueRequest, _=Depends(verify_token)):
 
 @router.post("/renew")
 async def ssl_renew(domain: str, _=Depends(verify_token)):
-    """续签SSL证书"""
-    await handle_risk("L2", f"续签SSL: {domain}")
+    """缁SSL璇佷功"""
+    await handle_risk("L2", f"缁SSL: {domain}")
     ac = os.path.expanduser("~/.acme.sh/acme.sh")
     if not os.path.exists(ac):
-        return {"ok": False, "error": "acme.sh 未安装"}
+        return {"ok": False, "error": "acme.sh 鏈畨瑁?}
     try:
         r = subprocess.run(
             [ac, "--renew", "-d", domain, "--force"],
@@ -87,8 +87,8 @@ async def ssl_renew(domain: str, _=Depends(verify_token)):
 
 @router.get("/status")
 async def ssl_status(domain: str = "", _=Depends(verify_token)):
-    """查询SSL证书状态"""
-    await handle_risk("L1", "查询SSL状态")
+    """鏌ヨSSL璇佷功鐘舵€?""
+    await handle_risk("L1", "鏌ヨSSL鐘舵€?)
     if domain:
         result = _cert_valid(domain)
         result["domain"] = domain
@@ -100,8 +100,8 @@ async def ssl_status(domain: str = "", _=Depends(verify_token)):
 
 @router.get("/expiring")
 async def ssl_expiring(days: int = 30, _=Depends(verify_token)):
-    """查询即将到期的证书"""
-    await handle_risk("L1", "查询到期证书")
+    """鏌ヨ鍗冲皢鍒版湡鐨勮瘉涔?""
+    await handle_risk("L1", "鏌ヨ鍒版湡璇佷功")
     from routers.rotation_panel import _get_domains
     dl = _get_domains()
     expiring = []

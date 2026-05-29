@@ -1,4 +1,4 @@
-﻿"""AI工作流引擎 — 多步任务自动拆解与执行"""
+锘?""AI宸ヤ綔娴佸紩鎿?鈥?澶氭浠诲姟鑷姩鎷嗚В涓庢墽琛?""
 import asyncio, json, re
 from datetime import datetime
 from state import state
@@ -9,47 +9,47 @@ class WorkflowEngine:
 
     @classmethod
     async def parse_and_execute(cls, user_input: str) -> dict:
-        """解析用户自然语言输入，拆解为工作流步骤"""
-        # 内置工作流模板
+        """瑙ｆ瀽鐢ㄦ埛鑷劧璇█杈撳叆锛屾媶瑙ｄ负宸ヤ綔娴佹楠?""
+        # 鍐呯疆宸ヤ綔娴佹ā鏉?
         templates = {
-            "下架": {"steps": [
-                {"tool":"product.list","params":{"status":"low_stock"},"desc":"查找低库存商品"},
-                {"tool":"product.batch_offline","params":{},"desc":"批量下架","risk":"L3"},
-                {"tool":"report.generate","params":{"type":"offline_report"},"desc":"生成下架报告"},
+            "涓嬫灦": {"steps": [
+                {"tool":"product.list","params":{"status":"low_stock"},"desc":"鏌ユ壘浣庡簱瀛樺晢鍝?},
+                {"tool":"product.batch_offline","params":{},"desc":"鎵归噺涓嬫灦","risk":"L3"},
+                {"tool":"report.generate","params":{"type":"offline_report"},"desc":"鐢熸垚涓嬫灦鎶ュ憡"},
             ]},
-            "备份": {"steps": [
-                {"tool":"db.backup","params":{},"desc":"备份数据库","risk":"L3"},
-                {"tool":"file.archive","params":{"type":"backup"},"desc":"归档备份文件"},
+            "澶囦唤": {"steps": [
+                {"tool":"db.backup","params":{},"desc":"澶囦唤鏁版嵁搴?,"risk":"L3"},
+                {"tool":"file.archive","params":{"type":"backup"},"desc":"褰掓。澶囦唤鏂囦欢"},
             ]},
-            "部署": {"steps": [
-                {"tool":"git.pull","params":{},"desc":"拉取最新代码","risk":"L3"},
-                {"tool":"docker.build","params":{"service":"all"},"desc":"构建镜像","risk":"L3"},
-                {"tool":"docker.deploy","params":{"service":"all"},"desc":"部署服务","risk":"L4"},
+            "閮ㄧ讲": {"steps": [
+                {"tool":"git.pull","params":{},"desc":"鎷夊彇鏈€鏂颁唬鐮?,"risk":"L3"},
+                {"tool":"docker.build","params":{"service":"all"},"desc":"鏋勫缓闀滃儚","risk":"L3"},
+                {"tool":"docker.deploy","params":{"service":"all"},"desc":"閮ㄧ讲鏈嶅姟","risk":"L4"},
             ]},
-            "巡检": {"steps": [
-                {"tool":"server.status","params":{},"desc":"检查服务器状态"},
-                {"tool":"docker.ps","params":{},"desc":"检查Docker容器"},
-                {"tool":"nginx.status","params":{},"desc":"检查Nginx状态"},
-                {"tool":"db.status","params":{},"desc":"检查数据库状态"},
-                {"tool":"rotation.domains","params":{},"desc":"检查域名健康"},
+            "宸℃": {"steps": [
+                {"tool":"server.status","params":{},"desc":"妫€鏌ユ湇鍔″櫒鐘舵€?},
+                {"tool":"docker.ps","params":{},"desc":"妫€鏌ocker瀹瑰櫒"},
+                {"tool":"nginx.status","params":{},"desc":"妫€鏌ginx鐘舵€?},
+                {"tool":"db.status","params":{},"desc":"妫€鏌ユ暟鎹簱鐘舵€?},
+                {"tool":"rotation.domains","params":{},"desc":"妫€鏌ュ煙鍚嶅仴搴?},
             ]},
             "SSL": {"steps": [
-                {"tool":"ssl.status","params":{},"desc":"查询SSL证书状态"},
-                {"tool":"ssl.renew","params":{},"desc":"续签到期的证书","risk":"L3"},
+                {"tool":"ssl.status","params":{},"desc":"鏌ヨSSL璇佷功鐘舵€?},
+                {"tool":"ssl.renew","params":{},"desc":"缁鍒版湡鐨勮瘉涔?,"risk":"L3"},
             ]},
         }
-        # 智能匹配
+        # 鏅鸿兘鍖归厤
         matched = None
         for keyword, wf in templates.items():
             if keyword in user_input:
-                matched = {"name": f"{keyword}工作流", "steps": wf["steps"]}
+                matched = {"name": f"{keyword}宸ヤ綔娴?, "steps": wf["steps"]}
                 break
         if not matched:
-            return {"ok": False, "error": "未能识别的任务类型", "suggestions": list(templates.keys())}
-        # 创建工作流ID
+            return {"ok": False, "error": "鏈兘璇嗗埆鐨勪换鍔＄被鍨?, "suggestions": list(templates.keys())}
+        # 鍒涘缓宸ヤ綔娴両D
         wf_id = f"wf_{int(datetime.now().timestamp())}"
         cls.workflows[wf_id] = matched
-        # 逐步骤执行
+        # 閫愭楠ゆ墽琛?
         results = []
         for i, step in enumerate(matched["steps"]):
             step_result = {"step": i+1, "name": step["desc"], "tool": step["tool"], "status": "running"}
@@ -61,7 +61,7 @@ class WorkflowEngine:
                 step_result["status"] = "failed"
                 step_result["error"] = str(e)
             results.append(step_result)
-            # 失败则中断
+            # 澶辫触鍒欎腑鏂?
             if step_result["status"] == "failed":
                 break
         wf_result = {"id": wf_id, "name": matched["name"], "steps": results,

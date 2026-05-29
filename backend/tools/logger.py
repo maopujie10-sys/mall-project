@@ -1,43 +1,43 @@
-﻿"""统一日志系统 — 控制台+文件双输出,自动轮转,支持级别过滤"""
+锘?""缁熶竴鏃ュ織绯荤粺 鈥?鎺у埗鍙?鏂囦欢鍙岃緭鍑?鑷姩杞浆,鏀寔绾у埆杩囨护"""
 import os
 import sys
 import logging
 from logging.handlers import RotatingFileHandler
 from datetime import datetime
 
-# 全局logger实例
+# 鍏ㄥ眬logger瀹炰緥
 _loggers = {}
 
 def get_logger(name: str = "friday", level: str = None) -> logging.Logger:
-    """获取或创建logger"""
+    """鑾峰彇鎴栧垱寤簂ogger"""
     if name in _loggers:
         return _loggers[name]
 
     logger = logging.getLogger(name)
     
-    # 从环境变量获取级别,默认INFO
+    # 浠庣幆澧冨彉閲忚幏鍙栫骇鍒?榛樿INFO
     if level is None:
         level = os.getenv("LOG_LEVEL", "INFO").upper()
     
     logger.setLevel(getattr(logging, level, logging.INFO))
     
-    # 避免重复添加handler
+    # 閬垮厤閲嶅娣诲姞handler
     if logger.handlers:
         _loggers[name] = logger
         return logger
 
-    # 格式化: [2026-05-29 12:00:00] [INFO] [module] message
+    # 鏍煎紡鍖? [2026-05-29 12:00:00] [INFO] [module] message
     fmt = logging.Formatter(
         "[%(asctime)s] [%(levelname)-5s] [%(name)s] %(message)s",
         datefmt="%Y-%m-%d %H:%M:%S"
     )
 
-    # 控制台输出
+    # 鎺у埗鍙拌緭鍑?
     console = logging.StreamHandler(sys.stdout)
     console.setFormatter(fmt)
     logger.addHandler(console)
 
-    # 文件输出(自动轮转,单文件最大10MB,保留5个)
+    # 鏂囦欢杈撳嚭(鑷姩杞浆,鍗曟枃浠舵渶澶?0MB,淇濈暀5涓?
     log_dir = os.getenv("LOG_DIR", "logs")
     os.makedirs(log_dir, exist_ok=True)
     
@@ -50,7 +50,7 @@ def get_logger(name: str = "friday", level: str = None) -> logging.Logger:
     file_handler.setFormatter(fmt)
     logger.addHandler(file_handler)
 
-    # 错误日志单独输出
+    # 閿欒鏃ュ織鍗曠嫭杈撳嚭
     error_handler = RotatingFileHandler(
         os.path.join(log_dir, "error.log"),
         maxBytes=10 * 1024 * 1024,
@@ -65,12 +65,12 @@ def get_logger(name: str = "friday", level: str = None) -> logging.Logger:
     return logger
 
 def setup_logging():
-    """初始化全局日志配置"""
+    """鍒濆鍖栧叏灞€鏃ュ織閰嶇疆"""
     logger = get_logger("friday")
-    logger.info("日志系统初始化完成")
+    logger.info("鏃ュ織绯荤粺鍒濆鍖栧畬鎴?)
     return logger
 
-# 快捷日志函数
+# 蹇嵎鏃ュ織鍑芥暟
 def info(msg, *args):
     get_logger().info(msg, *args)
 

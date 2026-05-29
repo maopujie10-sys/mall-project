@@ -1,4 +1,4 @@
-"""告警中心 — P1~P4 告警分级/触发/通知"""
+"""鍛婅涓績 鈥?P1~P4 鍛婅鍒嗙骇/瑙﹀彂/閫氱煡"""
 from datetime import datetime
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
@@ -10,7 +10,7 @@ import httpx
 
 router = APIRouter(prefix="/alert", tags=["Alert"])
 
-ALERT_LEVELS = {"P1": "紧急", "P2": "严重", "P3": "一般", "P4": "观察"}
+ALERT_LEVELS = {"P1": "绱ф€?, "P2": "涓ラ噸", "P3": "涓€鑸?, "P4": "瑙傚療"}
 
 class AlertCreateRequest(BaseModel):
     title: str
@@ -22,7 +22,7 @@ def _get_alerts():
     return state._data.setdefault("alerts", [])
 
 def _send_alert_notification(level: str, title: str, detail: str):
-    """发送告警通知到 Telegram"""
+    """鍙戦€佸憡璀﹂€氱煡鍒?Telegram"""
     if not TELEGRAM_BOT_TOKEN or not TELEGRAM_CHAT_ID:
         return
     import asyncio
@@ -31,7 +31,7 @@ def _send_alert_notification(level: str, title: str, detail: str):
         f"{emoji.get(level, '??')} <b>[{level}] TikTokMall</b>\n"
         f"<b>{title}</b>\n"
         f"{detail or '-'}\n"
-        f"<b>时间</b>: {datetime.now().strftime('%H:%M:%S')}"
+        f"<b>鏃堕棿</b>: {datetime.now().strftime('%H:%M:%S')}"
     )
     async def _send():
         try:
@@ -53,7 +53,7 @@ def _send_alert_notification(level: str, title: str, detail: str):
 
 @router.get("/list")
 async def list_alerts(_=Depends(verify_token), level: str = None):
-    await handle_risk("L1", "查看告警列表")
+    await handle_risk("L1", "鏌ョ湅鍛婅鍒楄〃")
     alerts = _get_alerts()
     if level:
         alerts = [a for a in alerts if a["level"] == level]
@@ -61,9 +61,9 @@ async def list_alerts(_=Depends(verify_token), level: str = None):
 
 @router.post("/create")
 async def create_alert(req: AlertCreateRequest, _=Depends(verify_token)):
-    await handle_risk("L1", f"创建告警 [{req.level}]", req.title)
+    await handle_risk("L1", f"鍒涘缓鍛婅 [{req.level}]", req.title)
     if req.level not in ALERT_LEVELS:
-        return {"error": f"无效等级: {req.level}，可选: {list(ALERT_LEVELS.keys())}"}
+        return {"error": f"鏃犳晥绛夌骇: {req.level}锛屽彲閫? {list(ALERT_LEVELS.keys())}"}
 
     alerts = _get_alerts()
     alert = {
@@ -82,14 +82,14 @@ async def create_alert(req: AlertCreateRequest, _=Depends(verify_token)):
         alerts[:] = alerts[:200]
     state._save()
 
-    # P1/P2 自动发通知
+    # P1/P2 鑷姩鍙戦€氱煡
     if req.level in ("P1", "P2"):
         _send_alert_notification(req.level, req.title, req.detail)
 
-    # P1 自动切人工接管
+    # P1 鑷姩鍒囦汉宸ユ帴绠?
     if req.level == "P1":
         state.mode = "human_control"
-        state.add_emergency("human_control", f"P1告警触发: {req.title}")
+        state.add_emergency("human_control", f"P1鍛婅瑙﹀彂: {req.title}")
 
     return alert
 
@@ -102,7 +102,7 @@ async def resolve_alert(alert_id: str, _=Depends(verify_token)):
             a["resolved_at"] = datetime.now().strftime("%H:%M:%S")
             state._save()
             return {"resolved": True, "alert_id": alert_id}
-    return {"error": "告警不存在"}
+    return {"error": "鍛婅涓嶅瓨鍦?}
 
 @router.get("/stats")
 async def alert_stats(_=Depends(verify_token)):

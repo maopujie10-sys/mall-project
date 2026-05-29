@@ -1,4 +1,4 @@
-"""批量采集 — 覆盖商城全品类，自动上架"""
+"""鎵归噺閲囬泦 鈥?瑕嗙洊鍟嗗煄鍏ㄥ搧绫伙紝鑷姩涓婃灦"""
 import asyncio
 import sys
 sys.path.insert(0, ".")
@@ -35,20 +35,20 @@ async def run(platform="amazon", products_per_kw=3):
 
     for cat_name, keywords in CATEGORY_KEYWORDS.items():
         print(f"\n{'='*60}")
-        print(f"[品类] {cat_name}")
+        print(f"[鍝佺被] {cat_name}")
         totals["cats"] += 1
 
         adapter = ADAPTERS.get(platform, ADAPTERS["amazon"])
         async with httpx.AsyncClient(timeout=25, follow_redirects=True, verify=False) as session:
             for kw in keywords:
-                print(f"  [关键词] {kw}")
+                print(f"  [鍏抽敭璇峕 {kw}")
                 totals["kws"] += 1
 
                 try:
                     urls = await adapter.search(kw, max_pages=1, session=session)
-                    print(f"    搜索: {len(urls)} 个链接")
+                    print(f"    鎼滅储: {len(urls)} 涓摼鎺?)
                 except Exception as e:
-                    print(f"    搜索失败: {e}")
+                    print(f"    鎼滅储澶辫触: {e}")
                     continue
 
                 products = []
@@ -63,10 +63,10 @@ async def run(platform="amazon", products_per_kw=3):
                     await asyncio.sleep(1.5)
 
                 if not products:
-                    print(f"    未提取到有效产品")
+                    print(f"    鏈彁鍙栧埌鏈夋晥浜у搧")
                     continue
 
-                # 上传图片(失败则用源URL)
+                # 涓婁紶鍥剧墖(澶辫触鍒欑敤婧怳RL)
                 for p in products:
                     uploaded = []
                     for idx, img_url in enumerate(p.images[:8]):
@@ -77,19 +77,19 @@ async def run(platform="amazon", products_per_kw=3):
                             uploaded.append(img_url)
                     p.cos_images = uploaded
 
-                # 导入上架
+                # 瀵煎叆涓婃灦
                 pds = [p.to_dict() for p in products if p.cos_images]
                 result = import_batch(pds)
                 totals["found"] += len(pds)
                 totals["imported"] += result["imported"]
                 totals["skipped"] += result["skipped_duplicate"]
                 totals["failed"] += result["failed"]
-                print(f"    导入: {result['imported']} 上架, {result['skipped_duplicate']} 重复, {result['failed']} 失败")
+                print(f"    瀵煎叆: {result['imported']} 涓婃灦, {result['skipped_duplicate']} 閲嶅, {result['failed']} 澶辫触")
 
                 await asyncio.sleep(2)
 
     print(f"\n{'='*60}")
-    print(f"总计: {totals['cats']} 品类, {totals['kws']} 关键词, {totals['imported']} 上架, {totals['skipped']} 重复, {totals['failed']} 失败")
+    print(f"鎬昏: {totals['cats']} 鍝佺被, {totals['kws']} 鍏抽敭璇? {totals['imported']} 涓婃灦, {totals['skipped']} 閲嶅, {totals['failed']} 澶辫触")
     return totals
 
 if __name__ == "__main__":

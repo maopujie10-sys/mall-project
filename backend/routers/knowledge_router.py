@@ -1,4 +1,4 @@
-﻿"""RAG知识库 — 文档管理+向量化+检索增强"""
+锘?""RAG鐭ヨ瘑搴?鈥?鏂囨。绠＄悊+鍚戦噺鍖?妫€绱㈠寮?""
 import json, os, hashlib
 from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Query
@@ -14,15 +14,15 @@ def _get_kb():
 @router.post("/documents")
 async def add_document(title: str = Query(...), content: str = Query(...), category: str = "general", tags: str = "",
                        _=Depends(verify_token)):
-    """添加知识文档"""
-    await handle_risk("L1", f"添加知识: {title}")
+    """娣诲姞鐭ヨ瘑鏂囨。"""
+    await handle_risk("L1", f"娣诲姞鐭ヨ瘑: {title}")
     kb = _get_kb()
     doc_id = hashlib.md5(title.encode()).hexdigest()[:12]
     doc = {"id": doc_id, "title": title, "content": content, "category": category,
            "tags": [t.strip() for t in tags.split(",") if t.strip()],
            "created_at": datetime.now().isoformat(), "updated_at": datetime.now().isoformat(),
            "chunks": [], "embedding": []}
-    # 分块
+    # 鍒嗗潡
     chunk_size = 500; overlap = 50
     for i in range(0, len(content), chunk_size - overlap):
         chunk = content[i:i+chunk_size]
@@ -33,7 +33,7 @@ async def add_document(title: str = Query(...), content: str = Query(...), categ
 
 @router.get("/documents")
 async def list_documents(category: str = "", _=Depends(verify_token)):
-    """知识文档列表"""
+    """鐭ヨ瘑鏂囨。鍒楄〃"""
     kb = _get_kb()
     if category: kb = [d for d in kb if d.get("category") == category]
     summary = [{"id": d["id"], "title": d["title"], "category": d.get("category", "general"),
@@ -42,15 +42,15 @@ async def list_documents(category: str = "", _=Depends(verify_token)):
 
 @router.get("/documents/{doc_id}")
 async def get_document(doc_id: str, _=Depends(verify_token)):
-    """获取文档详情"""
+    """鑾峰彇鏂囨。璇︽儏"""
     kb = _get_kb()
     doc = next((d for d in kb if d["id"] == doc_id), None)
-    if not doc: raise HTTPException(404, "文档不存在")
+    if not doc: raise HTTPException(404, "鏂囨。涓嶅瓨鍦?)
     return {"ok": True, "document": doc}
 
 @router.delete("/documents/{doc_id}")
 async def delete_document(doc_id: str, _=Depends(verify_token)):
-    """删除文档"""
+    """鍒犻櫎鏂囨。"""
     kb = _get_kb()
     state._data["knowledge_base"] = [d for d in kb if d["id"] != doc_id]
     state._save()
@@ -58,8 +58,8 @@ async def delete_document(doc_id: str, _=Depends(verify_token)):
 
 @router.get("/search")
 async def search_knowledge(q: str = Query(...), _=Depends(verify_token)):
-    """搜索知识库(关键词+分块匹配)"""
-    await handle_risk("L1", f"搜索知识: {q}")
+    """鎼滅储鐭ヨ瘑搴?鍏抽敭璇?鍒嗗潡鍖归厤)"""
+    await handle_risk("L1", f"鎼滅储鐭ヨ瘑: {q}")
     kb = _get_kb()
     results = []
     q_lower = q.lower()
@@ -78,7 +78,7 @@ async def search_knowledge(q: str = Query(...), _=Depends(verify_token)):
 
 @router.get("/categories")
 async def list_categories(_=Depends(verify_token)):
-    """知识分类"""
+    """鐭ヨ瘑鍒嗙被"""
     kb = _get_kb()
     cats = {}
     for d in kb:
@@ -88,7 +88,7 @@ async def list_categories(_=Depends(verify_token)):
 
 @router.get("/rag/context")
 async def get_rag_context(q: str = Query(...), max_chars: int = 2000, _=Depends(verify_token)):
-    """获取RAG上下文(供AI对话注入)"""
+    """鑾峰彇RAG涓婁笅鏂?渚汚I瀵硅瘽娉ㄥ叆)"""
     kb = _get_kb()
     if not kb: return {"ok": True, "context": "", "sources": []}
     q_lower = q.lower()

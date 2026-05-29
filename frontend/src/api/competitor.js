@@ -1,4 +1,4 @@
-﻿import { agentApi } from './index'
+锘縤mport { agentApi } from './index'
 
 export function addTrack(product_name, platform, url, target_price, category) {
   return agentApi.post('/agent/competitor/track', { product_name, platform, url, target_price, category })

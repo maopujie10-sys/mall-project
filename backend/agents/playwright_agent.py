@@ -1,5 +1,5 @@
-﻿"""Playwright Agent — 浏览器自动化
-v2: 浏览器实例池 + 截图自动清理 + 并发控制"""
+锘?""Playwright Agent 鈥?娴忚鍣ㄨ嚜鍔ㄥ寲
+v2: 娴忚鍣ㄥ疄渚嬫睜 + 鎴浘鑷姩娓呯悊 + 骞跺彂鎺у埗"""
 import os, asyncio, json, time
 from datetime import datetime, timedelta
 from dataclasses import dataclass
@@ -16,21 +16,21 @@ class BrowserTask:
 
 
 class PlaywrightAgent:
-    """浏览器自动化Agent — 复用浏览器实例"""
+    """娴忚鍣ㄨ嚜鍔ㄥ寲Agent 鈥?澶嶇敤娴忚鍣ㄥ疄渚?""
 
     BROWSER_READY = False
     _browser = None
     _context = None
-    _semaphore = asyncio.Semaphore(2)  # 最多2个并发浏览器操作
+    _semaphore = asyncio.Semaphore(2)  # 鏈€澶?涓苟鍙戞祻瑙堝櫒鎿嶄綔
     SCREENSHOT_DIR = os.path.join(os.getenv("APP_DATA_DIR", os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data")), "screenshots")
-    SCREENSHOT_MAX_AGE_HOURS = 1  # 截图保留1小时
+    SCREENSHOT_MAX_AGE_HOURS = 1  # 鎴浘淇濈暀1灏忔椂
 
     @staticmethod
     async def _get_browser():
-        """获取或创建浏览器实例（复用）"""
+        """鑾峰彇鎴栧垱寤烘祻瑙堝櫒瀹炰緥锛堝鐢級"""
         if PlaywrightAgent._browser is not None:
             try:
-                # 检查浏览器是否还活着
+                # 妫€鏌ユ祻瑙堝櫒鏄惁杩樻椿鐫€
                 contexts = PlaywrightAgent._browser.contexts
                 if len(contexts) > 0:
                     return PlaywrightAgent._browser
@@ -52,7 +52,7 @@ class PlaywrightAgent:
 
     @staticmethod
     async def _cleanup_old_screenshots():
-        """自动清理过期截图"""
+        """鑷姩娓呯悊杩囨湡鎴浘"""
         try:
             if not os.path.exists(PlaywrightAgent.SCREENSHOT_DIR):
                 return
@@ -66,7 +66,7 @@ class PlaywrightAgent:
                         os.remove(fpath)
                         count += 1
             if count:
-                print(f"[Playwright] 清理了 {count} 个过期截图")
+                print(f"[Playwright] 娓呯悊浜?{count} 涓繃鏈熸埅鍥?)
         except Exception:
             pass
 
@@ -81,11 +81,11 @@ class PlaywrightAgent:
 
     @staticmethod
     async def screenshot(url: str, full_page: bool = True) -> dict:
-        """网页截图（复用浏览器实例）"""
+        """缃戦〉鎴浘锛堝鐢ㄦ祻瑙堝櫒瀹炰緥锛?""
         async with PlaywrightAgent._semaphore:
             browser = await PlaywrightAgent._get_browser()
             if not browser:
-                return {"ok": False, "error": "Playwright未安装，请运行: pip install playwright && playwright install chromium"}
+                return {"ok": False, "error": "Playwright鏈畨瑁咃紝璇疯繍琛? pip install playwright && playwright install chromium"}
 
             await PlaywrightAgent._cleanup_old_screenshots()
             try:
@@ -102,11 +102,11 @@ class PlaywrightAgent:
 
     @staticmethod
     async def scrape_page(url: str, selectors: dict = None) -> dict:
-        """抓取网页内容（复用浏览器实例）"""
+        """鎶撳彇缃戦〉鍐呭锛堝鐢ㄦ祻瑙堝櫒瀹炰緥锛?""
         async with PlaywrightAgent._semaphore:
             browser = await PlaywrightAgent._get_browser()
             if not browser:
-                return {"ok": False, "error": "Playwright未安装"}
+                return {"ok": False, "error": "Playwright鏈畨瑁?}
 
             default_selectors = {
                 "title": "title", "h1": "h1", "links": "a[href]",
@@ -134,7 +134,7 @@ class PlaywrightAgent:
 
     @staticmethod
     async def search_and_scrape(keyword: str, site: str = "ebay") -> dict:
-        """搜索商品（复用浏览器实例）"""
+        """鎼滅储鍟嗗搧锛堝鐢ㄦ祻瑙堝櫒瀹炰緥锛?""
         search_urls = {
             "ebay": f"https://www.ebay.com/sch/i.html?_nkw={keyword}",
             "amazon": f"https://www.amazon.com/s?k={keyword}",

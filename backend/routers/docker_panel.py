@@ -1,4 +1,4 @@
-"""Docker 管理 API — 容器列表/日志/状态/重启/健康检查"""
+"""Docker 绠＄悊 API 鈥?瀹瑰櫒鍒楄〃/鏃ュ織/鐘舵€?閲嶅惎/鍋ュ悍妫€鏌?""
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
 from typing import Optional
@@ -15,8 +15,8 @@ class ContainerAction(BaseModel):
 
 @router.get("/ps")
 async def docker_ps(_=Depends(verify_token)):
-    """查看所有 Docker 容器"""
-    await handle_risk("L1", "查看Docker容器列表")
+    """鏌ョ湅鎵€鏈?Docker 瀹瑰櫒"""
+    await handle_risk("L1", "鏌ョ湅Docker瀹瑰櫒鍒楄〃")
     result = await execute("docker ps -a --format '{{.ID}}|{{.Image}}|{{.Status}}|{{.Names}}|{{.Ports}}'")
     containers = []
     if result["success"]:
@@ -34,8 +34,8 @@ async def docker_ps(_=Depends(verify_token)):
 
 @router.get("/stats")
 async def docker_stats(_=Depends(verify_token)):
-    """查看容器资源占用"""
-    await handle_risk("L1", "查看Docker资源占用")
+    """鏌ョ湅瀹瑰櫒璧勬簮鍗犵敤"""
+    await handle_risk("L1", "鏌ョ湅Docker璧勬簮鍗犵敤")
     result = await execute("docker stats --no-stream --format '{{.Name}}|{{.CPUPerc}}|{{.MemUsage}}|{{.MemPerc}}|{{.NetIO}}'")
     stats = []
     if result["success"]:
@@ -53,14 +53,14 @@ async def docker_stats(_=Depends(verify_token)):
 
 @router.get("/logs")
 async def docker_logs(
-    container: str = Query("", description="容器名称或ID"),
-    lines: int = Query(50, description="行数"),
+    container: str = Query("", description="瀹瑰櫒鍚嶇О鎴朓D"),
+    lines: int = Query(50, description="琛屾暟"),
     _=Depends(verify_token)
 ):
-    """查看指定容器日志"""
-    await handle_risk("L1", f"查看容器日志", f"{container} {lines}行")
+    """鏌ョ湅鎸囧畾瀹瑰櫒鏃ュ織"""
+    await handle_risk("L1", f"鏌ョ湅瀹瑰櫒鏃ュ織", f"{container} {lines}琛?)
     if not container:
-        raise HTTPException(400, "请指定容器名称或ID")
+        raise HTTPException(400, "璇锋寚瀹氬鍣ㄥ悕绉版垨ID")
     result = await execute(f"docker logs --tail {lines} {container} 2>&1")
     return {
         "container": container,
@@ -71,8 +71,8 @@ async def docker_logs(
 
 @router.get("/status")
 async def docker_status(container: Optional[str] = Query(None), _=Depends(verify_token)):
-    """查看容器健康状态"""
-    await handle_risk("L1", "查看Docker状态")
+    """鏌ョ湅瀹瑰櫒鍋ュ悍鐘舵€?""
+    await handle_risk("L1", "鏌ョ湅Docker鐘舵€?)
     if container:
         result = await execute(f"docker inspect {container} --format '{{.State.Status}}|{{.State.Health.Status}}|{{.State.Running}}'")
         if result["success"]:
@@ -83,7 +83,7 @@ async def docker_status(container: Optional[str] = Query(None), _=Depends(verify
                 "health": parts[1] if len(parts) > 1 else "N/A",
                 "running": parts[2] if len(parts) > 2 else "N/A",
             }
-        raise HTTPException(404, f"容器 {container} 不存在")
+        raise HTTPException(404, f"瀹瑰櫒 {container} 涓嶅瓨鍦?)
     else:
         result = await execute("docker ps --format '{{.Names}}' | wc -l")
         running = result["stdout"].strip() if result["success"] else "0"
@@ -93,22 +93,22 @@ async def docker_status(container: Optional[str] = Query(None), _=Depends(verify
 
 @router.post("/restart")
 async def docker_restart(req: ContainerAction, _=Depends(verify_token)):
-    """重启容器（非核心容器自动执行，核心容器需审批）"""
-    # 检查防循环
+    """閲嶅惎瀹瑰櫒锛堥潪鏍稿績瀹瑰櫒鑷姩鎵ц锛屾牳蹇冨鍣ㄩ渶瀹℃壒锛?""
+    # 妫€鏌ラ槻寰幆
     loop_key = f"restart:{req.container_id}"
     if not anti_loop.check(loop_key, max_count=1, window_min=10):
-        return {"ok": False, "error": f"容器 {req.container_id} 10分钟内已重启过，防循环机制已限制"}
+        return {"ok": False, "error": f"瀹瑰櫒 {req.container_id} 10鍒嗛挓鍐呭凡閲嶅惎杩囷紝闃插惊鐜満鍒跺凡闄愬埗"}
 
-    # 判断是否核心容器
+    # 鍒ゆ柇鏄惁鏍稿績瀹瑰櫒
     core_containers = ["mall", "mall-app", "mall-admin", "mysql", "redis", "database"]
     is_core = any(c in req.container_id.lower() for c in core_containers)
 
     if is_core:
-        risk = await handle_risk("L3", f"重启核心容器", req.container_id)
+        risk = await handle_risk("L3", f"閲嶅惎鏍稿績瀹瑰櫒", req.container_id)
         if not risk["allowed"]:
             return risk
     else:
-        await handle_risk("L2", f"重启非核心容器", req.container_id)
+        await handle_risk("L2", f"閲嶅惎闈炴牳蹇冨鍣?, req.container_id)
 
     result = await execute(f"docker restart {req.container_id}")
     if result["success"]:
@@ -117,15 +117,15 @@ async def docker_restart(req: ContainerAction, _=Depends(verify_token)):
 
 @router.get("/compose")
 async def docker_compose_ps(_=Depends(verify_token)):
-    """查看 docker compose 服务状态"""
-    await handle_risk("L1", "查看Docker Compose状态")
+    """鏌ョ湅 docker compose 鏈嶅姟鐘舵€?""
+    await handle_risk("L1", "鏌ョ湅Docker Compose鐘舵€?)
     result = await execute("docker compose ps --format 'table {{.Name}}\t{{.Status}}\t{{.Ports}}' 2>/dev/null || docker compose ls 2>/dev/null || echo 'compose not available'")
     return {"output": result["stdout"][:1000]}
 
 @router.get("/images")
 async def docker_images(_=Depends(verify_token)):
-    """查看 Docker 镜像列表"""
-    await handle_risk("L1", "查看Docker镜像")
+    """鏌ョ湅 Docker 闀滃儚鍒楄〃"""
+    await handle_risk("L1", "鏌ョ湅Docker闀滃儚")
     result = await execute("docker images --format '{{.Repository}}|{{.Tag}}|{{.ID}}|{{.Size}}'")
     images = []
     if result["success"]:
@@ -137,8 +137,8 @@ async def docker_images(_=Depends(verify_token)):
 
 @router.get("/network")
 async def docker_network(_=Depends(verify_token)):
-    """查看 Docker 网络"""
-    await handle_risk("L1", "查看Docker网络")
+    """鏌ョ湅 Docker 缃戠粶"""
+    await handle_risk("L1", "鏌ョ湅Docker缃戠粶")
     result = await execute("docker network ls --format '{{.ID}}|{{.Name}}|{{.Driver}}|{{.Scope}}'")
     networks = []
     if result["success"]:
