@@ -1,4 +1,4 @@
-/* ===== Friday AI OS — Jarvis 深蓝科技风 v3.0 ===== */
+﻿/* ===== Friday AI OS — Jarvis 深蓝科技风 v3.0 ===== */
 
 :root {
   /* 主色 — 蓝紫渐变 */
@@ -165,6 +165,54 @@ body {
   z-index: 1;
 }
 
+
+/* ===== 全局移动端响应式 ===== */
+@media (max-width: 768px) {
+  /* Element Plus 栅格：全部堆叠 */
+  .el-row { flex-wrap: wrap !important; }
+  .el-col { max-width: 100% !important; flex: 0 0 100% !important; margin-bottom: 12px; }
+
+  /* 卡片间距 */
+  .el-card { margin-bottom: 12px; }
+  .el-card__body { padding: 12px !important; }
+
+  /* 页面容器 */
+  .page-container, .page-content, .dashboard-container {
+    padding: 8px !important;
+    height: auto !important;
+    min-height: 100vh;
+  }
+
+  /* 表单 */
+  .el-form-item { margin-bottom: 12px; }
+  .el-form-item__label { float: none !important; display: block !important; text-align: left !important; padding-bottom: 4px; }
+
+  /* 表格横向滚动 */
+  .el-table { font-size: 12px; }
+  .el-table__body-wrapper { overflow-x: auto; }
+
+  /* 对话框全屏 */
+  .el-dialog { width: 95vw !important; max-width: 95vw !important; margin-top: 5vh !important; }
+  .el-dialog__body { max-height: 70vh; overflow-y: auto; }
+
+  /* 标签 */
+  .el-tag { margin-bottom: 4px; }
+
+  /* 按钮组 */
+  .header-actions { flex-wrap: wrap; gap: 8px; }
+  .header-actions .el-button { margin-left: 0 !important; }
+
+  /* 页面标题 */
+  .page-header { flex-direction: column; gap: 8px; }
+  .page-header h1 { font-size: 18px; }
+  .page-header h2 { font-size: 16px; }
+
+  /* 统计卡片 */
+  .stat-card { padding: 8px 4px !important; }
+  .stat-value { font-size: 18px !important; }
+  .stat-label { font-size: 10px !important; }
+  .stat-icon { font-size: 20px !important; }
+}
 /* 滚动条 */
 ::-webkit-scrollbar { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
