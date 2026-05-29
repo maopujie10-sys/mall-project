@@ -1,4 +1,4 @@
-﻿"""Memory Sync Engine — 跨设备/跨AI记忆同步
+"""Memory Sync Engine — 跨设备/跨AI记忆同步
 通过Git仓库同步FRIDAY.md + memory/目录，实现电脑和服务器AI共享记忆"""
 
 import os
@@ -8,7 +8,7 @@ import hashlib
 from datetime import datetime
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent.parent.parent
+ROOT = Path(os.getenv('PROJECT_ROOT', Path(__file__).resolve().parent.parent.parent))
 MEMORY_DIR = ROOT / "memory"
 FRIDAY_LOCAL = ROOT / "FRIDAY.md"
 FRIDAY_SERVER = ROOT / "FRIDAY_SERVER.md"

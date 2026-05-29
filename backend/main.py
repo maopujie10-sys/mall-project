@@ -65,7 +65,7 @@ app = FastAPI(title="TikTokMall Agent", version="1.0.0", lifespan=lifespan)
 # CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=os.getenv("CORS_ORIGINS", "*").split(","),
     allow_methods=["*"],
     allow_headers=["X-Agent-Token", "Content-Type"],
 )

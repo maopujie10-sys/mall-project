@@ -9,7 +9,7 @@ from state import state
 from executor import execute_db
 from config import MALL_DB_HOST, MALL_DB_USER, MALL_DB_PASSWORD
 
-router = APIRouter(prefix="/db", tags=["Database"])
+router = APIRouter(prefix="/sql-executor", tags=["Database"])
 
 # ===== 永久禁止的 SQL 操作 =====
 FORBIDDEN_SQL = [
