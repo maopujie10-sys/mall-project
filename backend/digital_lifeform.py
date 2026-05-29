@@ -300,6 +300,7 @@ class DigitalLifeform:
         if dream:
             cycle_result["dream"] = dream
 
+                cls._persist_state()  # 持久化经验
         logger.info(f"周期#{cls._cycle_count}: {len(actions)}个行动, 心情{cls._mood_score:.1%}")
         return cycle_result
 
@@ -309,8 +310,10 @@ class DigitalLifeform:
         interval = max(interval_seconds, 60)
         if cls._running:
             return {"status": "already_running"}
-        cls._running = True
-        cls._cycle_count = 0
+                cls._running = True
+        restored = cls._load_persisted_state()  # 恢复经验
+        if not restored:
+            cls._cycle_count = 0
         logger.info(f"数字生命体v4启动, 间隔{interval}s")
 
         async def loop():
@@ -328,6 +331,54 @@ class DigitalLifeform:
     async def stop_loop(cls):
         cls._running = False
         return {"status": "stopped", "cycles": cls._cycle_count}
+    # ===== 经验持久化 (v4.1) =====
+    @classmethod
+    def _persist_state(cls):
+        """持久化生命体状态到SQLite"""
+        try:
+            from tools.memory_store import memory_store
+            memory_store.set_knowledge("lifeform_wisdom", str(cls._wisdom))
+            memory_store.set_knowledge("lifeform_mood", str(cls._mood_score))
+            memory_store.set_knowledge("lifeform_personality", json.dumps(cls._personality))
+            memory_store.set_knowledge("lifeform_insights", json.dumps(cls._insights[-50:]))
+            memory_store.set_knowledge("lifeform_actions", json.dumps(cls._action_history[-100:]))
+            memory_store.set_knowledge("lifeform_cycle", str(cls._cycle_count))
+            memory_store.set_knowledge("lifeform_last_reflection", cls._last_reflection)
+        except Exception:
+            pass
+
+    @classmethod
+    def _load_persisted_state(cls):
+        """从SQLite恢复生命体状态"""
+        try:
+            from tools.memory_store import memory_store
+            saved_wisdom = memory_store.get_knowledge("lifeform_wisdom")
+            if saved_wisdom:
+                cls._wisdom = float(saved_wisdom)
+            saved_mood = memory_store.get_knowledge("lifeform_mood")
+            if saved_mood:
+                cls._mood_score = float(saved_mood)
+            saved_personality = memory_store.get_knowledge("lifeform_personality")
+            if saved_personality:
+                cls._personality.update(json.loads(saved_personality))
+            saved_insights = memory_store.get_knowledge("lifeform_insights")
+            if saved_insights:
+                cls._insights = json.loads(saved_insights)
+            saved_actions = memory_store.get_knowledge("lifeform_actions")
+            if saved_actions:
+                cls._action_history = json.loads(saved_actions)
+            saved_cycle = memory_store.get_knowledge("lifeform_cycle")
+            if saved_cycle:
+                cls._cycle_count = int(saved_cycle)
+            saved_reflection = memory_store.get_knowledge("lifeform_last_reflection")
+            if saved_reflection:
+                cls._last_reflection = saved_reflection
+            if saved_wisdom:
+                logger.info(f"生命体经验已恢复: 周期#{cls._cycle_count}, 智慧{cls._wisdom:.1f}, 心情{cls._mood_score:.1%}")
+            return bool(saved_wisdom)
+        except Exception:
+            return False
+
 
     # ===== 记忆 =====
     @classmethod
