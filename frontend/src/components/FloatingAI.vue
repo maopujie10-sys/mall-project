@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <!-- 全局悬浮AI助手 — 文字+语音+视频全集成 -->
   <div class="floating-ai" :class="{ 'chat-open': chatOpen, 'chat-expanded': chatExpanded, 'video-mode': videoActive }">
     <!-- ====== 悬浮按钮 ====== -->
@@ -953,4 +953,26 @@ function scrollBottom() {
   50% { transform: scale(1.05); box-shadow: 0 6px 32px rgba(102,126,234,0.7), 0 0 50px rgba(118,75,162,0.3); }
 }
 
+
+/* ===== 移动端适配 ===== */
+@media (max-width: 768px) {
+  .floating-ai { z-index: 99999; }
+  .ai-float-btn {
+    width: 48px; height: 48px;
+    bottom: 80px; right: 12px;
+  }
+  .ai-float-btn .btn-inner svg { width: 22px; height: 22px; }
+  .ai-chat-panel {
+    width: 100vw !important; height: 100vh !important;
+    max-width: 100vw; max-height: 100vh;
+    left: 0 !important; top: 0 !important;
+    right: 0 !important; bottom: 0 !important;
+    border-radius: 0;
+  }
+  .ai-chat-panel.expanded { width: 100vw !important; height: 100vh !important; }
+  .msg-bubble { max-width: 88%; }
+  .empty-chat { padding: 20px 12px; }
+  .quick-actions { flex-wrap: wrap; }
+  .quick-actions button { font-size: 11px; padding: 6px 10px; }
+}
 </style>

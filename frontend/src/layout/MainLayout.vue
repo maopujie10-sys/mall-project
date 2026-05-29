@@ -1,4 +1,4 @@
-
+﻿
 <template>
   <div class="sci-fi-shell">
     <div class="neural-bg" :class="{ 'brain-active': brainActive, 'brain-thinking': brainThinking, 'brain-speaking': brainSpeaking, 'brain-pulse': brainPulse }">

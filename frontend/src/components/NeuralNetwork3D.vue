@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div ref="container" class="nn3d-container">
     <div class="nn-overlay">
       <div class="nn-status">🧠 数字生命体· 运行中</div>
@@ -80,6 +80,7 @@ function generateOrganicNetwork() {
 }
 
 function initScene() {
+  const isMobile = window.innerWidth < 768
   const el = container.value
   const w = el.clientWidth, h = el.clientHeight
   
@@ -89,7 +90,7 @@ function initScene() {
 
   renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: "high-performance" })
   renderer.setSize(w, h)
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+  renderer.setPixelRatio(isMobile ? 1 : Math.min(window.devicePixelRatio, 2))
   renderer.toneMapping = THREE.ACESFilmicToneMapping
   renderer.toneMappingExposure = 1.2
   el.appendChild(renderer.domElement)
@@ -97,7 +98,7 @@ function initScene() {
   
   composer = new EffectComposer(renderer)
   composer.addPass(new RenderPass(scene, camera))
-  const bloomPass = new UnrealBloomPass(new THREE.Vector2(w, h), 0.6, 0.2, 0.1)
+  const bloomPass = new UnrealBloomPass(new THREE.Vector2(w, h), isMobile ? 0.3 : 0.6, 0.2, isMobile ? 0.05 : 0.1)
   composer.addPass(bloomPass)
 
   controls = new OrbitControls(camera, renderer.domElement)

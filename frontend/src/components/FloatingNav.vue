@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="floating-nav-container">
     <!-- 4 个分类光球 -->
     <div
@@ -294,5 +294,17 @@ function particleStyle(i) {
   from { transform: rotate(var(--angle)) translateY(-36px) scale(1); }
   50% { transform: rotate(var(--angle)) translateY(-36px) scale(0.3); opacity: 0.3; }
   to { transform: rotate(calc(var(--angle) + 360deg)) translateY(-36px) scale(1); opacity: 1; }
+}
+
+@media (max-width: 768px) {
+  .nav-orb { width: 52px; height: 52px; }
+  .orb-icon { font-size: 18px; }
+  .orb-label { font-size: 8px; }
+  .category-panel {
+    position: fixed;
+    left: 50% !important; transform: translateX(-50%);
+    top: 70px !important; right: auto !important; bottom: auto !important;
+    width: 92vw; max-width: 340px;
+  }
 }
 </style>
