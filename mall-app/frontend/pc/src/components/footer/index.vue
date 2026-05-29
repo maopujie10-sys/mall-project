@@ -172,9 +172,9 @@ export default {
   data() {
     const JumpToLogin = () => {
       if (!this.isLogin) {
-        this.$router.push("/register");
-      } else {
         this.$router.push("/login");
+      } else {
+        this.$router.push("/userInfo");
       }
     };
 
