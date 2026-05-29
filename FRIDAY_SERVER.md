@@ -1,6 +1,6 @@
 ﻿# 🖥️ Friday AI OS — 服务器端 AI 记忆
 
-> 最后更新: 2026-05-29 | 运行环境: server
+> 最后更新: 2026-05-30 | 运行环境: server
 
 ## 🧬 当前人格
 - 类型: 均衡型 · 全面发展
@@ -15,6 +15,12 @@
 6. 客服自动回复 + 轮值域名监控
 
 ## 最近改动
+- 2026-05-30 00:51: [前端重建] AI面板 401 "未提供认证Token" 修复
+  - **根因：** mall-ai-frontend 容器构建于 5/29 13:41，DEFAULT_TOKEN 修复提交于 5/30 00:30
+  - 旧容器入口 JS index-BQNcmsg3.js 不含默认 Token 回退，localStorage 为空时请求头无 X-Agent-Token
+  - **修复：** docker compose build --no-cache ai-frontend + up -d 重建容器
+  - 新版 index-pIO4oyHo.js + index-9yJ6U9g9.js 含完整 agent_token→friday_token→DEFAULT_TOKEN 链
+  - 用户需 Ctrl+Shift+R 强制刷新清除浏览器缓存的旧 JS
 - 2026-05-29 22:51: [采集恢复] full_scrape.py 恢复运行
   - **原因：** 之前采集器反复崩溃（5次重启都在第一个品类就死）
   - **诊断：** 旧版本用了CONCURRENCY=10（源码是5），MySQL连接池耗尽导致静默死亡。另外git commit b758bfc的编码污染导致所有Python文件乱码
