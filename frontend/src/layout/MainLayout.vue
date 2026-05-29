@@ -87,7 +87,7 @@
           <div class="nav-section-label" v-show="!sidebarCollapsed"><span class="sec-icon">🛡️</span> 安全监控</div>
           <router-link to="/security" class="nav-item" :class="{ active: isActive('/security') }"><span class="nav-icon">🔒</span><span>安全中心</span></router-link>
           <router-link to="/approval" class="nav-item" :class="{ active: isActive('/approval') }"><span class="nav-icon">✅</span><span>审批中心</span></router-link>
-          <router-link to="/self-healing" class="nav-item" :class="{ active: isActive('/self-healing') }"><span class="nav-icon">🩸</span><span>异常自愈</span></router-link>
+          <router-link to="/self-healing" class="nav-item" :class="{ active: isActive('/self-healing') }"><span class="nav-icon">🩺</span><span>异常自愈</span></router-link>
           <router-link to="/emergency" class="nav-item" :class="{ active: isActive('/emergency') }"><span class="nav-icon">🚨</span><span>急救面板</span></router-link>
           <router-link to="/phone" class="nav-item" :class="{ active: isActive('/phone') }"><span class="nav-icon">📞</span><span>AI电话助理</span></router-link>
           <router-link to="/alert" class="nav-item" :class="{ active: isActive('/alert') }"><span class="nav-icon">🔔</span><span>告警中心</span></router-link>
