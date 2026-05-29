@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <!-- 全局悬浮AI助手 — 文字+语音+视频全集成 -->
   <div class="floating-ai" :class="{ 'chat-open': chatOpen, 'chat-expanded': chatExpanded, 'video-mode': videoActive }">
     <!-- ====== 悬浮按钮 ====== -->
@@ -497,40 +497,40 @@ minimizeChat = function() { stopMatrixRain(); origMin() }
 function detectTask(msg) {
   const m = msg.toLowerCase();
   processingSteps.value = [];
-  if (m.includes('???')||m.includes('server')||m.includes('??')||m.includes('cpu')||m.includes('??')) {
-    processingSteps.value = ['?????...', '??CPU??...', '??????...', '??????...', '????...'];
-    return '?????';
+  if (m.includes('服务')||m.includes('server')||m.includes('状态')||m.includes('cpu')||m.includes('内存')) {
+    processingSteps.value = ['连接服务器...', '查询CPU状态...', '读取内存数据...', '分析负载情况...', '生成报告...'];
+    return '系统诊断';
   }
-  if (m.includes('??')||m.includes('order')) {
-    processingSteps.value = ['?????...', '??????...', '????...'];
-    return '?????';
+  if (m.includes('订单')||m.includes('order')) {
+    processingSteps.value = ['查询数据库...', '统计订单数据...', '生成汇总...'];
+    return '订单查询';
   }
-  if (m.includes('??')||m.includes('report')||m.includes('??')) {
-    processingSteps.value = ['??????...', '??????...', 'AI????...', '????...'];
-    return '?????';
+  if (m.includes('报告')||m.includes('report')||m.includes('周报')) {
+    processingSteps.value = ['收集运行数据...', '分析趋势...', 'AI生成摘要...', '排版输出...'];
+    return '报告生成';
   }
-  if (m.includes('??')||m.includes('??')||m.includes('??')||m.includes('??')) {
-    processingSteps.value = ['??????...', '??????...', 'AI????...', '??????...'];
-    return '?????';
+  if (m.includes('异常')||m.includes('告警')||m.includes('错误')||m.includes('故障')) {
+    processingSteps.value = ['扫描异常点...', '关联分析...', 'AI诊断...', '生成处理建议...'];
+    return '异常排查';
   }
-  if (m.includes('??')||m.includes('??')||m.includes('price')) {
-    processingSteps.value = ['??????...', '??????...', 'AI????...'];
-    return '?????';
+  if (m.includes('定价')||m.includes('价格')||m.includes('price')) {
+    processingSteps.value = ['获取市场数据...', '竞品分析...', 'AI定价建议...'];
+    return '智能定价';
   }
-  if (m.includes('??')||m.includes('??')||m.includes('??')) {
-    processingSteps.value = ['??????...', 'AI????...', '?????...'];
-    return 'AI???';
+  if (m.includes('编程')||m.includes('代码')||m.includes('开发')) {
+    processingSteps.value = ['分析需求...', 'AI生成代码...', '验证测试...'];
+    return 'AI编程';
   }
-  if (m.includes('??')||m.includes('backup')) {
-    processingSteps.value = ['?????...', '????...', '????...'];
-    return '?????';
+  if (m.includes('备份')||m.includes('backup')) {
+    processingSteps.value = ['快照状态...', '打包数据...', '安全存储...'];
+    return '备份回滚';
   }
-  if (m.includes('??')||m.includes('?')||m.includes('scrape')) {
-    processingSteps.value = ['?????...', '????...', '????...', '????...'];
-    return '?????';
+  if (m.includes('采集')||m.includes('爬')||m.includes('scrape')) {
+    processingSteps.value = ['连接数据源...', '解析字段...', '清洗去重...', '入库存储...'];
+    return '数据采集';
   }
-  processingSteps.value = ['????...', '????...', 'AI??...'];
-  return 'AI ???';
+  processingSteps.value = ['分析中...', '处理中...', 'AI思考...'];
+  return 'AI 处理';
 }
 function startStepAnimation() {
   if (stepTimer) clearInterval(stepTimer);

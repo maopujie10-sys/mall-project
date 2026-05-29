@@ -431,7 +431,7 @@ onMounted(() => { loadHistory();
 .tool-meta { display: flex; gap: 4px; margin-top: 4px; }
 
 /* 右侧聊天区 */
-.console-chat { flex: 1; display: flex; flex-direction: column; background: #fafafa; }
+.console-chat { flex: 1; display: flex; flex-direction: column; background: rgba(13,16,37,0.35); }
 .chat-messages { flex: 1; overflow-y: auto; padding: 20px; }
 
 /* 欢迎屏 */

@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div ref="container" class="nn3d-container">
     <div class="nn-overlay">
       <div class="nn-status">🧠 数字生命体· 运行中</div>

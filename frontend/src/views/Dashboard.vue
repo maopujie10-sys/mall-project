@@ -205,7 +205,7 @@ export default {
 .health-value { font-size: 42px; font-weight: 700; }
 .health-level { font-size: 14px; margin-top: 4px; opacity: 0.9; }
 
-.metric-card { background: #fff; border-radius: 8px; padding: 18px; border: 1px solid #f0f0f0; }
+.metric-card { background: rgba(13,16,37,0.55); backdrop-filter: blur(8px); border-radius: 8px; padding: 18px; border: 1px solid rgba(102,126,234,0.12); color: #e8eaf0; }
 .metric-label { font-size: 12px; color: #999; margin-bottom: 4px; }
 .metric-value { font-size: 28px; font-weight: 700; }
 .metric-sub { font-size: 11px; color: #999; margin-top: 6px; }

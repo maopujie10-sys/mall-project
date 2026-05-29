@@ -17,13 +17,13 @@
   --color-danger-bg: rgba(255, 77, 79, 0.08);
 
   /* 深色背景层 */
-  --bg-deep: #050812;
-  --bg-page: #080b1a;
-  --bg-card: #0d1025;
-  --bg-elevated: #111530;
-  --bg-hover: #151a38;
-  --bg-input: #0d1025;
-  --bg-glass: rgba(13, 16, 37, 0.85);
+  --bg-deep: rgba(5, 8, 18, 0.3);
+  --bg-page: rgba(8, 11, 26, 0.35);
+  --bg-card: rgba(13, 16, 37, 0.55);
+  --bg-elevated: rgba(17, 21, 48, 0.65);
+  --bg-hover: rgba(21, 26, 56, 0.7);
+  --bg-input: rgba(13, 16, 37, 0.45);
+  --bg-glass: rgba(13, 16, 37, 0.5);
 
   /* 文字 */
   --text-primary: #e8eaf0;
@@ -37,14 +37,14 @@
   --border-glow: rgba(102, 126, 234, 0.3);
 
   /* 侧边栏 */
-  --sidebar-bg: #0a0d1a;
+  --sidebar-bg: rgba(10, 13, 26, 0.6);
   --sidebar-hover: rgba(102, 126, 234, 0.1);
   --sidebar-active: #667eea;
   --sidebar-text: rgba(255, 255, 255, 0.5);
   --sidebar-active-text: #fff;
 
   /* 头部 */
-  --header-bg: rgba(10, 13, 26, 0.9);
+  --header-bg: rgba(10, 13, 26, 0.5);
   --header-height: 52px;
 
   /* 圆角 */
@@ -70,7 +70,7 @@ body {
   color: var(--text-primary);
   background: var(--bg-page);
   -webkit-font-smoothing: antialiased;
-  overflow: hidden;
+  overflow: hidden; backdrop-filter: none;
 }
 
 /* ===== Element Plus 覆盖 — Jarvis风格 ===== */
@@ -79,6 +79,8 @@ body {
   border: 1px solid var(--border-color) !important;
   border-radius: var(--radius-md) !important;
   color: var(--text-primary) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 .el-card__header {
   border-bottom: 1px solid var(--border-color) !important;
@@ -128,6 +130,8 @@ body {
   background: var(--bg-card) !important;
   border: 1px solid var(--border-color) !important;
   border-radius: var(--radius-lg) !important;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
 }
 .el-dialog__title { color: var(--text-primary) !important; }
 
@@ -143,6 +147,23 @@ body {
 .el-breadcrumb__inner { color: var(--text-secondary) !important; }
 
 .el-divider { border-color: var(--border-color) !important; }
+
+
+/* ===== 全局毛玻璃容器（3D大脑透视） ===== */
+.page-container,
+.page-content,
+.dashboard-container,
+.lifeform-dashboard,
+.page-wrapper {
+  background: rgba(8, 11, 26, 0.3) !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+.page-container > *,
+.page-content > * {
+  position: relative;
+  z-index: 1;
+}
 
 /* 滚动条 */
 ::-webkit-scrollbar { width: 5px; height: 5px; }
