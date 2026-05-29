@@ -35,6 +35,17 @@
 <el-button type="primary" @click="compressMem" :loading="loading">压缩长对话</el-button>
 <div v-if="memorySummary" class="result-box"><b>原始消息:</b> {{memoryCount}}条<br><b>摘要:</b><div v-html="md(memorySummary)"></div></div></el-tab-pane>
 
+
+<el-tab-pane label="🤖 浏览器Agent" name="browser">
+<el-input v-model="browserCmd" placeholder="自然语言指令，如：打开淘宝搜索蓝牙耳机提取前10个价格" type="textarea" :rows="3"/>
+<el-button type="primary" @click="runBrowser" :loading="loading" style="margin-top:8px">🤖 AI执行</el-button>
+<el-row :gutter="8" style="margin-top:8px"><el-col :span="8"><el-button size="small" @click="quickBrowser('prices')">💰 提取价格</el-button></el-col>
+<el-col :span="8"><el-button size="small" @click="quickBrowser('products')">📦 商品列表</el-button></el-col>
+<el-col :span="8"><el-button size="small" @click="quickBrowser('screenshot')">📸 截图</el-button></el-col></el-row>
+<div v-if="browserPlan" class="result-box" style="margin-top:12px"><div class="plan-title">📋 AI拆解步骤({{browserPlan.length}}步):</div>
+<div v-for="(s,i) in browserPlan" :key="i" class="plan-step">{{i+1}}. {{s.action}} → {{s.target}} <span style="color:rgba(255,255,255,.4)">({{s.reason}})</span></div></div>
+<div v-if="browserSummary" class="result-box"><b>📊 执行结果:</b><div v-html="md(browserSummary)"></div></div>
+<div v-if="browserScreenshot" style="margin-top:12px"><img :src="'data:image/png;base64,'+browserScreenshot" style="max-width:100%;border-radius:8px;border:1px solid rgba(255,255,255,.1)"/></div></el-tab-pane>
 </el-tabs></div></template>
 <script setup>
 import {ref,nextTick,onUnmounted} from "vue";import {ElMessage} from "element-plus";import {agentApi} from "@/api"
@@ -80,5 +91,11 @@ async function runScrape(){const d=await api("/agent/advanced/scrape",{url:scrap
 async function runExport(){const d=await api("/agent/advanced/export",{content:exportContent.value,format:exportFormat.value,filename:'report'});if(d?.ok)exportUrl.value="/agent/advanced/download/"+d.filename}
 async function compressMem(){const d=await api("/agent/advanced/memory/compress",{conversation_id:compressCid.value});if(d?.ok){memorySummary.value=d.summary;memoryCount.value=d.original_messages}}
 function md(t){return(t||'').replace(/\n/g,"<br>").replace(/\*\*(.*?)\*\*/g,"<b>$1</b>")}
+
+// === 浏览器Agent ===
+const browserCmd=ref("");const browserPlan=ref(null);const browserSummary=ref("");const browserScreenshot=ref(null)
+async function runBrowser(){const d=await api("/agent/advanced/browser/agent",{command:browserCmd.value});if(d?.ok){browserPlan.value=d.plan;browserSummary.value=d.summary;browserScreenshot.value=d.final_screenshot}}
+async function quickBrowser(type){const d=await api("/agent/advanced/browser/quick",{type,url:browserCmd.value||"https://www.google.com"});if(d?.ok){browserPlan.value=d.plan;browserSummary.value=d.summary;browserScreenshot.value=d.final_screenshot}}
 </script>
-<style scoped>.page-shell{max-width:900px;margin:0 auto;padding:20px}.page-header{margin-bottom:16px}.page-header h2{font-size:20px;color:#e0e0ff;margin:0}.page-header p{font-size:12px;color:rgba(255,255,255,.5);margin:4px 0}.voice-area{text-align:center}.voice-status{font-size:14px;margin-bottom:12px;color:rgba(255,255,255,.5)}.voice-status.active{color:#4ade80}.voice-transcript{max-height:300px;overflow-y:auto;text-align:left;padding:12px;background:rgba(0,0,0,.3);border-radius:10px;margin-bottom:12px}.vm-user{color:#667eea;margin-bottom:8px}.vm-assistant{color:#e0e0e0;margin-bottom:8px}.vc-btn{width:80px;height:80px;border-radius:50%;border:3px solid rgba(102,126,234,.4);background:rgba(15,15,35,.9);color:#e0e0ff;font-size:16px;cursor:pointer}.vc-btn.recording{border-color:#ef4444;animation:pulse 1.5s infinite}@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.5)}50%{box-shadow:0 0 0 20px rgba(239,68,68,0)}}.report-box{margin-top:12px;padding:16px;background:rgba(15,15,35,.8);border:1px solid rgba(102,126,234,.2);border-radius:12px}.report-title{font-size:16px;font-weight:600;color:#e0e0ff;margin-bottom:12px}.findings{margin-bottom:12px}.finding-item{padding:8px;background:rgba(102,126,234,.08);border-radius:8px;margin-bottom:6px;font-size:13px;color:rgba(255,255,255,.7)}.result-box{margin-top:12px;padding:14px;background:rgba(0,0,0,.5);border:1px solid rgba(102,126,234,.2);border-radius:10px;font-size:13px;color:#e0e0e0;line-height:1.7;max-height:400px;overflow:auto}@media(max-width:768px){.page-shell{padding:10px}}</style>
+<style scoped>.page-shell{max-width:900px;margin:0 auto;padding:20px}.page-header{margin-bottom:16px}.page-header h2{font-size:20px;color:#e0e0ff;margin:0}.page-header p{font-size:12px;color:rgba(255,255,255,.5);margin:4px 0}.voice-area{text-align:center}.voice-status{font-size:14px;margin-bottom:12px;color:rgba(255,255,255,.5)}.voice-status.active{color:#4ade80}.voice-transcript{max-height:300px;overflow-y:auto;text-align:left;padding:12px;background:rgba(0,0,0,.3);border-radius:10px;margin-bottom:12px}.vm-user{color:#667eea;margin-bottom:8px}.vm-assistant{color:#e0e0e0;margin-bottom:8px}.vc-btn{width:80px;height:80px;border-radius:50%;border:3px solid rgba(102,126,234,.4);background:rgba(15,15,35,.9);color:#e0e0ff;font-size:16px;cursor:pointer}.vc-btn.recording{border-color:#ef4444;animation:pulse 1.5s infinite}@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.5)}50%{box-shadow:0 0 0 20px rgba(239,68,68,0)}}.report-box{margin-top:12px;padding:16px;background:rgba(15,15,35,.8);border:1px solid rgba(102,126,234,.2);border-radius:12px}.report-title{font-size:16px;font-weight:600;color:#e0e0ff;margin-bottom:12px}.findings{margin-bottom:12px}.finding-item{padding:8px;background:rgba(102,126,234,.08);border-radius:8px;margin-bottom:6px;font-size:13px;color:rgba(255,255,255,.7)}.result-box{margin-top:12px;padding:14px;background:rgba(0,0,0,.5);border:1px solid rgba(102,126,234,.2);border-radius:10px;font-size:13px;color:#e0e0e0;line-height:1.7;max-height:400px;overflow:auto}@media(max-width:768px){.page-shell{padding:10px}}.plan-title{font-weight:600;color:#e0e0ff;margin-bottom:8px}.plan-step{padding:4px 0;font-size:12px;color:rgba(255,255,255,.7);border-bottom:1px solid rgba(255,255,255,.03)}
+</style>

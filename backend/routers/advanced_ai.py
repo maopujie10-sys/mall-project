@@ -278,63 +278,177 @@ async def scrape_url(req: ScrapeRequest, _=Depends(verify_token)):
     except Exception as e:
         return {"ok":False,"error":str(e)}
 
-# ===== 7. 浏览器自动化 =====
-class BrowserRequest(BaseModel):
-    action: str = "screenshot"  # screenshot | search | extract
-    url: str = ""
-    selector: str = ""
+# ===== 7. AI浏览器Agent — 自然语言操控浏览器 =====
+class BrowserAgentRequest(BaseModel):
+    command: str  # 自然语言指令
+    headless: bool = True
+    max_steps: int = 10
 
-@router.post("/browser")
-async def browser_action(req: BrowserRequest, _=Depends(verify_token)):
-    """Playwright浏览器自动化"""
+@router.post("/browser/agent")
+async def browser_agent(req: BrowserAgentRequest, _=Depends(verify_token)):
+    """AI浏览器Agent — 自然语言→步骤拆解→Playwright执行→AI视觉理解"""
+    import httpx
+    
+    # Step 1: AI拆解任务为步骤
+    plan_prompt = f"""你是一个浏览器自动化专家。将以下任务拆解为具体的浏览器操作步骤。
+返回JSON数组，每步格式: {{"action":"navigate/click/type/wait/screenshot/extract/scroll","target":"选择器或URL","value":"输入值或说明","reason":"为什么这步"}}
+
+任务: {req.command}
+
+规则:
+- navigate: 打开URL 
+- click: 点击元素(用文本或CSS选择器)
+- type: 输入文本(先click再type)
+- wait: 等待(秒)
+- screenshot: 截图
+- extract: 提取页面数据(说明要提取什么)
+- scroll: 向下滚动
+
+只返回JSON数组，不要其他内容。最多{req.max_steps}步。"""
+
+    plan_text = await _call_ai([{"role":"user","content":plan_prompt}], max_tokens=800, temperature=0.3)
+    
+    # 解析步骤
+    steps = []
+    try:
+        json_match = re.search(r'\[.*\]', plan_text, re.DOTALL)
+        if json_match:
+            steps = json.loads(json_match.group())
+    except:
+        # Fallback: 简单任务直接执行
+        steps = [{"action":"navigate","target":"https://www.google.com/search?q="+req.command.replace(" ","+"),"reason":"搜索"}]
+    
+    # Step 2: Playwright执行
+    results = []
+    screenshots = []
+    
     try:
         import subprocess, tempfile
         
-        script = ""
-        if req.action == "screenshot":
-            script = f"""
-from playwright.sync_api import sync_playwright
-with sync_playwright() as p:
-    browser = p.chromium.launch(headless=True)
-    page = browser.new_page()
-    page.goto("{req.url}", timeout=15000)
-    page.screenshot(path="/tmp/screenshot.png", full_page=True)
-    browser.close()
-print("OK:screenshot")
-"""
-        elif req.action == "search":
-            query = req.url or "test"
-            script = f"""
-from playwright.sync_api import sync_playwright
-with sync_playwright() as p:
-    browser = p.chromium.launch(headless=True)
-    page = browser.new_page()
-    page.goto("https://www.google.com/search?q={query}", timeout=15000)
-    results = page.query_selector_all(".g")
-    for i,r in enumerate(results[:5]):
-        title = r.query_selector("h3")
-        link = r.query_selector("a")
-        if title and link:
-            print(f"{{i+1}}. {{title.inner_text()}} - {{link.get_attribute('href')}}")
-    browser.close()
-"""
-        else: return {"ok":False,"error":"未知操作"}
+        script_lines = [
+            "from playwright.sync_api import sync_playwright",
+            "import json, time",
+            "p = sync_playwright().start()",
+            f"browser = p.chromium.launch(headless={'True' if req.headless else 'False'})",
+            "page = browser.new_page(viewport={'width':1280,'height':900})",
+            "page.set_default_timeout(15000)",
+            "outputs = []",
+        ]
         
-        with tempfile.NamedTemporaryFile(suffix=".py",mode="w",delete=False) as f:
+        for i, step in enumerate(steps):
+            action = step.get("action","")
+            target = step.get("target","")
+            value = step.get("value","")
+            
+            if action == "navigate" and target:
+                script_lines.append(f"try:\n    page.goto('{target}', wait_until='domcontentloaded')\n    outputs.append({{'step':{i},'action':'navigate','ok':True,'url':page.url}})\nexcept Exception as e:\n    outputs.append({{'step':{i},'action':'navigate','ok':False,'error':str(e)}})")
+            
+            elif action == "click" and target:
+                # Try text content first, then CSS
+                script_lines.append(f"try:\n    page.click('text={target}', timeout=5000)\n    outputs.append({{'step':{i},'action':'click','ok':True,'target':'{target}'}})\nexcept:\n    try:\n        page.click('{target}', timeout=5000)\n        outputs.append({{'step':{i},'action':'click','ok':True,'target':'{target}'}})\n    except Exception as e:\n        outputs.append({{'step':{i},'action':'click','ok':False,'error':str(e)}})")
+            
+            elif action == "type" and target and value:
+                script_lines.append(f"try:\n    page.fill('{target}', '{value}', timeout=5000)\n    outputs.append({{'step':{i},'action':'type','ok':True,'value':'{value}'}})\nexcept:\n    try:\n        page.type('{target}', '{value}', delay=50)\n        outputs.append({{'step':{i},'action':'type','ok':True,'value':'{value}'}})\n    except Exception as e:\n        outputs.append({{'step':{i},'action':'type','ok':False,'error':str(e)}})")
+            
+            elif action == "wait":
+                secs = min(float(str(target or value or "1")), 10)
+                script_lines.append(f"time.sleep({secs})\noutputs.append({{'step':{i},'action':'wait','ok':True,'seconds':{secs}}})")
+            
+            elif action == "screenshot":
+                script_lines.append(f"try:\n    page.screenshot(path='/tmp/agent_shot_{i}.png', full_page=False)\n    outputs.append({{'step':{i},'action':'screenshot','ok':True,'file':'/tmp/agent_shot_{i}.png'}})\nexcept Exception as e:\n    outputs.append({{'step':{i},'action':'screenshot','ok':False,'error':str(e)}})")
+            
+            elif action == "extract":
+                # 提取页面文本
+                script_lines.append(f"try:\n    text = page.inner_text('body')[:3000]\n    title = page.title()\n    outputs.append({{'step':{i},'action':'extract','ok':True,'title':title,'text':text}})\nexcept Exception as e:\n    outputs.append({{'step':{i},'action':'extract','ok':False,'error':str(e)}})")
+            
+            elif action == "scroll":
+                script_lines.append(f"try:\n    page.evaluate('window.scrollBy(0,800)')\n    outputs.append({{'step':{i},'action':'scroll','ok':True}})\nexcept Exception as e:\n    outputs.append({{'step':{i},'action':'scroll','ok':False,'error':str(e)}})")
+            
+            else:
+                script_lines.append(f"outputs.append({{'step':{i},'action':'{action}','ok':False,'error':'未知操作'}})")
+        
+        script_lines.append("final_screenshot = '/tmp/agent_final.png'")
+        script_lines.append("try:\n    page.screenshot(path=final_screenshot, full_page=False)\nexcept:\n    final_screenshot = None")
+        script_lines.append("print('RESULTS:', json.dumps(outputs, ensure_ascii=False))")
+        script_lines.append("print('FINAL_SCREENSHOT:', final_screenshot or 'none')")
+        script_lines.append("browser.close()\np.stop()")
+        
+        script = "\n".join(script_lines)
+        
+        with tempfile.NamedTemporaryFile(suffix=".py", mode="w", delete=False) as f:
             f.write(script); tmp = f.name
         
-        result = subprocess.run(["python3",tmp],capture_output=True,text=True,timeout=30)
+        result = subprocess.run(["python3", tmp], capture_output=True, text=True, timeout=60)
         os.unlink(tmp)
         
-        if req.action == "screenshot" and os.path.exists("/tmp/screenshot.png"):
-            with open("/tmp/screenshot.png","rb") as f:
-                b64 = base64.b64encode(f.read()).decode()
-            return {"ok":True,"action":req.action,"screenshot_base64":b64}
+        # 解析结果
+        for line in result.stdout.split('\n'):
+            if line.startswith('RESULTS:'):
+                try: results = json.loads(line[8:].strip())
+                except: pass
         
-        return {"ok":True,"action":req.action,"output":result.stdout[:2000],"error":result.stderr[:500]}
+        # 读取截图
+        for i in range(len(steps)):
+            shot_path = f"/tmp/agent_shot_{i}.png"
+            if os.path.exists(shot_path):
+                try:
+                    with open(shot_path, "rb") as f:
+                        screenshots.append({"step":i,"base64":base64.b64encode(f.read()).decode()})
+                    os.unlink(shot_path)
+                except: pass
+        
+        final_shot_path = "/tmp/agent_final.png"
+        final_screenshot = None
+        if os.path.exists(final_shot_path):
+            try:
+                with open(final_shot_path, "rb") as f:
+                    final_screenshot = base64.b64encode(f.read()).decode()
+                os.unlink(final_shot_path)
+            except: pass
+        
+        # Step 3: AI总结执行结果
+        result_summary = json.dumps([{"step":r.get("step"),"action":r.get("action"),"ok":r.get("ok"),"detail":str(r)[:200]} for r in results], ensure_ascii=False)
+        summary = await _call_ai([
+            {"role":"system","content":"你是浏览器自动化结果分析师。简明总结执行结果，提取关键数据和发现。"},
+            {"role":"user","content":f"任务: {req.command}\n步骤计划: {plan_text[:500]}\n执行结果: {result_summary}\n\n请用3-5句话总结完成了什么，提取了哪些关键信息。"}
+        ], max_tokens=300)
+        
+        return {
+            "ok": True,
+            "command": req.command,
+            "plan": steps,
+            "results": results,
+            "summary": summary,
+            "screenshots": screenshots,
+            "final_screenshot": final_screenshot,
+            "steps_executed": len([r for r in results if r.get("ok")]),
+            "steps_total": len(steps)
+        }
+        
+    except subprocess.TimeoutExpired:
+        return {"ok": False, "error": "浏览器操作超时(60秒)", "plan": steps}
     except Exception as e:
-        return {"ok":False,"error":str(e)}
+        return {"ok": False, "error": str(e), "plan": steps}
 
+# ===== 浏览器Agent快捷任务 =====
+@router.post("/browser/quick")
+async def browser_quick(req: dict, _=Depends(verify_token)):
+    """快捷浏览器任务 — 竞品采集/商品截图/页面监控"""
+    task_type = req.get("type","")
+    url = req.get("url","")
+    selector = req.get("selector","")
+    
+    commands = {
+        "screenshot": f"打开 {url} 并截图",
+        "prices": f"打开 {url} 提取所有价格信息",
+        "products": f"打开 {url} 提取商品列表(名称+价格+链接)",
+        "monitor": f"打开 {url} 截图并提取页面主要变化",
+        "login_check": f"打开 {url} 检查是否需要登录",
+    }
+    
+    cmd = commands.get(task_type, req.get("command", f"打开 {url}"))
+    req_obj = BrowserAgentRequest(command=cmd, headless=True, max_steps=8)
+    return await browser_agent(req_obj, _)
 # ===== 8. 长上下文记忆压缩 =====
 class MemoryRequest(BaseModel):
     conversation_id: str = ""
