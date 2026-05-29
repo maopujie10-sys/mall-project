@@ -6,11 +6,12 @@ sys.path.insert(0, ".")
 # 内存安全配置
 MEMORY_LIMIT_PCT = 80     # 内存超此比例暂停
 MEMORY_CHECK_INTERVAL = 10 # 每N个关键词检查一次内存
-SEARCH_DELAY_BASE = 8      # 搜索基础间隔秒(自适应:遇429加倍)
-SEARCH_DELAY_MAX = 60      # 搜索最大间隔秒
-PRODUCT_DELAY = 3          # 产品并发批间隔秒
-CONCURRENCY = 3            # 产品页并发数
-CATEGORY_PAUSE = 30        # 每完成一个分类暂停秒
+SEARCH_DELAY_BASE = 1.2    # 搜索基础间隔秒(自适应:遇429加倍)
+SEARCH_DELAY_MAX = 20      # 搜索最大间隔秒
+PRODUCT_DELAY = 0.15       # 产品并发批间隔秒
+CONCURRENCY = 8            # 产品页并发数
+CATEGORY_PAUSE = 1         # 每完成一个分类暂停秒
+MAX_PAGES = 3              # 每个关键词搜索页数
 
 LOG_FILE = "/tmp/full_scrape.log"
 
@@ -255,17 +256,63 @@ SUBCAT_KEYWORDS = {
 }
 
 TOTAL = sum(len(v) for v in SUBCAT_KEYWORDS.values())
-print(f"覆盖 {len(SUBCAT_KEYWORDS)} 个子品类, {TOTAL} 个关键词")
 
-async def run(ppk=5):
+# 自动扩充关键词：每个关键词加修饰前缀，大幅增加搜索覆盖面
+def expand_keywords(keywords):
+    modifiers = ["best", "top rated", "premium", "new"]
+    brands = ["logitech","samsung","sony","apple","anker","jbl","bose","dyson","philips","dell","hp","lenovo"]
+    result = list(keywords)
+    for kw in keywords:
+        for mod in modifiers:
+            result.append(f"{mod} {kw}")
+    for brand in random.sample(brands, min(4, len(brands))):
+        for kw in keywords[:2]:
+            result.append(f"{brand} {kw}")
+    return list(dict.fromkeys(result))
+
+for cat in SUBCAT_KEYWORDS:
+    SUBCAT_KEYWORDS[cat] = expand_keywords(SUBCAT_KEYWORDS[cat])
+
+TOTAL = sum(len(v) for v in SUBCAT_KEYWORDS.values())
+print(f"覆盖 {len(SUBCAT_KEYWORDS)} 个子品类, {TOTAL} 个关键词(扩充后)")
+
+CHECKPOINT_FILE = "/tmp/full_scrape_checkpoint.json"
+
+def load_checkpoint():
+    import json
+    if os.path.exists(CHECKPOINT_FILE):
+        try:
+            with open(CHECKPOINT_FILE) as f:
+                return json.load(f)
+        except Exception:
+            pass
+    return {"done_cats": [], "seen_urls": []}
+
+def save_checkpoint(done_cats, seen_urls_sample):
+    import json
+    try:
+        with open(CHECKPOINT_FILE, "w") as f:
+            json.dump({"done_cats": list(done_cats),
+                       "seen_urls": list(seen_urls_sample)[:5000]}, f)
+    except Exception:
+        pass
+
+async def run(ppk=80):
     from tools.scraper_engine import ADAPTERS
     from tools.mall_importer import import_batch
-    import httpx, random, hashlib
+    import httpx, random, hashlib, json
     from tools.scraper_engine import download_and_upload
+
+    cp = load_checkpoint()
+    done_cats = set(cp.get("done_cats", []))
+    for u in cp.get("seen_urls", []):
+        seen_urls.add(u)
 
     _log(f"===== 全品类采集 启动 =====")
     _log(f"品类数: {len(SUBCAT_KEYWORDS)} | 关键词数: {TOTAL} | 每品类目标: {ppk}")
     _log(f"搜索间隔: {SEARCH_DELAY_BASE}s(自适应) | 产品延迟: {PRODUCT_DELAY}s | 并发: {CONCURRENCY}")
+    if done_cats:
+        _log(f"断点续传: 跳过 {len(done_cats)} 个已完成品类")
 
     stats = {"cats": 0, "kws": 0, "found": 0, "imported": 0, "skipped": 0, "failed": 0}
     amazon_adapter = ADAPTERS["amazon"]
@@ -275,6 +322,9 @@ async def run(ppk=5):
     async with httpx.AsyncClient(timeout=30, follow_redirects=True, verify=False) as session:
         for subcat, keywords in SUBCAT_KEYWORDS.items():
             stats["cats"] += 1
+            if subcat in done_cats:
+                _log(f"[{stats['cats']}/{len(SUBCAT_KEYWORDS)}] {subcat} (已跳过)")
+                continue
             if stats["cats"] > 1:
                 _log(f"休息 {CATEGORY_PAUSE}s")
                 gc.collect()
@@ -296,46 +346,45 @@ async def run(ppk=5):
                 # Amazon
                 await asyncio.sleep(search_delay)
                 try:
-                    amz_urls = await amazon_adapter.search(kw, max_pages=1, session=session)
+                    amz_urls = await amazon_adapter.search(kw, max_pages=MAX_PAGES, session=session)
                 except Exception as e:
-                    _log(f"  [Amazon] {kw}: 搜索异常 {e}")
+                    _log(f"  [A] {kw}: search err {e}")
                     search_delay = min(search_delay * 1.3, SEARCH_DELAY_MAX)
                     amz_urls = []
                 if amz_urls:
-                    fresh = [u for u in amz_urls[:need+2] if u not in seen_urls]
+                    fresh = [u for u in amz_urls if u not in seen_urls]
                     for u in fresh:
                         seen_urls.add(u)
                     if fresh:
-                        all_fresh.append(("amazon", fresh))
+                        all_fresh.append(("amazon", fresh[:need+5]))
                     search_delay = max(SEARCH_DELAY_BASE, search_delay * 0.95)
                 else:
                     search_delay = min(search_delay * 1.1, SEARCH_DELAY_MAX)
 
-                # eBay (补充，每关键词限5个itemId)
+                # eBay
                 if ebay_adapter and cat_imported < ppk:
-                    await asyncio.sleep(2)  # eBay API短间隔
+                    await asyncio.sleep(1.5)
                     try:
-                        ebay_ids = await ebay_adapter.search(kw, max_pages=1, session=session)
+                        ebay_ids = await ebay_adapter.search(kw, max_pages=MAX_PAGES, session=session)
                     except Exception:
                         ebay_ids = []
                     if ebay_ids:
-                        fresh_ebay = [i for i in ebay_ids[:5] if i not in seen_urls]
+                        fresh_ebay = [i for i in ebay_ids if i not in seen_urls]
                         for i in fresh_ebay:
                             seen_urls.add(i)
                         if fresh_ebay:
-                            all_fresh.append(("ebay", fresh_ebay))
+                            all_fresh.append(("ebay", fresh_ebay[:15]))
 
                 if not all_fresh:
-                    _log(f"  {kw}: 双平台0结果")
                     continue
 
-                # ── 并发提取+导入 ──
+                # 并发提取+导入
                 for platform, items in all_fresh:
                     if cat_imported >= ppk:
                         break
                     adapter = amazon_adapter if platform == "amazon" else ebay_adapter
                     products = await adapter.extract_concurrent(
-                        items[:need+2], session=session, concurrency=CONCURRENCY
+                        items[:need+5], session=session, concurrency=CONCURRENCY
                     )
                     for p in products:
                         p.id = hashlib.md5(p.source_url.encode()).hexdigest()[:16]
@@ -346,16 +395,28 @@ async def run(ppk=5):
                     imported_now = 0
                     review_total = 0
                     sku_total = 0
+
+                    # 限制COS并发连接数，所有产品图片并发下载
+                    dl_sem = asyncio.Semaphore(12)
+                    async def _dl_limited(img_url, idx, pid):
+                        async with dl_sem:
+                            try:
+                                return await download_and_upload(img_url, pid, idx, session)
+                            except Exception:
+                                return None
+
+                    # 分批启动下载任务
+                    dl_results = await asyncio.gather(*[_dl_limited(u, i, p.id)
+                        for p in products[:need]
+                        for i, u in enumerate(p.images[:3])], return_exceptions=True)
+
+                    # 将结果分配回各产品
+                    dl_idx = 0
                     for p in products[:need]:
                         uploaded = []
-                        async def _dl(img_url, idx):
-                            try:
-                                return await download_and_upload(img_url, p.id, idx, session)
-                            except Exception:
-                                return img_url
-                        tasks = [_dl(u, i) for i, u in enumerate(p.images[:8])]
-                        results = await asyncio.gather(*tasks, return_exceptions=True)
-                        for r in results:
+                        for i in range(min(3, len(p.images))):
+                            r = dl_results[dl_idx]
+                            dl_idx += 1
                             if isinstance(r, str) and r:
                                 uploaded.append(r)
                         p.cos_images = uploaded
@@ -384,6 +445,9 @@ async def run(ppk=5):
 
             if cat_imported == 0:
                 _log(f"  ⚠️ {subcat} 未采集到")
+            elif cat_imported >= ppk:
+                done_cats.add(subcat)
+                save_checkpoint(done_cats, list(seen_urls)[:5000])
 
     _log(f"===== 完成 =====")
     _log(f"上架 {stats['imported']} | 重复 {stats['skipped']} | 失败 {stats['failed']}")
@@ -391,5 +455,5 @@ async def run(ppk=5):
     return stats
 
 if __name__ == "__main__":
-    ppk = int(sys.argv[1]) if len(sys.argv) > 1 else 5
+    ppk = int(sys.argv[1]) if len(sys.argv) > 1 else 80
     asyncio.run(run(ppk))
