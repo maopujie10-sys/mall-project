@@ -420,6 +420,94 @@ async def agent_chat_vision(req: ImageChatRequest, _=Depends(verify_token)):
     except Exception as e:
         return {"ok": False, "error": str(e)}
 
+
+# ===== v7 新增: 真SSE流式+会话+Vision+Prompt =====
+import uuid, base64, sqlite3
+from pathlib import Path
+from fastapi import UploadFile, File, Form
+import httpx
+
+CONV_DB = Path(__file__).parent.parent / "data" / "conversations.db"
+def _cdb():
+    CONV_DB.parent.mkdir(parents=True,exist_ok=True)
+    c=sqlite3.connect(str(CONV_DB))
+    c.execute("CREATE TABLE IF NOT EXISTS convs(id TEXT PRIMARY KEY,title TEXT,created TEXT,updated TEXT)")
+    c.execute("CREATE TABLE IF NOT EXISTS msgs(id INTEGER PRIMARY KEY AUTOINCREMENT,cid TEXT,role TEXT,content TEXT,created TEXT)")
+    c.commit();return c
+
+@router.post("/chat/stream")
+async def chat_stream(req: ChatRequest, _=Depends(verify_token)):
+    """SSE逐token流式输出"""
+    key=OPENAI_API_KEY or DEEPSEEK_API_KEY; url=OPENAI_BASE_URL or "https://api.openai.com/v1"
+    m=req.model or "gpt-3.5-turbo"
+    ctx=await _get_context(req.message);sc=SYSTEM_PROMPT
+    if ctx:sc+="\n\n"+ctx
+    msgs=[{"role":"system","content":sc}]
+    if req.history:msgs.extend(req.history[-20:])
+    msgs.append({"role":"user","content":req.message})
+    async def gen():
+        f=""
+        try:
+            async with httpx.AsyncClient(timeout=120) as cl:
+                async with cl.stream("POST",f"{url}/chat/completions",
+                    headers={"Authorization":f"Bearer {key}","Content-Type":"application/json"},
+                    json={"model":m,"messages":msgs,"stream":True,"temperature":0.7}) as r:
+                    async for ln in r.aiter_lines():
+                        if ln.startswith("data: "):
+                            d=ln[6:]
+                            if d=="[DONE]":break
+                            try:
+                                j=json.loads(d)
+                                t=j.get("choices",[{}])[0].get("delta",{}).get("content","")
+                                if t:f+=t;yield f"data: {json.dumps({'t':t},ensure_ascii=False)}\n\n"
+                            except:pass
+                    yield f"data: {json.dumps({'done':True,'full':f},ensure_ascii=False)}\n\n"
+        except Exception as e:
+            yield f"data: {json.dumps({'error':str(e)},ensure_ascii=False)}\n\n"
+    return StreamingResponse(gen(),media_type="text/event-stream",headers={"Cache-Control":"no-cache","X-Accel-Buffering":"no"})
+
+@router.post("/chat/vision")
+async def cv(img:str=Form(...),q:str=Form("描述图片"),_=Depends(verify_token)):
+    k=OPENAI_API_KEY;u=OPENAI_BASE_URL or "https://api.openai.com/v1"
+    if not k:return{"ok":False,"error":"需要OPENAI_API_KEY"}
+    try:
+        async with httpx.AsyncClient(timeout=60)as c:
+            r=await c.post(f"{u}/chat/completions",headers={"Authorization":f"Bearer {k}","Content-Type":"application/json"},
+                json={"model":"gpt-4o-mini","messages":[{"role":"user","content":[{"type":"text","text":q},{"type":"image_url","image_url":{"url":f"data:image/jpeg;base64,{img}"}}]}]})
+            if r.status_code==200:
+                d=r.json();return{"ok":True,"reply":d.get("choices",[{}])[0].get("message",{}).get("content","无法分析")}
+            return{"ok":False,"error":f"API:{r.status_code}"}
+    except Exception as e:return{"ok":False,"error":str(e)}
+
+PROMPTS={}
+for n,p in[("商品文案","你是电商文案。优化：\n{input}"),("客服回复","客户说：{input}\n请回复："),("数据分析","分析数据：\n{input}"),("代码审查","审查代码：\n{input}"),("SEO优化","优化关键词：\n{input}"),("翻译","翻译成{lang}：\n{input}"),("周报","根据数据生成周报：\n{input}"),("竞品分析","分析竞品并给策略：\n{input}")]:
+    PROMPTS[n]={"prompt":p,"icon":"📋"}
+
+@router.get("/prompts")
+async def lp(_=Depends(verify_token)):
+    return{"ok":True,"templates":[{"name":k,"icon":v["icon"],"preview":v["prompt"][:50]} for k,v in PROMPTS.items()]}
+
+@router.get("/conversations")
+async def lc(_=Depends(verify_token)):
+    c=_cdb();r=c.execute("SELECT id,title,created,updated FROM convs ORDER BY updated DESC LIMIT 30").fetchall();c.close()
+    return{"ok":True,"conversations":[{"id":x[0],"title":x[1],"created_at":x[2],"updated_at":x[3]} for x in r]}
+
+@router.post("/conversations")
+async def cc(req:dict,_=Depends(verify_token)):
+    cid=uuid.uuid4().hex[:12];c=_cdb()
+    c.execute("INSERT INTO convs VALUES(?,?,datetime('now'),datetime('now'))",(cid,req.get("title","新对话")))
+    c.commit();c.close();return{"ok":True,"id":cid}
+
+@router.get("/conversations/{cid}")
+async def gc(cid:str,_=Depends(verify_token)):
+    c=_cdb();r=c.execute("SELECT role,content,created FROM msgs WHERE cid=? ORDER BY id LIMIT 50",(cid,)).fetchall();c.close()
+    return{"ok":True,"messages":[{"role":x[0],"content":x[1],"time":x[2]} for x in r]}
+
+@router.delete("/conversations/{cid}")
+async def dc(cid:str,_=Depends(verify_token)):
+    c=_cdb();c.execute("DELETE FROM msgs WHERE cid=?",(cid,));c.execute("DELETE FROM convs WHERE id=?",(cid,));c.commit();c.close()
+    return{"ok":True}
+
 @router.post("/handover")
 async def agent_handover(req: HandoverRequest, _=Depends(verify_token)):
     state.mode = "human_control"
