@@ -188,6 +188,7 @@ let isDragging = false
 let dragStartX = 0, dragStartY = 0, btnStartX = 0, btnStartY = 0
 let panelDragging = false, panelStartX = 0, panelStartY = 0, panelPos = { x: 0, y: 0 }
 let floatTimer = null
+let floatPaused = false
 
 const STORAGE_KEY = 'friday_floating_chat'
 
@@ -212,7 +213,7 @@ watch(messages, (val) => {
 }, { deep: true })
 
 // === 面板控制 ===
-function openChat() { if (!isDragging) { chatOpen.value = true; hasUnread.value = false; window.dispatchEvent(new CustomEvent("brain:active", {detail:true})); nextTick(() => scrollBottom()) } }
+function openChat() { if (!isDragging) { floatPaused = false; chatOpen.value = true; hasUnread.value = false; window.dispatchEvent(new CustomEvent("brain:active", {detail:true})); nextTick(() => scrollBottom()) } }
 function closeChat() { stopVoiceInput(); stopVideoCall(); chatOpen.value = false; chatExpanded.value = false; window.dispatchEvent(new CustomEvent("brain:active", {detail:false})) }
 function minimizeChat() { stopTw(); stopStepAnimation(); chatOpen.value = false }
 function toggleExpand() { chatExpanded.value = !chatExpanded.value; nextTick(() => scrollBottom()) }
@@ -243,7 +244,7 @@ function onDragUp() {
   document.onmouseup = null
   document.ontouchmove = null
   document.ontouchend = null
-  setTimeout(() => { isDragging = false }, 50)
+  setTimeout(() => { isDragging = false; floatPaused = false }, 100)
 }
 function startPanelDrag(e) {
   e.preventDefault()

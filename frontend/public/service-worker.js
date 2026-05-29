@@ -1,6 +1,6 @@
 // Friday AI v2 — 只缓存静态页面，API 请求直通网络
 const CACHE_NAME = "friday-v2"
-const STATIC_ROUTES = ["/ai/", "/ai/friday", "/ai/dashboard", "/ai/chat"]
+const STATIC_ROUTES = ["/ai/friday", "/ai/friday", "/ai/dashboard", "/ai/chat"]
 
 self.addEventListener("install", (e) => {
   self.skipWaiting()
