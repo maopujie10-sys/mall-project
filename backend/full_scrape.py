@@ -3,18 +3,20 @@ import asyncio, sys, hashlib, time, gc, os, random
 import psutil
 sys.path.insert(0, ".")
 
-# 内存安全配置
-MEMORY_LIMIT_PCT = 78     # 内存超此比例暂停
-MEMORY_CHECK_INTERVAL = 15 # 每N个关键词检查一次内存
-SEARCH_DELAY_BASE = 0.25   # 搜索基础间隔秒(自适应:遇429加倍)
-SEARCH_DELAY_MAX = 15      # 搜索最大间隔秒
-PRODUCT_DELAY = 0.03       # 产品并发批间隔秒
-CONCURRENCY = 12           # 产品页并发数
-CATEGORY_PAUSE = 0.2       # 每完成一个分类暂停秒
-MAX_PAGES = 5              # 每个关键词搜索页数
-IMPORT_BATCH_SIZE = 20     # 每批入库数量（控制内存）
+# 内存安全配置（多进程分片模式）
+MEMORY_LIMIT_PCT = 75
+MEMORY_CHECK_INTERVAL = 20
+SEARCH_DELAY_BASE = 0.08
+SEARCH_DELAY_MAX = 10
+PRODUCT_DELAY = 0.01
+CONCURRENCY = 20           # 产品页并发数（单进程最大）
+CATEGORY_PAUSE = 0.1
+MAX_PAGES = 12
+IMPORT_BATCH_SIZE = 30
 
-LOG_FILE = "/tmp/full_scrape.log"
+SHARD_INDEX = 0
+SHARD_TOTAL = 1
+LOG_FILE = f"/tmp/full_scrape_{SHARD_INDEX}.log"
 
 def _log(msg: str):
     """输出到stdout + 日志文件"""
@@ -277,7 +279,7 @@ for cat in SUBCAT_KEYWORDS:
 TOTAL = sum(len(v) for v in SUBCAT_KEYWORDS.values())
 print(f"覆盖 {len(SUBCAT_KEYWORDS)} 个子品类, {TOTAL} 个关键词(扩充后)")
 
-CHECKPOINT_FILE = "/tmp/full_scrape_checkpoint.json"
+CHECKPOINT_FILE = f"/tmp/full_scrape_checkpoint_{SHARD_INDEX}.json"
 
 def load_checkpoint():
     import json
@@ -331,6 +333,8 @@ async def run(ppk=80):
                 gc.collect()
                 await asyncio.sleep(CATEGORY_PAUSE)
             cat_imported = 0
+            cat_kw = 0  # 本品类关键词计数
+            dry_kws = 0
             _log(f"[{stats['cats']}/{len(SUBCAT_KEYWORDS)}] {subcat}")
 
             for kw in keywords:
@@ -338,6 +342,11 @@ async def run(ppk=80):
                     await check_memory()
                 if cat_imported >= ppk:
                     break
+                # 已刮空品类跳过：3个关键词总计<5新品
+                if cat_kw >= 3 and cat_imported < 5:
+                    _log(f"  ⚡ {subcat} {cat_kw}关键词仅{cat_imported}新品，跳过")
+                    break
+                cat_kw += 1
                 stats["kws"] += 1
 
                 # ── 双平台搜索 ──
@@ -444,6 +453,12 @@ async def run(ppk=80):
                     _log(f"  {tag} +{imported_now}新品 | 评论{review_total} SKU{sku_total}")
                     need = ppk - cat_imported
 
+                # 追踪低产关键词
+                if imported_now == 0:
+                    dry_kws += 1
+                else:
+                    dry_kws = 0
+
                 await asyncio.sleep(PRODUCT_DELAY)
 
             if cat_imported == 0:
@@ -458,5 +473,37 @@ async def run(ppk=80):
     return stats
 
 if __name__ == "__main__":
-    ppk = int(sys.argv[1]) if len(sys.argv) > 1 else 80
+    ppk = 150
+    shard_idx = 0
+    shard_total = 1
+    args = sys.argv[1:]
+    i = 0
+    while i < len(args):
+        if args[i] == "--shard" and i+2 < len(args):
+            shard_idx = int(args[i+1])
+            shard_total = int(args[i+2])
+            i += 3
+        else:
+            try:
+                ppk = int(args[i])
+            except ValueError:
+                pass
+            i += 1
+
+    # 分片：抽取该进程负责的品类
+    import itertools
+    cats = list(SUBCAT_KEYWORDS.items())
+    shard_cats = dict(cats[shard_idx::shard_total])
+    SUBCAT_KEYWORDS.clear()
+    SUBCAT_KEYWORDS.update(shard_cats)
+    TOTAL = sum(len(v) for v in SUBCAT_KEYWORDS.values())
+
+    # 更新分片相关的全局变量(必须通过__main__，因为直接运行时模块名不是full_scrape)
+    main_mod = sys.modules["__main__"]
+    main_mod.SHARD_INDEX = shard_idx
+    main_mod.SHARD_TOTAL = shard_total
+    main_mod.LOG_FILE = f"/tmp/full_scrape_{shard_idx}.log"
+    main_mod.CHECKPOINT_FILE = f"/tmp/full_scrape_checkpoint_{shard_idx}.json"
+
+    print(f"Shard {shard_idx}/{shard_total}: {len(SUBCAT_KEYWORDS)} 品类, {TOTAL} 关键词, 目标{ppk}/品类")
     asyncio.run(run(ppk))
