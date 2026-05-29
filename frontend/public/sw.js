@@ -1,15 +1,28 @@
-// Friday AI v2 — 只缓存静态页面，API 请求直通网络
-self.addEventListener("install", () => self.skipWaiting())
-self.addEventListener("activate", () => self.clients.claim())
-self.addEventListener("fetch", (e) => {
-  const url = new URL(e.request.url)
-  // API 请求：只用网络，不查缓存
-  if (url.pathname.includes("/api/")) {
-    e.respondWith(fetch(e.request))
-    return
-  }
-  // 静态资源：缓存回退
+const CACHE = "friday-ai-v2";
+const ASSETS = ["/ai/","/ai/index.html","/ai/manifest.json"];
+
+self.addEventListener("install", e => {
+  e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)).catch(()=>{}));
+  self.skipWaiting();
+});
+
+self.addEventListener("activate", e => {
+  e.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))));
+  self.clients.claim();
+});
+
+self.addEventListener("fetch", e => {
+  if (e.request.method !== "GET") return;
   e.respondWith(
-    caches.match(e.request).then(r => r || fetch(e.request))
-  )
-})
+    caches.match(e.request).then(cached => {
+      const fetched = fetch(e.request).then(res => {
+        if (res.ok && res.type === "basic") {
+          const clone = res.clone();
+          caches.open(CACHE).then(c => c.put(e.request, clone));
+        }
+        return res;
+      }).catch(() => cached);
+      return cached || fetched;
+    })
+  );
+});

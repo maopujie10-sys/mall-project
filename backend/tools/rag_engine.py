@@ -1,94 +1,161 @@
-"""RAG 知识检索引擎 — 文档摄入 + 语义搜索 + 智能问答"""
+"""RAG 知识引擎 v2 — 语义搜索 + 智能问答 + 自动上下文注入"""
 import os, json, hashlib, re
-from typing import List, Dict, Optional
+from typing import List, Dict
 from tools.logger import get_logger
 
 logger = get_logger("rag")
 
 class RAGEngine:
-    """检索增强生成引擎"""
+    """检索增强生成引擎 — 文档摄入/语义搜索/智能问答"""
     _docs: List[Dict] = []
     _index: Dict[str, List[int]] = {}  # keyword -> doc indices
 
     @classmethod
     def ingest_text(cls, text: str, source: str = "", metadata: Dict = None) -> str:
-        """摄入文档"""
+        """摄入文档 — 智能分段+关键词索引"""
         doc_id = hashlib.md5(f"{source}:{text[:100]}".encode()).hexdigest()[:12]
-
-        # 简单分段
-        chunks = [c.strip() for c in text.split("\n\n") if len(c.strip()) > 20]
+        
+        # 智能分段: 按段落、标题、列表分
+        chunks = []
+        for para in text.split("\n\n"):
+            para = para.strip()
+            if len(para) < 10:
+                continue
+            if len(para) > 2000:
+                # 长段落按句号分
+                sentences = re.split(r'[。！？\n](?![」』）\)])', para)
+                current = ""
+                for s in sentences:
+                    if len(current) + len(s) < 1500:
+                        current += s + "。"
+                    else:
+                        if current.strip():
+                            chunks.append(current.strip())
+                        current = s + "。"
+                if current.strip():
+                    chunks.append(current.strip())
+            else:
+                chunks.append(para)
+        
         if not chunks:
-            chunks = [text]
-
+            chunks = [text[:2000]]
+        
         for i, chunk in enumerate(chunks):
             cid = f"{doc_id}_{i}"
             cls._docs.append({
                 "id": cid, "source": source, "content": chunk,
-                "metadata": metadata or {}, "index": len(cls._docs)
+                "metadata": metadata or {}, "index": len(cls._docs), "doc_id": doc_id
             })
-            # 关键词索引
-            words = set(re.findall(r'[\u4e00-\u9fff]+|[a-zA-Z]{3,}', chunk.lower()))
+            # 关键词索引(中英文分词)
+            words = set(re.findall(r'[\u4e00-\u9fff]{2,}|[a-zA-Z]{3,}', chunk.lower()))
             for w in words:
-                if w not in cls._index:
-                    cls._index[w] = []
-                cls._index[w].append(len(cls._docs) - 1)
-
+                cls._index.setdefault(w, []).append(len(cls._docs) - 1)
+        
         logger.info(f"RAG摄入: {source} → {len(chunks)}段")
         return doc_id
 
     @classmethod
-    def search(cls, query: str, top_k: int = 5) -> List[Dict]:
-        """关键词+语义搜索"""
-        query_words = set(re.findall(r'[\u4e00-\u9fff]+|[a-zA-Z]{3,}', query.lower()))
-        scores = {}
+    def ingest_file(cls, filepath: str) -> str:
+        """摄入文件"""
+        ext = filepath.rsplit(".", 1)[-1].lower() if "." in filepath else ""
+        try:
+            with open(filepath, "r", encoding="utf-8", errors="ignore") as f:
+                text = f.read()
+        except:
+            with open(filepath, "rb") as f:
+                text = f.read().decode("latin-1", errors="ignore")
+        
+        source = os.path.basename(filepath)
+        if ext == "pdf":
+            try:
+                import subprocess, tempfile
+                r = subprocess.run(["pdftotext", "-layout", filepath, "-"], capture_output=True, text=True, timeout=30)
+                text = r.stdout or text
+            except:
+                pass
+        
+        return cls.ingest_text(text[:50000], source)
 
+    @classmethod
+    def search(cls, query: str, top_k: int = 5) -> List[Dict]:
+        """混合搜索: 关键词+语义"""
+        query_words = set(re.findall(r'[\u4e00-\u9fff]{2,}|[a-zA-Z]{3,}', query.lower()))
+        if not query_words:
+            query_words = set(re.findall(r'\w+', query.lower()))
+        
+        scores = {}
         for w in query_words:
             if w in cls._index:
                 for doc_idx in cls._index[w]:
-                    scores[doc_idx] = scores.get(doc_idx, 0) + 1
-
+                    # TF-IDF-like scoring: 稀有词权重高
+                    idf = 1.0 / (len(cls._index[w]) ** 0.5 + 1)
+                    scores[doc_idx] = scores.get(doc_idx, 0) + idf
+        
         ranked = sorted(scores.items(), key=lambda x: x[1], reverse=True)[:top_k]
-        return [cls._docs[idx] for idx, score in ranked]
+        return [{"doc": cls._docs[idx], "score": round(score, 3)} for idx, score in ranked]
+
+    @classmethod
+    def build_context(cls, query: str, top_k: int = 5, max_tokens: int = 3000) -> str:
+        """构建RAG上下文 — 可直接注入到AI prompt"""
+        results = cls.search(query, top_k)
+        if not results:
+            return ""
+        
+        context_parts = []
+        total = 0
+        for r in results:
+            chunk = r["doc"]["content"][:800]
+            source = r["doc"].get("source", "未知")
+            context_parts.append(f"[来源:{source}] {chunk}")
+            total += len(chunk)
+            if total > max_tokens:
+                break
+        
+        return "\n\n---\n".join(context_parts)
 
     @classmethod
     async def ask(cls, question: str, top_k: int = 5) -> Dict:
-        """RAG问答"""
+        """RAG问答 — 搜索+AI回答"""
         docs = cls.search(question, top_k)
-        context = "\n---\n".join([d["content"][:500] for d in docs])
-
+        if not docs:
+            return {"ok": True, "answer": "知识库中没有找到相关信息。", "sources": []}
+        
+        context = "\n\n".join([f"[{d['doc'].get('source','未知')}]: {d['doc']['content'][:600]}" for d in docs])
+        
         try:
-            from agents.multi_model import ModelRouter
-            resp = await ModelRouter.smart_chat(
-                messages=[{
-                    "role": "system",
-                    "content": f"根据以下知识库回答问题，如果知识库没有相关信息请诚实说明:\n\n{context}"
-                }, {
-                    "role": "user", "content": question
-                }],
-                mode="fast"
-            )
-            return {"ok": True, "answer": resp.get("content", ""), "sources": [d["source"] for d in docs], "doc_count": len(docs)}
+            from tools.ai_client import call_ai
+            prompt = f"基于以下知识库内容回答问题。如果知识库没有相关信息，请如实说明。\n\n知识库:\n{context}\n\n问题: {question}\n\n回答:"
+            answer = await call_ai([{"role": "user", "content": prompt}], max_tokens=500, temperature=0.3)
+            return {
+                "ok": True,
+                "answer": answer,
+                "sources": [{"source": d["doc"].get("source",""), "score": d["score"]} for d in docs[:3]],
+                "context_used": True
+            }
         except Exception as e:
-            # 降级：纯关键词匹配
-            return {"ok": True, "answer": f"找到{len(docs)}条相关文档，但LLM不可用。第一条: {docs[0]['content'][:200] if docs else '无'}...", "sources": [d["source"] for d in docs]}
+            return {"ok": True, "answer": f"搜索到{len(docs)}条相关内容", "sources": [d["doc"].get("source","") for d in docs], "error": str(e)}
 
     @classmethod
-    def get_stats(cls) -> Dict:
-        return {"total_docs": len(cls._docs), "total_keywords": len(cls._index), "sources": list(set(d["source"] for d in cls._docs))}
+    def get_stats(cls) -> dict:
+        """获取统计"""
+        return {
+            "total_docs": len(cls._docs),
+            "unique_sources": len(set(d.get("source", "") for d in cls._docs)),
+            "index_size": len(cls._index),
+            "last_doc": cls._docs[-1]["source"] if cls._docs else None
+        }
 
-@classmethod
+    @classmethod
     def save(cls):
-"""持久化到SQLite"""
+        """持久化"""
         from tools.memory_store import memory_store
-        import json
         memory_store.set_knowledge("rag_docs", json.dumps(cls._docs[-500:], ensure_ascii=False))
         memory_store.set_knowledge("rag_index", json.dumps({k: v[-100:] for k, v in list(cls._index.items())[:500]}, ensure_ascii=False))
 
-@classmethod
+    @classmethod
     def load(cls):
-"""从SQLite恢复"""
+        """恢复"""
         from tools.memory_store import memory_store
-        import json
         try:
             docs = memory_store.get_knowledge("rag_docs")
             if docs:
@@ -100,11 +167,7 @@ class RAGEngine:
         except:
             return False
 
-
-# 预加载知识
-rag = RAGEngine()
-
-# 启动时自动恢复
+# 预加载
 try:
     RAGEngine.load()
 except:

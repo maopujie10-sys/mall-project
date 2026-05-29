@@ -1,59 +1,84 @@
-<template>
-  <div class="page-shell">
-    <div class="page-header"><h2>📚 知识中心</h2><p>RAG检索增强 — 文档摄入+语义搜索+智能问答</p></div>
-    <el-row :gutter="16">
-      <el-col :span="14">
-        <el-card><template #header>🔍 智能问答</template>
-          <el-input v-model="question" placeholder="输入问题，如：退款政策是什么？" type="textarea" :rows="2"/>
-          <el-button type="primary" style="margin-top:10px" @click="ask" :loading="loading">提问</el-button>
-          <div v-if="answer" class="rag-answer">
-            <div class="answer-text">{{ answer.answer }}</div>
-            <div class="answer-sources">参考来源: {{ answer.sources?.join(", ") || "无" }}</div>
-          </div>
-        </el-card>
-      </el-col>
-      <el-col :span="10">
-        <el-card><template #header>📥 摄入文档</template>
-          <el-input v-model="ingestText" placeholder="粘贴文档内容" type="textarea" :rows="4"/>
-          <el-input v-model="ingestSource" placeholder="来源(可选)" style="margin-top:8px"/>
-          <el-button style="margin-top:8px" @click="ingest">摄入</el-button>
-          <div class="rag-stats"><span>📄 {{ stats.total_docs }} 文档</span><span>🔤 {{ stats.total_keywords }} 关键词</span></div>
-        </el-card>
-      </el-col>
-    </el-row>
+<template><div class="page-shell">
+<div class="page-header"><h2>📚 知识库 RAG</h2><p>上传文档 · AI基于你的数据回答 · 语义搜索</p></div>
+
+<el-tabs v-model="tab">
+<el-tab-pane label="📤 上传文档" name="upload">
+  <el-upload drag :http-request="uploadDoc" :show-file-list="false" accept=".txt,.md,.pdf,.csv,.json,.py,.js,.html">
+    <el-icon size="48"><UploadFilled/></el-icon>
+    <div style="margin-top:12px">拖拽或点击上传文档</div>
+    <div style="font-size:11px;color:rgba(255,255,255,.4)">支持 TXT/MD/PDF/CSV/代码文件</div>
+  </el-upload>
+  <div v-if="uploadResult" class="result-box" style="margin-top:12px">{{uploadResult}}</div>
+</el-tab-pane>
+
+<el-tab-pane label="🔍 智能问答" name="ask">
+  <el-input v-model="question" placeholder="基于知识库提问..." @keydown.enter="askRag" size="large"/>
+  <el-button type="primary" @click="askRag" :loading="loading" style="margin-top:8px">🔍 搜索知识库</el-button>
+  <div v-if="ragAnswer" class="result-box" style="margin-top:12px">
+    <div v-html="ragAnswer"></div>
+    <div v-if="ragSources.length" style="margin-top:8px;font-size:11px;color:rgba(255,255,255,.4)">
+      📖 参考: {{ragSources.map(s=>s.source).join(', ')}}
+    </div>
   </div>
-</template>
+</el-tab-pane>
+
+<el-tab-pane label="📊 知识库统计" name="stats">
+  <el-button @click="loadStats" :loading="loading">刷新统计</el-button>
+  <div v-if="stats" class="result-box" style="margin-top:12px">
+    <el-row :gutter="12">
+      <el-col :span="8"><el-statistic title="文档数" :value="stats.total_docs"/></el-col>
+      <el-col :span="8"><el-statistic title="来源数" :value="stats.unique_sources"/></el-col>
+      <el-col :span="8"><el-statistic title="索引词" :value="stats.index_size"/></el-col>
+    </el-row>
+    <div v-if="stats.last_doc" style="margin-top:8px;font-size:11px">最新: {{stats.last_doc}}</div>
+  </div>
+</el-tab-pane>
+
+<el-tab-pane label="💬 批量导入" name="batch">
+  <el-input v-model="batchText" type="textarea" :rows="6" placeholder="粘贴文本内容，自动分段导入..."/>
+  <el-input v-model="batchSource" placeholder="来源名称(可选)" style="margin-top:8px"/>
+  <el-button type="primary" @click="ingestText" :loading="loading" style="margin-top:8px">摄入知识库</el-button>
+</el-tab-pane>
+</el-tabs></div></template>
+
 <script setup>
-import { ref, onMounted } from "vue"
-import { ElMessage } from "element-plus"
-import { agentApi } from "@/api"
-const question = ref("")
-const answer = ref(null)
-const loading = ref(false)
-const ingestText = ref("")
-const ingestSource = ref("")
-const stats = ref({ total_docs: 0, total_keywords: 0 })
-async function ask() {
-  if (!question.value) { ElMessage.warning("请输入问题"); return }
-  loading.value = true
-  try { const r = await agentApi.post("/agent/rag/ask", { question: question.value }); if (r?.data?.ok) answer.value = r.data } catch (e) { ElMessage.error(e.message) }
-  loading.value = false
+import {ref} from "vue";import {UploadFilled} from "@element-plus/icons-vue";import {ElMessage} from "element-plus";import {agentApi} from "@/api"
+const tab=ref("upload");const loading=ref(false);const question=ref("");const ragAnswer=ref("");const ragSources=ref([])
+const uploadResult=ref("");const stats=ref(null);const batchText=ref("");const batchSource=ref("")
+
+async function uploadDoc(options) {
+  loading.value=true;uploadResult.value=""
+  try {
+    const form=new FormData();form.append("file",options.file)
+    const r=await agentApi.post("/rag/upload",form,{headers:{"Content-Type":"multipart/form-data"}})
+    if(r?.data?.ok){uploadResult.value=`✅ ${r.data.filename} 摄入成功 (${r.data.chunks||0}段)`;ElMessage.success("上传成功")}
+    else uploadResult.value=`❌ ${r?.data?.error||"失败"}`
+  }catch(e){uploadResult.value="❌ "+e.message}
+  loading.value=false
 }
-async function ingest() {
-  if (!ingestText.value) return
-  try { const r = await agentApi.post("/agent/rag/ingest", { text: ingestText.value, source: ingestSource.value }); if (r?.data?.ok) { ElMessage.success("文档已摄入"); ingestText.value = ""; fetchStats() } } catch (e) { ElMessage.error(e.message) }
+async function askRag() {
+  if(!question.value.trim())return
+  loading.value=true;ragAnswer.value="";ragSources.value=[]
+  try {
+    const r=await agentApi.post("/rag/ask",{question:question.value,top_k:5})
+    if(r?.data?.ok){ragAnswer.value=r.data.answer?.replace(/\n/g,"<br>");ragSources.value=r.data.sources||[]}
+    else ragAnswer.value=r?.data?.error||"无结果"
+  }catch(e){ragAnswer.value="搜索失败: "+e.message}
+  loading.value=false
 }
-async function fetchStats() { try { const r = await agentApi.get("/agent/rag/stats"); if (r?.data) stats.value = r.data } catch {} }
-onMounted(fetchStats)
+async function loadStats() {
+  loading.value=true
+  try {const r=await agentApi.get("/rag/stats");if(r?.data?.ok)stats.value=r.data}catch(e){}
+  loading.value=false
+}
+async function ingestText() {
+  if(!batchText.value.trim())return
+  loading.value=true
+  try {
+    const r=await agentApi.post("/rag/ingest",{text:batchText.value,source:batchSource.value||"手动导入"})
+    if(r?.data?.ok){ElMessage.success(`摄入成功: ${r.data.doc_id}`);batchText.value=""}
+  }catch(e){ElMessage.error(e.message)}
+  loading.value=false
+}
 </script>
-<style scoped>
-.page-shell { max-width: 900px; margin: 0 auto; padding: 20px; }
-.page-header { margin-bottom: 16px; }
-.page-header h2 { font-size: 20px; color: #e0e0ff; margin: 0; }
-.page-header p { font-size: 12px; color: rgba(255,255,255,0.5); margin: 4px 0; }
-.rag-answer { margin-top: 12px; padding: 14px; background: rgba(102,126,234,0.08); border-radius: 10px; }
-.answer-text { font-size: 14px; color: #e0e0e0; line-height: 1.6; }
-.answer-sources { font-size: 11px; color: rgba(255,255,255,0.3); margin-top: 8px; }
-.rag-stats { display: flex; gap: 16px; margin-top: 12px; font-size: 13px; color: rgba(255,255,255,0.6); }
-@media (max-width: 768px) { .page-shell { padding: 10px; } }
-</style>
+<style scoped>.page-shell{max-width:800px;margin:0 auto;padding:20px}.page-header{margin-bottom:16px}.page-header h2{font-size:20px;color:#e0e0ff;margin:0}.page-header p{font-size:12px;color:rgba(255,255,255,.5)}.result-box{margin-top:12px;padding:14px;background:rgba(0,0,0,.5);border:1px solid rgba(102,126,234,.2);border-radius:10px;font-size:13px;color:#e0e0e0;line-height:1.7}</style>

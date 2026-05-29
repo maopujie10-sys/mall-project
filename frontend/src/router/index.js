@@ -75,6 +75,7 @@ const routes = [
       { path: 'advanced-ai', name: 'AdvancedAI', component: () => import('@/views/AdvancedAI.vue'), meta: { title: '高级AI' } },
       { path: 'ai-tools', name: 'AITools', component: () => import('@/views/AITools.vue'), meta: { title: 'AI工具箱' } },
       { path: 'ecommerce-ai', name: 'EcommerceAI', component: () => import('@/views/EcommerceAI.vue'), meta: { title: 'AI电商引擎' } },
+      { path: 'knowledge-hub', name: 'KnowledgeHub', component: () => import('@/views/KnowledgeHub.vue'), meta: { title: '知识库' } },
     ],
   },
 ]

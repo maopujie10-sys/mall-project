@@ -411,6 +411,14 @@ async def chat_stream(req: ChatRequest, _=Depends(verify_token)):
     m=req.model or _cheap_model
     ctx=await _get_context(req.message);sc=SYSTEM_PROMPT
     if ctx:sc+="\n\n"+ctx
+    
+    # RAG知识库自动注入
+    try:
+        from tools.rag_engine import RAGEngine
+        rag_ctx = RAGEngine.build_context(req.message, top_k=3, max_tokens=1500)
+        if rag_ctx:
+            sc += "\n\n【知识库参考】\n" + rag_ctx
+    except: pass
     msgs=[{"role":"system","content":sc}]
     if req.history:msgs.extend(req.history[-20:])
     msgs.append({"role":"user","content":req.message})
@@ -561,6 +569,51 @@ async def list_tenants(_=Depends(verify_token)):
         cost = next((r[2] for r in tokens if r[0]==o),0)
         tenants.append({"owner":o,"conversations":conv_count,"messages":msg_count,"tokens":tok_count or 0,"cost":round(cost or 0,4)})
     return {"ok":True,"tenants":tenants}
+
+
+# ===== 对话记忆管理 =====
+@router.post("/conversations/{cid}/summarize")
+async def summarize_conversation(cid: str, _=Depends(verify_token)):
+    """自动摘要长对话 + 压缩记忆"""
+    msgs = load_history(cid, 100)
+    if len(msgs) < 10:
+        return {"ok": True, "original_count": len(msgs), "summary": "对话太短，无需摘要"}
+    
+    # 构建对话文本
+    conv_text = "\n".join([f"{m['role']}: {m['content'][:200]}" for m in msgs])
+    
+    try:
+        from tools.ai_client import call_ai
+        summary = await call_ai([
+            {"role": "user", "content": f"请用3-5句话总结这段对话的核心内容和结论:\n{conv_text[:4000]}"}
+        ], max_tokens=200, temperature=0.3)
+        
+        # 保存摘要到对话元数据
+        c = _cdb()
+        c.execute("UPDATE convs SET title=? WHERE id=?", (summary[:100], cid))
+        c.commit(); c.close()
+        
+        return {"ok": True, "original_count": len(msgs), "summary": summary, "compressed": True}
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+@router.get("/conversations/{cid}/context")
+async def get_conversation_context(cid: str, query: str = "", _=Depends(verify_token)):
+    """获取对话上下文 — 自动混合 最近消息 + RAG + 摘要"""
+    msgs = load_history(cid, 30)
+    result = {"messages": msgs, "count": len(msgs)}
+    
+    # 如果有查询，搜索相关知识库
+    if query:
+        try:
+            from tools.rag_engine import RAGEngine
+            rag_ctx = RAGEngine.build_context(query, top_k=2, max_tokens=1000)
+            if rag_ctx:
+                result["rag_context"] = rag_ctx
+        except: pass
+    
+    return {"ok": True, **result}
+
 
 def _udb():
     import sqlite3
