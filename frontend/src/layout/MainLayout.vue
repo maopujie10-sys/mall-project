@@ -17,7 +17,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useSystemStore } from '@/stores/system'
 import NeuralNetwork3D from '@/components/NeuralNetwork3D.vue'
@@ -31,6 +31,16 @@ const brainThinking = ref(false)
 const brainSpeaking = ref(false)
 const brainPulse = ref(false)
 
+watch(() => route.path, (path) => {
+  const overlay = document.querySelector('.content-overlay')
+  if (overlay) {
+    if (path === '/friday' || path === '/') {
+      overlay.classList.remove('has-content')
+    } else {
+      overlay.classList.add('has-content')
+    }
+  }
+})
 async function autoLogin() {
   const token = localStorage.getItem('agent_token')
   if (token) return token
@@ -53,6 +63,20 @@ async function autoLogin() {
 function openFloatingChat() {
   const btn = document.querySelector('.ai-float-btn')
   if (btn) btn.click()
+}
+// 监听路由变化，有内容时显示叠层
+let contentTimer = null
+function showContent() {
+  const overlay = document.querySelector('.content-overlay')
+  if (overlay) overlay.classList.add('has-content')
+}
+function hideContent() {
+  const overlay = document.querySelector('.content-overlay')
+  if (overlay && window.location.hash === '' && window.location.pathname === '/ai/' || window.location.pathname === '/ai/friday') {
+    // 首页不显示内容
+  } else if (overlay) {
+    overlay.classList.add('has-content')
+  }
 }
 onMounted(async () => {
   window.addEventListener('floating:openChat', openFloatingChat)
