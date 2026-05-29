@@ -74,7 +74,7 @@
     </el-row>
 
     <!-- 3D数字体 -->
-    <el-card shadow="never" style="overflow:hidden;border-radius:12px">
+    <el-card shadow="never" style="overflow:hidden;border-radius:12px;flex:1;display:flex;flex-direction:column" body-style="flex:1;padding:0;overflow:hidden">
       <template #header><span>🧬 神经网络活动 <span style="font-size:12px;color:var(--text-muted);font-weight:400">拖拽旋转 · 滚轮缩放</span></span></template>
       <NeuralNetwork3D />
     </el-card>
@@ -107,7 +107,7 @@ onMounted(() => { refresh(); timer = setInterval(refresh, 10000) })
 onUnmounted(() => { clearInterval(timer) })
 </script>
 <style scoped>
-.lifeform-dashboard{padding:20px}
+.lifeform-dashboard{display:flex;flex-direction:column;height:calc(100vh - 80px);padding:20px;overflow-y:auto}
 .lf-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
 .lf-title{display:flex;align-items:center;gap:12px}
 .lf-icon{font-size:36px}

@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <!-- 全局悬浮AI助手 — 文字+语音+视频全集成 -->
   <div class="floating-ai" :class="{ 'chat-open': chatOpen, 'chat-expanded': chatExpanded, 'video-mode': videoActive }">
     <!-- ====== 悬浮按钮 ====== -->
@@ -29,22 +29,22 @@
             <div class="ai-avatar-small"><div class="avatar-holo"></div>AI</div>
             <div>
               <div class="header-title">{{ videoActive ? '视频通话' : 'Friday AI 助手' }}</div>
-              <div class="header-status">{{ videoActive ? '通话中...' : (voiceActive ? '🎤 语音聆听中...' : '在线 · 随时为您服务') }}</div>
+              <div class="header-status">{{ videoActive ? '通话中...' : (voiceActive ? '?? 语音聆听中...' : '在线 · 随时为您服务') }}</div>
             </div>
           </div>
           <div class="header-actions">
             <!-- 语音通话 -->
             <button class="header-btn" @click="toggleVoiceCall" :title="voiceCallActive ? '挂断语音' : '语音通话'" :class="{ active: voiceCallActive }">
-              {{ voiceCallActive ? '📞' : '📞' }}
+              {{ voiceCallActive ? '??' : '??' }}
             </button>
             <!-- 视频通话 -->
             <button class="header-btn" @click="toggleVideoCall" :title="videoActive ? '关闭视频' : '视频通话'" :class="{ active: videoActive }">
-              {{ videoActive ? '📹' : '📹' }}
+              {{ videoActive ? '??' : '??' }}
             </button>
             <button class="header-btn" @click="toggleExpand" :title="chatExpanded ? '缩小' : '扩大'">
-              {{ chatExpanded ? '⊟' : '⊞' }}
+              {{ chatExpanded ? '?' : '?' }}
             </button>
-            <button class="header-btn" @click="minimizeChat" title="最小化">−</button>
+            <button class="header-btn" @click="minimizeChat" title="最小化">?</button>
             <button class="header-btn close-btn" @click="closeChat" title="关闭">×</button>
           </div>
         </div>
@@ -62,38 +62,38 @@
             <video ref="localVideo" autoplay playsinline muted class="video-thumb"></video>
           </div>
           <div class="video-controls">
-            <button @click="toggleMic" :class="{ muted: micMuted }">{{ micMuted ? '🔇' : '🎙️' }}</button>
-            <button @click="toggleCamera" :class="{ muted: cameraOff }">{{ cameraOff ? '📷❌' : '📷' }}</button>
-            <button @click="endVideoCall" class="end-call-btn">🔴 挂断</button>
+            <button @click="toggleMic" :class="{ muted: micMuted }">{{ micMuted ? '??' : '???' }}</button>
+            <button @click="toggleCamera" :class="{ muted: cameraOff }">{{ cameraOff ? '???' : '??' }}</button>
+            <button @click="endVideoCall" class="end-call-btn">?? 挂断</button>
           </div>
         </div>
 
         <!-- ====== 消息区 ====== -->
         <div v-if="!videoActive" class="chat-messages" ref="msgList"><canvas ref="matrixCanvas" class="matrix-bg"></canvas>
           <div v-if="messages.length === 0" class="empty-chat">
-            <div class="empty-icon">🤖</div>
+            <div class="empty-icon">??</div>
             <p>你好！我是 Friday AI 助手</p>
             <p class="empty-sub">文字 · 语音 · 视频 · 传图 · 传文件</p>
             <div class="quick-actions">
-              <button @click="quickAsk('服务器状态怎么样？')">📊 服务器状态</button>
-              <button @click="quickAsk('今天有多少订单？')">📦 今日订单</button>
-              <button @click="quickAsk('帮我分析最近的异常')">🔍 异常分析</button>
-              <button @click="quickAsk('生成今日运营报告')">📝 运营报告</button>
+              <button @click="quickAsk('服务器状态怎么样？')">?? 服务器状态</button>
+              <button @click="quickAsk('今天有多少订单？')">?? 今日订单</button>
+              <button @click="quickAsk('帮我分析最近的异常')">?? 异常分析</button>
+              <button @click="quickAsk('生成今日运营报告')">?? 运营报告</button>
             </div>
           </div>
 
           <div v-for="(msg, i) in messages" :key="i" class="msg-row" :class="msg.role">
-            <div class="msg-avatar">{{ msg.role === 'user' ? '👤' : 'AI' }}</div>
+            <div class="msg-avatar">{{ msg.role === 'user' ? '??' : 'AI' }}</div>
             <div class="msg-bubble" :class="msg.role">
               <div class="msg-text" v-html="renderMsg(msg.content)"></div>
               <div class="msg-time">
                 {{ msg.time }}
-                <span v-if="msg.voice" class="voice-tag">🎤 语音</span>
+                <span v-if="msg.voice" class="voice-tag">?? 语音</span>
               </div>
             </div>
             <!-- 语音播放按钮 -->
             <button v-if="msg.role === 'assistant'" class="play-voice-btn" @click="speakText(msg.content)" title="朗读">
-              🔊
+              ??
             </button>
           </div>
 
@@ -186,6 +186,7 @@ const posX = ref(0)
 const posY = ref(0)
 let isDragging = false
 let dragStartX = 0, dragStartY = 0, btnStartX = 0, btnStartY = 0
+let panelDragging = false, panelStartX = 0, panelStartY = 0, panelPos = { x: 0, y: 0 }
 
 const STORAGE_KEY = 'friday_floating_chat'
 
