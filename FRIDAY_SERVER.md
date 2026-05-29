@@ -15,6 +15,9 @@
 6. 客服自动回复 + 轮值域名监控
 
 ## 最近改动
+- 2026-05-30 01:46: [同步部署] 拉取 0931a95 全量审计 — 14文件BOM清除 + 41路由补全 + AIChat去重
+  - 电脑端全量审计：14源码BOM清除、零GBK乱码、41路由全覆盖、2377模块编译通过
+  - 服务器端：git pull + docker build + up -d 完成部署
 - 2026-05-30 00:51: [前端重建] AI面板 401 "未提供认证Token" 修复
   - **根因：** mall-ai-frontend 容器构建于 5/29 13:41，DEFAULT_TOKEN 修复提交于 5/30 00:30
   - 旧容器入口 JS index-BQNcmsg3.js 不含默认 Token 回退，localStorage 为空时请求头无 X-Agent-Token
