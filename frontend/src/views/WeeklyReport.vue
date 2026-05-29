@@ -1,4 +1,4 @@
-锘?template>
+<template>
   <div class="weekly-report-panel">
     <div class="page-header">
       <h1>馃搳 AI杩愯惀鍛ㄦ姤</h1>

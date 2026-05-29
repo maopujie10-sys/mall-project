@@ -1,4 +1,4 @@
-锘?template>
+<template>
   <div class="log-viewer-panel">
     <div class="page-header"><h1>馃搵 鏃ュ織涓績</h1><p>Docker 路 Nginx 路 Tomcat 路 搴旂敤鏃ュ織缁熶竴鏌ヨ</p></div>
 

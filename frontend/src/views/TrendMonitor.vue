@@ -1,4 +1,4 @@
-锘?template>
+<template>
   <div class="trend-page">
     <div class="page-header">
       <div><h1>馃摗 绔炲搧鐩戞帶</h1><p>浠锋牸鍙樺姩鍛婅 路 淇冮攢杩借釜 路 瓒嬪娍鍒嗘瀽 路 鏂板搧鍙戠幇</p></div>

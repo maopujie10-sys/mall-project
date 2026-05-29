@@ -1,4 +1,4 @@
-锘?template>
+<template>
   <div class="self-healing-panel">
     <div class="page-header">
       <h1>馃┖ 寮傚父鑷剤涓績</h1>

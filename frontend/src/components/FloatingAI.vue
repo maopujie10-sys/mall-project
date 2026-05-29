@@ -1,5 +1,5 @@
-锘?template>
-  <!-- 鍏ㄥ眬鎮诞AI鍔╂墜 鈥?鏂囧瓧+璇煶+瑙嗛鍏ㄩ泦鎴?-->
+<template>
+  <!-- 鍏ㄥ眬鎮诞AI鍔╂墜 鈥� 鏂囧瓧+璇煶+瑙嗛鍏ㄩ泦鎴� -->
   <div class="floating-ai" :class="{ 'chat-open': chatOpen, 'chat-expanded': chatExpanded, 'video-mode': videoActive }">
     <!-- ====== 鎮诞鎸夐挳 ====== -->
     <div
@@ -23,28 +23,28 @@
     <!-- ====== 鑱婂ぉ闈㈡澘 ====== -->
     <transition name="slide-up">
       <div v-if="chatOpen" class="ai-chat-panel" :class="{ expanded: chatExpanded, video: videoActive }">
-        <!-- 澶撮儴宸ュ叿鏍?-->
+        <!-- 澶撮儴宸ュ叿鏍� -->
         <div class="chat-header" @mousedown="startPanelDrag"><div class="header-scanline"></div>
           <div class="header-left">
             <div class="ai-avatar-small"><div class="avatar-holo"></div>AI</div>
             <div>
               <div class="header-title">{{ videoActive ? '瑙嗛閫氳瘽' : 'Friday AI 鍔╂墜' }}</div>
-              <div class="header-status">{{ videoActive ? '閫氳瘽涓?..' : (voiceActive ? '馃帳 璇煶鑱嗗惉涓?..' : '鍦ㄧ嚎 路 闅忔椂涓烘偍鏈嶅姟') }}</div>
+              <div class="header-status">{{ videoActive ? '閫氳瘽涓�...' : (voiceActive ? '?? 璇煶鑱嗗惉涓�...' : '鍦ㄧ嚎 路 闅忔椂涓烘偍鏈嶅姟') }}</div>
             </div>
           </div>
           <div class="header-actions">
             <!-- 璇煶閫氳瘽 -->
             <button class="header-btn" @click="toggleVoiceCall" :title="voiceCallActive ? '鎸傛柇璇煶' : '璇煶閫氳瘽'" :class="{ active: voiceCallActive }">
-              {{ voiceCallActive ? '馃摓' : '馃摓' }}
+              {{ voiceCallActive ? '??' : '??' }}
             </button>
             <!-- 瑙嗛閫氳瘽 -->
             <button class="header-btn" @click="toggleVideoCall" :title="videoActive ? '鍏抽棴瑙嗛' : '瑙嗛閫氳瘽'" :class="{ active: videoActive }">
-              {{ videoActive ? '馃摴' : '馃摴' }}
+              {{ videoActive ? '??' : '??' }}
             </button>
             <button class="header-btn" @click="toggleExpand" :title="chatExpanded ? '缂╁皬' : '鎵╁ぇ'">
-              {{ chatExpanded ? '鈯? : '鈯? }}
+              {{ chatExpanded ? '?' : '?' }}
             </button>
-            <button class="header-btn" @click="minimizeChat" title="鏈€灏忓寲">鈭?/button>
+            <button class="header-btn" @click="minimizeChat" title="鏈€灏忓寲">?</button>
             <button class="header-btn close-btn" @click="closeChat" title="鍏抽棴">脳</button>
           </div>
         </div>
@@ -62,38 +62,38 @@
             <video ref="localVideo" autoplay playsinline muted class="video-thumb"></video>
           </div>
           <div class="video-controls">
-            <button @click="toggleMic" :class="{ muted: micMuted }">{{ micMuted ? '馃攪' : '馃帣锔? }}</button>
-            <button @click="toggleCamera" :class="{ muted: cameraOff }">{{ cameraOff ? '馃摲鉂? : '馃摲' }}</button>
-            <button @click="endVideoCall" class="end-call-btn">馃敶 鎸傛柇</button>
+            <button @click="toggleMic" :class="{ muted: micMuted }">{{ micMuted ? '??' : '???' }}</button>
+            <button @click="toggleCamera" :class="{ muted: cameraOff }">{{ cameraOff ? '???' : '??' }}</button>
+            <button @click="endVideoCall" class="end-call-btn">?? 鎸傛柇</button>
           </div>
         </div>
 
-        <!-- ====== 娑堟伅鍖?====== -->
+        <!-- ====== 娑堟伅鍖� ====== -->
         <div v-if="!videoActive" class="chat-messages" ref="msgList"><canvas ref="matrixCanvas" class="matrix-bg"></canvas>
           <div v-if="messages.length === 0" class="empty-chat">
-            <div class="empty-icon">馃</div>
-            <p>浣犲ソ锛佹垜鏄?Friday AI 鍔╂墜</p>
-            <p class="empty-sub">鏂囧瓧 路 璇煶 路 瑙嗛 路 浼犲浘 路 浼犳枃浠?/p>
+            <div class="empty-icon">??</div>
+            <p>浣犲ソ锛佹垜鏄� Friday AI 鍔╂墜</p>
+            <p class="empty-sub">鏂囧瓧 路 璇煶 路 瑙嗛 路 浼犲浘 路 浼犳枃浠�</p>
             <div class="quick-actions">
-              <button @click="quickAsk('鏈嶅姟鍣ㄧ姸鎬佹€庝箞鏍凤紵')">馃搳 鏈嶅姟鍣ㄧ姸鎬?/button>
-              <button @click="quickAsk('浠婂ぉ鏈夊灏戣鍗曪紵')">馃摝 浠婃棩璁㈠崟</button>
-              <button @click="quickAsk('甯垜鍒嗘瀽鏈€杩戠殑寮傚父')">馃攳 寮傚父鍒嗘瀽</button>
-              <button @click="quickAsk('鐢熸垚浠婃棩杩愯惀鎶ュ憡')">馃摑 杩愯惀鎶ュ憡</button>
+              <button @click="quickAsk('鏈嶅姟鍣ㄧ姸鎬佹€庝箞鏍凤紵')">?? 鏈嶅姟鍣ㄧ姸鎬�</button>
+              <button @click="quickAsk('浠婂ぉ鏈夊灏戣鍗曪紵')">?? 浠婃棩璁㈠崟</button>
+              <button @click="quickAsk('甯垜鍒嗘瀽鏈€杩戠殑寮傚父')">?? 寮傚父鍒嗘瀽</button>
+              <button @click="quickAsk('鐢熸垚浠婃棩杩愯惀鎶ュ憡')">?? 杩愯惀鎶ュ憡</button>
             </div>
           </div>
 
           <div v-for="(msg, i) in messages" :key="i" class="msg-row" :class="msg.role">
-            <div class="msg-avatar">{{ msg.role === 'user' ? '馃懁' : 'AI' }}</div>
+            <div class="msg-avatar">{{ msg.role === 'user' ? '??' : 'AI' }}</div>
             <div class="msg-bubble" :class="msg.role">
               <div class="msg-text" v-html="renderMsg(msg.content)"></div>
               <div class="msg-time">
                 {{ msg.time }}
-                <span v-if="msg.voice" class="voice-tag">馃帳 璇煶</span>
+                <span v-if="msg.voice" class="voice-tag">?? 璇煶</span>
               </div>
             </div>
             <!-- 璇煶鎾斁鎸夐挳 -->
             <button v-if="msg.role === 'assistant'" class="play-voice-btn" @click="speakText(msg.content)" title="鏈楄">
-              馃攰
+              ??
             </button>
           </div>
 
@@ -105,7 +105,7 @@
           </div>
         </div>
 
-        <!-- ====== 杈撳叆鍖?====== -->
+        <!-- ====== 杈撳叆鍖� ====== -->
         <div v-if="!videoActive" class="chat-input-area">
           <!-- 璇煶杈撳叆鎻愮ず -->
           <div v-if="attachments.length > 0" class="attachments-bar"><div v-for="(att, i) in attachments" :key="i" class="attach-item"><div v-if="att.type === 'image'" class="attach-preview-img"><img :src="att.dataUrl" /><button class="attach-remove" @click="removeAttachment(i)">x</button></div><div v-else-if="att.type === 'video'" class="attach-preview-video"><video :src="att.dataUrl" controls preload="metadata"></video><button class="attach-remove" @click="removeAttachment(i)">x</button></div><div v-else class="attach-tag"><span class="attach-icon">{{ getFileIcon(att.name) }}</span><span class="attach-name">{{ att.name }}</span><span class="attach-size">{{ formatSize(att.size) }}</span><button class="attach-remove" @click="removeAttachment(i)">x</button></div></div></div>
@@ -113,7 +113,7 @@
             <div class="voice-wave">
               <span v-for="n in 5" :key="n" :style="{ animationDelay: n * 0.1 + 's' }"></span>
             </div>
-            <span>姝ｅ湪鑱嗗惉... 鐐瑰嚮楹﹀厠椋庡仠姝?/span>
+            <span>姝ｅ湪鑱嗗惉... 鐐瑰嚮楹﹀厠椋庡仠姝�</span>
           </div>
 
           <div class="input-row">
@@ -136,7 +136,7 @@
               v-model="inputText"
               @keydown.enter.exact.prevent="sendMessage"
               @keydown.enter.shift.exact="inputText += '\n'"
-              :placeholder="voiceActive ? '璇煶璇嗗埆涓?..' : '杈撳叆娑堟伅... (Enter鍙戦€?'"
+              :placeholder="voiceActive ? '璇煶璇嗗埆涓�...' : '杈撳叆娑堟伅... (Enter鍙戦€�)'"
               rows="1"
               ref="inputBox"
               :disabled="loading || voiceActive"
@@ -157,7 +157,7 @@
 <script setup>
 import { ref, nextTick, onMounted, onUnmounted, watch } from 'vue'
 
-// === 鐘舵€?===
+// === 鐘舵€� ===
 const chatOpen = ref(false)
 const chatExpanded = ref(false)
 const messages = ref([])
@@ -190,7 +190,7 @@ let panelDragging = false, panelStartX = 0, panelStartY = 0, panelPos = { x: 0, 
 
 const STORAGE_KEY = 'friday_floating_chat'
 
-// === 鍒濆鍖?===
+// === 鍒濆鍖� ===
 onMounted(() => {
   try {
     const saved = localStorage.getItem(STORAGE_KEY)
@@ -314,7 +314,8 @@ function toggleVoiceCall() {
     voiceCallActive.value = false
   } else {
     voiceCallActive.value = true
-    // 鑷姩鏈楄妯″紡锛氭敹鍒癆I鍥炲鍚庤嚜鍔ㄦ湕璇?  }
+    // 鑷姩鏈楄妯″紡锛氭敹鍒癆I鍥炲鍚庤嚜鍔ㄦ湕璇�
+  }
 }
 
 // === 瑙嗛閫氳瘽 ===
@@ -330,7 +331,7 @@ async function toggleVideoCall() {
     // 妯℃嫙杩炴帴锛堢湡瀹炲満鏅渶瑕乄ebRTC淇′护鏈嶅姟鍣級
     setTimeout(() => { videoConnected.value = true }, 2000)
   } catch (e) {
-    alert('鏃犳硶璁块棶鎽勫儚澶?楹﹀厠椋? ' + e.message)
+    alert('鏃犳硶璁块棶鎽勫儚澶�/楹﹀厠椋�: ' + e.message)
   }
 }
 
@@ -382,14 +383,15 @@ async function sendMessage() {
     })
     if (res.ok) {
       const data = await res.json()
-      const reply = data.reply || data.message || '鏀跺埌锛屾鍦ㄥ鐞?..'
+      const reply = data.reply || data.message || '鏀跺埌锛屾鍦ㄥ鐞�...'
       messages.value.push({ role: 'assistant', content: reply, time: new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }) })
-      // 璇煶閫氳瘽妯″紡涓嬭嚜鍔ㄦ湕璇?      if (voiceCallActive.value) { speakText(reply) }
+      // 璇煶閫氳瘽妯″紡涓嬭嚜鍔ㄦ湕璇�
+      if (voiceCallActive.value) { speakText(reply) }
     } else {
-      messages.value.push({ role: 'assistant', content: '鎶辨瓑锛屾湇鍔℃殏鏃朵笉鍙敤銆?, time: new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }) })
+      messages.value.push({ role: 'assistant', content: '鎶辨瓑锛屾湇鍔℃殏鏃朵笉鍙敤銆�', time: new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }) })
     }
   } catch (e) {
-    messages.value.push({ role: 'assistant', content: '缃戠粶杩炴帴澶辫触锛岃妫€鏌ョ綉缁溿€?, time: new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }) })
+    messages.value.push({ role: 'assistant', content: '缃戠粶杩炴帴澶辫触锛岃妫€鏌ョ綉缁溿€�', time: new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }) })
   }
   loading.value = false
   await nextTick(); scrollBottom()
@@ -401,7 +403,7 @@ const attachments = ref([])
 function onFileSelected(e) {
   const files = Array.from(e.target.files || [])
   for (const file of files) {
-    if (attachments.value.length >= 5) { alert('鏈€澶?涓枃浠?); break }
+    if (attachments.value.length >= 5) { alert('鏈€澶�5涓枃浠�'); break }
     const reader = new FileReader()
     reader.onload = (ev) => {
       let type = 'file'
@@ -681,7 +683,7 @@ function scrollBottom() {
   font-size: 14px !important;
 }
 
-/* === 娑堟伅鍖?=== */
+/* === 娑堟伅鍖� === */
 .chat-messages {
   flex: 1; overflow-y: auto; padding: 14px;
   display: flex; flex-direction: column; gap: 10px;
@@ -732,7 +734,7 @@ function scrollBottom() {
 }
 .play-voice-btn:hover { background: rgba(102,126,234,0.35); }
 
-/* === 璇煶鎸囩ず鍣?=== */
+/* === 璇煶鎸囩ず鍣� === */
 .voice-indicator {
   display: flex; align-items: center; gap: 10px;
   padding: 8px 12px; margin-bottom: 8px;
@@ -754,7 +756,7 @@ function scrollBottom() {
   50% { transform: scaleY(0.4); }
 }
 
-/* === 杈撳叆鍖?=== */
+/* === 杈撳叆鍖� === */
 .chat-input-area { padding: 10px 12px; border-top: 1px solid rgba(255,255,255,0.06); }
 .input-row { display: flex; gap: 8px; align-items: flex-end; }
 .voice-input-btn {
