@@ -1,9 +1,9 @@
 import axios from 'axios'
 import { ElMessage } from 'element-plus'
 
-// 从 localStorage 读取 Token
+// 从 localStorage 读取 Token，没有则用默认值
 function getToken() {
-  return localStorage.getItem('agent_token') || localStorage.getItem('friday_token') || ''
+  return localStorage.getItem('agent_token') || localStorage.getItem('friday_token') || 'kWs4N6GiD4vtjnuHV31r14m6HPpKttBSI35lFnpiI90'
 }
 
 function unwrapResponse(response) {

@@ -1,4 +1,4 @@
-锘縤mport { agentApi } from './index'
+import { agentApi } from './index'
 
 // 鎵ц宸℃
 export function runPatrol() {

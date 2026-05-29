@@ -1,11 +1,9 @@
+
 <template>
   <div class="sci-fi-shell">
-    <!-- 3D 神经网络背景 -->
     <div class="neural-bg" :class="{ 'brain-active': brainActive, 'brain-thinking': brainThinking, 'brain-speaking': brainSpeaking, 'brain-pulse': brainPulse }">
       <NeuralNetwork3D />
     </div>
-
-    <!-- 内容覆盖层 -->
     <div class="content-overlay">
       <router-view v-slot="{ Component }">
         <transition name="page-fade" mode="out-in">
@@ -13,101 +11,16 @@
         </transition>
       </router-view>
     </div>
-
-    <!-- 4 类漂浮导航光球 -->
     <FloatingNav />
-
-    <!-- AI 漂浮聊天 -->
     <FloatingAI />
-
-    <!-- 手机底部导航 -->
     <nav class="mobile-bottom-nav">
-      <router-link to="/friday" class="mb-item"><span>🧠</span><span>大脑</span></router-link>
-      <router-link to="/chat" class="mb-item"><span>💬</span><span>对话</span></router-link>
-      <router-link to="/dashboard" class="mb-item"><span>📊</span><span>总览</span></router-link>
-      <router-link to="/server" class="mb-item"><span>🖥️</span><span>服务器</span></router-link>
-      <router-link to="/mall" class="mb-item"><span>🏬</span><span>商城</span></router-link>
+      <router-link to="/friday" class="mb-item"><span>a</span><span>Brain</span></router-link>
+      <router-link to="/chat" class="mb-item"><span>b</span><span>Chat</span></router-link>
     </nav>
   </div>
 </template>
 
-<script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { useRoute } from 'vue-router'
-import { useSystemStore } from '@/stores/system'
-import { useThemeStore } from '@/stores/theme'
-import NeuralNetwork3D from '@/components/NeuralNetwork3D.vue'
-import FloatingNav from '@/components/FloatingNav.vue'
-import FloatingAI from '@/components/FloatingAI.vue'
-import { ElMessage } from 'element-plus'
-
-const route = useRoute()
-const systemStore = useSystemStore()
-const theme = useThemeStore()
-
-const emergencyVisible = ref(false)
-const tokenDialogVisible = ref(false)
-const tokenInput = ref(localStorage.getItem('agent_token') || '')
-
-function saveToken() {
-  localStorage.setItem('agent_token', tokenInput.value)
-  tokenDialogVisible.value = false
-  ElMessage.success('Token 已保存')
-}
-
-const brainActive = ref(false)
-const brainThinking = ref(false)
-const brainSpeaking = ref(false)
-const brainPulse = ref(false)
-
-// 自动登录获取JWT
-async function autoLogin() {
-  const token = localStorage.getItem('agent_token')
-  if (token) return token
-  try {
-    const res = await fetch('/agent/auth/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username: 'admin', password: 'admin123' })
-    })
-    if (res.ok) {
-      const data = await res.json()
-      if (data.access_token) {
-        localStorage.setItem('agent_token', data.access_token)
-        localStorage.setItem('friday_token', data.access_token)
-        return data.access_token
-      }
-    }
-  } catch (e) {
-    console.warn('Auto-login failed:', e)
-  }
-  return null
-}
-
-onMounted(async () => {
-  await autoLogin()
-  window.addEventListener('brain:active', (e) => {
-    brainActive.value = e.detail
-  })
-  window.addEventListener('brain:thinking', (e) => {
-    brainThinking.value = e.detail
-  })
-  window.addEventListener('brain:speaking', (e) => {
-    brainSpeaking.value = true
-    setTimeout(() => { brainSpeaking.value = false }, 2000)
-  })
-  window.addEventListener('brain:pulse', () => {
-    brainPulse.value = true
-    setTimeout(() => { brainPulse.value = false }, 600)
-  })
-
-  systemStore.fetchStatus()
-})
-
-function isActive(path) {
-  return route.path.startsWith(path)
-}
-
+<script setup></script>
 <style>
 /* ===== 科幻全屏布局 ===== */
 .sci-fi-shell {

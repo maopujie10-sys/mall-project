@@ -918,9 +918,5 @@ function scrollBottom() {
   0%, 100% { transform: scale(1); box-shadow: 0 4px 20px rgba(102,126,234,0.4); }
   50% { transform: scale(1.05); box-shadow: 0 6px 32px rgba(102,126,234,0.7), 0 0 50px rgba(118,75,162,0.3); }
 }
-  100% { transform: translateX(100%); }
-}
-  50% { opacity: 1; }
-}
 
 </style>
