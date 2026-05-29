@@ -29,10 +29,22 @@ class SpecItem:
 @dataclass
 class SkuItem:
     spec: str
+    spec_name: str = ""
     price: float = 0
     original_price: float = 0
     stock: int = 0
     image: str = ""
+    asin: str = ""
+
+@dataclass
+class ReviewItem:
+    """用户评论"""
+    reviewer: str = ""
+    rating: float = 0.0
+    title: str = ""
+    body: str = ""
+    date: str = ""
+    verified: bool = False
 
 @dataclass
 class ScrapedProduct:
@@ -48,6 +60,7 @@ class ScrapedProduct:
     cos_images: list[str] = field(default_factory=list)    # COS链接
     specs: list = field(default_factory=list)
     skus: list = field(default_factory=list)
+    reviews: list = field(default_factory=list)
     description: str = ""
     category_path: list[str] = field(default_factory=list)
     brand: str = ""
@@ -62,6 +75,7 @@ class ScrapedProduct:
         d = asdict(self)
         d["specs"] = [asdict(s) if hasattr(s, '__dataclass_fields__') else s for s in self.specs]
         d["skus"] = [asdict(s) if hasattr(s, '__dataclass_fields__') else s for s in self.skus]
+        d["reviews"] = [asdict(r) if hasattr(r, '__dataclass_fields__') else r for r in self.reviews]
         return d
 
 # ═══════════════════════════════════════
@@ -627,6 +641,9 @@ class AmazonAdapter(BaseScrapeAdapter):
                 return None
 
             soup = BeautifulSoup(r.text, "html.parser")
+            # 立即释放原始HTML，减小内存
+            page_text = r.text
+            del r
 
             title = ""
             title_el = soup.select_one("#productTitle")
@@ -693,25 +710,63 @@ class AmazonAdapter(BaseScrapeAdapter):
                 if feature_bullets:
                     description = "\n".join(li.get_text(strip=True) for li in feature_bullets[:20])
 
-            # SKU规格 — 从变体选择器提取
+            # SKU规格 — 从变体选择器提取（包括ASIN映射）
             specs = []
-            skus = []
+            asin_map = {}  # 规格值 → ASIN
+            sku_dimensions = {}  # 规格名 → [值列表]
+
+            # 从隐藏的twister数据提取变体ASIN映射
+            twister_data = soup.select_one("script[type='text/twister']")
+            if not twister_data:
+                twister_data = soup.select_one("script:contains('dimensionToAsin')")
+
+            for var_sel in soup.select("#variation_color_name ul li, #variation_size_name ul li, #native_dropdown_color_name option, #native_dropdown_size_name option"):
+                val = var_sel.get_text(strip=True)
+                data_asin = var_sel.get("data-dp-url", "") or var_sel.get("value", "")
+                dim_name = ""
+                parent = var_sel.find_parent("div", id=True)
+                if parent:
+                    dim_name = parent.get("id", "").replace("variation_", "").replace("native_dropdown_", "")
+                if val and val not in ("Select", "-1", ""):
+                    dim_name = dim_name or "规格"
+                    if dim_name not in sku_dimensions:
+                        sku_dimensions[dim_name] = []
+                    if val not in sku_dimensions[dim_name]:
+                        sku_dimensions[dim_name].append(val)
+                    if data_asin:
+                        asin_map[val] = data_asin
+
+            # 从原生下拉框补充
             for var_sel in soup.select("select[id*='native_dropdown'] option, .a-native-dropdown option"):
                 val = var_sel.get_text(strip=True)
                 name = var_sel.find_parent("select").get("data-a-native-class", "") or var_sel.find_parent("select").get("name", "")
                 if val and val != "-1" and val != "Select":
-                    if not specs:
-                        specs.append(SpecItem(name=name or "规格", values=[val]))
-                    else:
-                        specs[0].values.append(val)
-            # 从尺寸/颜色选择器补充
-            for dim_name in ["color_name", "size_name", "style_name"]:
-                dim_el = soup.select_one(f"#variation_{dim_name} .selection, [id*='{dim_name}']")
-                if dim_el:
-                    dim_val = dim_el.get_text(strip=True)
-                    if dim_val and not any(s.name == dim_name for s in specs):
-                        opts = [o.get_text(strip=True) for o in soup.select(f"[id*='{dim_name}'] li, [id*='{dim_name}'] option") if o.get_text(strip=True)]
-                        specs.append(SpecItem(name=dim_name, values=opts if opts else [dim_val]))
+                    name = name or "规格"
+                    if name not in sku_dimensions:
+                        sku_dimensions[name] = []
+                    if val not in sku_dimensions[name]:
+                        sku_dimensions[name].append(val)
+
+            # 构建SpecItem列表
+            spec_items = []
+            for dim_name, values in sku_dimensions.items():
+                nice_name = {"color_name": "颜色", "size_name": "尺寸", "style_name": "款式"}.get(dim_name, dim_name)
+                spec_items.append(SpecItem(name=nice_name, values=values))
+
+            # 生成SKU（规格组合）
+            skus = []
+            for dim_name, values in sku_dimensions.items():
+                for val in values[:8]:  # 每维度最多8个值
+                    img = ""
+                    if "color" in dim_name.lower():
+                        color_img = soup.select_one(f"img[alt*='{val}']")
+                        if color_img:
+                            img = color_img.get("src", "")
+                    skus.append(SkuItem(
+                        spec=val, spec_name=dim_name,
+                        price=price, original_price=org_price,
+                        image=img, asin=asin_map.get(val, "")
+                    ))
 
             # 销量估算
             sales_count = 0
@@ -721,10 +776,60 @@ class AmazonAdapter(BaseScrapeAdapter):
                 if s_nums:
                     sales_count = int(s_nums[0].replace(",", ""))
 
+            # ── 用户评论抓取 ──
+            reviews = []
+            review_cards = soup.select("#cm_cr-review_list [data-hook='review'], div[data-hook='review']")
+            if not review_cards:
+                review_cards = soup.select(".review.aok-relative")
+            for card in review_cards[:10]:
+                try:
+                    rev_name = ""
+                    name_el = card.select_one(".a-profile-name") or card.select_one("[data-hook='review-author']")
+                    if name_el:
+                        rev_name = name_el.get_text(strip=True)
+
+                    rev_rating = 0.0
+                    star_el = card.select_one(".a-icon-alt") or card.select_one("[data-hook='review-star-rating'] .a-icon-alt")
+                    if star_el:
+                        r_nums = re.findall(r'[\d.]+', star_el.get_text(strip=True))
+                        if r_nums:
+                            rev_rating = float(r_nums[0])
+
+                    rev_title = ""
+                    title_el = card.select_one("[data-hook='review-title']") or card.select_one(".review-title")
+                    if title_el:
+                        rev_title = title_el.get_text(strip=True)
+
+                    rev_body = ""
+                    body_el = card.select_one("[data-hook='review-body']") or card.select_one(".review-text")
+                    if body_el:
+                        rev_body = body_el.get_text("\n", strip=True)[:1000]
+
+                    rev_date = ""
+                    date_el = card.select_one("[data-hook='review-date']") or card.select_one(".review-date")
+                    if date_el:
+                        rev_date = date_el.get_text(strip=True)
+
+                    verified = bool(card.select_one("[data-hook='avp-badge']") or "verified" in card.get_text().lower())
+
+                    if rev_name and rev_body:
+                        reviews.append(ReviewItem(
+                            reviewer=rev_name, rating=rev_rating,
+                            title=rev_title, body=rev_body,
+                            date=rev_date, verified=verified
+                        ))
+                except Exception:
+                    continue
+
+            # 清理HTML解析树释放内存
+            soup.decompose()
+            del soup, page_text
+
             return ScrapedProduct(
                 platform="amazon", source_url=url, title=title, brand=brand,
                 price=price, original_price=org_price, currency="CNY",
-                images=images, specs=specs, skus=skus,
+                images=images, specs=spec_items, skus=skus,
+                reviews=reviews,
                 description=description, category_path=category_path,
                 rating=rating, rating_count=rating_count,
                 sales_count=sales_count, crawled_at=datetime.now().isoformat()
