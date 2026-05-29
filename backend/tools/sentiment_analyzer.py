@@ -1,4 +1,4 @@
-﻿"""情感分析 + 客户画像"""
+"""情感分析 + 客户画像"""
 import re
 from collections import Counter, defaultdict
 from tools.logger import get_logger
@@ -13,6 +13,14 @@ class SentimentAnalyzer:
     URGENT = {"急","马上","立刻","赶紧","快","紧急","退款","报警","投诉"}
 
     @classmethod
+    # 否定词(反转情感)
+    NEGATORS = {"不","没","无","非","别","未","否","莫","休"}
+
+    # 程度词(权重调整)
+    INTENSIFIERS = {"很":1.5,"非常":1.8,"特别":2.0,"太":1.6,"极":2.0,"超级":2.0,
+                    "有点":0.5,"稍微":0.6,"略微":0.5,"不太":0.4}
+
+    @classmethod
     def analyze(cls, text: str) -> Dict:
         """分析文本情感"""
         words = set(re.findall(r'[\u4e00-\u9fff]+|[a-zA-Z]+', text.lower()))
@@ -21,10 +29,34 @@ class SentimentAnalyzer:
         neg = len(words & cls.NEGATIVE)
         urgent = len(words & cls.URGENT)
 
-        if pos > neg:
-            sentiment, score = "positive", min(1.0, (pos - neg) / max(pos + neg, 1) * 5)
+        # 否定词处理: 否定词+正面词=负面
+    negated = False
+    weighted_pos = 0
+    weighted_neg = 0
+    words_list = list(words)
+    for i, w in enumerate(words_list):
+        if w in cls.NEGATORS:
+            negated = True
+            continue
+        intensity = 1.0
+        if i > 0 and words_list[i-1] in cls.INTENSIFIERS:
+            intensity = cls.INTENSIFIERS[words_list[i-1]]
+        if w in cls.POSITIVE:
+            if negated:
+                weighted_neg += 1 * intensity
+            else:
+                weighted_pos += 1 * intensity
+        elif w in cls.NEGATIVE:
+            if negated:
+                weighted_pos += 0.5 * intensity
+            else:
+                weighted_neg += 1 * intensity
+        negated = False
+
+    if weighted_pos > weighted_neg:
+            sentiment, score = "positive", min(1.0, (weighted_pos - weighted_neg) / max(weighted_pos + weighted_neg, 1) * 5)
         elif neg > pos:
-            sentiment, score = "negative", min(1.0, (neg - pos) / max(pos + neg, 1) * 5)
+            sentiment, score = "negative", min(1.0, (weighted_neg - weighted_pos) / max(weighted_pos + weighted_neg, 1) * 5)
         else:
             sentiment, score = "neutral", 0.5
 

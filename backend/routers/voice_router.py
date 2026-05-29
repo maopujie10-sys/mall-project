@@ -1,4 +1,4 @@
-﻿"""语音对话 API — WebSocket实时流式 + REST降级"""
+"""语音对话 API — WebSocket实时流式 + REST降级"""
 import json, base64
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from fastapi.responses import JSONResponse
@@ -77,8 +77,7 @@ async def voice_websocket(ws: WebSocket):
 
                 try:
                     from agents.multi_model import ModelRouter
-                    mr = ModelRouter()
-                    llm_resp = await mr.chat(
+                    llm_resp = await ModelRouter.smart_chat(
                         messages=[
                             {"role": "system", "content": "你是Friday全能AI助手，简洁友好地回答用户问题"},
                             {"role": "user", "content": user_text}

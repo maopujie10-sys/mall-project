@@ -1,4 +1,4 @@
-﻿"""Agent 协作编排器 — 多Agent协同完成任务"""
+"""Agent 协作编排器 — 多Agent协同完成任务"""
 import asyncio, json, time
 from typing import List, Dict, Any, Optional
 from dataclasses import dataclass, field
@@ -153,8 +153,7 @@ class AgentOrchestrator:
         """分析Agent — 使用LLM深度分析"""
         try:
             from agents.multi_model import ModelRouter
-            mr = ModelRouter()
-            resp = await mr.chat(
+            resp = await ModelRouter.smart_chat(
                 messages=[{"role": "user", "content": f"请深入分析以下任务并给出具体建议:\n目标: {task.goal}\n当前动作: {step.action}"}],
                 mode="deep"
             )
@@ -179,8 +178,7 @@ class AgentOrchestrator:
         # 默认: LLM执行
         try:
             from agents.multi_model import ModelRouter
-            mr = ModelRouter()
-            resp = await mr.chat(
+            resp = await ModelRouter.smart_chat(
                 messages=[{"role": "user", "content": f"请执行以下任务:\n{step.action}\n参数: {step.params}"}],
                 mode="fast"
             )
@@ -194,8 +192,7 @@ class AgentOrchestrator:
 
         try:
             from agents.multi_model import ModelRouter
-            mr = ModelRouter()
-            resp = await mr.chat(
+            resp = await ModelRouter.smart_chat(
                 messages=[{"role": "user", "content": f"请审查以下任务执行结果:\n目标: {task.goal}\n执行结果: {prev_results}\n请评估是否达成目标，有无遗漏或风险"}],
                 mode="fast"
             )

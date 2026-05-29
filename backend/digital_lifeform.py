@@ -327,7 +327,10 @@ class DigitalLifeform:
             "running": cls._running,
             "cycle": cls._cycle_count,
             "mood": round(cls._mood_score, 2),
+            "health": round(max(0.1, 1.0 - cls._mood_score * 0.3), 2),
+            "energy": round(max(0.1, cls._mood_score * 0.9), 2),
             "wisdom": round(cls._wisdom, 1),
+            "experience": round(min(1.0, cls._cycle_count / 100), 2),
             "personality": cls._personality,
             "insights_count": len(cls._insights),
             "dream_count": len(cls._dream_log),
@@ -379,7 +382,10 @@ class DigitalLifeform:
             "results": results,
             "reflection": reflection,
             "mood": cls._mood_score,
+            "health": round(max(0.1, 1.0 - cls._mood_score * 0.3), 2),
+            "energy": round(max(0.1, cls._mood_score * 0.9), 2),
             "wisdom": round(cls._wisdom, 1),
+            "experience": round(min(1.0, cls._cycle_count / 100), 2),
         }
         if dream:
             cycle_result["dream"] = dream
@@ -516,7 +522,10 @@ class DigitalLifeform:
             "cycle": cls._cycle_count,
             "mood": cls.get_mood(),
             "mood_score": round(cls._mood_score, 2),
+            "health": round(max(0.1, 1.0 - cls._mood_score * 0.3), 2),
+            "energy": round(max(0.1, cls._mood_score * 0.9), 2),
             "wisdom": round(cls._wisdom, 1),
+            "experience": round(min(1.0, cls._cycle_count / 100), 2),
             "actions_total": len(cls._action_history),
             "recent_actions": cls._action_history[-5:],
             "reflection": cls._last_reflection,

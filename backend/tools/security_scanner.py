@@ -1,4 +1,4 @@
-﻿"""安全渗透自检引擎 — AI定期扫描漏洞+自动修复+报告"""
+"""安全渗透自检引擎 — AI定期扫描漏洞+自动修复+报告"""
 import os, re, subprocess, json, time
 from tools.logger import get_logger
 
@@ -65,9 +65,10 @@ class SecurityScanner:
         """检查SQL注入风险"""
         risks = []
         backend_dir = os.path.join(os.path.dirname(__file__), "..")
+        scanned = 0
         for root, _, files in os.walk(backend_dir):
             for f in files:
-                if f.endswith('.py'):
+                scanned += 1; if f.endswith('.py'):
                     fpath = os.path.join(root, f)
                     try:
                         with open(fpath, 'r', encoding='utf-8') as fp:
@@ -78,14 +79,24 @@ class SecurityScanner:
                     except:
                         pass
 
-        return {"name": "SQL注入风险检查", "pass": len(risks) == 0,
+        return {"name": "SQL注入风险检查", "pass": len(risks) == 0, "severity": "high" if risks else "low", "detail": f"扫描{scanned}个Python文件, 发现{len(risks)}个潜在风险" if risks else f"扫描{scanned}个文件, 未发现SQL注入风险", "files": risks[:5]}
                 "severity": "high" if risks else "low",
                 "detail": f"发现{len(risks)}个潜在风险文件" if risks else "未发现SQL注入风险"}
 
     @classmethod
     async def check_xss_risk(cls) -> Dict:
         """检查XSS风险"""
-        return {"name": "XSS风险检查", "pass": True, "severity": "low", "detail": "前端使用Vue自动转义，风险较低"}
+        xss_risks = []
+        for root, _, files in os.walk(backend_dir):
+            for f in files:
+                if f.endswith('.py') or f.endswith('.html'):
+                    try:
+                        with open(os.path.join(root, f), 'r', encoding='utf-8') as fp:
+                            c2 = fp.read()
+                        if re.search(r'innerHTML|v-html|dangerouslySetInnerHTML|document\.write', c2):
+                            xss_risks.append(f)
+                    except: pass
+        return {"name": "XSS风险检查", "pass": len(xss_risks) == 0, "severity": "medium" if xss_risks else "low", "detail": f"发现{len(xss_risks)}处潜在XSS风险: {xss_risks[:3]}" if xss_risks else "未发现XSS风险"}
 
     @classmethod
     async def check_auth_config(cls) -> Dict:
@@ -109,7 +120,12 @@ class SecurityScanner:
     @classmethod
     async def check_file_permissions(cls) -> Dict:
         """检查文件权限"""
-        return {"name": "文件权限检查", "pass": True, "severity": "medium",
+        try:
+            result = subprocess.run(["find", ".", "-perm", "/o+w", "-maxdepth", "2"], capture_output=True, text=True, timeout=10, cwd=backend_dir)
+            writable = [l for l in result.stdout.split("\n") if l.strip() and not l.startswith(".")]
+        except:
+            writable = []
+        return {"name": "文件权限检查", "pass": len(writable) == 0, "severity": "high" if writable else "low",
                 "detail": "请在服务器运行 find . -perm /o+w 检查可写文件"}
 
 security_scanner = SecurityScanner()

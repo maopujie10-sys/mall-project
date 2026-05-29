@@ -1,4 +1,4 @@
-﻿"""语音引擎 — STT语音识别 + TTS语音合成 + 流式WebSocket"""
+"""语音引擎 — STT语音识别 + TTS语音合成 + 流式WebSocket"""
 import os, json, base64, asyncio, httpx
 from io import BytesIO
 from tools.logger import get_logger
@@ -61,10 +61,9 @@ async def stream_voice_chat(audio_bytes: bytes, system_prompt: str = "") -> dict
         return {"ok": False, "error": "语音识别失败", "text": "", "audio": ""}
 
     from agents.multi_model import ModelRouter
-    router = ModelRouter()
 
     try:
-        llm_resp = await router.chat(
+        llm_resp = await ModelRouter.smart_chat(
             messages=[
                 {"role": "system", "content": system_prompt or "你是全能AI助手，简洁回答"},
                 {"role": "user", "content": user_text}

@@ -1,4 +1,4 @@
-﻿"""推荐引擎 — 协同过滤 + 向量相似度"""
+"""推荐引擎 — 协同过滤 + 向量相似度"""
 import math, json
 from collections import defaultdict, Counter
 from typing import List, Dict
@@ -97,3 +97,31 @@ class RecommendEngine:
                 "total_actions": sum(len(v) for v in cls._user_actions.values())}
 
 recommend_engine = RecommendEngine()
+
+    @classmethod
+    def save(cls):
+        """持久化到SQLite"""
+        from tools.memory_store import memory_store
+        import json
+        data = {"actions": dict(cls._user_actions), "features": cls._item_features}
+        memory_store.set_knowledge("recommend_data", json.dumps(data, ensure_ascii=False))
+
+    @classmethod
+    def load(cls):
+        """从SQLite恢复"""
+        from tools.memory_store import memory_store
+        import json
+        try:
+            data = memory_store.get_knowledge("recommend_data")
+            if data:
+                d = json.loads(data)
+                cls._user_actions.update(d.get("actions", {}))
+                cls._item_features.update(d.get("features", {}))
+            return True
+        except:
+            return False
+
+try:
+    RecommendEngine.load()
+except:
+    pass

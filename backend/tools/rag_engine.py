@@ -1,4 +1,4 @@
-﻿"""RAG 知识检索引擎 — 文档摄入 + 语义搜索 + 智能问答"""
+"""RAG 知识检索引擎 — 文档摄入 + 语义搜索 + 智能问答"""
 import os, json, hashlib, re
 from typing import List, Dict, Optional
 from tools.logger import get_logger
@@ -58,8 +58,7 @@ class RAGEngine:
 
         try:
             from agents.multi_model import ModelRouter
-            mr = ModelRouter()
-            resp = await mr.chat(
+            resp = await ModelRouter.smart_chat(
                 messages=[{
                     "role": "system",
                     "content": f"根据以下知识库回答问题，如果知识库没有相关信息请诚实说明:\n\n{context}"
@@ -79,3 +78,33 @@ class RAGEngine:
 
 # 预加载知识
 rag = RAGEngine()
+
+    @classmethod
+    def save(cls):
+        """持久化到SQLite"""
+        from tools.memory_store import memory_store
+        import json
+        memory_store.set_knowledge("rag_docs", json.dumps(cls._docs[-500:], ensure_ascii=False))
+        memory_store.set_knowledge("rag_index", json.dumps({k: v[-100:] for k, v in list(cls._index.items())[:500]}, ensure_ascii=False))
+
+    @classmethod
+    def load(cls):
+        """从SQLite恢复"""
+        from tools.memory_store import memory_store
+        import json
+        try:
+            docs = memory_store.get_knowledge("rag_docs")
+            if docs:
+                cls._docs = json.loads(docs)
+            idx = memory_store.get_knowledge("rag_index")
+            if idx:
+                cls._index = {k: v for k, v in json.loads(idx).items()}
+            return True
+        except:
+            return False
+
+# 启动时自动恢复
+try:
+    RAGEngine.load()
+except:
+    pass
