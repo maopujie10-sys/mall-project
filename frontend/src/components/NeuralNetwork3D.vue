@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div ref="container" class="nn3d-container">
     <div class="nn-overlay">
       <div class="nn-status">🧠 数字生命体· 运行中</div>
@@ -21,7 +21,7 @@ const connectionCount = ref(0)
 
 let scene, camera, renderer, controls, composer, animFrameId
 let core, coreGlow, nodes = [], connections = [], energyParticles = []
-let brainWaves = [], dataStreams = []
+let brainWaves = [], dataStreams = [], thoughtParticles = [], energyRings = []
 let raycaster, mouse, selectedNode = null
 let clock = new THREE.Clock()
 
@@ -245,11 +245,35 @@ function initScene() {
       const pMat = new THREE.MeshBasicMaterial({ color: 0x88ccff, transparent: true, opacity: 0.6 })
       const particle = new THREE.Mesh(pGeo, pMat)
       particle.userData = { curve, progress: Math.random(), speed: 0.2 + Math.random() * 0.4 }
-      scene.add(particle)
+            scene.add(particle)
       energyParticles.push(particle)
     }
   })
-}
+  
+  // 智能体粒子 — 从核心喷出的"思维"粒子
+  const thoughtGeo = new THREE.SphereGeometry(0.08, 4, 4)
+  for (let i = 0; i < 40; i++) {
+    const mat = new THREE.MeshBasicMaterial({ color: new THREE.Color().setHSL(0.6 + Math.random() * 0.2, 0.8, 0.6), transparent: true, opacity: 0 })
+    const particle = new THREE.Mesh(thoughtGeo, mat)
+    particle.position.set(0, 0, 0)
+    particle.life = 0
+    scene.add(particle)
+    thoughtParticles.push(particle)
+  }
+  
+  // 能量波纹环
+  for (let i = 0; i < 3; i++) {
+    const ringGeo = new THREE.TorusGeometry(1, 0.02, 16, 64)
+    const ringMat = new THREE.MeshBasicMaterial({ color: new THREE.Color().setHSL(0.6 + i * 0.1, 0.9, 0.5 + i * 0.15), transparent: true, opacity: 0.3 })
+    const ring = new THREE.Mesh(ringGeo, ringMat)
+    ring.rotation.x = Math.PI / 2 + i * 0.5
+    ring.userData = { speed: 0.5 + i * 0.3 }
+    ring.material.opacity = 0.1
+    ring.scale.set(0.5, 0.5, 0.5)
+    scene.add(ring)
+    energyRings.push(ring)
+  }
+  }
 
 function animate() {
   animFrameId = requestAnimationFrame(animate)
@@ -259,9 +283,9 @@ function animate() {
   
   core.rotation.x += 0.003
   core.rotation.y += 0.005
-  const heartbeat = 1 + 0.08 * Math.sin(t * 1.5)
+  const heartbeat = 1 + 0.12 * Math.sin(t * 1.5)
   core.scale.set(heartbeat, heartbeat, heartbeat)
-  core.material.emissiveIntensity = 0.3 + 0.3 * Math.sin(t * 1.5)
+  core.material.emissiveIntensity = 0.4 + 0.5 * Math.sin(t * 1.5)
 
   
   coreGlow.rotation.x += 0.002
@@ -311,6 +335,37 @@ function animate() {
     p.material.opacity = 0.3 + 0.5 * Math.sin(p.userData.progress * Math.PI)
     const s = 1 + 0.5 * Math.sin(p.userData.progress * Math.PI)
     p.scale.set(s, s, s)
+  })
+
+    // 智能体粒子流 — 从核心向外喷射
+  thoughtParticles.forEach((p, i) => {
+    p.life -= 0.003
+    if (p.life <= 0) {
+      p.position.set(
+        (Math.random() - 0.5) * 0.3,
+        (Math.random() - 0.5) * 0.3,
+        (Math.random() - 0.5) * 0.3
+      )
+      p.life = 1
+      p.material.opacity = 0
+    }
+    p.position.y += 0.02 * (1 - p.life)
+    p.position.x += (Math.random() - 0.5) * 0.01
+    p.material.opacity = Math.sin(p.life * Math.PI) * 0.8
+    const s = 0.3 + p.life * 0.7
+    p.scale.set(s, s, s)
+  })
+  
+  // 能量波纹 — 周期性外扩
+  energyRings.forEach((ring, i) => {
+    ring.scale.x += 0.003 * ring.userData.speed
+    ring.scale.y += 0.003 * ring.userData.speed
+    ring.scale.z += 0.003 * ring.userData.speed
+    ring.material.opacity = Math.max(0, ring.material.opacity - 0.002)
+    if (ring.scale.x > 8 || ring.material.opacity <= 0) {
+      ring.scale.set(0.5, 0.5, 0.5)
+      ring.material.opacity = 0.6
+    }
   })
 
   controls.update()
