@@ -1,4 +1,4 @@
-﻿"""内容工厂 API"""
+"""内容工厂 API"""
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from tools.content_factory import content_factory

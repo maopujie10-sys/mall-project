@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="page-shell">
     <div class="page-header"><h2>📚 知识中心</h2><p>RAG检索增强 — 文档摄入+语义搜索+智能问答</p></div>
     <el-row :gutter="16">

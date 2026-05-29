@@ -1,4 +1,4 @@
-﻿"""API Key 管理器 — 后台增删改查+热切换，SQLite持久化"""
+"""API Key 管理器 — 后台增删改查+热切换，SQLite持久化"""
 import os, json, time
 from typing import Dict, List, Optional
 from dataclasses import dataclass, asdict

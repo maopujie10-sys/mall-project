@@ -1,4 +1,4 @@
-﻿# 🖥️ Friday AI OS — 服务器端 AI 记忆
+# 🖥️ Friday AI OS — 服务器端 AI 记忆
 
 > 最后更新: 2026-05-30 | 运行环境: server
 

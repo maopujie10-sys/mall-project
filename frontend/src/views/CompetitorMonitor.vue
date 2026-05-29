@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="page-shell">
     <div class="page-header"><h2>🕵️ 竞品监控</h2><p>定时爬取+差异分析+自动调价建议</p></div>
     <el-card><template #header>🔍 添加监控目标</template>

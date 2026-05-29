@@ -1,4 +1,4 @@
-﻿"""RAG知识库 API"""
+"""RAG知识库 API"""
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from tools.rag_engine import rag

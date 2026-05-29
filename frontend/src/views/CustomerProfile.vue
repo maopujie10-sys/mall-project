@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="page-shell">
     <div class="page-header"><h2>👥 客户画像+情感分析</h2><p>情感识别+兴趣标签+优先处理</p></div>
     <el-row :gutter="16">

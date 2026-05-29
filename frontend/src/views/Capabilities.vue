@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="page-shell">
     <div class="page-header">
       <h2>🔧 AI能力状态</h2>

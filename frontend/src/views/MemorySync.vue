@@ -1,4 +1,4 @@
-﻿<template><div class="page-shell"><div class="page-header"><h2>🔄 跨平台记忆同步</h2><p>微信/Telegram/Web 统一记忆</p></div>
+<template><div class="page-shell"><div class="page-header"><h2>🔄 跨平台记忆同步</h2><p>微信/Telegram/Web 统一记忆</p></div>
 <el-row :gutter="16"><el-col :span="8" v-for="p in platforms" :key="p.id"><el-card>
 <template #header>{{p.icon}} {{p.name}}</template>
 <el-tag :type="p.connected?'success':'info'">{{p.connected?'已连接':'待配置'}}</el-tag>

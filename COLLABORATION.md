@@ -1,4 +1,4 @@
-﻿# COLLABORATION.md — Codex + Claude Code 协作规范
+# COLLABORATION.md — Codex + Claude Code 协作规范
 
 ## 角色分工
 

@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="page-shell">
     <div class="page-header">
       <h2>⚡ AI代码部署</h2>

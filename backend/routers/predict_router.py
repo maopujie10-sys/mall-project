@@ -1,4 +1,4 @@
-﻿"""预测分析 API"""
+"""预测分析 API"""
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from tools.predict_engine import predict_engine

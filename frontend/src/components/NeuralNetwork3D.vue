@@ -290,7 +290,7 @@ function animate() {
   
   core.rotation.x += 0.003
   core.rotation.y += 0.005
-  const heartbeat = 1 + 0.12 * Math.sin(t * 1.5)
+  const thinkingBoost = window._brainThinking ? 2.5 : 1; const heartbeat = 1 + 0.12 * Math.sin(t * 1.5 * thinkingBoost)
   core.scale.set(heartbeat, heartbeat, heartbeat)
   core.material.emissiveIntensity = 0.4 + 0.5 * Math.sin(t * 1.5)
   
@@ -356,7 +356,7 @@ function animate() {
 
     // 智能体粒子流 — 从核心向外喷射
   thoughtParticles.forEach((p, i) => {
-    p.life -= 0.003
+    p.life -= (window._brainThinking ? 0.012 : 0.003)
     if (p.life <= 0) {
       p.position.set(
         (Math.random() - 0.5) * 0.3,
@@ -375,10 +375,10 @@ function animate() {
   
   // 能量波纹 — 周期性外扩
   energyRings.forEach((ring, i) => {
-    ring.scale.x += 0.003 * ring.userData.speed
+    const ringSpeed = (window._brainSpeaking ? 2.5 : 1) * ring.userData.speed; ring.scale.x += 0.003 * ringSpeed
     ring.scale.y += 0.003 * ring.userData.speed
     ring.scale.z += 0.003 * ring.userData.speed
-    ring.material.opacity = Math.max(0, ring.material.opacity - 0.002)
+    ring.material.opacity = Math.max(0, ring.material.opacity - (window._brainSpeaking ? 0.001 : 0.002))
     if (ring.scale.x > 8 || ring.material.opacity <= 0) {
       ring.scale.set(0.5, 0.5, 0.5)
       ring.material.opacity = 0.6
@@ -434,8 +434,9 @@ onMounted(() => {
   container.value.addEventListener("mousemove", onMouseMove)
   container.value.addEventListener("click", onClick)
   container.value.addEventListener("dblclick", () => { window.dispatchEvent(new CustomEvent('brain:openChat')) })
-  window.addEventListener('brain:thinking', (e) => { window._brainThinking = e.detail !== false })
+  window._brainThinking = false; window._brainSpeaking = false; window.addEventListener('brain:thinking', (e) => { window._brainThinking = e.detail !== false; if (!window._brainThinking) { setTimeout(() => { window._brainThinking = false }, 500) } })
   window.addEventListener('brain:speaking', () => { window._brainSpeaking = true; setTimeout(() => { window._brainSpeaking = false }, 2000) })
+  window.addEventListener('brain:idle', () => { window._brainThinking = false; window._brainSpeaking = false })
 })
 onBeforeUnmount(() => {
   cancelAnimationFrame(animFrameId)

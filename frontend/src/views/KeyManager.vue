@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="page-shell">
     <div class="page-header"><h2>🔑 API Key 管理</h2><p>后台增删改查+热切换 — 保存即生效</p></div>
 

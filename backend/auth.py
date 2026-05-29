@@ -1,5 +1,6 @@
 """认证模块 v3 — JWT + RBAC角色权限 + 审计日志"""
-import jwt, time, secrets, os
+import jwt, time, secrets, os, sqlite3, hashlib
+from pathlib import Path
 from datetime import datetime, timedelta
 from fastapi import HTTPException, Request, Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
@@ -20,12 +21,56 @@ ROLES = {
     "viewer": {"level": 10, "desc": "只读用户", "permissions": ["read:*"]},
 }
 
-# 用户存储（生产环境应存数据库）
-_users = {
-    "admin": {"password": os.getenv("ADMIN_PASSWORD", "admin123"), "role": "admin"},
-    "operator": {"password": os.getenv("OPERATOR_PASSWORD", "oper123"), "role": "operator"},
-    "viewer": {"password": os.getenv("VIEWER_PASSWORD", "view123"), "role": "viewer"},
-}
+# 用户存储 — SQLite持久化
+USER_DB = Path(__file__).parent / "data" / "users.db"
+
+def _get_user_db():
+    USER_DB.parent.mkdir(parents=True, exist_ok=True)
+    conn = sqlite3.connect(str(USER_DB))
+    conn.execute("CREATE TABLE IF NOT EXISTS users (username TEXT PRIMARY KEY, password_hash TEXT, role TEXT DEFAULT 'viewer', created_at TEXT)")
+    cursor = conn.execute("SELECT COUNT(*) FROM users")
+    if cursor.fetchone()[0] == 0:
+        conn.execute("INSERT INTO users VALUES ('admin', ?, 'admin', datetime('now'))", (hashlib.sha256("admin123".encode()).hexdigest(),))
+        conn.execute("INSERT INTO users VALUES ('operator', ?, 'operator', datetime('now'))", (hashlib.sha256("oper123".encode()).hexdigest(),))
+        conn.execute("INSERT INTO users VALUES ('viewer', ?, 'viewer', datetime('now'))", (hashlib.sha256("view123".encode()).hexdigest(),))
+        conn.commit()
+    return conn
+
+def verify_user_password(username, password):
+    conn = _get_user_db()
+    row = conn.execute("SELECT username, password_hash, role FROM users WHERE username=?", (username,)).fetchone()
+    conn.close()
+    if row and row[1] == hashlib.sha256(password.encode()).hexdigest():
+        return {"username": row[0], "role": row[2]}
+    return None
+
+def list_all_users():
+    conn = _get_user_db()
+    rows = conn.execute("SELECT username, role, created_at FROM users ORDER BY created_at").fetchall()
+    conn.close()
+    return [{"username": r[0], "role": r[1], "created_at": r[2]} for r in rows]
+
+def add_user(username, password, role="viewer"):
+    conn = _get_user_db()
+    try:
+        conn.execute("INSERT INTO users VALUES (?, ?, ?, datetime('now'))", (username, hashlib.sha256(password.encode()).hexdigest(), role))
+        conn.commit(); conn.close(); return True
+    except sqlite3.IntegrityError:
+        conn.close(); return False
+
+def delete_user(username):
+    if username == 'admin': return False
+    conn = _get_user_db()
+    conn.execute('DELETE FROM users WHERE username=? AND username!=''admin''', (username,))
+    conn.commit(); affected = conn.total_changes; conn.close()
+    return affected > 0
+
+def update_user_role(username, role):
+    if role not in ROLES: return False
+    conn = _get_user_db()
+    conn.execute("UPDATE users SET role=? WHERE username=?", (role, username))
+    conn.commit(); affected = conn.total_changes; conn.close()
+    return affected > 0
 
 # ===== JWT =====
 def create_token(username: str, role: str) -> str:
@@ -150,17 +195,17 @@ class LoginRequest(BaseModel):
 @auth_router.post("/login")
 async def login(req: LoginRequest):
     """用户登录,返回JWT Token"""
-    user = _users.get(req.username)
-    if not user or user["password"] != req.password:
+    user = verify_user_password(req.username, req.password)
+    if not user:
         raise HTTPException(401, "用户名或密码错误")
     
-    token = create_token(req.username, user["role"])
+    token = create_token(user["username"], user["role"])
     return {
         "ok": True,
         "access_token": token,
         "token_type": "bearer",
         "expires_in": JWT_EXPIRE_HOURS * 3600,
-        "user": {"username": req.username, "role": user["role"]},
+        "user": {"username": user["username"], "role": user["role"]},
     }
 
 @auth_router.get("/me")
@@ -184,3 +229,39 @@ async def refresh_token(user: dict = Depends(get_current_user)):
 async def list_roles(_=Depends(require_role("admin"))):
     """列出所有角色(仅管理员)"""
     return {"ok": True, "roles": ROLES}
+
+
+# ===== 用户管理 API (仅admin) =====
+class CreateUserRequest(BaseModel):
+    username: str
+    password: str
+    role: str = "viewer"
+
+class UpdateRoleRequest(BaseModel):
+    role: str
+
+@auth_router.get("/users")
+async def list_users(_=Depends(require_role("admin"))):
+    return {"ok": True, "users": list_all_users()}
+
+@auth_router.post("/users")
+async def create_user(req: CreateUserRequest, _=Depends(require_role("admin"))):
+    if not req.username or not req.password:
+        raise HTTPException(400, "用户名和密码不能为空")
+    if req.role not in ROLES:
+        raise HTTPException(400, f"无效角色: {req.role}")
+    if add_user(req.username, req.password, req.role):
+        return {"ok": True, "message": f"用户 {req.username} 创建成功"}
+    raise HTTPException(409, "用户名已存在")
+
+@auth_router.delete("/users/{username}")
+async def remove_user(username: str, _=Depends(require_role("admin"))):
+    if delete_user(username):
+        return {"ok": True, "message": f"用户 {username} 已删除"}
+    raise HTTPException(400, "无法删除该用户")
+
+@auth_router.patch("/users/{username}/role")
+async def change_role(username: str, req: UpdateRoleRequest, _=Depends(require_role("admin"))):
+    if update_user_role(username, req.role):
+        return {"ok": True, "message": f"用户 {username} 角色更新为 {req.role}"}
+    raise HTTPException(400, "更新失败")

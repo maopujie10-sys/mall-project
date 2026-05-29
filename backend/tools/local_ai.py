@@ -1,4 +1,4 @@
-﻿"""本地AI引擎 — 零API Key依赖，关键词+模板+规则推理
+"""本地AI引擎 — 零API Key依赖，关键词+模板+规则推理
 所有LLM依赖模块的兜底方案，确保无API Key时AI依然可用"""
 import re, random, time, os
 from tools.logger import get_logger

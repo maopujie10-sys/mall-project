@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="page-shell">
     <div class="page-header"><h2>🗄️ 自然语言查数据</h2><p>用中文问 → AI生成SQL → 返回结果</p></div>
     <el-card><template #header>💬 输入查询</template>

@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="page-shell">
     <div class="page-header"><h2>🎯 AI推荐引擎</h2><p>协同过滤+内容推荐 — 个性化商品推荐</p></div>
     <el-row :gutter="16">

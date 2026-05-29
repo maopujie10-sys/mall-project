@@ -1,4 +1,4 @@
-﻿<template><div class="page-shell"><div class="page-header"><h2>🧪 A/B测试引擎</h2><p>自动分流+数据对比+AI决策</p></div>
+<template><div class="page-shell"><div class="page-header"><h2>🧪 A/B测试引擎</h2><p>自动分流+数据对比+AI决策</p></div>
 <el-row :gutter="16"><el-col :span="12"><el-card><template #header>🆕 创建实验</template>
 <el-input v-model="expName" placeholder="实验名称"/><el-input v-model="variantA" placeholder="变体A" style="margin-top:8px"/>
 <el-input v-model="variantB" placeholder="变体B" style="margin-top:8px"/>

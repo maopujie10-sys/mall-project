@@ -1,4 +1,4 @@
-﻿# TikTokMall AI Agent 总控系统 — 项目路线图
+# TikTokMall AI Agent 总控系统 — 项目路线图
 
 > 最后更新：2026-05-27（最终版）
 

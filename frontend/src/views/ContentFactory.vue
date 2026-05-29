@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="page-shell">
     <div class="page-header"><h2>🏭 AI内容工厂</h2><p>商品描述+营销文案+社媒帖子+翻译</p></div>
     <el-tabs v-model="tab">

@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="voice-chat-page">
     <div class="vc-header">
       <h2>🎙️ 实时语音对话</h2>

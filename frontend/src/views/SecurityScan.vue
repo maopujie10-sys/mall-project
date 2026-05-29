@@ -1,4 +1,4 @@
-﻿<template><div class="page-shell"><div class="page-header"><h2>🛡️ 安全扫描</h2><p>AI定期扫描漏洞+自动修复+安全报告</p></div>
+<template><div class="page-shell"><div class="page-header"><h2>🛡️ 安全扫描</h2><p>AI定期扫描漏洞+自动修复+安全报告</p></div>
 <el-button type="primary" size="large" @click="runScan" :loading="scanning">🔍 开始全量扫描</el-button>
 <div v-if="result" class="scan-result"><div class="scan-grade" :class="result.grade">安全等级: {{result.grade}} ({{result.score}}分)</div>
 <div class="scan-stats"><el-tag type="danger">严重: {{result.critical}}</el-tag><el-tag type="warning">高: {{result.high}}</el-tag>

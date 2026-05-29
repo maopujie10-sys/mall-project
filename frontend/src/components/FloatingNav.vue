@@ -133,6 +133,7 @@ const categories = reactive([
       { to: 'security-scan', icon: '🛡️', label: '安全扫描' },
       { to: 'capabilities', icon: '🔧', label: 'AI能力状态' },
       { to: 'key-manager', icon: '🔑', label: 'API Key管理' },
+      { to: 'user-manager', icon: '👥', label: '用户管理' },
     ]
   }
 ])
@@ -201,7 +202,7 @@ function onDragMove(ev) {
   if (!dragTarget) return
   const cx = ev.touches ? ev.touches[0].clientX : ev.clientX
   const cy = ev.touches ? ev.touches[0].clientY : ev.clientY
-  if (Math.abs(cx - dragStartX) > 3 || Math.abs(cy - dragStartY) > 3) isDragging = true
+  if (Math.abs(cx - dragStartX) > 8 || Math.abs(cy - dragStartY) > 3) isDragging = true
   if (isDragging) {
     dragTarget.x = Math.max(40, Math.min(window.innerWidth - 80, orbStartX + cx - dragStartX))
     dragTarget.y = Math.max(40, Math.min(window.innerHeight - 80, orbStartY + cy - dragStartY))

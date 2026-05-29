@@ -1,4 +1,4 @@
-﻿<template><div class="page-shell"><div class="page-header"><h2>🧩 技能市场</h2><p>社区上传+审核+一键安装AI技能</p></div>
+<template><div class="page-shell"><div class="page-header"><h2>🧩 技能市场</h2><p>社区上传+审核+一键安装AI技能</p></div>
 <el-input v-model="searchSkill" placeholder="搜索技能..." style="margin-bottom:16px"/>
 <div class="skill-grid"><div v-for="s in filteredSkills" :key="s.id" class="skill-card">
 <div class="skill-icon">{{ s.icon }}</div><div class="skill-name">{{ s.name }}</div>

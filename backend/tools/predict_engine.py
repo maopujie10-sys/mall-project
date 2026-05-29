@@ -29,28 +29,47 @@ class PredictEngine:
 
         values = [d["value"] for d in data]
 
-        # 移动平均
-        window = min(len(values) // 3 + 2, 7)
-        ma = sum(values[-window:]) / window
+        # Holt-Winters 三重指数平滑
+        alpha, beta, gamma = 0.3, 0.1, 0.1  # 平滑系数
+        period = min(7, len(values) // 2)
+        if period < 2: period = 2
 
-        # 趋势
-        if len(values) >= 10:
-            half = len(values) // 2
-            recent_avg = sum(values[-half:]) / half
-            old_avg = sum(values[:half]) / half
-            trend = (recent_avg - old_avg) / max(abs(old_avg), 1) * 100
-        else:
-            trend = 0
+        # 初始化
+        level = values[0]
+        trend = (sum(values[period:2*period]) - sum(values[:period])) / (period * period) if len(values) >= 2*period else 0
+        seasonals = [values[i] - level for i in range(period)] if len(values) >= period else [0]
 
-        # 季节性（简单重复模式检测）
-        seasonal = cls._detect_seasonal(values)
+        # 拟合历史
+        fitted = []
+        for t in range(len(values)):
+            s_idx = t % period
+            if t == 0:
+                fitted.append(values[0])
+                continue
+            prev_level = level
+            level = alpha * (values[t] - seasonals[s_idx]) + (1 - alpha) * (level + trend)
+            trend = beta * (level - prev_level) + (1 - beta) * trend
+            seasonals[s_idx] = gamma * (values[t] - level) + (1 - gamma) * seasonals[s_idx]
+            fitted.append(level + trend + seasonals[s_idx])
 
+        # 预测
         predictions = []
+        last_level = level
+        last_trend = trend
         for i in range(horizon):
-            pred = ma * (1 + trend / 100 * (i + 1) / horizon)
-            if seasonal:
-                pred *= seasonal[i % len(seasonal)]
-            predictions.append(round(pred, 2))
+            s_idx = (len(values) + i) % period
+            if s_idx < len(seasonals):
+                pred = last_level + last_trend * (i + 1) + seasonals[s_idx]
+            else:
+                pred = last_level + last_trend * (i + 1)
+            last_level = last_level + last_trend
+            predictions.append(round(max(0, pred), 2))
+
+        # 趋势百分比
+        recent_fit_avg = sum(fitted[-min(5,len(fitted)):]) / min(5,len(fitted)) if fitted else values[-1]
+        old_avg = sum(values[:max(1,len(values)//3)]) / max(1,len(values)//3)
+        trend = (recent_fit_avg - old_avg) / max(abs(old_avg), 1) * 100
+        ma = level
 
         # 异常检测
         recent = values[-10:] if len(values) >= 10 else values

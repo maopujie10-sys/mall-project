@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="page-shell">
     <div class="page-header"><h2>🤖 Agent 协作中心</h2><p>多Agent协同 — 规划→分析→执行→审查→报告</p></div>
     <el-row :gutter="16">

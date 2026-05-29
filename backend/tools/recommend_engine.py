@@ -66,7 +66,7 @@ class RecommendEngine:
             intersection = len(user_items & other_items)
             union = len(user_items | other_items)
             if union > 0:
-                similarities.append((other_id, intersection / union))
+                similarities.append((other_id, round(intersection / union, 3)))
 
         similarities.sort(key=lambda x: x[1], reverse=True)
         return similarities[:top_k]

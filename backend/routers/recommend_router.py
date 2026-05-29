@@ -1,4 +1,4 @@
-﻿"""推荐引擎 API"""
+"""推荐引擎 API"""
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from tools.recommend_engine import recommend_engine

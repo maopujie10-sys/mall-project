@@ -1,4 +1,4 @@
-﻿# TikTokMall AI Agent 总控系统
+# TikTokMall AI Agent 总控系统
 
 ## 🏗 项目结构
 

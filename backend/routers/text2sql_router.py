@@ -1,4 +1,4 @@
-﻿"""Text-to-SQL API"""
+"""Text-to-SQL API"""
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from tools.text2sql import text2sql

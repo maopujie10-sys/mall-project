@@ -71,6 +71,7 @@ const routes = [
       { path: "security-scan", name: "SecurityScan", component: () => import("@/views/SecurityScan.vue"), meta: { title: "安全扫描" } },
       { path: 'capabilities', name: 'Capabilities', component: () => import('@/views/Capabilities.vue'), meta: { title: 'AI能力状态' } },
       { path: 'key-manager', name: 'KeyManager', component: () => import('@/views/KeyManager.vue'), meta: { title: 'API Key管理' } },
+      { path: 'user-manager', name: 'UserManager', component: () => import('@/views/UserManager.vue'), meta: { title: '用户管理' } },
     ],
   },
 ]

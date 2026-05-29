@@ -208,7 +208,7 @@ function onDragMove(ev) {
   const cx = ev.touches ? ev.touches[0].clientX : ev.clientX
   const cy = ev.touches ? ev.touches[0].clientY : ev.clientY
   const dx = cx - dragStartX, dy = cy - dragStartY
-  if (Math.abs(dx) > 3 || Math.abs(dy) > 3) isDragging = true
+  if (Math.abs(dx) > 8 || Math.abs(dy) > 3) isDragging = true
   if (isDragging) {
     posX.value = Math.max(0, Math.min(window.innerWidth - 60, btnStartX + dx))
     posY.value = Math.max(0, Math.min(window.innerHeight - 60, btnStartY + dy))
