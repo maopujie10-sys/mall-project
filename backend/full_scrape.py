@@ -11,7 +11,7 @@ SEARCH_DELAY_MAX = 10
 PRODUCT_DELAY = 0.01
 CONCURRENCY = 20           # 产品页并发数（单进程最大）
 CATEGORY_PAUSE = 0.1
-MAX_PAGES = 12
+MAX_PAGES = 20             # 每个关键词搜索页数（深挖全量）
 IMPORT_BATCH_SIZE = 30
 
 SHARD_INDEX = 0
@@ -260,16 +260,18 @@ SUBCAT_KEYWORDS = {
 
 TOTAL = sum(len(v) for v in SUBCAT_KEYWORDS.values())
 
-# 自动扩充关键词：每个关键词加修饰前缀，大幅增加搜索覆盖面
+# 自动扩充关键词：中性修饰词+品牌，覆盖全量而非仅最新/最热
 def expand_keywords(keywords):
-    modifiers = ["best", "top rated", "premium", "new"]
-    brands = ["logitech","samsung","sony","apple","anker","jbl","bose","dyson","philips","dell","hp","lenovo"]
+    modifiers = ["best", "top rated", "cheap", "popular", "budget"]
+    brands = ["logitech","samsung","sony","apple","anker","jbl","bose","dyson",
+              "philips","dell","hp","lenovo","asus","acer","razer","corsair",
+              "steelseries","hyperx","msi","gigabyte","intel","amd","nvidia"]
     result = list(keywords)
     for kw in keywords:
         for mod in modifiers:
             result.append(f"{mod} {kw}")
-    for brand in random.sample(brands, min(4, len(brands))):
-        for kw in keywords[:2]:
+    for brand in random.sample(brands, min(8, len(brands))):
+        for kw in keywords[:3]:
             result.append(f"{brand} {kw}")
     return list(dict.fromkeys(result))
 
