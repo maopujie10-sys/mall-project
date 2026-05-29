@@ -1,7 +1,7 @@
 <template>
   <div class="sci-fi-shell">
     <!-- 3D 神经网络背景 -->
-    <div class="neural-bg" :class="{ 'brain-active': brainActive, 'brain-pulse': brainPulse }">
+    <div class="neural-bg" :class="{ 'brain-active': brainActive, 'brain-thinking': brainThinking, 'brain-speaking': brainSpeaking, 'brain-pulse': brainPulse }">
       <NeuralNetwork3D />
     </div>
 
@@ -56,11 +56,20 @@ function saveToken() {
 }
 
 const brainActive = ref(false)
+const brainThinking = ref(false)
+const brainSpeaking = ref(false)
 const brainPulse = ref(false)
 
 onMounted(() => {
   window.addEventListener('brain:active', (e) => {
     brainActive.value = e.detail
+  })
+  window.addEventListener('brain:thinking', (e) => {
+    brainThinking.value = e.detail
+  })
+  window.addEventListener('brain:speaking', (e) => {
+    brainSpeaking.value = true
+    setTimeout(() => { brainSpeaking.value = false }, 2000)
   })
   window.addEventListener('brain:pulse', () => {
     brainPulse.value = true
@@ -136,6 +145,35 @@ function isActive(path) {
 }
 .neural-bg.brain-pulse {
   animation: brainShock 0.6s ease-out;
+}
+@keyframes brainShock {
+  0% { filter: brightness(2) saturate(2); transform: scale(1.02); }
+  100% { filter: brightness(1.15) saturate(1.2); transform: scale(1); }
+}
+
+/* 3D大脑联动脉冲 */
+.neural-bg.brain-active {
+  filter: brightness(1.15) saturate(1.2);
+  transition: filter 0.5s ease;
+}
+.neural-bg.brain-thinking {
+  animation: brainThink 1.5s ease-in-out infinite;
+}
+.neural-bg.brain-speaking {
+  filter: brightness(1.3) saturate(1.3);
+  animation: brainSpeak 0.8s ease-in-out infinite;
+}
+.neural-bg.brain-pulse {
+  animation: brainShock 0.6s ease-out;
+}
+@keyframes brainThink {
+  0%, 100% { filter: brightness(1.1) saturate(1.1) hue-rotate(0deg); }
+  50% { filter: brightness(1.25) saturate(1.3) hue-rotate(5deg); }
+}
+@keyframes brainSpeak {
+  0%, 100% { filter: brightness(1.3) saturate(1.3); transform: scale(1); }
+  25% { filter: brightness(1.5) saturate(1.5); transform: scale(1.005); }
+  75% { filter: brightness(1.2) saturate(1.2); transform: scale(0.998); }
 }
 @keyframes brainShock {
   0% { filter: brightness(2) saturate(2); transform: scale(1.02); }

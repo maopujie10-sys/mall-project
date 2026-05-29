@@ -365,7 +365,7 @@ async function sendMessage() {
   const now = new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
   clearAttachments(); messages.value.push({ role: 'user', content: text || '[附件]', time: now, voice: voiceActive.value }); window.dispatchEvent(new CustomEvent('brain:pulse')); if (files.length) { messages.value[messages.value.length-1].attachments = files.map(f=>({name:f.name,type:f.type,size:f.size})) }
   inputText.value = ''
-  loading.value = true
+  loading.value = true; window.dispatchEvent(new CustomEvent('brain:thinking', {detail:true}))
   await nextTick(); scrollBottom()
 
   try {
@@ -378,7 +378,7 @@ async function sendMessage() {
     if (res.ok) {
       const data = await res.json()
       const reply = data.reply || data.message || '收到，正在处理...'
-      messages.value.push({ role: 'assistant', content: reply, time: new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }) }); window.dispatchEvent(new CustomEvent('brain:pulse'))
+      messages.value.push({ role: 'assistant', content: reply, time: new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }) }); window.dispatchEvent(new CustomEvent('brain:speaking', {detail:reply})); setTimeout(() => window.dispatchEvent(new CustomEvent('brain:thinking', {detail:false})), 500)
       // 语音通话模式下自动朗读
       if (voiceCallActive.value) { speakText(reply) }
     } else {
@@ -387,7 +387,7 @@ async function sendMessage() {
   } catch (e) {
     messages.value.push({ role: 'assistant', content: '网络连接失败，请检查网络。', time: new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }) })
   }
-  loading.value = false
+  loading.value = false; window.dispatchEvent(new CustomEvent('brain:thinking', {detail:false}))
   await nextTick(); scrollBottom()
 }
 
