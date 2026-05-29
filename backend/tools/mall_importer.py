@@ -23,6 +23,20 @@ DB_CONFIG = {
 _cat_cache = {}  # category_path → CATEGORY_ID
 _pool_conn = None  # 持久连接复用
 
+# Amazon广告跳转链域名（URL带独特追踪参数，无法做URL去重，必须走标题去重）
+_AD_TRACKING_DOMAINS = [
+    "aax-us-east-retail-direct.amazon.com",
+    "aax-events-cell01-cf.us-east.ono.axp.amazon-adsystem.com",
+    "amazon-adsystem.com",
+]
+
+
+def _is_ad_tracking_url(url: str) -> bool:
+    """判断是否是Amazon广告追踪跳转链"""
+    if not url:
+        return False
+    return any(d in url for d in _AD_TRACKING_DOMAINS)
+
 
 def _conn():
     global _pool_conn
@@ -132,13 +146,14 @@ def _find_category(category_path: list[str], subcat_name: str = "", conn=None) -
 
 
 def check_duplicate(title: str, source_url: str = "", conn=None) -> Optional[str]:
-    """检查重复 — 按标题模糊匹配或URL精确匹配，返回已存在的GOODS_ID"""
+    """检查重复 — URL精确匹配或标题模糊匹配，返回已存在的GOODS_ID"""
     own = conn is None
     if own:
         conn = _conn()
     try:
         cur = conn.cursor()
-        if source_url:
+        # URL去重（跳过广告追踪链，它们URL不唯一）
+        if source_url and not _is_ad_tracking_url(source_url):
             cur.execute(
                 "SELECT UUID FROM T_MALL_SYSTEM_GOODS WHERE LINK = %s LIMIT 1",
                 (source_url,)
