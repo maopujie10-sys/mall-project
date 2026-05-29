@@ -212,7 +212,7 @@ watch(messages, (val) => {
 // === 面板控制 ===
 function openChat() { if (!isDragging) { chatOpen.value = true; hasUnread.value = false; nextTick(() => scrollBottom()) } }
 function closeChat() { stopVoiceInput(); stopVideoCall(); chatOpen.value = false; chatExpanded.value = false }
-function minimizeChat() { chatOpen.value = false }
+function minimizeChat() { stopTw(); chatOpen.value = false }
 function toggleExpand() { chatExpanded.value = !chatExpanded.value; nextTick(() => scrollBottom()) }
 function startDrag(e) {
   isDragging = false; dragStartX = e.clientX; dragStartY = e.clientY; btnStartX = posX.value; btnStartY = posY.value
@@ -394,6 +394,12 @@ function formatSize(bytes) { if(!bytes) return ''; if(bytes<1024) return bytes+'
 function clearAttachments() { attachments.value = [] }
 
 function quickAsk(question) { inputText.value = question; sendMessage() }
+
+
+// typewriter
+let twTimer=null
+function typeEffect(txt,idx){if(twTimer)clearInterval(twTimer);let i=0;const f=txt;messages.value[idx].content='';twTimer=setInterval(()=>{if(i<f.length){const s=/[\u4e00-\u9fff]/.test(f[i])?2:4;messages.value[idx].content=f.substring(0,i+s);i+=s;scrollBottom()}else{clearInterval(twTimer);twTimer=null}},25)}
+function stopTw(){if(twTimer){clearInterval(twTimer);twTimer=null}}
 
 function renderMsg(text) {
   if (!text) return ''
