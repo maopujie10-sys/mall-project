@@ -6,7 +6,7 @@
       v-if="!chatOpen"
       class="ai-float-btn"
       @click="openChat"
-      @mousedown="startDrag"
+      @mousedown="startDrag" @touchstart="startDrag"
       :style="{ left: posX + 'px', top: posY + 'px' }"
     >
       <div class="btn-glow"></div>
@@ -216,14 +216,33 @@ function closeChat() { stopVoiceInput(); stopVideoCall(); chatOpen.value = false
 function minimizeChat() { stopTw(); stopStepAnimation(); chatOpen.value = false }
 function toggleExpand() { chatExpanded.value = !chatExpanded.value; nextTick(() => scrollBottom()) }
 function startDrag(e) {
-  isDragging = false; dragStartX = e.clientX; dragStartY = e.clientY; btnStartX = posX.value; btnStartY = posY.value
-  const onMove = (ev) => {
-    const dx = ev.clientX - dragStartX, dy = ev.clientY - dragStartY
-    if (Math.abs(dx) > 3 || Math.abs(dy) > 3) isDragging = true
-    if (isDragging) { posX.value = Math.max(0, Math.min(window.innerWidth - 60, btnStartX + dx)); posY.value = Math.max(0, Math.min(window.innerHeight - 60, btnStartY + dy)) }
+  e.preventDefault()
+  isDragging = false
+  btnStartX = posX.value
+  btnStartY = posY.value
+  dragStartX = e.touches ? e.touches[0].clientX : e.clientX
+  dragStartY = e.touches ? e.touches[0].clientY : e.clientY
+  document.onmousemove = onDragMove
+  document.onmouseup = onDragUp
+  document.ontouchmove = onDragMove
+  document.ontouchend = onDragUp
+}
+function onDragMove(ev) {
+  const cx = ev.touches ? ev.touches[0].clientX : ev.clientX
+  const cy = ev.touches ? ev.touches[0].clientY : ev.clientY
+  const dx = cx - dragStartX, dy = cy - dragStartY
+  if (Math.abs(dx) > 3 || Math.abs(dy) > 3) isDragging = true
+  if (isDragging) {
+    posX.value = Math.max(0, Math.min(window.innerWidth - 60, btnStartX + dx))
+    posY.value = Math.max(0, Math.min(window.innerHeight - 60, btnStartY + dy))
   }
-  const onUp = () => { document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp); setTimeout(() => { isDragging = false }, 50) }
-  document.addEventListener('mousemove', onMove); document.addEventListener('mouseup', onUp)
+}
+function onDragUp() {
+  document.onmousemove = null
+  document.onmouseup = null
+  document.ontouchmove = null
+  document.ontouchend = null
+  setTimeout(() => { isDragging = false }, 50)
 }
 function startPanelDrag(e) {}
 
