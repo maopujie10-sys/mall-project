@@ -7,17 +7,65 @@ from fastapi.responses import StreamingResponse, FileResponse
 from pydantic import BaseModel
 from auth import verify_token
 from config import OPENAI_API_KEY, OPENAI_BASE_URL, DEEPSEEK_API_KEY
+import os
+DEEPSEEK_BASE_URL = os.getenv("DEEPSEEK_BASE_URL", "https://api.deepseek.com/v1")
+# 模型路由: deepseek-开头的走DeepSeek, 其他走OpenAI
+CHEAP_MODEL = os.getenv("CHEAP_MODEL", "deepseek-chat")
+SMART_MODEL = os.getenv("SMART_MODEL", "gpt-4o")
+# ===== 模型市场 — AI自己选模型 =====
+AVAILABLE_MODELS = {
+    # 便宜梯队 (简单任务)
+    "deepseek-chat":       {"provider": "deepseek", "cost": "0.14/1M",  "strength": "日常对话/简单操作/快速响应"},
+    CHEAP_MODEL:       {"provider": "openai",   "cost": "0.50/1M",  "strength": "分类/判断/简单决策"},
+    # 性价比梯队 (普通任务)
+    CHEAP_MODEL:         {"provider": "openai",   "cost": "0.15/1M",  "strength": "视觉理解/多模态/快速推理"},
+    "deepseek-reasoner":   {"provider": "deepseek", "cost": "0.55/1M",  "strength": "深度推理/复杂分析"},
+    # 高端梯队 (复杂任务)
+    "gpt-4o":              {"provider": "openai",   "cost": "2.50/1M",  "strength": "高精度视觉/复杂决策/多步骤"},
+    "claude-3-5-sonnet":   {"provider": "openai",   "cost": "3.00/1M",  "strength": "代码生成/长文本分析"},
+}
+
+def pick_model(task_complexity="auto", need_vision=False, step_count=0):
+    """AI自动选模型: 根据任务复杂度、是否需要视觉、当前步骤数"""
+    if task_complexity == "simple" or (step_count > 0 and step_count <= 3):
+        return CHEAP_MODEL  # 默认便宜模型
+    elif task_complexity == "hard" or step_count > 5:
+        return SMART_MODEL  # 默认聪明模型
+    elif need_vision:
+        return CHEAP_MODEL if OPENAI_KEY else CHEAP_MODEL  # 视觉任务需要多模态模型
+    return CHEAP_MODEL
+
 
 router = APIRouter(prefix="/agent/advanced", tags=["AdvancedAI"])
-API_KEY = OPENAI_API_KEY or DEEPSEEK_API_KEY
+# 多provider
+OPENAI_KEY = OPENAI_API_KEY
+DEEPSEEK_KEY = DEEPSEEK_API_KEY
+DS_BASE_URL = DEEPSEEK_BASE_URL
 BASE_URL = OPENAI_BASE_URL or "https://api.openai.com/v1"
 
-async def _call_ai(messages, model="gpt-3.5-turbo", max_tokens=1000, temperature=0.7):
-    if not API_KEY: return "需要API Key"
+async def _call_ai(messages, model=None, max_tokens=1000, temperature=0.7):
+    if model is None: model = CHEAP_MODEL
+    """多provider AI调用 - 自动路由DeepSeek/OpenAI"""
     import httpx
+    # 根据模型名自动选择provider
+    if model.startswith("deepseek"):
+        key = DEEPSEEK_KEY
+        base = DS_BASE_URL
+    else:
+        key = OPENAI_KEY
+        base = BASE_URL
+    
+    if not key:
+        if OPENAI_KEY:
+            key = OPENAI_KEY; base = BASE_URL
+        elif DEEPSEEK_KEY:
+            key = DEEPSEEK_KEY; base = DS_BASE_URL
+        else:
+            return "需要配置API Key"
+    
     async with httpx.AsyncClient(timeout=120) as c:
-        r = await c.post(f"{BASE_URL}/chat/completions",
-            headers={"Authorization":f"Bearer {API_KEY}","Content-Type":"application/json"},
+        r = await c.post(f"{base}/chat/completions",
+            headers={"Authorization":f"Bearer {key}","Content-Type":"application/json"},
             json={"model":model,"messages":messages,"max_tokens":max_tokens,"temperature":temperature})
         if r.status_code == 200:
             return r.json().get("choices",[{}])[0].get("message",{}).get("content","")
@@ -37,7 +85,7 @@ async def live_voice(ws: WebSocket):
         async with httpx.AsyncClient(timeout=60) as c:
             async with c.stream("POST",f"{BASE_URL}/chat/completions",
                 headers={"Authorization":f"Bearer {API_KEY}","Content-Type":"application/json"},
-                json={"model":"gpt-4o-mini","messages":messages,"stream":True,"temperature":0.8}) as r:
+                json={"model":CHEAP_MODEL,"messages":messages,"stream":True,"temperature":0.8}) as r:
                 async for line in r.aiter_lines():
                     if line.startswith("data: "):
                         d = line[6:]
@@ -102,7 +150,7 @@ async def live_vision(req: FrameRequest, _=Depends(verify_token)):
             {"type":"text","text":prompt},
             {"type":"image_url","image_url":{"url":f"data:image/jpeg;base64,{req.image_base64}"}}
         ]}
-    ], model="gpt-4o-mini", max_tokens=200)
+    ], model=CHEAP_MODEL, max_tokens=200)
     return {"ok":True,"description":result}
 
 # ===== 3. 深度研究 Agent =====
@@ -973,7 +1021,7 @@ async def human_like_agent(req: dict, _=Depends(verify_token)):
     
     task_type = (await _call_ai(
         [{"role":"user","content":classify_prompt}],
-        model="gpt-3.5-turbo", max_tokens=10, temperature=0
+        model=CHEAP_MODEL, max_tokens=10, temperature=0
     )).strip().lower()
     
     if "code" in task_type:
@@ -986,7 +1034,7 @@ JSON:"""
         
         plan = await _call_ai(
             [{"role":"user","content":code_prompt}],
-            model="gpt-4o-mini", max_tokens=600, temperature=0.2
+            model=CHEAP_MODEL, max_tokens=600, temperature=0.2
         )
         
         steps = []
@@ -1030,7 +1078,7 @@ JSON:"""
         # 做一次最终总结 (便宜模型)
         summary = await _call_ai([
             {"role":"user","content":f"任务:{command}\n执行结果:\n"+'\n'.join(results)+"\n\n请一句话总结完成情况。"}
-        ], model="gpt-3.5-turbo", max_tokens=100, temperature=0)
+        ], model=CHEAP_MODEL, max_tokens=100, temperature=0)
         
         token_estimate = len(classify_prompt) + len(plan) + len(summary) + 300
         return {
@@ -1088,8 +1136,8 @@ JSON:"""
         
         last_screenshot = screenshot_b64
         
-        # 模型选择: 前3步用gpt-4o-mini(便宜10倍), 卡住了才用gpt-4o
-        use_model = "gpt-4o-mini" if cycle <= 3 else "gpt-4o"
+        # 模型选择: 前3步用CHEAP_MODEL(默认deepseek-chat), 卡住了用SMART_MODEL
+        use_model = pick_model(need_vision=True, step_count=cycle)
         user_prompt = f"任务: {command}\n第{cycle}/{max_cycles}步。\n之前操作: {json.dumps(action_log[-3:],ensure_ascii=False)}\n分析截图,用target描述元素。"
         
         ai_response = await _call_ai([
@@ -1113,7 +1161,7 @@ JSON:"""
         action_log.append({"cycle":cycle,"observation":decision.get("observation","")[:80],"thought":decision.get("thought","")[:80],"action":action,"target":decision.get("target","")})
         
         if action == "done":
-            return {"ok":True,"completed":True,"mode":"gui","cycles":cycle,"log":action_log,"result":params.get("summary",""),"screenshot":last_screenshot,"model":"gpt-4o-mini","estimated_tokens":cycle*500}
+            return {"ok":True,"completed":True,"mode":"gui","cycles":cycle,"log":action_log,"result":params.get("summary",""),"screenshot":last_screenshot,"model":CHEAP_MODEL,"estimated_tokens":cycle*500}
         if action == "fail":
             return {"ok":False,"error":params.get("reason","任务失败"),"mode":"gui","cycles":cycle,"log":action_log}
         
@@ -1183,6 +1231,33 @@ async def unified_browser(req: dict, _=Depends(verify_token)):
             return await browser_agent(req_obj, _)
     return {"ok":False,"error":"未知目标","available_targets":["server"]+list(connected_remotes.keys())}
 
+
+
+# ===== 8.7 模型市场API =====
+@router.get("/models")
+async def list_models(_=Depends(verify_token)):
+    """列出所有可用AI模型及价格"""
+    available = {}
+    for name, info in AVAILABLE_MODELS.items():
+        key = DEEPSEEK_KEY if info["provider"] == "deepseek" else OPENAI_KEY
+        available[name] = {**info, "available": bool(key)}
+    return {
+        "ok": True,
+        "models": available,
+        "current_cheap": CHEAP_MODEL,
+        "current_smart": SMART_MODEL,
+        "config_hint": "环境变量: CHEAP_MODEL / SMART_MODEL / DEEPSEEK_API_KEY / OPENAI_API_KEY"
+    }
+
+@router.post("/models/test")
+async def test_model(req: dict, _=Depends(verify_token)):
+    """测试指定模型是否可用"""
+    model = req.get("model", CHEAP_MODEL)
+    try:
+        result = await _call_ai([{"role":"user","content":"回复OK"}], model=model, max_tokens=10, temperature=0)
+        return {"ok": True, "model": model, "response": result[:50], "status": "可用" if "OK" in result else "异常"}
+    except Exception as e:
+        return {"ok": False, "model": model, "error": str(e)[:200]}
 
 # ===== 9. AI通知推送 =====
 @router.post("/notify")
