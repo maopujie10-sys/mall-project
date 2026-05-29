@@ -3,6 +3,7 @@ from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect, Query
 from pydantic import BaseModel
 from typing import Optional
 from risk import handle_risk
+from tools.agent_collab import agent_collab
 from state import state
 from auth import verify_token
 from agents.master_agent import MasterAgent
@@ -210,6 +211,13 @@ async def search_products(keyword: str, site: str = "ebay", _=Depends(verify_tok
     return result
 
 # ===== 记忆人格 =====
+@router.post("/collaborate")
+async def agent_collaborate(goal: str = Query(...), _=Depends(verify_token)):
+    """多Agent协作: 分析目标->拆解任务->并行执行->汇总结果"""
+    await handle_risk("L2", "多Agent协作", goal[:100])
+    result = await agent_collab.execute_all(goal)
+    return result
+
 @router.get("/personality")
 async def get_personality(_=Depends(verify_token)):
     return {"ok": True, **PersonalityEngine.get_personality()}

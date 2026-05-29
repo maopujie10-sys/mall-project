@@ -113,7 +113,8 @@
               </el-popover>
             </template>
             <template #append>
-              <el-button type="primary" @click="sendMessage" :loading="loading" :disabled="!inputText.trim()">发送</el-button>
+              <el-button size="small" @click="clearHistory" style="margin-right:8px">🗑 清除</el-button>
+        <el-button type="primary" @click="sendMessage" :loading="loading" :disabled="!inputText.trim()">发送</el-button>
             </template>
           </el-input>
         </div>
@@ -372,7 +373,7 @@ function scrollBottom() {
   })
 }
 
-onMounted(() => {
+onMounted(() => { loadHistory();
   systemStore.fetchMode()
   fetchTools()
   fetchTasks()

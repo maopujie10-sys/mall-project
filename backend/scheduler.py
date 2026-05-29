@@ -13,6 +13,7 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.interval import IntervalTrigger
 from apscheduler.triggers.cron import CronTrigger
 from tools.logger import get_logger
+from tools.alert_push import push_weekly_report
 
 # 最小间隔保护(秒) — 防止任何定时任务低于此频率
 MIN_SCHEDULE_INTERVAL = 60
@@ -164,6 +165,14 @@ async def daily_report_task():
         state._data["last_notification"] = f"每日早报: 健康分{score}, CPU{cpu}%, 内存{mem.percent}%, 磁盘{disk.percent}%"
         state._save()
         logger.info(f"每日早报: 健康分{score}")
+        # 周一自动推送周报
+        if __import__("datetime").datetime.now().weekday() == 0:
+            try:
+                from routers.weekly_report import router as wr
+                # 生成并推送
+                await push_weekly_report({"summary": f"本周健康分{score}, CPU{cpu}%, 内存{mem.percent}%, 订单{len(state._data.get("orders",[]))}"})
+            except Exception as e:
+                logger.info(f"周报推送跳过: {e}")
     except Exception as e:
         logger.info(f"早报失败: {e}")
 

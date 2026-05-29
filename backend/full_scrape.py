@@ -1,11 +1,30 @@
-"""全品类慢速采集 — 断点续传/内存安全/评论+规格全量提取"""
-import asyncio, sys, hashlib, time, json, os, gc, traceback
+"""全品类采集 — 覆盖所有二级分类，采集后替换旧商品"""
+import asyncio, sys, hashlib, time, gc, os, random
+import psutil
 sys.path.insert(0, ".")
 
-import psutil
+# 内存安全配置
+MEMORY_LIMIT_PCT = 80     # 内存超此比例暂停
+MEMORY_CHECK_INTERVAL = 5  # 每N个关键词检查一次内存
+SEARCH_DELAY_MIN = 30       # 搜索最小间隔秒
+SEARCH_DELAY_MAX = 60       # 搜索最大间隔秒
+PRODUCT_DELAY_MIN = 5       # 产品提取最小间隔秒
+PRODUCT_DELAY_MAX = 10      # 产品提取最大间隔秒
+CATEGORY_PAUSE = 120        # 每完成一个分类暂停秒
 
-CHECKPOINT_FILE = "/tmp/full_scrape_checkpoint.json"
-LOG_FILE = "/tmp/full_scrape.log"
+# 已采集URL缓存(防重复)
+seen_urls = set()
+
+async def check_memory():
+    """检查内存,超限则等待释放"""
+    mem = psutil.virtual_memory()
+    if mem.percent > MEMORY_LIMIT_PCT:
+        print(f"\n[内存] {mem.percent}% > {MEMORY_LIMIT_PCT}%, 暂停30秒释放...", flush=True)
+        gc.collect()
+        await asyncio.sleep(30)
+        mem = psutil.virtual_memory()
+        print(f"[内存] 恢复: {mem.percent}%", flush=True)
+    return mem.percent
 
 # 每个二级分类 → Amazon搜索关键词
 SUBCAT_KEYWORDS = {
@@ -224,126 +243,71 @@ SUBCAT_KEYWORDS = {
     "Nut": ["mixed nuts", "almonds roasted", "cashew nuts", "pistachios"],
 }
 
-TOTAL_CATS = len(SUBCAT_KEYWORDS)
-TOTAL_KWS = sum(len(v) for v in SUBCAT_KEYWORDS.values())
+TOTAL = sum(len(v) for v in SUBCAT_KEYWORDS.values())
+print(f"覆盖 {len(SUBCAT_KEYWORDS)} 个子品类, {TOTAL} 个关键词")
 
-def log(msg: str):
-    """同时输出到stdout和日志文件"""
-    ts = time.strftime("%H:%M:%S")
-    line = f"[{ts}] {msg}"
-    print(line, flush=True)
-    with open(LOG_FILE, "a") as f:
-        f.write(line + "\n")
-
-def mem_usage() -> str:
-    """返回当前内存使用情况"""
-    proc = psutil.Process()
-    mb = proc.memory_info().rss / 1024 / 1024
-    pct = psutil.virtual_memory().percent
-    return f"进程{mb:.0f}MB 系统{pct}%"
-
-def load_checkpoint() -> set:
-    """加载已完成的关键词（断点续传）"""
-    if os.path.exists(CHECKPOINT_FILE):
-        try:
-            with open(CHECKPOINT_FILE) as f:
-                data = json.load(f)
-            done = set(data.get("done_categories", []))
-            log(f"断点恢复: {len(done)}/{TOTAL_CATS} 品类已完成")
-            return done
-        except Exception:
-            pass
-    return set()
-
-def save_checkpoint(done_categories: set, stats: dict):
-    """保存进度到checkpoint文件"""
-    try:
-        with open(CHECKPOINT_FILE, "w") as f:
-            json.dump({
-                "done_categories": list(done_categories),
-                "stats": stats,
-                "updated_at": time.strftime("%Y-%m-%d %H:%M:%S"),
-            }, f, ensure_ascii=False)
-    except Exception:
-        pass
-
-
-async def run(ppk: int = 5):
+async def run(ppk=5):
     from tools.scraper_engine import ADAPTERS
-    from tools.mall_importer import import_batch, _ensure_review_table
-    import httpx, random
+    from tools.mall_importer import import_batch
+    import httpx, random, hashlib
+    from tools.scraper_engine import download_and_upload
 
-    _ensure_review_table()
-
-    done_cats = load_checkpoint()
+    stats = {"cats": 0, "kws": 0, "found": 0, "imported": 0, "skipped": 0, "failed": 0}
     amazon_adapter = ADAPTERS["amazon"]
-
-    stats = {
-        "cats": len(done_cats), "kws": 0, "found": 0,
-        "imported": 0, "skipped": 0, "failed": 0, "errors": 0,
-        "reviews": 0, "skus_total": 0,
-    }
-
-    # 每10个品类打印内存
-    gc_interval = 10
 
     async with httpx.AsyncClient(timeout=30, follow_redirects=True, verify=False) as session:
         for subcat, keywords in SUBCAT_KEYWORDS.items():
-            # 跳过已完成的品类
-            if subcat in done_cats:
-                continue
-
-            stats["cats"] = len(done_cats) + 1
+            stats["cats"] += 1
+            if stats["cats"] > 1:
+                print(f"\n[GC] 分类完成,清理内存+暂停{CATEGORY_PAUSE}秒...", flush=True)
+                gc.collect()
+                await asyncio.sleep(CATEGORY_PAUSE)
             cat_imported = 0
-            log(f"\n[{stats['cats']}/{TOTAL_CATS}] {subcat} | {mem_usage()}")
+            print(f"\n[{stats['cats']}/{len(SUBCAT_KEYWORDS)}] {subcat}", end="", flush=True)
 
             for kw in keywords:
+                # 内存检查
+                if stats["kws"] % MEMORY_CHECK_INTERVAL == 0:
+                    await check_memory()
                 if cat_imported >= ppk:
                     break
                 stats["kws"] += 1
-
-                # 搜索间隔 7-12秒
-                delay = 7 + random.random() * 5
-                log(f"  等待 {delay:.0f}s ... ({kw})")
+                # 搜索间隔10-20秒，避免Amazon限流
+                delay = SEARCH_DELAY_MIN + random.random() * (SEARCH_DELAY_MAX - SEARCH_DELAY_MIN)
                 await asyncio.sleep(delay)
-
                 try:
                     urls = await amazon_adapter.search(kw, max_pages=1, session=session)
                 except Exception as e:
-                    log(f"  {kw}: 搜索异常 {e}")
-                    stats["errors"] += 1
+                    print(f"\n  {kw}: 搜索异常 {e}", flush=True)
                     continue
-
                 if not urls:
-                    log(f"  {kw}: 0结果")
+                    print(f"\n  {kw}: 0结果", end="", flush=True)
                     continue
-                log(f"  {kw}: {len(urls)}链接")
+                print(f"\n  {kw}: {len(urls)}链接", end="", flush=True)
 
                 need = ppk - cat_imported
                 products = []
                 for url in urls[:need]:
-                    # 产品间隔 3-5秒
-                    await asyncio.sleep(3 + random.random() * 2)
+                    if url in seen_urls:
+                        continue
+                    seen_urls.add(url)
+                    await asyncio.sleep(PRODUCT_DELAY_MIN + random.random() * (PRODUCT_DELAY_MAX - PRODUCT_DELAY_MIN))
                     try:
                         p = await amazon_adapter.extract_product(url, session=session)
                         if p and p.title and p.images:
                             p.id = hashlib.md5(p.source_url.encode()).hexdigest()[:16]
                             products.append(p)
-                        # 每个产品处理后触发一次GC
-                        del p
-                    except Exception as e:
-                        log(f"    提取异常 {e}")
+                    except Exception:
                         continue
 
                 if not products:
                     continue
 
-                # 上传图片到COS（逐个上传，控制内存）
+                # 上传图片到COS
                 for p in products:
                     uploaded = []
                     for idx, img_url in enumerate(p.images[:8]):
                         try:
-                            from tools.scraper_engine import download_and_upload
                             cos_url = await download_and_upload(img_url, p.id, idx, session)
                         except Exception:
                             cos_url = None
@@ -355,66 +319,22 @@ async def run(ppk: int = 5):
 
                 pds = [p.to_dict() for p in products if p.cos_images]
                 if not pds:
-                    log(f"  无有效产品")
-                    # 清理products列表
-                    del products, pds
                     continue
-
                 result = import_batch(pds)
                 stats["imported"] += result["imported"]
                 stats["skipped"] += result["skipped_duplicate"]
                 stats["failed"] += result["failed"]
                 cat_imported += result["imported"]
-
-                # 统计评论和SKU
-                for detail in result.get("details", {}).get("imported", []):
-                    stats["reviews"] += detail.get("reviews_count", 0)
-                    stats["skus_total"] += detail.get("skus_count", 0)
-
-                log(f"  +{result['imported']}新品(重{result['skipped_duplicate']}) | 评论{stats['reviews']} SKU{stats['skus_total']}")
-
-                # 立即清理
-                del products, pds, result
-                gc.collect()
-
-                # 内存告警
-                mem_pct = psutil.virtual_memory().percent
-                if mem_pct > 85:
-                    log(f"  ⚠️ 内存高({mem_pct}%)，暂停60秒等GC")
-                    await asyncio.sleep(60)
-                    gc.collect()
-
-            # 品类完成，保存checkpoint
-            done_cats.add(subcat)
-            save_checkpoint(done_cats, stats)
+                print(f" +{result['imported']}上架(重{result['skipped_duplicate']})", end="", flush=True)
 
             if cat_imported == 0:
-                log(f"  ⚠️ {subcat} 未采集到")
+                print(f" ⚠️ 未采集到", end="", flush=True)
 
-            # 每5个品类强制GC+休息
-            if stats["cats"] % gc_interval == 0:
-                gc.collect()
-                rest = 15 + random.random() * 10
-                log(f"  💤 休息 {rest:.0f}s | {mem_usage()}")
-                await asyncio.sleep(rest)
-
-    log(f"\n{'='*60}")
-    log(f"完成! 品类{done_cats}/{TOTAL_CATS} | 新品{stats['imported']} | 评论{stats['reviews']} | SKU{stats['skus_total']}")
-    log(f"搜索{stats['kws']}次 | 重复{stats['skipped']} | 失败{stats['failed']} | 异常{stats['errors']}")
+    print(f"\n\n{'='*60}")
+    print(f"完成: {stats['imported']} 上架, {stats['skipped']} 重复, {stats['failed']} 失败")
+    print(f"覆盖 {stats['cats']} 子品类, {stats['kws']} 关键词搜索")
     return stats
-
 
 if __name__ == "__main__":
     ppk = int(sys.argv[1]) if len(sys.argv) > 1 else 5
-    log(f"===== 慢速全品类采集 启动 =====")
-    log(f"品类数: {TOTAL_CATS} | 关键词数: {TOTAL_KWS} | 每品类目标: {ppk}产品")
-    log(f"搜索间隔: 7-12s | 产品间隔: 3-5s | {mem_usage()}")
-
-    try:
-        stats = asyncio.run(run(ppk))
-        log(f"===== 采集完成 =====")
-    except KeyboardInterrupt:
-        log(f"用户中断，checkpoint已保存")
-    except Exception as e:
-        log(f"采集崩溃: {e}")
-        log(traceback.format_exc())
+    asyncio.run(run(ppk))
