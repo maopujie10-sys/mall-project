@@ -4,14 +4,15 @@ import psutil
 sys.path.insert(0, ".")
 
 # 内存安全配置
-MEMORY_LIMIT_PCT = 80     # 内存超此比例暂停
-MEMORY_CHECK_INTERVAL = 10 # 每N个关键词检查一次内存
-SEARCH_DELAY_BASE = 1.2    # 搜索基础间隔秒(自适应:遇429加倍)
-SEARCH_DELAY_MAX = 20      # 搜索最大间隔秒
-PRODUCT_DELAY = 0.15       # 产品并发批间隔秒
-CONCURRENCY = 8            # 产品页并发数
-CATEGORY_PAUSE = 1         # 每完成一个分类暂停秒
-MAX_PAGES = 3              # 每个关键词搜索页数
+MEMORY_LIMIT_PCT = 78     # 内存超此比例暂停
+MEMORY_CHECK_INTERVAL = 15 # 每N个关键词检查一次内存
+SEARCH_DELAY_BASE = 0.25   # 搜索基础间隔秒(自适应:遇429加倍)
+SEARCH_DELAY_MAX = 15      # 搜索最大间隔秒
+PRODUCT_DELAY = 0.03       # 产品并发批间隔秒
+CONCURRENCY = 12           # 产品页并发数
+CATEGORY_PAUSE = 0.2       # 每完成一个分类暂停秒
+MAX_PAGES = 5              # 每个关键词搜索页数
+IMPORT_BATCH_SIZE = 20     # 每批入库数量（控制内存）
 
 LOG_FILE = "/tmp/full_scrape.log"
 
@@ -363,7 +364,7 @@ async def run(ppk=80):
 
                 # eBay
                 if ebay_adapter and cat_imported < ppk:
-                    await asyncio.sleep(1.5)
+                    await asyncio.sleep(0.3)
                     try:
                         ebay_ids = await ebay_adapter.search(kw, max_pages=MAX_PAGES, session=session)
                     except Exception:
@@ -378,7 +379,7 @@ async def run(ppk=80):
                 if not all_fresh:
                     continue
 
-                # 并发提取+导入
+                # 并发提取+批量下载+批量导入
                 for platform, items in all_fresh:
                     if cat_imported >= ppk:
                         break
@@ -392,10 +393,6 @@ async def run(ppk=80):
                     if not products:
                         continue
 
-                    imported_now = 0
-                    review_total = 0
-                    sku_total = 0
-
                     # 限制COS并发连接数，所有产品图片并发下载
                     dl_sem = asyncio.Semaphore(12)
                     async def _dl_limited(img_url, idx, pid):
@@ -405,13 +402,13 @@ async def run(ppk=80):
                             except Exception:
                                 return None
 
-                    # 分批启动下载任务
                     dl_results = await asyncio.gather(*[_dl_limited(u, i, p.id)
                         for p in products[:need]
                         for i, u in enumerate(p.images[:3])], return_exceptions=True)
 
-                    # 将结果分配回各产品
+                    # 将结果分配回各产品，收集可入库的
                     dl_idx = 0
+                    ready_products = []
                     for p in products[:need]:
                         uploaded = []
                         for i in range(min(3, len(p.images))):
@@ -419,22 +416,28 @@ async def run(ppk=80):
                             dl_idx += 1
                             if isinstance(r, str) and r:
                                 uploaded.append(r)
-                        p.cos_images = uploaded
                         if not uploaded:
                             continue
+                        p.cos_images = uploaded
+                        ready_products.append(p)
 
-                        pd_dict = p.to_dict()
-                        result = import_batch([pd_dict], subcat_name=subcat)
-                        if result["imported"]:
-                            imported_now += 1
-                            stats["imported"] += 1
-                            detail = result["details"]["imported"][0] if result["details"]["imported"] else {}
-                            review_total += detail.get("reviews_count", 0)
-                            sku_total += detail.get("skus_count", 0)
-                        elif result["skipped_duplicate"]:
-                            stats["skipped"] += 1
-                        else:
-                            stats["failed"] += 1
+                    # 分批入库，控制每批内存
+                    imported_now = 0
+                    review_total = 0
+                    sku_total = 0
+                    for batch_start in range(0, len(ready_products), IMPORT_BATCH_SIZE):
+                        batch_products = ready_products[batch_start:batch_start+IMPORT_BATCH_SIZE]
+                        batch_dicts = [p.to_dict() for p in batch_products]
+                        result = import_batch(batch_dicts, subcat_name=subcat)
+                        imported_now += result["imported"]
+                        stats["imported"] += result["imported"]
+                        stats["skipped"] += result["skipped_duplicate"]
+                        stats["failed"] += result["failed"]
+                        for d in (result.get("details", {}).get("imported", []) or []):
+                            review_total += d.get("reviews_count", 0)
+                            sku_total += d.get("skus_count", 0)
+                        # 子批次间释放引用
+                        del batch_products, batch_dicts
 
                     cat_imported += imported_now
                     tag = "[A]" if platform == "amazon" else "[e]"

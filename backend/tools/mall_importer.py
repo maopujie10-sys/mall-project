@@ -21,10 +21,29 @@ DB_CONFIG = {
 }
 
 _cat_cache = {}  # category_path → CATEGORY_ID
+_pool_conn = None  # 持久连接复用
 
 
 def _conn():
-    return pymysql.connect(**DB_CONFIG)
+    global _pool_conn
+    try:
+        if _pool_conn is not None:
+            _pool_conn.ping(reconnect=True)
+            return _pool_conn
+    except Exception:
+        _pool_conn = None
+    _pool_conn = pymysql.connect(**DB_CONFIG)
+    return _pool_conn
+
+
+def _reset_pool():
+    global _pool_conn
+    if _pool_conn:
+        try:
+            _pool_conn.close()
+        except Exception:
+            pass
+        _pool_conn = None
 
 
 def _uuid(s: str) -> str:
@@ -35,9 +54,11 @@ def _now_ts() -> int:
     return int(time.time() * 1000)
 
 
-def _ensure_review_table():
+def _ensure_review_table(conn=None):
     """创建评论表（如不存在）"""
-    conn = _conn()
+    own = conn is None
+    if own:
+        conn = _conn()
     try:
         cur = conn.cursor()
         cur.execute("""CREATE TABLE IF NOT EXISTS T_MALL_GOODS_REVIEW (
@@ -56,10 +77,11 @@ def _ensure_review_table():
     except Exception:
         pass
     finally:
-        conn.close()
+        if own:
+            conn.close()
 
 
-def _find_category(category_path: list[str], subcat_name: str = "") -> str:
+def _find_category(category_path: list[str], subcat_name: str = "", conn=None) -> str:
     """尝试从品类路径匹配系统分类，失败返回默认分类"""
     if not category_path and not subcat_name:
         return DEFAULT_CATEGORY_ID
@@ -68,7 +90,9 @@ def _find_category(category_path: list[str], subcat_name: str = "") -> str:
     if cache_key in _cat_cache:
         return _cat_cache[cache_key]
 
-    conn = _conn()
+    own = conn is None
+    if own:
+        conn = _conn()
     try:
         cur = conn.cursor()
         # 1) 优先精确匹配子品类名
@@ -100,15 +124,18 @@ def _find_category(category_path: list[str], subcat_name: str = "") -> str:
     except Exception:
         pass
     finally:
-        conn.close()
+        if own:
+            conn.close()
 
     _cat_cache[cache_key] = DEFAULT_CATEGORY_ID
     return DEFAULT_CATEGORY_ID
 
 
-def check_duplicate(title: str, source_url: str = "") -> Optional[str]:
+def check_duplicate(title: str, source_url: str = "", conn=None) -> Optional[str]:
     """检查重复 — 按标题模糊匹配或URL精确匹配，返回已存在的GOODS_ID"""
-    conn = _conn()
+    own = conn is None
+    if own:
+        conn = _conn()
     try:
         cur = conn.cursor()
         if source_url:
@@ -133,11 +160,12 @@ def check_duplicate(title: str, source_url: str = "") -> Optional[str]:
     except Exception:
         pass
     finally:
-        conn.close()
+        if own:
+            conn.close()
     return None
 
 
-def import_product(product: dict, seller_id: str = DEFAULT_SELLER_ID, subcat_name: str = "") -> dict:
+def import_product(product: dict, seller_id: str = DEFAULT_SELLER_ID, subcat_name: str = "", conn=None) -> dict:
     """导入单个采集商品到Mall数据库 — 直接上架
 
     写入表: T_MALL_SYSTEM_GOODS, T_MALL_SYSTEM_GOODS_LANG,
@@ -151,7 +179,7 @@ def import_product(product: dict, seller_id: str = DEFAULT_SELLER_ID, subcat_nam
     goods_id = _uuid(source_url or title)
 
     # 去重
-    existing = check_duplicate(title, source_url)
+    existing = check_duplicate(title, source_url, conn=conn)
     if existing:
         return {"ok": False, "error": "商品已存在", "duplicate": True, "existing_id": existing}
 
@@ -169,11 +197,13 @@ def import_product(product: dict, seller_id: str = DEFAULT_SELLER_ID, subcat_nam
     specs = product.get("specs", []) or []
     reviews = product.get("reviews", []) or []
 
-    category_id = _find_category(category_path, subcat_name)
+    category_id = _find_category(category_path, subcat_name, conn=conn)
     now_ts = _now_ts()
     now_dt = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-    conn = _conn()
+    own = conn is None
+    if own:
+        conn = _conn()
     try:
         cur = conn.cursor()
 
@@ -294,29 +324,36 @@ def import_product(product: dict, seller_id: str = DEFAULT_SELLER_ID, subcat_nam
             "skus_count": sku_count,
             "reviews_count": review_count,
         }
-        conn.close()
+        if own:
+            conn.close()
         return result
 
     except Exception as e:
         conn.rollback()
-        conn.close()
+        if own:
+            conn.close()
         return {"ok": False, "error": str(e), "goods_id": goods_id}
 
 
 def import_batch(products: list[dict], seller_id: str = DEFAULT_SELLER_ID, subcat_name: str = "") -> dict:
-    """批量导入 — 自动去重，导完触发GC"""
+    """批量导入 — 复用单连接，导完触发GC"""
     imported = []
     skipped = []
     failed = []
 
-    for p in products:
-        result = import_product(p, seller_id, subcat_name)
-        if result.get("ok"):
-            imported.append(result)
-        elif result.get("duplicate"):
-            skipped.append(result)
-        else:
-            failed.append(result)
+    conn = _conn()
+    try:
+        for p in products:
+            result = import_product(p, seller_id, subcat_name, conn=conn)
+            if result.get("ok"):
+                imported.append(result)
+            elif result.get("duplicate"):
+                skipped.append(result)
+            else:
+                failed.append(result)
+    finally:
+        conn.close()
+        _reset_pool()
 
     # 每批导完触发一次GC
     gc.collect()
