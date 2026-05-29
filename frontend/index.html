@@ -13,9 +13,11 @@
   <meta name="apple-mobile-web-app-title" content="Friday AI">
   <link rel="apple-touch-icon" href="/icons/icon-192.svg">
   <script>
+    // 清除旧 Service Worker（避免缓存拦截 API 请求）
     if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/service-worker.js').then(r => console.log('[Friday PWA] OK:', r.scope));
+      navigator.serviceWorker.getRegistrations().then(regs => {
+        regs.forEach(r => r.unregister());
+        console.log('[Friday] 已清除旧 SW:', regs.length);
       });
     }
   </script>
