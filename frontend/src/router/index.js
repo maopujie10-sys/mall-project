@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory } from "vue-router"
+﻿import { createRouter, createWebHistory } from "vue-router"
 
 const routes = [
   {
@@ -8,7 +8,6 @@ const routes = [
     children: [
       { path: "friday", name: "FridayBrain", component: () => import("@/views/FridayBrain.vue"), meta: { title: "Friday AI OS" } },
       { path: "dashboard", name: "Dashboard", component: () => import("@/views/Dashboard.vue"), meta: { title: "数据总览" } },
-      { path: "chat", name: "AIChat", component: () => import("@/views/AIChat.vue"), meta: { title: "AI 对话" } },
 
       { path: "ai-brain", name: "AIBrain", component: () => import("@/views/AIBrain.vue"), meta: { title: "AI 大脑" } },
       { path: "agents", name: "AgentPanel", component: () => import("@/views/AgentPanel.vue"), meta: { title: "Agent面板" } },

@@ -50,7 +50,12 @@ async function autoLogin() {
   } catch (e) {}
 }
 
+function openFloatingChat() {
+  const btn = document.querySelector('.ai-float-btn')
+  if (btn) btn.click()
+}
 onMounted(async () => {
+  window.addEventListener('floating:openChat', openFloatingChat)
   await autoLogin()
   systemStore.fetchStatus()
   window.addEventListener('brain:active', (e) => { brainActive.value = e.detail })

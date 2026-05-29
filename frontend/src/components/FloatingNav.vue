@@ -61,7 +61,7 @@ const categories = reactive([
     id: 'ai', icon: '🧠', label: 'AI 智能', x: 0, y: 0, dragging: false,
     items: [
       { to: '/friday', icon: '🧠', label: 'Friday 大脑' },
-      { to: '/chat', icon: '💬', label: 'AI 对话' },
+      { to: '', icon: '💬', label: 'AI 对话', action: 'openChat' },
       { to: '/agents', icon: '🤖', label: 'Agent 调度' },
       { to: '/models', icon: '🔬', label: '模型中心' },
       { to: '/memory', icon: '💾', label: '记忆中心' },
@@ -172,6 +172,11 @@ function onDragUp() {
   document.ontouchend = null
 }
 
+function handleAction(item) {
+  if (item.action === 'openChat') {
+    window.dispatchEvent(new CustomEvent('floating:openChat'))
+  }
+}
 function toggleCat(cat) {
   if (isDragging) return
   activeCat.value = activeCat.value === cat.id ? null : cat.id
@@ -307,4 +312,8 @@ function particleStyle(i) {
     width: 92vw; max-width: 340px;
   }
 }
-</style>
+
+.panel-action {
+  width: 100%; border: none; background: transparent; cursor: pointer;
+  font-family: inherit; text-align: left;
+}</style>
