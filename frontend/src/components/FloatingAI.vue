@@ -160,6 +160,13 @@ let peerConnection = null
 const posX = ref(0)
 const posY = ref(0)
 let isDragging = false
+let convId = localStorage.getItem('friday_conv_id') || ''
+const conversations = ref([])
+const showHistory = ref(false)
+const selectedTemplate = ref('')
+const promptTemplates = ref([])
+const imagePreview = ref('')
+const showImageUpload = ref(false)
 let dragStartX = 0, dragStartY = 0, btnStartX = 0, btnStartY = 0
 let panelDragging = false, panelStartX = 0, panelStartY = 0, panelPos = { x: 0, y: 0 }
 let floatTimer = null
@@ -369,6 +376,162 @@ function stopVideoCall() {
 
 // === 消息 ===
 async function sendMessage() {
+  const text = inputText.value.trim(); const files = [...attachments.value]
+  if ((!text && !files.length) || loading.value) return
+  stopVoiceInput()
+
+  const now = new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
+  clearAttachments()
+  
+  // 图片分析模式
+  if (files.length && files[0].type === 'image' && text && files[0].dataUrl) {
+    messages.value.push({ role: 'user', content: text + ' [图片]', time: now })
+    await analyzeWithVision(files[0].dataUrl, text)
+    return
+  }
+  
+  // 图片发送（无文字）
+  if (files.length && files[0].type === 'image') {
+    messages.value.push({ role: 'user', content: '[图片]', time: now, image: files[0].dataUrl })
+    loading.value = true; window.dispatchEvent(new CustomEvent('brain:thinking', {detail:true}))
+    await nextTick(); scrollBottom()
+    try {
+      const token = getAgentToken()
+      const res = await fetch('/agent/vision/analyze', {
+        method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Agent-Token': token },
+        body: JSON.stringify({ image_base64: files[0].dataUrl.split(',')[1], question: '请描述这张图片' })
+      })
+      if (res.ok) {
+        const data = await res.json()
+        messages.value.push({ role: 'assistant', content: data.result || '分析完成', time: new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }) })
+        speakIfActive(data.result)
+      }
+    } catch (e) { messages.value.push({ role: 'assistant', content: '图片分析失败', time: now }) }
+    loading.value = false; return
+  }
+
+  // 普通文本消息 - 使用SSE流式
+  messages.value.push({ role: 'user', content: text, time: now })
+  inputText.value = ''
+  loading.value = true; window.dispatchEvent(new CustomEvent('brain:thinking', {detail:true}))
+  await nextTick(); scrollBottom()
+
+  // 添加AI占位消息
+  const aiMsg = { role: 'assistant', content: '', time: new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }) }
+  messages.value.push(aiMsg)
+  await nextTick(); scrollBottom()
+
+  try {
+    const token = getAgentToken()
+    const res = await fetch('/agent/chat/stream', {
+      method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Agent-Token': token },
+      body: JSON.stringify({ message: text, conv_id: convId, model: '' })
+    })
+    
+    const reader = res.body.getReader()
+    const decoder = new TextDecoder()
+    let fullText = ''
+    
+    while (true) {
+      const { done, value } = await reader.read()
+      if (done) break
+      const chunk = decoder.decode(value, { stream: true })
+      const lines = chunk.split('\n')
+      for (const line of lines) {
+        if (line.startsWith('data: ')) {
+          try {
+            const data = JSON.parse(line.slice(6))
+            if (data.token) {
+              fullText += data.token
+              aiMsg.content = fullText
+              await nextTick(); scrollBottom()
+            }
+            if (data.done) {
+              if (data.conv_id) { convId = data.conv_id; localStorage.setItem('friday_conv_id', convId) }
+              speakIfActive(fullText)
+            }
+          } catch(e) {}
+        }
+      }
+    }
+  } catch (e) {
+    aiMsg.content = '连接失败，请重试'
+  }
+  loading.value = false; window.dispatchEvent(new CustomEvent('brain:thinking', {detail:false}))
+}
+
+function getAgentToken() {
+  return localStorage.getItem('agent_token') || localStorage.getItem('friday_token') || 'kWs4N6GiD4vtjnuHV31r14m6HPpKttBSI35lFnpiI90'
+}
+
+function speakIfActive(text) {
+  window.dispatchEvent(new CustomEvent('brain:speaking', {detail:text}))
+  setTimeout(() => window.dispatchEvent(new CustomEvent('brain:thinking', {detail:false})), 500)
+  if (typeof voiceCallActive !== 'undefined' && voiceCallActive.value) { speakText(text) }
+}
+
+async function analyzeWithVision(dataUrl, question) {
+  loading.value = true; window.dispatchEvent(new CustomEvent('brain:thinking', {detail:true}))
+  const aiMsg = { role: 'assistant', content: '', time: new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }) }
+  messages.value.push(aiMsg); await nextTick(); scrollBottom()
+  try {
+    const token = getAgentToken()
+    const res = await fetch('/agent/vision/analyze', {
+      method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Agent-Token': token },
+      body: JSON.stringify({ image_base64: dataUrl.split(',')[1], question })
+    })
+    if (res.ok) {
+      const data = await res.json()
+      aiMsg.content = data.result || '分析完成'
+      speakIfActive(aiMsg.content)
+    }
+  } catch(e) { aiMsg.content = '分析失败' }
+  loading.value = false; window.dispatchEvent(new CustomEvent('brain:thinking', {detail:false}))
+}
+
+// Load conversations on mount
+async function loadConversations() {
+  try {
+    const token = getAgentToken()
+    const res = await fetch('/agent/chat/conversations', { headers: { 'X-Agent-Token': token } })
+    if (res.ok) { const data = await res.json(); conversations.value = data.conversations || [] }
+  } catch(e) {}
+}
+
+function switchConversation(cid) {
+  convId = cid; localStorage.setItem('friday_conv_id', cid)
+  messages.value = []
+  showHistory.value = false
+  loadConversationMessages(cid)
+}
+
+async function loadConversationMessages(cid) {
+  try {
+    const token = getAgentToken()
+    const res = await fetch('/agent/chat/conversations/' + cid, { headers: { 'X-Agent-Token': token } })
+    if (res.ok) { const data = await res.json(); messages.value = (data.messages || []).map(m => ({...m, time: ''})) }
+  } catch(e) {}
+}
+
+function newConversation() {
+  convId = ''; localStorage.removeItem('friday_conv_id')
+  messages.value = []; showHistory.value = false
+}
+
+async function loadPromptTemplates() {
+  try {
+    const token = getAgentToken()
+    const res = await fetch('/agent/prompts', { headers: { 'X-Agent-Token': token } })
+    if (res.ok) { const data = await res.json(); promptTemplates.value = data.templates || [] }
+  } catch(e) {}
+}
+
+function applyTemplate(tmpl) {
+  inputText.value = ''; selectedTemplate.value = tmpl.name
+  ElMessage.info('已选择模板: ' + tmpl.name + '，输入内容后发送')
+}
+
+// Legacy sendMessage rename to avoid conflict
   const text = inputText.value.trim(); const files = [...attachments.value]; processingStatus.value = detectTask(text); startStepAnimation()
   if ((!text && !files.length) || loading.value) return
   stopVoiceInput()

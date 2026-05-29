@@ -150,7 +150,7 @@ from routers.text2sql_router import router as text2sql_router
 from routers.abtest_router import router as abtest_router
 from routers.security_scan_router import router as security_scan_router
 from routers.capabilities_router import router as capabilities_router
-from routers.key_router import router as key_router
+from routers.key_router import router as key_router`nfrom routers.ecommerce_ai import router as ecommerce_ai_router
 # === 落地页轮值 ===
 ROTATION_DOMAINS = [
     "chxhx.eu.cc", "drrgr.eu.cc", "drrimrf.eu.cc", "drriiu.eu.cc",
@@ -252,7 +252,7 @@ app.include_router(text2sql_router)
 app.include_router(abtest_router)
 app.include_router(security_scan_router)
 app.include_router(capabilities_router)
-app.include_router(key_router)
+app.include_router(key_router)`napp.include_router(ecommerce_ai_router)
 @app.get("/agent", include_in_schema=False)
 async def dashboard():
     from fastapi.responses import HTMLResponse

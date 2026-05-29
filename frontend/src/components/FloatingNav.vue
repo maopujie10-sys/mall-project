@@ -97,6 +97,7 @@ const categories = reactive([
       { to: 'customer-profile', icon: '👥', label: '客户画像' },
       { to: 'text2sql', icon: '🗄️', label: '自然语言查库' },
       { to: 'ab-test', icon: '🧪', label: 'A/B测试' },
+      { to: 'ecommerce-ai', icon: '🤖', label: 'AI电商引擎' },
     ]
   },
   {

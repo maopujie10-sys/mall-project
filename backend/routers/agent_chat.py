@@ -11,6 +11,97 @@ from tools.registry import registry
 from digital_lifeform import DigitalLifeform
 from tools.vector_memory import VectorMemory
 from config import CLAUDE_API_KEY, CLAUDE_MODEL, OPENAI_BASE_URL, DEEPSEEK_API_KEY, OPENAI_API_KEY
+import sqlite3, hashlib, base64, uuid
+from pathlib import Path
+from fastapi import UploadFile, File, Form
+
+# ===== 对话会话管理 (SQLite) =====
+CONV_DB = Path(__file__).parent.parent / "data" / "conversations.db"
+
+def _get_conv_db():
+    CONV_DB.parent.mkdir(parents=True, exist_ok=True)
+    conn = sqlite3.connect(str(CONV_DB))
+    conn.execute("""CREATE TABLE IF NOT EXISTS conversations (
+        id TEXT PRIMARY KEY, title TEXT, model TEXT, created_at TEXT, updated_at TEXT)""")
+    conn.execute("""CREATE TABLE IF NOT EXISTS messages (
+        id INTEGER PRIMARY KEY AUTOINCREMENT, conv_id TEXT, role TEXT, content TEXT,
+        tool_name TEXT, tool_result TEXT, created_at TEXT,
+        FOREIGN KEY(conv_id) REFERENCES conversations(id))""")
+    conn.commit(); return conn
+
+def save_message(conv_id: str, role: str, content: str, tool_name: str = None, tool_result: str = None):
+    conn = _get_conv_db()
+    conn.execute("INSERT INTO messages (conv_id,role,content,tool_name,tool_result,created_at) VALUES (?,?,?,?,?,datetime('now'))",
+                 (conv_id, role, content, tool_name, tool_result))
+    conn.execute("UPDATE conversations SET updated_at=datetime('now') WHERE id=?", (conv_id,))
+    conn.commit(); conn.close()
+
+def load_history(conv_id: str, limit: int = 50) -> list:
+    conn = _get_conv_db()
+    rows = conn.execute("SELECT role,content FROM messages WHERE conv_id=? ORDER BY id ASC LIMIT ?", (conv_id, limit)).fetchall()
+    conn.close()
+    return [{"role": r[0], "content": r[1]} for r in rows]
+
+def list_conversations(limit: int = 30) -> list:
+    conn = _get_conv_db()
+    rows = conn.execute("SELECT id,title,model,created_at,updated_at FROM conversations ORDER BY updated_at DESC LIMIT ?", (limit,)).fetchall()
+    conn.close()
+    return [{"id": r[0], "title": r[1], "model": r[2], "created_at": r[3], "updated_at": r[4]} for r in rows]
+
+def create_conversation(title: str = "新对话", model: str = "") -> str:
+    cid = uuid.uuid4().hex[:12]
+    conn = _get_conv_db()
+    conn.execute("INSERT INTO conversations (id,title,model,created_at,updated_at) VALUES (?,?,?,datetime('now'),datetime('now'))", (cid, title, model))
+    conn.commit(); conn.close()
+    return cid
+
+# ===== 流式SSE工具函数 =====
+async def stream_ai_response(messages: list, model: str = ""):
+    """逐token流式返回AI响应"""
+    api_key = OPENAI_API_KEY or DEEPSEEK_API_KEY
+    base_url = OPENAI_BASE_URL or "https://api.openai.com/v1"
+    model_name = model or "gpt-3.5-turbo"
+    
+    async with httpx.AsyncClient(timeout=120.0) as client:
+        async with client.stream("POST", f"{base_url}/chat/completions",
+            headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
+            json={"model": model_name, "messages": messages, "stream": True, "temperature": 0.7}
+        ) as response:
+            full_text = ""
+            async for line in response.aiter_lines():
+                if line.startswith("data: "):
+                    data = line[6:]
+                    if data == "[DONE]":
+                        break
+                    try:
+                        chunk = json.loads(data)
+                        delta = chunk.get("choices", [{}])[0].get("delta", {})
+                        token = delta.get("content", "")
+                        if token:
+                            full_text += token
+                            yield f"data: {json.dumps({'token': token, 'full': full_text})}\n\n"
+                    except:
+                        pass
+            yield f"data: {json.dumps({'done': True, 'full': full_text})}\n\n"
+
+# ===== 图片理解 =====
+async def analyze_image(image_base64: str, question: str = "请描述这张图片") -> str:
+    """使用视觉模型分析图片"""
+    api_key = OPENAI_API_KEY
+    if not api_key:
+        return "图片分析需要配置OPENAI_API_KEY"
+    base_url = OPENAI_BASE_URL or "https://api.openai.com/v1"
+    async with httpx.AsyncClient(timeout=60.0) as client:
+        resp = await client.post(f"{base_url}/chat/completions",
+            headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
+            json={"model": "gpt-4o-mini", "messages": [{"role": "user", "content": [
+                {"type": "text", "text": question},
+                {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{image_base64}"}}
+            ]}]})
+        if resp.status_code == 200:
+            data = resp.json()
+            return data.get("choices", [{}])[0].get("message", {}).get("content", "无法分析")
+        return f"图片分析失败: {resp.status_code}"
 
 router = APIRouter(prefix="/agent", tags=["Agent"])
 

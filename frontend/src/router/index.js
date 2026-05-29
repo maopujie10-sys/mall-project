@@ -72,6 +72,7 @@ const routes = [
       { path: 'capabilities', name: 'Capabilities', component: () => import('@/views/Capabilities.vue'), meta: { title: 'AI能力状态' } },
       { path: 'key-manager', name: 'KeyManager', component: () => import('@/views/KeyManager.vue'), meta: { title: 'API Key管理' } },
       { path: 'user-manager', name: 'UserManager', component: () => import('@/views/UserManager.vue'), meta: { title: '用户管理' } },
+      { path: 'ecommerce-ai', name: 'EcommerceAI', component: () => import('@/views/EcommerceAI.vue'), meta: { title: 'AI电商引擎' } },
     ],
   },
 ]
