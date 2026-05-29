@@ -12,6 +12,17 @@ PRODUCT_DELAY = 3          # 产品并发批间隔秒
 CONCURRENCY = 3            # 产品页并发数
 CATEGORY_PAUSE = 30        # 每完成一个分类暂停秒
 
+LOG_FILE = "/tmp/full_scrape.log"
+
+def _log(msg: str):
+    """输出到stdout + 日志文件"""
+    ts = time.strftime("%H:%M:%S")
+    mem = psutil.virtual_memory()
+    line = f"[{ts}] {msg} | 进程{psutil.Process().memory_info().rss//1024//1024}MB 系统{mem.percent:.1f}%"
+    print(line, flush=True)
+    with open(LOG_FILE, "a") as f:
+        f.write(line + "\n")
+
 # 已采集URL缓存(防重复)
 seen_urls = set()
 
@@ -252,6 +263,10 @@ async def run(ppk=5):
     import httpx, random, hashlib
     from tools.scraper_engine import download_and_upload
 
+    _log(f"===== 全品类采集 启动 =====")
+    _log(f"品类数: {len(SUBCAT_KEYWORDS)} | 关键词数: {TOTAL} | 每品类目标: {ppk}")
+    _log(f"搜索间隔: {SEARCH_DELAY_BASE}s(自适应) | 产品延迟: {PRODUCT_DELAY}s | 并发: {CONCURRENCY}")
+
     stats = {"cats": 0, "kws": 0, "found": 0, "imported": 0, "skipped": 0, "failed": 0}
     amazon_adapter = ADAPTERS["amazon"]
     search_delay = SEARCH_DELAY_BASE  # 自适应延迟，初始8s
@@ -260,11 +275,11 @@ async def run(ppk=5):
         for subcat, keywords in SUBCAT_KEYWORDS.items():
             stats["cats"] += 1
             if stats["cats"] > 1:
-                print(f"\n[GC] 分类完成,清理内存+暂停{CATEGORY_PAUSE}秒...", flush=True)
+                _log(f"休息 {CATEGORY_PAUSE}s")
                 gc.collect()
                 await asyncio.sleep(CATEGORY_PAUSE)
             cat_imported = 0
-            print(f"\n[{stats['cats']}/{len(SUBCAT_KEYWORDS)}] {subcat}", end="", flush=True)
+            _log(f"[{stats['cats']}/{len(SUBCAT_KEYWORDS)}] {subcat}")
 
             for kw in keywords:
                 if stats["kws"] % MEMORY_CHECK_INTERVAL == 0:
@@ -277,16 +292,16 @@ async def run(ppk=5):
                 try:
                     urls = await amazon_adapter.search(kw, max_pages=1, session=session)
                 except Exception as e:
-                    print(f"\n  {kw}: 搜索异常 {e}", flush=True)
+                    _log(f"  {kw}: 搜索异常 {e}")
                     search_delay = min(search_delay * 1.3, SEARCH_DELAY_MAX)
                     continue
                 if not urls:
-                    print(f"\n  {kw}: 0结果", end="", flush=True)
+                    _log(f"  {kw}: 0结果")
                     search_delay = min(search_delay * 1.1, SEARCH_DELAY_MAX)
                     continue
                 # 搜索正常，逐渐缩短延迟
                 search_delay = max(SEARCH_DELAY_BASE, search_delay * 0.95)
-                print(f"\n  {kw}: {len(urls)}链接", end="", flush=True)
+                _log(f"  搜索: {kw} → {len(urls)}链接 (延迟{search_delay:.0f}s)")
 
                 need = ppk - cat_imported
                 fresh_urls = [u for u in urls[:need+2] if u not in seen_urls]
@@ -294,6 +309,7 @@ async def run(ppk=5):
                     seen_urls.add(u)
 
                 if not fresh_urls:
+                    _log(f"  全部已采集过")
                     continue
 
                 # ── 并发提取产品页 ──
@@ -304,11 +320,14 @@ async def run(ppk=5):
                     p.id = hashlib.md5(p.source_url.encode()).hexdigest()[:16]
 
                 if not products:
+                    _log(f"  产品提取为空")
                     await asyncio.sleep(PRODUCT_DELAY)
                     continue
 
                 # 上传图片+流式导入
                 imported_now = 0
+                review_total = 0
+                sku_total = 0
                 for p in products[:need]:
                     uploaded = []
                     # 并发下载图片
@@ -331,21 +350,24 @@ async def run(ppk=5):
                     if result["imported"]:
                         imported_now += 1
                         stats["imported"] += 1
+                        detail = result["details"]["imported"][0] if result["details"]["imported"] else {}
+                        review_total += detail.get("reviews_count", 0)
+                        sku_total += detail.get("skus_count", 0)
                     elif result["skipped_duplicate"]:
                         stats["skipped"] += 1
                     else:
                         stats["failed"] += 1
 
                 cat_imported += imported_now
-                print(f" +{imported_now}上架", end="", flush=True)
+                _log(f"  +{imported_now}新品(重{stats['skipped']}) | 评论{review_total} SKU{sku_total}")
                 await asyncio.sleep(PRODUCT_DELAY)
 
             if cat_imported == 0:
-                print(f" ⚠️ 未采集到", end="", flush=True)
+                _log(f"  ⚠️ {subcat} 未采集到")
 
-    print(f"\n\n{'='*60}")
-    print(f"完成: {stats['imported']} 上架, {stats['skipped']} 重复, {stats['failed']} 失败")
-    print(f"覆盖 {stats['cats']} 子品类, {stats['kws']} 关键词搜索")
+    _log(f"===== 完成 =====")
+    _log(f"上架 {stats['imported']} | 重复 {stats['skipped']} | 失败 {stats['failed']}")
+    _log(f"覆盖 {stats['cats']} 子品类, {stats['kws']} 关键词搜索")
     return stats
 
 if __name__ == "__main__":
