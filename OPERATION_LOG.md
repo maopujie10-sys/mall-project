@@ -1,5 +1,23 @@
 # 操作日志
 
+## 2026-05-29 11:18 — 采集管道重构：评论+SKU变体+断点续传+OOM防护
+
+**原因：** 上次全速采集导致内存耗尽、服务器重启。重构为慢速+内存安全版本。
+
+**改动文件（均在mall-project/backend/）：**
+- `tools/scraper_engine.py` — 新增ReviewItem数据模型，Amazon适配器增加评论抓取（用户名/评分/标题/正文/日期/验证标识），SKU变体增强（ASIN映射+多维度规格名称），页面解析后立即释放内存（soup.decompose）
+- `tools/mall_importer.py` — 新建T_MALL_GOODS_REVIEW评论表，导入管道写入评论+多SKU变体价格，每批次触发GC
+- `full_scrape.py` — 完全重写：断点续传(checkpoint.json)、慢速采集(搜索20-35s间隔+产品5-10s间隔)、psutil内存监控(>85%暂停60s)、每5品类休息30-40s、外层兜底防崩溃
+
+**Git提交：** 27d5220 — 已推送到 GitHub mall-project
+
+**运行状态：** nohup后台慢速运行中，日志 /tmp/full_scrape.log
+- 192品类×583关键词，每品类5产品
+- 启动时产品数: 9150
+- 第一个品类验证：4新品+64SKU ✅
+
+---
+
 ## 2026-05-29 10:00 — 后端修复+商品采集导入管道+自动上架
 
 **改动文件（均在mall-project/backend/）：**
