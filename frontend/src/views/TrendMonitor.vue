@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="trend-page">
     <div class="page-header">
       <div><h1>📡 竞品监控</h1><p>价格变动告警 · 促销追踪 · 趋势分析 · 新品发现</p></div>

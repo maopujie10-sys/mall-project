@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="self-healing-panel">
     <div class="page-header">
       <h1>🩺 异常自愈中心</h1>

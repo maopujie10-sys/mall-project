@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="log-viewer-panel">
     <div class="page-header"><h1>📋 日志中心</h1><p>Docker · Nginx · Tomcat · 应用日志统一查询</p></div>
 

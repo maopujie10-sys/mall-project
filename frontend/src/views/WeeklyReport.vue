@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="weekly-report-panel">
     <div class="page-header">
       <h1>📊 AI运营周报</h1>
