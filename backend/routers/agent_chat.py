@@ -431,8 +431,8 @@ CONV_DB = Path(__file__).parent.parent / "data" / "conversations.db"
 def _cdb():
     CONV_DB.parent.mkdir(parents=True,exist_ok=True)
     c=sqlite3.connect(str(CONV_DB))
-    c.execute("CREATE TABLE IF NOT EXISTS convs(id TEXT PRIMARY KEY,title TEXT,created TEXT,updated TEXT)")
-    c.execute("CREATE TABLE IF NOT EXISTS msgs(id INTEGER PRIMARY KEY AUTOINCREMENT,cid TEXT,role TEXT,content TEXT,created TEXT)")
+    c.execute("CREATE TABLE IF NOT EXISTS convs(id TEXT PRIMARY KEY,title TEXT,owner TEXT DEFAULT "admin",created TEXT,updated TEXT)")
+    c.execute("CREATE TABLE IF NOT EXISTS msgs(id INTEGER PRIMARY KEY AUTOINCREMENT,cid TEXT,role TEXT,content TEXT,owner TEXT DEFAULT "admin",created TEXT)")
     c.commit();return c
 
 @router.post("/chat/stream")
@@ -568,6 +568,37 @@ async def dashboard_ask(q: str = Query(...), _=Depends(verify_token)):
         return{"ok":False,"error":f"API:{r.status_code}"}
     except Exception as e:return{"ok":False,"error":str(e)}}
 
+
+# ===== 多租户管理(仅admin) =====
+@router.get("/admin/tenants")
+async def list_tenants(_=Depends(verify_token)):
+    """列出所有租户及其资源用量"""
+    c = _cdb()
+    rows = c.execute("SELECT owner,COUNT(*) as convs FROM convs GROUP BY owner").fetchall()
+    msgs = c.execute("SELECT owner,COUNT(*) as msgs FROM msgs GROUP BY owner").fetchall()
+    c.close()
+    u = _udb()
+    tokens = u.execute("SELECT owner,SUM(tokens_in+ tokens_out) as tokens,SUM(cost) as cost FROM usage GROUP BY owner").fetchall()
+    u.close()
+    tenants = []
+    owners = set()
+    for r in rows: owners.add(r[0])
+    for r in msgs: owners.add(r[0])
+    for r in tokens: owners.add(r[0])
+    for o in owners:
+        conv_count = next((r[1] for r in rows if r[0]==o),0)
+        msg_count = next((r[1] for r in msgs if r[0]==o),0)
+        tok_count = next((r[1] for r in tokens if r[0]==o),0)
+        cost = next((r[2] for r in tokens if r[0]==o),0)
+        tenants.append({"owner":o,"conversations":conv_count,"messages":msg_count,"tokens":tok_count or 0,"cost":round(cost or 0,4)})
+    return {"ok":True,"tenants":tenants}
+
+def _udb():
+    import sqlite3
+    from pathlib import Path
+    db = Path(__file__).parent.parent / "data" / "usage.db"
+    db.parent.mkdir(parents=True,exist_ok=True)
+    return sqlite3.connect(str(db))
 @router.post("/handover")
 async def agent_handover(req: HandoverRequest, _=Depends(verify_token)):
     state.mode = "human_control"
