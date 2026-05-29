@@ -211,7 +211,7 @@ watch(messages, (val) => {
 
 // === 面板控制 ===
 function openChat() { if (!isDragging) { chatOpen.value = true; hasUnread.value = false; nextTick(() => scrollBottom()) } }
-function closeChat() { stopVoiceInput(); stopVideoCall(); chatOpen.value = false; chatExpanded.value = false }
+function closeChat() { stopVoiceInput(); stopVideoCall(); chatOpen.value = false; chatExpanded.value = false; const p=document.querySelector(".floating-ai .ai-chat-panel");if(p){p.style.left="";p.style.top="";p.style.right="";p.style.bottom=""} }
 function minimizeChat() { stopTw(); stopStepAnimation(); chatOpen.value = false }
 function toggleExpand() { chatExpanded.value = !chatExpanded.value; nextTick(() => scrollBottom()) }
 function startDrag(e) {
@@ -224,7 +224,32 @@ function startDrag(e) {
   const onUp = () => { document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp); setTimeout(() => { isDragging = false }, 50) }
   document.addEventListener('mousemove', onMove); document.addEventListener('mouseup', onUp)
 }
-function startPanelDrag(e) {}
+function startPanelDrag(e) {
+  if (e.target.tagName === 'BUTTON') return
+  panelDragging = true
+  panelStartX = e.clientX
+  panelStartY = e.clientY
+  const panel = document.querySelector('.floating-ai .ai-chat-panel')
+  if (panel) {
+    panelPos.x = panel.offsetLeft || 0
+    panelPos.y = panel.offsetTop || 0
+      const s = panel.style
+    const onMove = (ev) => {
+      const dx = ev.clientX - panelStartX
+      const dy = ev.clientY - panelStartY
+      s.right = 'auto'; s.bottom = 'auto'
+        s.left = (panelPos.x + dx) + 'px'
+        s.top = (panelPos.y + dy) + 'px'
+    }
+    const onUp = () => {
+      panelDragging = false
+      document.removeEventListener('mousemove', onMove)
+      document.removeEventListener('mouseup', onUp)
+    }
+    document.addEventListener('mousemove', onMove)
+    document.addEventListener('mouseup', onUp)
+  }
+}
 
 // === 语音合成 (TTS) ===
 function initSpeechSynth() {
