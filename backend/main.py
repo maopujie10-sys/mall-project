@@ -1,4 +1,6 @@
 """TikTokMall AI Agent 总控 - FastAPI :9000"""
+import os
+import random
 import asyncio
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request, HTTPException
