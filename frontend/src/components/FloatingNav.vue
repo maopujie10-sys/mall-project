@@ -134,6 +134,7 @@ const categories = reactive([
       { to: 'security-scan', icon: '🛡️', label: '安全扫描' },
       { to: 'capabilities', icon: '🔧', label: 'AI能力状态' },
       { to: 'key-manager', icon: '🔑', label: 'API Key管理' },
+      { to: 'ai-tools', icon: '🔧', label: 'AI工具箱' },
       { to: 'user-manager', icon: '👥', label: '用户管理' },
     ]
   }
