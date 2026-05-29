@@ -15,6 +15,13 @@
 6. 客服自动回复 + 轮值域名监控
 
 ## 最近改动
+- 2026-05-29 11:18: [采集重构] 全品类慢速采集管道重构
+  - **原因：** 上次全速采集内存耗尽导致服务器重启
+  - **scraper_engine.py:** 新增ReviewItem评论数据模型+Amazon适配器评论抓取（用户名/评分/标题/正文/日期/验证标识），SKU变体增强（ASIN映射+多维度规格名+独立价格），页面解析后立即释放内存(soup.decompose/del)
+  - **mall_importer.py:** 新建T_MALL_GOODS_REVIEW评论表（UUID/GOODS_ID/REVIEWER/RATING/TITLE/BODY/REVIEW_DATE/VERIFIED），导入管道写入评论+多SKU变体独立价格(ON DUPLICATE KEY UPDATE)，每批次触发GC
+  - **full_scrape.py:** 完全重写：断点续传(/tmp/full_scrape_checkpoint.json)，慢速采集(搜索20-35s+产品5-10s)，psutil内存监控(>85%暂停60s)，每5品类休息30-40s，外层兜底try/except防崩溃
+  - 运行中：nohup后台，PID 8676，日志/tmp/full_scrape.log，192品类
+  - Git: 27d5220 + 3bf40ad 已推送
 - 2026-05-29: [路由修复] 轮值域名目标路径404→302重定向映射
   - 问题: 轮值引擎跳转到 /home、/login、/merchantSettled，Tomcat不识别这些路径返回404
   - 修复: landing.conf 轮值HTTPS server block新增3条location重定向:
