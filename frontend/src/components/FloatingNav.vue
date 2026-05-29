@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="floating-nav-container">
     <!-- 4 个分类光球 -->
     <div
@@ -123,12 +123,26 @@ const categories = reactive([
 
 // 初始化位置 — 垂直排列在右侧
 function initPositions() {
-  const spacing = 100
-  const startY = Math.max(80, (window.innerHeight - spacing * 3) / 2)
-  categories.forEach((cat, i) => {
-    cat.x = window.innerWidth - 80
-    cat.y = startY + i * spacing
-  })
+  const isMobile = window.innerWidth <= 768
+  if (isMobile) {
+    // 移动端：顶部水平排列
+    const orbSize = 52
+    const gap = 10
+    const totalWidth = 4 * orbSize + 3 * gap
+    const startX = Math.max(8, (window.innerWidth - totalWidth) / 2)
+    categories.forEach((cat, i) => {
+      cat.x = startX + i * (orbSize + gap)
+      cat.y = 16
+    })
+  } else {
+    // PC端：右侧垂直排列
+    const spacing = 100
+    const startY = Math.max(80, (window.innerHeight - spacing * 3) / 2)
+    categories.forEach((cat, i) => {
+      cat.x = window.innerWidth - 80
+      cat.y = startY + i * spacing
+    })
+  }
 }
 initPositions()
 startFloating()
@@ -205,8 +219,6 @@ function startFloating() {
     }, 50))
   })
 }
-startFloating()
-window.addEventListener('resize', () => { initPositions(); startFloating() })
 
 function handleAction(item) {
   if (item.action === 'openChat') {
