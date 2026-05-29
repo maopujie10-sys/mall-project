@@ -68,9 +68,16 @@ const categories = reactive([
       { to: 'trends', icon: '📈', label: 'AI 监控' },
       { to: 'video', icon: '🎬', label: '视觉分析' },
       { to: 'plugins', icon: '🧩', label: '技能市场' },
+      { to: 'skill-market', icon: '🧩', label: '技能商店' },
       { to: 'ai-brain', icon: '🧠', label: 'AI大脑' },
       { to: 'evolution', icon: '🌱', label: '进化报告' },
       { to: 'ocr', icon: '🔍', label: 'OCR识别' },
+      { to: 'voice-chat', icon: '🎙️', label: '语音对话' },
+      { to: 'agent-collab', icon: '🤝', label: 'Agent协作' },
+      { to: 'knowledge', icon: '📚', label: '知识中心' },
+      { to: 'code-deploy', icon: '⚡', label: 'AI代码部署' },
+      { to: 'recommend', icon: '🎯', label: '推荐引擎' },
+      { to: 'content-factory', icon: '🏭', label: 'AI内容工厂' },
     ]
   },
   {
@@ -85,6 +92,11 @@ const categories = reactive([
       { to: 'virtual', icon: '🎮', label: '虚拟数据' },
       { to: 'batch-upload', icon: '📋', label: '批量上架' },
       { to: 'auto-reply', icon: '🤖', label: '自动回复' },
+      { to: 'predict', icon: '📈', label: '预测分析' },
+      { to: 'competitor', icon: '🕵️', label: '竞品监控' },
+      { to: 'customer-profile', icon: '👥', label: '客户画像' },
+      { to: 'text2sql', icon: '🗄️', label: '自然语言查库' },
+      { to: 'ab-test', icon: '🧪', label: 'A/B测试' },
     ]
   },
   {
@@ -104,6 +116,7 @@ const categories = reactive([
       { to: 'weekly-report', icon: '📊', label: '运营周报' },
       { to: 'files', icon: '📁', label: '文件管理' },
       { to: 'site', icon: '🌐', label: '站点检测' },
+      { to: 'memory-sync', icon: '🔄', label: '跨平台记忆' },
     ]
   },
   {
@@ -117,6 +130,7 @@ const categories = reactive([
       { to: 'rollback', icon: '⏪', label: '备份回滚' },
       { to: 'approval', icon: '✅', label: '审批中心' },
       { to: 'audit', icon: '📋', label: '审计日志' },
+      { to: 'security-scan', icon: '🛡️', label: '安全扫描' },
     ]
   }
 ])

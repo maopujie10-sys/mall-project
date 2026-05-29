@@ -138,6 +138,17 @@ from routers.ws_router import router as ws_router
 from routers.gateway_router import router as gateway_router
 from routers.omni_router import router as omni_router
 
+# === 全能AI升级 v5 ===
+from routers.voice_router import router as voice_router
+from routers.collab_router import router as collab_router
+from routers.rag_router import router as rag_router
+from routers.predict_router import router as predict_router
+from routers.recommend_router import router as recommend_router
+from routers.content_router import router as content_router
+from routers.sentiment_router import router as sentiment_router
+from routers.text2sql_router import router as text2sql_router
+from routers.abtest_router import router as abtest_router
+from routers.security_scan_router import router as security_scan_router
 # === 落地页轮值 ===
 ROTATION_DOMAINS = [
     "chxhx.eu.cc", "drrgr.eu.cc", "drrimrf.eu.cc", "drriiu.eu.cc",
@@ -228,7 +239,16 @@ app.include_router(trace_router)
 app.include_router(ws_router)
 app.include_router(gateway_router, prefix="/api")
 app.include_router(omni_router)
-
+app.include_router(voice_router)
+app.include_router(collab_router)
+app.include_router(rag_router)
+app.include_router(predict_router)
+app.include_router(recommend_router)
+app.include_router(content_router)
+app.include_router(sentiment_router)
+app.include_router(text2sql_router)
+app.include_router(abtest_router)
+app.include_router(security_scan_router)
 @app.get("/agent", include_in_schema=False)
 async def dashboard():
     from fastapi.responses import HTMLResponse
