@@ -1,7 +1,8 @@
 ﻿"""API请求限流中间件 — 令牌桶算法,基于IP+路径"""
 import time
 from collections import defaultdict
-from fastapi import Request, HTTPException
+from fastapi import Request
+from fastapi.responses import JSONResponse
 
 # 限流配置: {路径前缀: (令牌数, 时间窗口秒)}
 RATE_LIMITS = {
@@ -14,8 +15,9 @@ RATE_LIMITS = {
     "default": (600, 60),            # 默认: 600次/分钟
 }
 
-# 令牌桶存储: {ip: {path: (tokens, last_refill_time)}}
-_buckets = defaultdict(lambda: defaultdict(lambda: [0, time.time()]))
+# 令牌桶存储: {ip: {path: [tokens, last_refill_time]}}
+# 初始化为满令牌，避免新路径首次请求被误限
+_buckets = defaultdict(lambda: defaultdict(lambda: [600, time.time()]))
 
 def _get_limit(path: str):
     """根据路径获取限流配置"""
@@ -50,9 +52,9 @@ async def rate_limit_middleware(request: Request, call_next):
     tokens = min(max_tokens, tokens + refill_amount)
     
     if tokens < 1:
-        raise HTTPException(
+        return JSONResponse(
             status_code=429,
-            detail=f"请求太频繁,请{int(window)}秒后重试 (限流: {max_tokens}次/{window}秒)"
+            content={"detail": f"请求太频繁,请{int(window)}秒后重试 (限流: {max_tokens}次/{window}秒)"}
         )
     
     tokens -= 1

@@ -41,16 +41,16 @@ async def lifespan(app: FastAPI):
         print(f"[Agent] 自检结果: {summary}")
         await startup_warmup()
 
-    # Dashboard实时指标推送
-    async def push_metrics_loop():
-        from websocket_manager import ws_manager
-        while True:
-            await asyncio.sleep(10)
-            try:
-                await ws_manager.push_system_metrics()
-            except Exception:
-                pass
-    asyncio.create_task(push_metrics_loop())
+        # Dashboard实时指标推送
+        async def push_metrics_loop():
+            from websocket_manager import ws_manager
+            while True:
+                await asyncio.sleep(10)
+                try:
+                    await ws_manager.push_system_metrics()
+                except Exception:
+                    pass
+        asyncio.create_task(push_metrics_loop())
     except Exception as e:
         print(f"[Agent] 自检失败(非致命): {e}")
     yield

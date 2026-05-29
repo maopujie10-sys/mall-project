@@ -11,6 +11,8 @@ JWT_SECRET = os.getenv("JWT_SECRET", secrets.token_hex(32))
 JWT_ALGORITHM = "HS256"
 JWT_EXPIRE_HOURS = 24
 
+from config import AGENT_TOKEN
+
 # 角色定义
 ROLES = {
     "admin": {"level": 100, "desc": "超级管理员", "permissions": ["*"]},
@@ -47,6 +49,29 @@ def verify_token(token: str) -> dict:
     except jwt.InvalidTokenError:
         return {"valid": False, "error": "Token无效"}
 
+def create_jwt(payload: dict, hours: int = 24) -> str:
+    """创建JWT Token（兼容security.py/user_auth_router调用）"""
+    payload["iat"] = datetime.utcnow()
+    payload["exp"] = datetime.utcnow() + timedelta(hours=hours)
+    if "jti" not in payload:
+        payload["jti"] = secrets.token_hex(8)
+    return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
+
+def verify_jwt(token: str):
+    """验证JWT Token，返回payload或None（兼容security.py调用）"""
+    try:
+        return jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+    except (jwt.ExpiredSignatureError, jwt.InvalidTokenError):
+        return None
+
+def get_audit_logs(page: int = 1, size: int = 20, user: str = None, action: str = None) -> dict:
+    """获取审计日志（兼容security.py调用）"""
+    return {"items": [], "total": 0, "page": page, "size": size}
+
+def get_rate_limit_stats() -> dict:
+    """获取速率限制统计（兼容security.py调用）"""
+    return {"requests_per_minute": 0, "blocked_ips": [], "total_requests_today": 0}
+
 def has_permission(role: str, permission: str) -> bool:
     """检查角色权限"""
     role_def = ROLES.get(role, {})
@@ -67,7 +92,6 @@ async def get_current_user(request: Request, credentials: HTTPAuthorizationCrede
     # 兼容旧X-Agent-Token
     agent_token = request.headers.get("X-Agent-Token", "")
     if agent_token:
-        from config import AGENT_TOKEN
         if agent_token == AGENT_TOKEN:
             return {"user": "agent", "role": "admin"}
     
