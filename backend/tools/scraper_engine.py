@@ -778,39 +778,50 @@ class AmazonAdapter(BaseScrapeAdapter):
 
             # ── 用户评论抓取 ──
             reviews = []
-            review_cards = soup.select("#cm_cr-review_list [data-hook='review'], div[data-hook='review']")
+            review_cards = soup.select("div[data-hook='review']")
             if not review_cards:
-                review_cards = soup.select(".review.aok-relative")
+                review_cards = soup.select("#cm_cr-review_list [data-hook='review'], .review.aok-relative")
             for card in review_cards[:10]:
                 try:
-                    rev_name = ""
-                    name_el = card.select_one(".a-profile-name") or card.select_one("[data-hook='review-author']")
-                    if name_el:
-                        rev_name = name_el.get_text(strip=True)
+                    # 作者 — genome-widget 是Amazon最新版本
+                    name_el = (card.select_one("[data-hook='genome-widget']")
+                               or card.select_one(".a-profile-name")
+                               or card.select_one("[data-hook='review-author']"))
+                    rev_name = name_el.get_text(strip=True) if name_el else ""
 
+                    # 评分 — review-star-rating 容器内的 .a-icon-alt
+                    star_el = (card.select_one("[data-hook='review-star-rating'] .a-icon-alt")
+                               or card.select_one(".a-icon-alt"))
                     rev_rating = 0.0
-                    star_el = card.select_one(".a-icon-alt") or card.select_one("[data-hook='review-star-rating'] .a-icon-alt")
                     if star_el:
                         r_nums = re.findall(r'[\d.]+', star_el.get_text(strip=True))
                         if r_nums:
                             rev_rating = float(r_nums[0])
 
-                    rev_title = ""
-                    title_el = card.select_one("[data-hook='review-title']") or card.select_one(".review-title")
-                    if title_el:
-                        rev_title = title_el.get_text(strip=True)
+                    # 标题 — reviewTitle (camelCase, 不是 review-title)
+                    title_el = card.select_one("[data-hook='reviewTitle']") or card.select_one(".review-title")
+                    rev_title = title_el.get_text(strip=True) if title_el else ""
 
+                    # 正文 — reviewRichContentContainer 有完整内容
+                    body_el = (card.select_one("[data-hook='reviewRichContentContainer']")
+                               or card.select_one("[data-hook='reviewTextContainer']")
+                               or card.select_one(".review-text"))
                     rev_body = ""
-                    body_el = card.select_one("[data-hook='review-body']") or card.select_one(".review-text")
                     if body_el:
                         rev_body = body_el.get_text("\n", strip=True)[:1000]
 
-                    rev_date = ""
+                    # 日期
                     date_el = card.select_one("[data-hook='review-date']") or card.select_one(".review-date")
+                    rev_date = ""
                     if date_el:
-                        rev_date = date_el.get_text(strip=True)
+                        raw_date = date_el.get_text(strip=True)
+                        if " on " in raw_date:
+                            rev_date = raw_date.split(" on ", 1)[1]
+                        else:
+                            rev_date = raw_date
 
-                    verified = bool(card.select_one("[data-hook='avp-badge']") or "verified" in card.get_text().lower())
+                    # 验证购买
+                    verified = bool(card.select_one("[data-hook='avp-badge']"))
 
                     if rev_name and rev_body:
                         reviews.append(ReviewItem(
