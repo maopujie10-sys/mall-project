@@ -1,5 +1,6 @@
-"""消息网关 — 统一多平台接入: 微信/企微/钉钉/Telegram/Slack"""
+﻿"""消息网关 — 统一多平台接入: 微信/企微/钉钉/Telegram/Slack"""
 import json, hashlib, os, httpx
+from config import AGENT_TOKEN
 from datetime import datetime
 from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse, PlainTextResponse
@@ -34,13 +35,13 @@ class MessageGateway:
                 r = await client.post(
                     "http://127.0.0.1:9000/agent/chat",
                     json={"message": text, "history": []},
-                    headers={"X-Agent-Token": os.getenv("AGENT_TOKEN", "friday-agent-token")},
+                    headers={"X-Agent-Token": AGENT_TOKEN or "friday-agent-token"},
                     timeout=30
                 )
                 if r.status_code == 200:
-                    return {"ok": True, "reply": r.json().get("reply", str(r.json())[:500])}
+                    data = r.json(); reply_text = data.get("response") or data.get("reply") or str(data)[:500]; return {"ok": True, "reply": reply_text}
         except Exception as e:
-            logger.info(f"Gateway error: {e}")
+            logger.info(f"Gateway AI call error: {e}")
         return {"ok": False, "reply": "抱歉,我暂时无法处理您的请求。请稍后再试。"}
 
 # ===== 微信公众号 =====
