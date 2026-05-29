@@ -475,6 +475,507 @@ async def compress_memory(req: MemoryRequest, _=Depends(verify_token)):
     except Exception as e:
         return {"ok":False,"error":str(e)}
 
+
+# ===== 8.5 远程电脑控制 WebSocket =====
+connected_remotes = {}  # {client_id: websocket}
+
+@router.websocket("/remote/ws")
+async def remote_control_ws(ws: WebSocket):
+    """远程电脑控制WebSocket — 本地Agent连接后，AI可操控本地电脑"""
+    await ws.accept()
+    client_id = None
+    
+    try:
+        while True:
+            data = await ws.receive_json()
+            msg_type = data.get("type","")
+            
+            if msg_type == "register":
+                client_id = data.get("client_id","unknown")
+                hostname = data.get("hostname","")
+                connected_remotes[client_id] = ws
+                await ws.send_json({"type":"registered","client_id":client_id})
+                # 广播新连接
+                for cid, cws in connected_remotes.items():
+                    try: await cws.send_json({"type":"peer_update","clients":list(connected_remotes.keys())})
+                    except: pass
+            
+            elif msg_type == "ping":
+                await ws.send_json({"type":"pong"})
+            
+            elif msg_type == "result":
+                # 客户端执行结果回传
+                target = data.get("target","")
+                if target in connected_remotes:
+                    try:
+                        await connected_remotes[target].send_json({
+                            "type":"remote_result",
+                            "action":data.get("action"),
+                            "ok":data.get("ok"),
+                            "data":data.get("data"),
+                            "screenshot":data.get("screenshot"),
+                            "error":data.get("error")
+                        })
+                    except: pass
+            
+            elif msg_type == "screenshot":
+                # 截图回传
+                target = data.get("target","")
+                if target in connected_remotes:
+                    try:
+                        await connected_remotes[target].send_json({
+                            "type":"screenshot_data",
+                            "base64":data.get("base64","")
+                        })
+                    except: pass
+                    
+    except WebSocketDisconnect:
+        if client_id:
+            connected_remotes.pop(client_id, None)
+            for cws in connected_remotes.values():
+                try: await cws.send_json({"type":"peer_update","clients":list(connected_remotes.keys())})
+                except: pass
+
+@router.get("/remote/clients")
+async def list_remote_clients(_=Depends(verify_token)):
+    """列出已连接的远程电脑"""
+    return {"ok":True,"clients":list(connected_remotes.keys()),"count":len(connected_remotes)}
+
+@router.post("/remote/execute")
+async def execute_remote(req: dict, _=Depends(verify_token)):
+    """向远程电脑发送控制指令"""
+    client_id = req.get("client_id","")
+    action = req.get("action","")
+    params = req.get("params",{})
+    
+    if client_id not in connected_remotes:
+        return {"ok":False,"error":f"客户端 {client_id} 未连接","available":list(connected_remotes.keys())}
+    
+    try:
+        ws = connected_remotes[client_id]
+        await ws.send_json({"type":"execute","action":action,"params":params})
+        return {"ok":True,"sent":action,"to":client_id}
+    except Exception as e:
+        connected_remotes.pop(client_id, None)
+        return {"ok":False,"error":str(e)}
+
+# ===== 本地Agent下载 =====
+@router.get("/remote/agent-script")
+async def download_agent_script():
+    """下载本地电脑Agent脚本"""
+    script = '''"""
+Friday AI 本地控制Agent — 运行在你的电脑上，让AI操控你的桌面
+用法: pip install playwright pyautogui websockets pillow
+      python friday_agent.py
+"""
+import asyncio, json, base64, os, sys, io, subprocess, re
+from pathlib import Path
+from datetime import datetime
+
+SERVER = "wss://tiktook.eu.cc/agent/advanced/remote/ws"  # 改成你的服务器地址
+import socket
+CLIENT_ID = socket.gethostname()
+
+def screenshot_to_base64():
+    """截取屏幕"""
+    try:
+        from PIL import ImageGrab
+        img = ImageGrab.grab()
+        buf = io.BytesIO()
+        img.save(buf, format="PNG")
+        return base64.b64encode(buf.getvalue()).decode()
+    except:
+        return None
+
+async def execute_action(action, params):
+    """执行控制指令"""
+    try:
+        if action == "screenshot":
+            b64 = screenshot_to_base64()
+            return {"ok":True,"screenshot":b64}
+        
+        elif action == "open_url":
+            url = params.get("url","")
+            import webbrowser
+            webbrowser.open(url)
+            return {"ok":True,"opened":url}
+        
+        elif action == "click":
+            x, y = params.get("x",0), params.get("y",0)
+            import pyautogui
+            pyautogui.click(x, y)
+            return {"ok":True,"clicked":[x,y]}
+        
+        elif action == "type_text":
+            text = params.get("text","")
+            import pyautogui
+            pyautogui.write(text, interval=0.05)
+            return {"ok":True,"typed":text}
+        
+        elif action == "press_key":
+            key = params.get("key","enter")
+            import pyautogui
+            pyautogui.press(key)
+            return {"ok":True,"key":key}
+        
+        elif action == "run_command":
+            cmd = params.get("command","")
+            r = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=30)
+            return {"ok":True,"stdout":r.stdout[:2000],"stderr":r.stderr[:1000]}
+        
+        elif action == "get_info":
+            import platform, psutil
+            return {"ok":True,"hostname":socket.gethostname(),"os":platform.system(),
+                    "cpu":psutil.cpu_percent(),"memory":psutil.virtual_memory().percent,
+                    "disk":psutil.disk_usage('/').percent}
+        
+        elif action == "open_app":
+            app = params.get("name","")
+            import subprocess
+            if os.name == 'nt':
+                subprocess.Popen(app, shell=True)
+            else:
+                subprocess.Popen([app])
+            return {"ok":True,"opened":app}
+        
+        elif action == "scroll":
+            amount = params.get("amount", -500)
+            import pyautogui
+            pyautogui.scroll(amount)
+            return {"ok":True,"scrolled":amount}
+        
+        elif action == "move_mouse":
+            x, y = params.get("x",0), params.get("y",0)
+            import pyautogui
+            pyautogui.moveTo(x, y, duration=0.5)
+            return {"ok":True,"moved_to":[x,y]}
+        
+        else:
+            return {"ok":False,"error":f"未知操作: {action}"}
+    except Exception as e:
+        return {"ok":False,"error":str(e)}
+
+async def main():
+    import websockets
+    print(f"[Friday Agent] 启动中... 客户端ID: {CLIENT_ID}")
+    print(f"[Friday Agent] 服务器: {SERVER}")
+    
+    while True:
+        try:
+            async with websockets.connect(SERVER) as ws:
+                await ws.send(json.dumps({"type":"register","client_id":CLIENT_ID,"hostname":CLIENT_ID}))
+                print(f"[Friday Agent] ✅ 已连接")
+                
+                async def heartbeat():
+                    while True:
+                        await asyncio.sleep(25)
+                        try: await ws.send(json.dumps({"type":"ping"}))
+                        except: break
+                
+                asyncio.create_task(heartbeat())
+                
+                async for msg in ws:
+                    data = json.loads(msg)
+                    if data.get("type") == "execute":
+                        action = data.get("action","")
+                        params = data.get("params",{})
+                        print(f"[执行] {action} {params}")
+                        result = await execute_action(action, params)
+                        # 执行后自动截图
+                        if action != "screenshot":
+                            shot = screenshot_to_base64()
+                            if shot: result["screenshot"] = shot
+                        await ws.send(json.dumps({
+                            "type":"result","target":CLIENT_ID,
+                            "action":action,"ok":result.get("ok",False),
+                            "data":json.dumps(result,ensure_ascii=False),
+                            "screenshot":result.get("screenshot"),
+                            "error":result.get("error")
+                        }))
+        except Exception as e:
+            print(f"[Friday Agent] 断开: {e}, 3秒后重连...")
+            await asyncio.sleep(3)
+
+if __name__ == "__main__":
+    asyncio.run(main())
+'''
+    return {
+        "ok":True,
+        "filename":"friday_agent.py",
+        "script":script,
+        "instructions":"pip install websockets pyautogui pillow psutil playwright && python friday_agent.py",
+        "usage":"运行后在你的电脑上，AI就可以：截图/打开网页/点击/打字/按键/运行命令/打开应用/滚动/移动鼠标"
+    }
+
+
+# ===== 8.6 像人一样的AI Agent — 视觉循环: 看→想→做→再看 =====
+@router.post("/agent/human")
+async def human_like_agent(req: dict, _=Depends(verify_token)):
+    """像人一样操控电脑 — 视觉理解→决策→操作→验证 循环"""
+    command = req.get("command","")
+    target = req.get("target","server")  # server | remote_client_id
+    max_cycles = req.get("max_cycles", 10)
+    
+    action_log = []
+    final_result = ""
+    
+    # 系统提示词 — 让AI像人一样思考
+    system_prompt = """你是一个能操控电脑的AI Agent。你可以看到屏幕截图，你需要完成任务。
+
+每次我给你一张截图，你回复一个JSON:
+{
+  "observation": "你看到了什么(一句话)",
+  "thought": "你的思考过程(下一步该做什么)",
+  "action": "screenshot|click|type|scroll|open|press|done|fail",
+  "params": {"x": 数字, "y": 数字, "text": "文字", "url": "网址", "key": "按键"},
+  "confidence": 0.0-1.0
+}
+
+可用操作:
+- screenshot: 再看一次屏幕
+- click: 点击坐标 (params: x, y)
+- type: 输入文字 (params: text)
+- scroll: 滚动 (params: amount, 正数向上)
+- open: 打开网址 (params: url)  
+- press: 按键 (params: key, 如 enter/tab/escape)
+- done: 任务完成 (params: summary 总结)
+- fail: 任务无法完成 (params: reason)
+
+坐标范围: x: 0-1280, y: 0-900。谨慎精确。如果卡住了尝试其他方法。"""
+
+    cycle = 0
+    last_screenshot = None
+    
+    while cycle < max_cycles:
+        cycle += 1
+        
+        # Step 1: 截图
+        screenshot_b64 = None
+        if target == "server":
+            try:
+                script = f"""
+from playwright.sync_api import sync_playwright
+p = sync_playwright().start()
+browser = p.chromium.launch(headless=True)
+page = browser.new_page(viewport={{'width':1280,'height':900}})
+try:
+    # 尝试重用已有页面
+    page.screenshot(path='/tmp/human_shot.png')
+except:
+    page.goto('about:blank')
+    page.screenshot(path='/tmp/human_shot.png')
+browser.close()
+p.stop()
+print('OK')
+"""
+                with tempfile.NamedTemporaryFile(suffix=".py",mode="w",delete=False) as f:
+                    f.write(script); tmp = f.name
+                subprocess.run(["python3",tmp],capture_output=True,text=True,timeout=15)
+                os.unlink(tmp)
+                if os.path.exists("/tmp/human_shot.png"):
+                    with open("/tmp/human_shot.png","rb") as f:
+                        screenshot_b64 = base64.b64encode(f.read()).decode()
+                    os.unlink("/tmp/human_shot.png")
+            except: pass
+        elif target in connected_remotes:
+            # 请求远程截图
+            ws = connected_remotes[target]
+            await ws.send_json({"type":"execute","action":"screenshot","params":{}})
+            # 等待截图返回
+            for _ in range(30):
+                try:
+                    data = await asyncio.wait_for(ws.receive_json(), timeout=3.0)
+                    if data.get("type") == "screenshot_data":
+                        screenshot_b64 = data.get("base64")
+                        break
+                    elif data.get("type") == "result" and data.get("action") == "screenshot":
+                        screenshot_b64 = data.get("screenshot")
+                        break
+                except: break
+        
+        if not screenshot_b64 and cycle == 1:
+            return {"ok":False,"error":"无法获取屏幕截图","cycle":cycle}
+        if not screenshot_b64:
+            action_log.append({"cycle":cycle,"action":"screenshot","error":"截图失败"})
+            break
+        
+        last_screenshot = screenshot_b64
+        
+        # Step 2: AI视觉理解 + 决策
+        user_prompt = f"任务: {command}\n这是第{cycle}次观察。\n之前操作: {json.dumps(action_log[-5:],ensure_ascii=False)}\n请分析截图并决定下一步。"
+        
+        ai_response = await _call_ai([
+            {"role":"system","content":system_prompt},
+            {"role":"user","content":[
+                {"type":"text","text":user_prompt},
+                {"type":"image_url","image_url":{"url":f"data:image/png;base64,{screenshot_b64}","detail":"high"}}
+            ]}
+        ], model="gpt-4o", max_tokens=500, temperature=0.3)
+        
+        # Step 3: 解析AI决策
+        decision = {}
+        try:
+            json_match = re.search(r'\{[^{}]*"action"[^{}]*\}', ai_response, re.DOTALL)
+            if json_match:
+                decision = json.loads(json_match.group())
+        except: pass
+        
+        if not decision:
+            action_log.append({"cycle":cycle,"ai_response":ai_response[:200],"error":"AI响应解析失败"})
+            continue
+        
+        action = decision.get("action","screenshot")
+        params = decision.get("params",{})
+        observation = decision.get("observation","")
+        thought = decision.get("thought","")
+        
+        action_log.append({
+            "cycle":cycle,
+            "observation":observation,
+            "thought":thought,
+            "action":action,
+            "params":params
+        })
+        
+        # Step 4: 执行操作
+        if action == "done":
+            final_result = params.get("summary",observation)
+            return {"ok":True,"completed":True,"cycles":cycle,"log":action_log,"result":final_result,"screenshot":last_screenshot}
+        
+        if action == "fail":
+            return {"ok":False,"error":params.get("reason","任务失败"),"cycles":cycle,"log":action_log}
+        
+        if target == "server":
+            # 服务器Playwright执行
+            try:
+                script = f"""
+from playwright.sync_api import sync_playwright
+p = sync_playwright().start()
+browser = p.chromium.launch(headless=True)
+page = browser.new_page(viewport={{'width':1280,'height':900}})
+try:
+"""
+                if action == "click":
+                    script += f"    page.mouse.click({params.get('x',640)},{params.get('y',450)})\n"
+                elif action == "type":
+                    script += f"    page.keyboard.type('{params.get('text','')}', delay=50)\n"
+                elif action == "scroll":
+                    script += f"    page.mouse.wheel(0,{params.get('amount',-300)})\n"
+                elif action == "press":
+                    script += f"    page.keyboard.press('{params.get('key','enter')}')\n"
+                elif action == "open" and params.get("url"):
+                    script += f"    page.goto('{params.get('url')}',wait_until='domcontentloaded')\n"
+                else:
+                    script += f"    page.keyboard.press('{params.get('key','enter')}')\n"
+                
+                script += """    page.screenshot(path='/tmp/human_shot.png')
+except Exception as e:
+    print(f'ERROR: {e}')
+browser.close()
+p.stop()
+print('OK')
+"""
+                with tempfile.NamedTemporaryFile(suffix=".py",mode="w",delete=False) as f:
+                    f.write(script); tmp = f.name
+                subprocess.run(["python3",tmp],capture_output=True,text=True,timeout=20)
+                os.unlink(tmp)
+            except Exception as e:
+                action_log[-1]["error"] = str(e)
+        
+        elif target in connected_remotes:
+            # 远程电脑执行
+            try:
+                ws = connected_remotes[target]
+                remote_action = action
+                if action == "open": remote_action = "open_url"
+                await ws.send_json({"type":"execute","action":remote_action,"params":params})
+                action_log[-1]["remote"] = target
+            except Exception as e:
+                action_log[-1]["error"] = str(e)
+    
+    return {"ok":False,"error":"达到最大循环次数","cycles":cycle,"log":action_log,"partial_result":final_result,"screenshot":last_screenshot}
+
+# ===== 远程电脑快速操控 =====
+@router.post("/agent/quick")
+async def quick_agent_action(req: dict, _=Depends(verify_token)):
+    """快速操控远程电脑 — 单个动作"""
+    client_id = req.get("client_id","")
+    action = req.get("action","")
+    params = req.get("params",{})
+    
+    actions_help = {
+        "screenshot":"截取屏幕",
+        "open_url":"打开网址(params.url)",
+        "click":"点击坐标(params.x,params.y)",
+        "type_text":"输入文字(params.text)",
+        "press_key":"按键(params.key: enter/tab/escape/win)",
+        "run_command":"运行命令(params.command)",
+        "get_info":"获取系统信息",
+        "open_app":"打开应用(params.name: chrome/excel/word)",
+        "scroll":"滚轮(params.amount: 正数向上)",
+        "move_mouse":"移动鼠标(params.x,params.y)",
+        "browser_task":"浏览器任务(params.command: 自然语言)"
+    }
+    
+    if not client_id:
+        return {"ok":False,"error":"请指定client_id","available_clients":list(connected_remotes.keys()),"actions":actions_help}
+    
+    if client_id not in connected_remotes:
+        return {"ok":False,"error":f"客户端 {client_id} 未连接","available":list(connected_remotes.keys())}
+    
+    if action == "screenshot":
+        # 专门处理截图（需要等回传）
+        ws = connected_remotes[client_id]
+        await ws.send_json({"type":"execute","action":"screenshot","params":{}})
+        for _ in range(20):
+            try:
+                data = await asyncio.wait_for(ws.receive_json(), timeout=3.0)
+                if data.get("type") == "result" and data.get("screenshot"):
+                    return {"ok":True,"action":action,"screenshot":data.get("screenshot")}
+            except: break
+        return {"ok":False,"error":"截图超时"}
+    
+    return await execute_remote(req, _)
+
+@router.get("/agent/actions")
+async def list_actions(_=Depends(verify_token)):
+    """列出所有可用的远程操控动作"""
+    return {"ok":True,"actions":{
+        "screenshot":"截取屏幕",
+        "open_url":"打开网址",
+        "click":"点击坐标",
+        "type_text":"输入文字",
+        "press_key":"按键(enter/tab/escape/win/r)",
+        "run_command":"运行系统命令",
+        "get_info":"获取系统信息(CPU/内存/磁盘)",
+        "open_app":"打开应用(chrome/excel/word/notepad)",
+        "scroll":"滚轮滚动",
+        "move_mouse":"移动鼠标到坐标",
+        "browser_task":"AI浏览器任务(自然语言)"
+    }}
+
+# ===== 统一浏览器Agent(支持远程) =====
+@router.post("/browser/unified")
+async def unified_browser(req: dict, _=Depends(verify_token)):
+    """统一浏览器Agent — 自动选择服务器或远程电脑执行"""
+    command = req.get("command","")
+    target = req.get("target","server")  # server | {client_id}
+    
+    if target == "server" or target in list(connected_remotes.keys()):
+        if target != "server":
+            # 发给远程电脑
+            if target not in connected_remotes:
+                return {"ok":False,"error":f"客户端 {target} 未连接"}
+            ws = connected_remotes[target]
+            await ws.send_json({"type":"execute","action":"browser_task","params":{"command":command}})
+            return {"ok":True,"sent_to":target,"command":command}
+        else:
+            # 服务器Playwright
+            req_obj = BrowserAgentRequest(command=command, headless=True, max_steps=10)
+            return await browser_agent(req_obj, _)
+    
+    return {"ok":False,"error":"未知目标","available_targets":["server"]+list(connected_remotes.keys())}
+
 # ===== 9. AI通知推送 =====
 @router.post("/notify")
 async def send_notification(req: dict, _=Depends(verify_token)):

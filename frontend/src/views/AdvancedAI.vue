@@ -46,6 +46,33 @@
 <div v-for="(s,i) in browserPlan" :key="i" class="plan-step">{{i+1}}. {{s.action}} → {{s.target}} <span style="color:rgba(255,255,255,.4)">({{s.reason}})</span></div></div>
 <div v-if="browserSummary" class="result-box"><b>📊 执行结果:</b><div v-html="md(browserSummary)"></div></div>
 <div v-if="browserScreenshot" style="margin-top:12px"><img :src="'data:image/png;base64,'+browserScreenshot" style="max-width:100%;border-radius:8px;border:1px solid rgba(255,255,255,.1)"/></div></el-tab-pane>
+
+<el-tab-pane label="🧠 人形Agent" name="human">
+<el-input v-model="humanCmd" placeholder="像对人说话一样：帮我打开百度搜索今天新闻，截图前三条" type="textarea" :rows="3"/>
+<el-select v-model="humanTarget" style="margin-top:8px"><el-option label="🖥️ 服务器" value="server"/><el-option v-for="c in remoteClients" :key="c" :label="'💻 '+c" :value="c"/></el-select>
+<el-button type="primary" @click="runHumanAgent" :loading="loading" style="margin-left:8px">🧠 像人一样执行</el-button>
+<div v-if="humanLog.length" class="human-log"><div v-for="l in humanLog" :key="l.cycle" class="hl-item">
+<div class="hl-cycle">🔄 第{{l.cycle}}步</div>
+<div class="hl-obs">👁️ {{l.observation}}</div>
+<div class="hl-thought">💭 {{l.thought}}</div>
+<div class="hl-action">▶ {{l.action}}: {{JSON.stringify(l.params)}}</div>
+</div></div>
+<div v-if="humanResult" class="result-box"><b>✅ 完成:</b> {{humanResult}}</div>
+<div v-if="humanScreenshot" class="result-box"><img :src="'data:image/png;base64,'+humanScreenshot" style="max-width:100%;border-radius:8px"/></div></el-tab-pane>
+
+<el-tab-pane label="💻 远程电脑" name="remote">
+<div style="display:flex;gap:8px;margin-bottom:12px"><el-tag v-for="c in remoteClients" :key="c" type="success">💻 {{c}} 在线</el-tag><el-tag v-if="!remoteClients.length" type="info">无在线电脑</el-tag></div>
+<el-button @click="loadRemoteClients" size="small">刷新</el-button>
+<el-select v-model="remoteClient" placeholder="选择电脑"><el-option v-for="c in remoteClients" :key="c" :label="c" :value="c"/></el-select>
+<el-select v-model="remoteAction" placeholder="操作" style="margin-left:8px"><el-option label="📸 截图" value="screenshot"/><el-option label="🌐 打开网址" value="open_url"/><el-option label="🖱️ 点击" value="click"/><el-option label="⌨️ 输入" value="type_text"/><el-option label="⏎ 按键" value="press_key"/><el-option label="⚡ 命令" value="run_command"/><el-option label="📊 系统信息" value="get_info"/><el-option label="🚀 打开应用" value="open_app"/></el-select>
+<el-input v-model="remoteParams" placeholder="参数(JSON)" style="margin-top:8px"/>
+<el-button type="primary" @click="runRemote" :loading="loading" style="margin-top:8px">执行</el-button>
+<div v-if="remoteScreenshot" class="result-box"><img :src="'data:image/png;base64,'+remoteScreenshot" style="max-width:100%;border-radius:8px"/></div>
+<div v-if="remoteResult" class="result-box"><pre>{{remoteResult}}</pre></div>
+
+<el-divider>📥 本地Agent下载</el-divider>
+<el-button @click="downloadAgent">📥 下载 friday_agent.py</el-button>
+<div style="font-size:12px;color:rgba(255,255,255,.5);margin-top:4px">在你的Windows/Mac上运行: pip install websockets pyautogui pillow psutil && python friday_agent.py</div></el-tab-pane>
 </el-tabs></div></template>
 <script setup>
 import {ref,nextTick,onUnmounted} from "vue";import {ElMessage} from "element-plus";import {agentApi} from "@/api"
@@ -94,8 +121,27 @@ function md(t){return(t||'').replace(/\n/g,"<br>").replace(/\*\*(.*?)\*\*/g,"<b>
 
 // === 浏览器Agent ===
 const browserCmd=ref("");const browserPlan=ref(null);const browserSummary=ref("");const browserScreenshot=ref(null)
+// === 人形Agent ===
+const humanCmd=ref("");const humanTarget=ref("server");const humanLog=ref([]);const humanResult=ref("");const humanScreenshot=ref(null)
+// === 远程电脑控制 ===
+const remoteClients=ref([]);const remoteClient=ref("");const remoteAction=ref("screenshot");const remoteParams=ref("");const remoteScreenshot=ref(null);const remoteResult=ref("");const remoteResult=ref("")
 async function runBrowser(){const d=await api("/agent/advanced/browser/agent",{command:browserCmd.value});if(d?.ok){browserPlan.value=d.plan;browserSummary.value=d.summary;browserScreenshot.value=d.final_screenshot}}
 async function quickBrowser(type){const d=await api("/agent/advanced/browser/quick",{type,url:browserCmd.value||"https://www.google.com"});if(d?.ok){browserPlan.value=d.plan;browserSummary.value=d.summary;browserScreenshot.value=d.final_screenshot}}
+
+async function runHumanAgent(){if(!humanCmd.value){ElMessage.warning("请输入指令");return}
+humanLog.value=[];humanResult.value="";humanScreenshot.value=null;loading.value=true
+try{const d=(await agentApi.post("/agent/advanced/agent/human",{command:humanCmd.value,target:humanTarget.value})).data
+loading.value=false
+if(d&&d.ok){humanLog.value=d.log||[];humanResult.value=d.final_result;humanScreenshot.value=d.screenshot;return}
+humanLog.value=(d&&d.log)||[];humanResult.value=(d&&d.partial_result)||(d&&d.error)||"执行未完成";humanScreenshot.value=d&&d.screenshot}catch(e){loading.value=false;ElMessage.error(e.message)}}
+async function loadRemoteClients(){try{const d=(await agentApi.get("/agent/advanced/remote/clients")).data;if(d&&d.ok)remoteClients.value=d.clients||[]}catch(e){}}
+async function runRemote(){if(!remoteClient.value){ElMessage.warning("请选择远程电脑");return}
+let params={};if(remoteParams.value){try{params=JSON.parse(remoteParams.value)}catch(e){ElMessage.error("参数JSON格式错误");return}}
+loading.value=true
+try{const d=(await agentApi.post("/agent/advanced/agent/quick",{client_id:remoteClient.value,action:remoteAction.value,params})).data
+loading.value=false
+if(d&&d.ok){remoteResult.value=JSON.stringify(d,null,2);remoteScreenshot.value=d.screenshot}else{remoteResult.value=JSON.stringify(d,null,2);remoteScreenshot.value=null}}catch(e){loading.value=false;ElMessage.error(e.message)}}
+async function downloadAgent(){try{const r=await agentApi.get("/agent/advanced/remote/agent-script",{responseType:"text"});const blob=new Blob([r.data],{type:"text/plain"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="friday_agent.py";a.click();URL.revokeObjectURL(a.href);ElMessage.success("已下载 friday_agent.py")}catch(e){ElMessage.error("下载失败: "+e.message)}}
 </script>
 <style scoped>.page-shell{max-width:900px;margin:0 auto;padding:20px}.page-header{margin-bottom:16px}.page-header h2{font-size:20px;color:#e0e0ff;margin:0}.page-header p{font-size:12px;color:rgba(255,255,255,.5);margin:4px 0}.voice-area{text-align:center}.voice-status{font-size:14px;margin-bottom:12px;color:rgba(255,255,255,.5)}.voice-status.active{color:#4ade80}.voice-transcript{max-height:300px;overflow-y:auto;text-align:left;padding:12px;background:rgba(0,0,0,.3);border-radius:10px;margin-bottom:12px}.vm-user{color:#667eea;margin-bottom:8px}.vm-assistant{color:#e0e0e0;margin-bottom:8px}.vc-btn{width:80px;height:80px;border-radius:50%;border:3px solid rgba(102,126,234,.4);background:rgba(15,15,35,.9);color:#e0e0ff;font-size:16px;cursor:pointer}.vc-btn.recording{border-color:#ef4444;animation:pulse 1.5s infinite}@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.5)}50%{box-shadow:0 0 0 20px rgba(239,68,68,0)}}.report-box{margin-top:12px;padding:16px;background:rgba(15,15,35,.8);border:1px solid rgba(102,126,234,.2);border-radius:12px}.report-title{font-size:16px;font-weight:600;color:#e0e0ff;margin-bottom:12px}.findings{margin-bottom:12px}.finding-item{padding:8px;background:rgba(102,126,234,.08);border-radius:8px;margin-bottom:6px;font-size:13px;color:rgba(255,255,255,.7)}.result-box{margin-top:12px;padding:14px;background:rgba(0,0,0,.5);border:1px solid rgba(102,126,234,.2);border-radius:10px;font-size:13px;color:#e0e0e0;line-height:1.7;max-height:400px;overflow:auto}@media(max-width:768px){.page-shell{padding:10px}}.plan-title{font-weight:600;color:#e0e0ff;margin-bottom:8px}.plan-step{padding:4px 0;font-size:12px;color:rgba(255,255,255,.7);border-bottom:1px solid rgba(255,255,255,.03)}
-</style>
+.human-log{margin-top:12px;max-height:400px;overflow-y:auto}.hl-item{padding:10px 12px;margin-bottom:8px;background:rgba(15,15,35,.8);border:1px solid rgba(102,126,234,.15);border-radius:10px}.hl-cycle{font-size:13px;font-weight:600;color:#667eea;margin-bottom:6px}.hl-obs{font-size:12px;color:rgba(255,255,255,.6);margin-bottom:4px;line-height:1.5}.hl-thought{font-size:12px;color:#c084fc;margin-bottom:4px;font-style:italic;line-height:1.5}.hl-action{font-size:12px;color:#4ade80;font-family:monospace;line-height:1.5}</style>
