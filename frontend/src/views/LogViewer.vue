@@ -114,11 +114,11 @@ onMounted(async () => { await loadSources(); await loadLogs() })
 .page-header h1 { font-size: 22px; margin: 0 0 4px; }
 .page-header p { color: var(--text-muted); font-size: 13px; margin: 0; }
 .src-card { cursor: pointer; text-align: center; border: 2px solid transparent; transition: all .2s; }
-.src-card.active { border-color: #1677ff; background: #f0f5ff; }
+.src-card.active { border-color: #1677ff; background: rgba(240,245,255,0.15); }
 .src-card.unavailable { opacity: .4; cursor: not-allowed; }
 .src-name { font-size: 14px; font-weight: 600; }
 .src-info { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
-.log-container { background: #1e1e1e; color: #d4d4d4; font-family: 'Consolas','Courier New',monospace; font-size: 12px; padding: 12px; border-radius: 6px; max-height: 600px; overflow-y: auto; }
+.log-container { background: rgba(30,30,30,0.85); color: #d4d4d4; font-family: 'Consolas','Courier New',monospace; font-size: 12px; padding: 12px; border-radius: 6px; max-height: 600px; overflow-y: auto; }
 .log-empty { color: #888; text-align: center; padding: 40px; }
 .log-line { display: flex; line-height: 1.6; white-space: pre-wrap; word-break: break-all; }
 .log-num { color: #858585; min-width: 40px; user-select: none; flex-shrink: 0; }

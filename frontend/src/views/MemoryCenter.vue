@@ -136,11 +136,11 @@ onMounted(function() { fetchMemories() })
 .page-header { margin-bottom: 24px; }
 .page-header h2 { font-size: 18px; margin: 0 0 4px; }
 .page-header p { color: var(--text-muted); font-size: 13px; margin: 0; }
-.metric-card { background: var(--bg-card); border-radius: 8px; padding: 18px; border: 1px solid var(--border-color); }
+.metric-card { background: rgba(22,33,62,0.7); border-radius: 8px; padding: 18px; border: 1px solid var(--border-color); }
 .metric-label { font-size: 12px; color: var(--text-muted); margin-bottom: 6px; }
 .metric-value { font-size: 28px; font-weight: 700; }
 .tab-toolbar { display: flex; gap: 12px; margin-bottom: 16px; align-items: center; }
-.doc-viewer { background: var(--bg-card); border-radius: 8px; padding: 20px; }
+.doc-viewer { background: rgba(22,33,62,0.7); border-radius: 8px; padding: 20px; }
 .doc-content { white-space: pre-wrap; font-size: 13px; color: var(--text-secondary); line-height: 1.8; max-height: 50vh; overflow-y: auto; background: rgba(0,0,0,0.2); padding: 16px; border-radius: 6px; }
 .log-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
 .markdown-body { line-height: 1.8; }

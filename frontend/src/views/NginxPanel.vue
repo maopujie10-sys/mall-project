@@ -80,5 +80,5 @@ onMounted(fetchAll)
 </script>
 <style scoped>
 .nginx-panel{padding:24px}.page-header{margin-bottom:20px}.page-header h1{font-size:20px;margin:0 0 4px}.page-header p{font-size:13px;color:var(--text-muted);margin:0}
-.code-box{background:#1e1e1e;color:#d4d4d4;padding:12px;border-radius:6px;font-size:11px;margin-top:8px;max-height:350px;overflow:auto;white-space:pre-wrap;word-break:break-all}
+.code-box{background: rgba(30,30,30,0.85);color:#d4d4d4;padding:12px;border-radius:6px;font-size:11px;margin-top:8px;max-height:350px;overflow:auto;white-space:pre-wrap;word-break:break-all}
 </style>

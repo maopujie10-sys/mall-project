@@ -86,7 +86,7 @@ onMounted(() => { fetchAlerts(); fetchStats() })
 h2 { margin-bottom: 16px; font-size: 18px; }
 .stats-row { margin-bottom: 0; }
 .stat-card { padding: 16px; border-radius: 8px; color: #fff; text-align: center; }
-.stat-card.P1 { background: #f56c6c; }
+.stat-card.P1 { background: rgba(245,108,108,0.15); }
 .stat-card.P2 { background: #e6a23c; }
 .stat-card.P3 { background: #409eff; }
 .stat-card.P4 { background: #909399; }

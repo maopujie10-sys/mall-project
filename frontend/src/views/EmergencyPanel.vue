@@ -151,7 +151,7 @@ onMounted(() => {
 <style scoped>
 .emergency-page {
   min-height: 100vh;
-  background: #f0f2f5;
+  background: rgba(240,242,245,0.15);
   display: flex;
   justify-content: center;
   padding: 40px 24px;

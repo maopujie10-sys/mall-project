@@ -290,7 +290,7 @@ onMounted(() => {
 onUnmounted(() => { if (pollTimer) clearInterval(pollTimer) })
 </script>
 <style scoped>
-.metric-card { background:var(--bg-card);border:1px solid var(--border-color);border-radius:10px;padding:16px;text-align:center}
+.metric-card { background: rgba(22,33,62,0.7);border:1px solid var(--border-color);border-radius:10px;padding:16px;text-align:center}
 .metric-label { font-size:12px;color:var(--text-muted);margin-bottom:4px }
 .metric-value { font-size:28px;font-weight:700 }
 .status-dot { display:flex;align-items:center }

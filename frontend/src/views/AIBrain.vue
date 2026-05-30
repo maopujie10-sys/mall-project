@@ -215,7 +215,7 @@ function handleRemove(row) {
 .gap-info { flex: 1; min-width: 0; }
 .gap-name { font-size: 13px; font-weight: 500; color: var(--text-primary); margin-bottom: 4px; }
 .gap-bar-wrap { display: flex; align-items: center; gap: 8px; }
-.gap-bar { flex: 1; height: 6px; background: var(--bg-page); border-radius: 3px; overflow: hidden; }
+.gap-bar { flex: 1; height: 6px; background: rgba(13,16,37,0.55); border-radius: 3px; overflow: hidden; }
 .gap-fill { height: 100%; border-radius: 3px; transition: width 0.4s; }
 .gap-fill.low { background: #ff4d4f; }
 .gap-fill.mid { background: #faad14; }

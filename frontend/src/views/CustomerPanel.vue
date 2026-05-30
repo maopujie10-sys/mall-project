@@ -535,7 +535,7 @@ onUnmounted(() => {
   border: 1px solid var(--border-color);
   border-radius: 10px;
   overflow: hidden;
-  background: var(--bg-card);
+  background: rgba(22,33,62,0.7);
   box-shadow: var(--shadow-card);
   transition: var(--theme-transition);
 }
@@ -547,7 +547,7 @@ onUnmounted(() => {
   border-right: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
-  background: var(--bg-card);
+  background: rgba(22,33,62,0.7);
   transition: var(--theme-transition);
 }
 
@@ -716,7 +716,7 @@ onUnmounted(() => {
 }
 
 .conversation-panel.no-selection {
-  background: var(--bg-page);
+  background: rgba(13,16,37,0.55);
 }
 
 /* 对话头部 */
@@ -726,7 +726,7 @@ onUnmounted(() => {
   justify-content: space-between;
   padding: 12px 20px;
   border-bottom: 1px solid var(--border-color);
-  background: var(--bg-card);
+  background: rgba(22,33,62,0.7);
   transition: var(--theme-transition);
 }
 
@@ -784,7 +784,7 @@ onUnmounted(() => {
   flex: 1;
   overflow-y: auto;
   padding: 20px;
-  background: var(--bg-page);
+  background: rgba(13,16,37,0.55);
   transition: var(--theme-transition);
 }
 
@@ -811,7 +811,7 @@ onUnmounted(() => {
 }
 
 .customer-bubble {
-  background: var(--bg-card);
+  background: rgba(22,33,62,0.7);
   border: 1px solid var(--border-color);
   border-top-left-radius: 4px;
   color: var(--text-primary);
@@ -882,7 +882,7 @@ onUnmounted(() => {
 .input-area {
   border-top: 1px solid var(--border-color);
   padding: 12px 20px;
-  background: var(--bg-card);
+  background: rgba(22,33,62,0.7);
   transition: var(--theme-transition);
 }
 
@@ -938,7 +938,7 @@ onUnmounted(() => {
   justify-content: center;
   gap: 16px;
   color: var(--text-muted);
-  background: var(--bg-page);
+  background: rgba(13,16,37,0.55);
   transition: var(--theme-transition);
 }
 

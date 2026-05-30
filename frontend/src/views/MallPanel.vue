@@ -793,7 +793,7 @@ onUnmounted(() => {
 /* KPI */
 .kpi-row { margin-bottom: 16px; }
 .kpi-card { border-radius: 8px; padding: 22px 16px; color: #fff; text-align: center; min-height: 96px; display: flex; flex-direction: column; justify-content: center; margin-bottom: 12px; }
-.kpi-card.c1 { background: linear-gradient(135deg,#FF8399,#ff6b81); }
+.kpi-card.c1 { background: rgba(255,131,153,0.12); }
 .kpi-card.c2 { background: linear-gradient(135deg,#71C3FF,#54a0ff); }
 .kpi-card.c3 { background: linear-gradient(135deg,#7190FF,#5f6fff); }
 .kpi-card.c4 { background: linear-gradient(135deg,#5AD7CF,#2ed573); }

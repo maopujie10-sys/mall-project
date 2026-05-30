@@ -181,7 +181,7 @@ function handleSuggestion(sug) {
 .trend-chart { display: flex; flex-direction: column; gap: 16px; }
 .trend-row { display: flex; align-items: center; gap: 12px; }
 .trend-label { width: 80px; font-size: 13px; color: var(--text-secondary); text-align: right; flex-shrink: 0; }
-.trend-bar-wrap { flex: 1; height: 8px; background: var(--bg-page); border-radius: 4px; overflow: hidden; }
+.trend-bar-wrap { flex: 1; height: 8px; background: rgba(13,16,37,0.55); border-radius: 4px; overflow: hidden; }
 .trend-bar { height: 100%; border-radius: 4px; transition: width 0.6s; }
 .trend-val { width: 40px; font-size: 12px; font-weight: 600; color: var(--text-primary); text-align: right; }
 
@@ -190,12 +190,12 @@ function handleSuggestion(sug) {
 .kn-cat { width: 70px; flex-shrink: 0; }
 .kn-key { flex: 1; font-size: 13px; color: var(--text-primary); }
 .kn-score { display: flex; align-items: center; gap: 6px; width: 120px; }
-.kn-score-bar { flex: 1; height: 4px; background: var(--bg-page); border-radius: 2px; overflow: hidden; }
+.kn-score-bar { flex: 1; height: 4px; background: rgba(13,16,37,0.55); border-radius: 2px; overflow: hidden; }
 .kn-score-fill { height: 100%; background: linear-gradient(90deg, #667eea, #764ba2); border-radius: 2px; }
 .kn-score-num { font-size: 11px; color: var(--text-muted); width: 32px; }
 
 .evo-suggestions { display: flex; flex-direction: column; gap: 10px; }
-.sug-card { display: flex; align-items: center; gap: 10px; padding: 12px; border-radius: 8px; background: var(--bg-page); }
+.sug-card { display: flex; align-items: center; gap: 10px; padding: 12px; border-radius: 8px; background: rgba(13,16,37,0.55); }
 .sug-card.warn { border-left: 3px solid #faad14; }
 .sug-card.tip { border-left: 3px solid #667eea; }
 .sug-card.good { border-left: 3px solid #52c41a; }

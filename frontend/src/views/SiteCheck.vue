@@ -75,5 +75,5 @@ async function doSsl() {
 <style scoped>
 .site-check { padding: 24px; }
 h2 { margin-bottom: 16px; font-size: 18px; }
-.result-box { background: #1e1e1e; color: #d4d4d4; padding: 12px; border-radius: 6px; font-size: 12px; margin-top: 8px; max-height: 200px; overflow: auto; }
+.result-box { background: rgba(30,30,30,0.85); color: #d4d4d4; padding: 12px; border-radius: 6px; font-size: 12px; margin-top: 8px; max-height: 200px; overflow: auto; }
 </style>

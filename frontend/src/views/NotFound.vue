@@ -25,7 +25,7 @@
 <style scoped>
 .not-found-page {
   min-height: 100vh;
-  background: var(--bg-page);
+  background: rgba(13,16,37,0.55);
   display: flex;
   align-items: center;
   justify-content: center;

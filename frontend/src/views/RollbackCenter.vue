@@ -253,7 +253,7 @@ onMounted(() => {
 
 <style scoped>
 .rollback-info {
-  background: var(--bg-page);
+  background: rgba(13,16,37,0.55);
   border-radius: 6px;
   padding: 12px 16px;
 }

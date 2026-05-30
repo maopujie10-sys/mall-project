@@ -197,7 +197,7 @@ export default {
 .health-card {
   padding: 20px; border-radius: 8px; text-align: center; color: #fff;
 }
-.health-card.excellent { background: linear-gradient(135deg, #52c41a, #73d13d); }
+.health-card.excellent { background: rgba(82,196,26,0.12); }
 .health-card.good { background: linear-gradient(135deg, #1890ff, #40a9ff); }
 .health-card.warning { background: linear-gradient(135deg, #faad14, #ffc53d); }
 .health-card.critical { background: linear-gradient(135deg, #ff4d4f, #ff7875); }

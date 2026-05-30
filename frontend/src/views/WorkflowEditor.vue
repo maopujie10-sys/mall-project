@@ -322,7 +322,7 @@ async function deleteWorkflow(id) {
   height: calc(100vh - 60px);
   display: flex;
   flex-direction: column;
-  background: #1a1a2e;
+  background: rgba(26,26,46,0.85);
   color: #e0e0e0;
 }
 
@@ -352,7 +352,7 @@ async function deleteWorkflow(id) {
   padding: 6px 12px;
   border: 1px solid #0f3460;
   border-radius: 6px;
-  background: #1a1a2e;
+  background: rgba(26,26,46,0.85);
   color: #e0e0e0;
   width: 200px;
 }
@@ -380,7 +380,7 @@ async function deleteWorkflow(id) {
 .wf-node-item {
   padding: 10px 12px;
   margin-bottom: 6px;
-  background: #1a1a2e;
+  background: rgba(26,26,46,0.85);
   border-left: 4px solid;
   border-radius: 4px;
   cursor: grab;
@@ -433,7 +433,7 @@ async function deleteWorkflow(id) {
 .wf-node {
   position: absolute;
   width: 160px;
-  background: #1a1a2e;
+  background: rgba(26,26,46,0.85);
   border: 2px solid;
   border-radius: 8px;
   cursor: move;
@@ -513,7 +513,7 @@ async function deleteWorkflow(id) {
   padding: 6px 10px;
   border: 1px solid #0f3460;
   border-radius: 4px;
-  background: #1a1a2e;
+  background: rgba(26,26,46,0.85);
   color: #e0e0e0;
   font-size: 13px;
 }
@@ -548,7 +548,7 @@ async function deleteWorkflow(id) {
 }
 
 .modal-content {
-  background: #1a1a2e;
+  background: rgba(26,26,46,0.85);
   border: 1px solid #0f3460;
   border-radius: 12px;
   padding: 24px;

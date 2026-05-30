@@ -229,7 +229,7 @@ fetchCOS()
 .cos-val.highlight { color: #667eea; font-size: 18px; font-weight: 700; }
 
 .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
-.product-card { display: flex; align-items: center; gap: 10px; padding: 12px; border-radius: 8px; background: var(--bg-page); }
+.product-card { display: flex; align-items: center; gap: 10px; padding: 12px; border-radius: 8px; background: rgba(13,16,37,0.55); }
 .prod-img { width: 48px; height: 48px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 24px; flex-shrink: 0; }
 .prod-info { flex: 1; min-width: 0; }
 .prod-title { font-size: 12px; font-weight: 500; color: var(--text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

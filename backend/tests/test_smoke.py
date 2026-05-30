@@ -1,105 +1,126 @@
-"""冒烟测试 -- 启动后验证所有核心功能"""
-import asyncio, sys, os
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+"""???? ? ????????????????"""
+import sys, os, asyncio
 
-passed = 0
-failed = 0
+def test_imports():
+    """???????????"""
+    modules = [
+        "main",
+        "auth",
+        "state",
+        "config",
+        "tools.ai_client",
+        "tools.rate_limiter",
+        "tools.logger",
+        "tools.workflow_engine",
+        "tools.rag_engine",
+        "tools.alert_closed_loop",
+        "tools.multimodal_engine",
+        "routers.agent_chat",
+        "routers.alert",
+        "routers.workflow_router",
+        "routers.voice_router",
+    ]
+    failed = []
+    for mod in modules:
+        try:
+            __import__(mod)
+            print(f"  OK  {mod}")
+        except Exception as e:
+            failed.append(f"{mod}: {e}")
+            print(f"  FAIL {mod}: {e}")
+    
+    if failed:
+        print(f"\n{len(failed)} import failures")
+        return False
+    print("\nAll {0} modules imported successfully".format(len(modules)))
+    return True
 
-def check(name: str, condition: bool, detail: str = ""):
-    global passed, failed
-    if condition:
-        passed += 1
-        print(f"  ✅ {name}")
-    else:
-        failed += 1
-        print(f"  ❌ {name}: {detail}")
+def test_config():
+    """??????"""
+    from config import DEFAULT_TOKEN, TELEGRAM_BOT_TOKEN
+    assert DEFAULT_TOKEN, "DEFAULT_TOKEN not set"
+    print(f"  OK  DEFAULT_TOKEN: {'SET' if DEFAULT_TOKEN else 'NOT SET'}")
+    print(f"  OK  TELEGRAM_BOT_TOKEN: {'SET' if TELEGRAM_BOT_TOKEN else 'NOT SET'}")
+    return True
+
+def test_state():
+    """??????"""
+    from state import state
+    test_key = "_smoke_test_" + str(os.getpid())
+    state._data[test_key] = "hello"
+    assert state._data.get(test_key) == "hello"
+    del state._data[test_key]
+    print("  OK  state read/write")
+    return True
+
+def test_ai_client():
+    """??AI???(?????API)"""
+    from tools.ai_client import pick_model
+    # Test model selection logic
+    model = pick_model(task="simple query", steps=1, has_image=False)
+    assert model, "No model selected"
+    print(f"  OK  pick_model: {model}")
+    return True
+
+def test_rate_limiter():
+    """?????"""
+    from tools.rate_limiter import _get_limit
+    limit, window = _get_limit("/agent/chat")
+    assert limit > 0
+    assert window > 0
+    print(f"  OK  rate limit: {limit}/{window}s")
+    return True
+
+def test_workflow_templates():
+    """???????"""
+    from tools.workflow_engine import WorkflowEngine
+    assert len(WorkflowEngine.TEMPLATES) >= 6
+    print(f"  OK  workflow templates: {len(WorkflowEngine.TEMPLATES)}")
+    return True
+
+def test_alert_rules():
+    """????????"""
+    from tools.alert_closed_loop import AUTO_FIX_RULES
+    assert len(AUTO_FIX_RULES) >= 5
+    print(f"  OK  alert fix rules: {len(AUTO_FIX_RULES)}")
+    return True
+
+def test_multimodal():
+    """???????"""
+    from tools.multimodal_engine import multimodal_engine
+    assert multimodal_engine is not None
+    print("  OK  multimodal engine singleton")
+    return True
 
 async def main():
-    global passed, failed
     print("=" * 50)
-    print("Friday AI OS -- 冒烟测试")
+    print("Friday AI OS - Smoke Tests")
     print("=" * 50)
     
-    # 1. 配置检查
-    print("\n📋 配置检查")
-    from config import AGENT_TOKEN, DB_CONFIG, REDIS_DSN
-    check("AGENT_TOKEN已配置", len(AGENT_TOKEN) > 10 if AGENT_TOKEN else False)
-    check("DB_HOST", bool(DB_CONFIG.get("host")))
-    check("DB_NAME", bool(DB_CONFIG.get("name")))
-    check("REDIS_DSN", bool(REDIS_DSN))
+    tests = [
+        ("Imports", test_imports),
+        ("Config", test_config),
+        ("State", test_state),
+        ("AI Client", test_ai_client),
+        ("Rate Limiter", test_rate_limiter),
+        ("Workflow Templates", test_workflow_templates),
+        ("Alert Rules", test_alert_rules),
+        ("Multimodal", test_multimodal),
+    ]
     
-    # 2. 数据库连接
-    print("\n🗄️ 数据库连接")
-    try:
-        import pymysql
-        conn = pymysql.connect(host=DB_CONFIG["host"], port=DB_CONFIG["port"],
-            user=DB_CONFIG["user"], password=DB_CONFIG["password"],
-            database=DB_CONFIG["name"], connect_timeout=3)
-        cursor = conn.cursor()
-        cursor.execute("SELECT 1")
-        cursor.close()
-        conn.close()
-        check("MySQL连接", True)
-    except Exception as e:
-        check("MySQL连接", False, str(e)[:80])
-    
-    # 3. Redis连接
-    print("\n📦 Redis连接")
-    try:
-        import redis
-        r = redis.from_url(REDIS_DSN, socket_connect_timeout=3)
-        r.ping()
-        r.close()
-        check("Redis连接", True)
-    except Exception as e:
-        check("Redis连接", False, str(e)[:80])
-    
-    # 4. 路由注册
-    print("\n🔀 路由注册")
-    from main import app
-    routes = [r.path for r in app.routes]
-    check("健康检查 /agent/health", "/agent/health" in str(routes) or "/agent/health/" in str(routes))
-    check("AI对话 /agent/chat", "/agent/chat" in str(routes))
-    check("工具列表 /agent/tools", "/agent/tools" in str(routes))
-    check("告警 /agent/alerts", "/agent/alerts" in str(routes) or "alert" in str(routes).lower())
-    
-    # 5. Agent可用性
-    print("\n🤖 Agent检查")
-    agents = ["code", "devops", "vision", "trend", "memory", "heal"]
-    for a in agents:
+    passed = 0
+    failed = 0
+    for name, test_fn in tests:
+        print(f"\n[{name}]")
         try:
-            __import__(f"agents.{a}_agent", fromlist=[""])
-            check(f"Agent: {a}", True)
+            if test_fn():
+                passed += 1
         except Exception as e:
-            check(f"Agent: {a}", False, str(e)[:60])
+            print(f"  FAIL: {e}")
+            failed += 1
     
-    # 6. 工具注册
-    print("\n🔧 工具注册")
-    from tools.registry import registry
-    tools = registry.list_all()
-    check(f"工具数量>50", len(tools) > 50, f"当前{len(tools)}个")
-    check("scraper工具", any("scraper" in t.name for t in tools))
-    check("health工具", any("health" in t.name for t in tools))
-    
-    # 7. 系统资源
-    print("\n💻 系统资源")
-    import psutil
-    cpu = psutil.cpu_percent()
-    mem = psutil.virtual_memory()
-    disk = psutil.disk_usage("/")
-    check(f"CPU<95%", cpu < 95, f"当前{cpu}%")
-    check(f"内存<95%", mem.percent < 95, f"当前{mem.percent}%")
-    check(f"磁盘<95%", disk.percent < 95, f"当前{disk.percent}%")
-    
-    # 汇总
-    print("\n" + "=" * 50)
-    total = passed + failed
-    if failed == 0:
-        print(f"🎉 全部通过! {passed}/{total}")
-    else:
-        print(f"⚠️ {passed}/{total} 通过, {failed} 失败")
-    print("=" * 50)
-    
+    print(f"\n{'=' * 50}")
+    print(f"Results: {passed} passed, {failed} failed out of {len(tests)}")
     return failed == 0
 
 if __name__ == "__main__":

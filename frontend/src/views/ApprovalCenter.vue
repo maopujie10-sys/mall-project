@@ -240,7 +240,7 @@ onMounted(() => {
 <style scoped>
 .approval-card {
   margin-bottom: 16px;
-  background: var(--bg-card);
+  background: rgba(22,33,62,0.7);
   border: 1px solid var(--border-color);
   border-radius: 8px;
   border-left: 4px solid var(--border-color);

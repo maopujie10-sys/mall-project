@@ -146,7 +146,7 @@ onMounted(loadAll)
 .page-header { display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px; }
 .page-header h2 { margin:0 0 4px;font-size:20px; }
 .page-header p { margin:0;font-size:13px;color:var(--text-muted); }
-.metric-card { background:var(--bg-card);border-radius:8px;padding:18px;border:1px solid var(--border-color); }
+.metric-card { background: rgba(22,33,62,0.7);border-radius:8px;padding:18px;border:1px solid var(--border-color); }
 .metric-label { font-size:12px;color:var(--text-muted);margin-bottom:6px; }
 .metric-value { font-size:24px;font-weight:700; }
 .card-tt { font-size:15px;font-weight:600;margin-bottom:8px; }

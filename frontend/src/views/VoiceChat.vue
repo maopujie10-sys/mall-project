@@ -208,7 +208,7 @@ onUnmounted(() => {
 .vc-header h2 { font-size: 22px; color: #e0e0ff; margin: 0; }
 .vc-header p { font-size: 12px; color: rgba(255,255,255,0.5); margin: 4px 0; }
 .vc-status { font-size: 12px; margin-top: 6px; }
-.status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; background: #ff4444; }
+.status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; background: rgba(255,68,68,0.15); }
 .status-dot.connected { background: #44ff44; box-shadow: 0 0 8px #44ff44; }
 .vc-main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
 .vc-messages { flex: 1; overflow-y: auto; padding: 12px 0; }

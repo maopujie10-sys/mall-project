@@ -39,5 +39,5 @@ async function delRule(id){try{const r=await deleteReplyRule(id);if(r.ok){rules.
 </script>
 <style scoped>
 .auto-reply{padding:20px}.page-header{margin-bottom:20px}.page-header h2{margin:0 0 4px}.page-header p{margin:0 0 12px;color:#999;font-size:13px}.header-stats{display:flex;gap:24px}
-.chat-box{height:350px;overflow-y:auto;padding:16px;background:#f5f5f5;border-radius:8px;margin-bottom:12px}.chat-msg{margin-bottom:12px;display:flex}.chat-msg.user{justify-content:flex-end}.chat-bubble{max-width:70%;padding:10px 14px;border-radius:12px;font-size:13px;line-height:1.5;background:#fff;border:1px solid #e8e8e8}.chat-msg.user .chat-bubble{background:#e6f7ff;border-color:#91d5ff}.chat-input{display:flex;gap:8px}
+.chat-box{height:350px;overflow-y:auto;padding:16px;background: rgba(245,245,245,0.15);border-radius:8px;margin-bottom:12px}.chat-msg{margin-bottom:12px;display:flex}.chat-msg.user{justify-content:flex-end}.chat-bubble{max-width:70%;padding:10px 14px;border-radius:12px;font-size:13px;line-height:1.5;background:#fff;border:1px solid #e8e8e8}.chat-msg.user .chat-bubble{background:#e6f7ff;border-color:#91d5ff}.chat-input{display:flex;gap:8px}
 </style>

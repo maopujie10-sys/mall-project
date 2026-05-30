@@ -139,7 +139,7 @@ async function runTrace() {
 .page-header h2 { margin: 0 0 4px; font-size: 18px; }
 .page-header p { margin: 0; color: #999; font-size: 13px; }
 .result-box {
-  margin-top: 10px; padding: 10px; background: #f6f8fa; border-radius: 6px;
+  margin-top: 10px; padding: 10px; background: rgba(246,248,250,0.15); border-radius: 6px;
   font-size: 12px; font-family: monospace; max-height: 200px; overflow-y: auto;
   line-height: 1.5;
 }

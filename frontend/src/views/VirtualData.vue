@@ -237,11 +237,11 @@ onUnmounted(() => {
   text-align: center;
   padding: 20px 12px;
   border-radius: 12px;
-  background: var(--bg-page);
+  background: rgba(13,16,37,0.55);
   transition: all 0.15s;
   cursor: pointer;
 }
-.gen-card:hover { background: var(--bg-card); box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+.gen-card:hover { background: rgba(22,33,62,0.7); box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
 .gen-icon { font-size: 28px; margin-bottom: 8px; }
 .gen-name { font-size: 14px; font-weight: 500; color: var(--text-primary); margin-bottom: 4px; }
 .gen-count { font-size: 12px; color: var(--text-muted); margin-bottom: 12px; }
@@ -249,7 +249,7 @@ onUnmounted(() => {
 .panel-header { display: flex; justify-content: space-between; align-items: center; font-weight: 600; font-size: 14px; }
 
 .realtime-status { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
-.rt-stat-box { text-align: center; padding: 12px; border-radius: 8px; background: var(--bg-page); }
+.rt-stat-box { text-align: center; padding: 12px; border-radius: 8px; background: rgba(13,16,37,0.55); }
 .rt-stat-num { font-size: 24px; font-weight: 700; color: var(--text-primary); }
 .rt-stat-label { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
 

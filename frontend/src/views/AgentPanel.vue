@@ -75,7 +75,7 @@ function toggleAgent(id) {
 .agent-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
 
 .agent-card {
-  background: var(--bg-card);
+  background: rgba(22,33,62,0.7);
   border: 1px solid var(--border-color);
   border-radius: 12px;
   padding: 20px;
