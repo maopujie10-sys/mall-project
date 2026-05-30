@@ -18,6 +18,11 @@ async def sent_analyze(req: TextRequest, _=Depends(verify_token)):
     result = sentiment_analyzer.analyze(req.text)
     return {"ok": True, **result}
 
+@router.get("/profile")
+async def sent_profile_get(user_id: str = "", _=Depends(verify_token)):
+    result = sentiment_analyzer.build_profile(user_id, [])
+    return {"ok": True, **result}
+
 @router.post("/profile")
 async def sent_profile(req: ProfileRequest, _=Depends(verify_token)):
     result = sentiment_analyzer.build_profile(req.user_id, req.messages)

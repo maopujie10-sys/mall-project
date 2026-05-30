@@ -82,6 +82,7 @@ Return JSON: {{"optimal_price":99,"strategy":"penetration/premium/competitive","
         return {"ok":False,"error":str(e)}
 
 # 5. AI Inventory Prediction
+@router.get("/inventory/predict")
 @router.post("/inventory/predict")
 async def ai_inventory_predict(product_id: str = '', sales_history: List[int] = [], days: int = 30, _=Depends(verify_token)):
     """AI predicts inventory needs based on sales history"""

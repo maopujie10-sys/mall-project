@@ -21,6 +21,13 @@ async def agent_security_token(req: FixTokenRequest = FixTokenRequest(), _=Depen
     inner = JWTRequest(subject=req.subject, expire_hours=req.expire_hours)
     return await generate_token(inner, _)
 
+@router.post("/rotation/check")
+async def rotation_check_short(req: FixCheckRequest, _=Depends(verify_token)):
+    """Check domain health (short path alias)"""
+    from routers.rotation_panel import check_domain, CheckRequest
+    inner = CheckRequest(domain=req.domain)
+    return await check_domain(inner, _)
+
 @router.post("/agent/rotation/check")
 async def agent_rotation_check(req: FixCheckRequest, _=Depends(verify_token)):
     """Check domain health (alias for /rotation/rotation/check)"""

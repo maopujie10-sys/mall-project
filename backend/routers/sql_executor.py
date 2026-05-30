@@ -78,6 +78,7 @@ async def execute_query(req: SQLRequest, _=Depends(verify_token)):
     }
 
 @router.get("/schema")
+@router.post("/schema")
 async def show_schema(_=Depends(verify_token)):
     ''''''
     await handle_risk("L1", '')

@@ -72,10 +72,23 @@ class IntentRequest(BaseModel):
 @router.post("/intent")
 async def analyze_intent(req: IntentRequest, _=Depends(verify_token)):
     ''''''
-    result = MasterAgent.analyze_intent(req.message)
+    result = await MasterAgent.analyze_intent(req.message)
     return {"ok": True, **result}
 
 # ===== Code Agent: / =====
+@router.post("/code/analyze")
+async def analyze_code(req: dict, _=Depends(verify_token)):
+    import tempfile, os
+    code = req.get("code", "")
+    suffix = req.get("suffix", ".py")
+    with tempfile.NamedTemporaryFile(mode="w", suffix=suffix, delete=False) as f:
+        f.write(code)
+        tmppath = f.name
+    try:
+        return await CodeAgent.analyze_file(tmppath)
+    finally:
+        os.unlink(tmppath)
+
 @router.get("/code/analyze")
 async def analyze_file(filepath: str, _=Depends(verify_token)):
     ''''''
@@ -146,7 +159,7 @@ async def test_model_speed(model_id: str, _=Depends(verify_token)):
     start = __import__("time").time()
     try:
         resp = await ModelRouter.route(
-            prompt=',"hello'',
+            prompt="hello",
             model_id=model_id or None
         )
         elapsed = round(__import__("time").time() - start, 2)
@@ -163,7 +176,7 @@ async def compare_models(model_ids: list[str], _=Depends(verify_token)):
     for mid in model_ids[:3]:  # 3
         start = __import__("time").time()
         try:
-            resp = await ModelRouter.route(prompt=''hello world'', model_id=mid)
+            resp = await ModelRouter.route(prompt="hello world", model_id=mid)
             elapsed = round(__import__("time").time() - start, 2)
             results.append({"model_id": mid, "latency_ms": round(elapsed * 1000), "ok": True})
         except Exception as e:
@@ -186,8 +199,9 @@ async def model_status(_=Depends(verify_token)):
     from agents.multi_model import ModelRouter
     return {
         "ok": True,
-        "active_model": ModelRouter.get_config().get("default_model", "auto"),
-        "available_models": list(ModelRouter.get_config().get("models", {}).keys()),
+        "active_model": "auto",
+        "available_models": list(ModelRouter.MODELS.keys()),
+        "modes": list(ModelRouter.MODE_ROUTING.keys()),
         "mode": "auto",
     }
 @router.get("/playwright/status")
