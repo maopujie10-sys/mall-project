@@ -92,7 +92,7 @@ const status = ref({}), topMem = ref([]), trend = ref(null), leaks = ref([])
 const rlSafe=ref(false), rlAgg=ref(false), rlMax=ref(false), releaseResult=ref(null)
 const leakLoading=ref(false), leakChecked=ref(false)
 
-const cpu = computed(() => status.value?.cpu '? 0)
+const cpu = computed(() => status.value?.cpu ?? 0)
 const memPct = computed(() => status.value?.memory?.percent ?? 0)
 const diskPct = computed(() => status.value?.disk?.percent ?? 0)
 const swapPct = computed(() => status.value?.swap?.percent ?? 0)
