@@ -1,6 +1,6 @@
 # 🖥️ Friday AI OS — 服务器端 AI 记忆
 
-> 最后更新: 2026-05-30 | 运行环境: server
+> 最后更新: 2026-05-30 08:26 | 运行环境: server
 
 ## 🧬 当前人格
 - 类型: 均衡型 · 全面发展
@@ -15,7 +15,25 @@
 6. 客服自动回复 + 轮值域名监控
 
 ## 最近改动
-- 2026-05-30 02:51: [采集优化] full_scrape.py 速度优化 + 批量导入
+- 2026-05-30 08:26: [构建修复] 修复 ba32c37 拉取后 9 文件/6 类 Python 运行时错误
+  - **问题根因：** 电脑端 compact 格式转换导致模块导出名不匹配 + typing 导入丢失
+  - **修复列表：**
+    - `logger.py`: 添加模块级 `logger = get_logger()` 实例 → 修复 `alert_closed_loop.py`/`multimodal_engine.py` 的 ImportError
+    - `voice_router.py`: 补 `from auth import verify_token` → 修复 NameError
+    - `rag_engine.py`: 补 `rag = RAGEngine()` → 修复 `rag_router.py` 的 ImportError
+    - `cloud_storage.py`: 补 `get_cos_status()` 函数 → 修复 `scraper.py` 的 ImportError
+    - `phone_alert.py`: 补 `WeChatAlert` 类(Telegram通知) → 修复 `order_alert_router.py` 的 ImportError
+    - `sentiment_analyzer.py/text2sql.py/security_scanner.py`: 补 `from typing import Dict` → 修复 NameError
+    - `advanced_ai.py`: CRLF→LF 换行符修复
+  - **构建次数：** 6 次迭代（每次发现一个新错误）
+  - **推送：** commit 4685dff 已推送到 origin/master
+  - **容器状态：** mall-ai-agent ✅ / mall-ai-frontend ✅ (5173端口正常)
+  - **遗留：** `DigitalLifeform.one_cycle()` 缺少 `cls` 参数（非致命运行时警告）
+  - **⚠️ 注意：** DEEPSEEK_API_KEY 和 OPENAI_API_KEY 为空，AI对话功能需配置Key
+- 2026-05-30 08:21: [代码同步] 拉取并构建 ba32c37 (6个新提交合并)
+  - 新增：可视化工作流编辑器、RAG知识库、多模态引擎、告警闭环、技能市场、PWA
+  - 提交范围：465873b..ba32c37 (5a914eb/2285fcc/86b2038/465873b/8da935b/73cf48b + 采集合并)
+- 2026-05-30 08:18: [采集推送] 5个本地采集提交 rebase 到 origin/master 并推送成功 (fd6b58c)
   - **mall_importer.py:** import_batch 改为单连接复用（批量产品共享一个DB连接），不再每个产品单独开关连接
   - **full_scrape.py:** 搜索间隔1.2→0.25s · 并发8→12 · 搜索页3→5 · eBay延迟1.5→0.3s · 每批入库1→20个
   - **内存控制:** CONCURRENCY 12 + IMPORT_BATCH_SIZE 20 + MEMORY_LIMIT 78% · 内存 ~140MB · 系统 ~55%
