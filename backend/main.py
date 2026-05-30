@@ -143,6 +143,8 @@ from routers.gateway_router import router as gateway_router
 from routers.omni_router import router as omni_router
 
 # === 鍏ㄨ兘AI鍗囩骇 v5 ===
+from routers.vision_router import router as vision_router
+from routers.video_call_router import router as video_call_router
 from routers.voice_router import router as voice_router
 from routers.tools_router import router as tools_router
 from routers.advanced_ai import router as advanced_router
@@ -249,6 +251,8 @@ app.include_router(trace_router, prefix="/trace")
 app.include_router(ws_router)
 app.include_router(gateway_router, prefix="/api")
 app.include_router(omni_router)
+app.include_router(vision_router)
+app.include_router(video_call_router, prefix="/video")
 app.include_router(voice_router, prefix="/voice")
 app.include_router(tools_router)
 app.include_router(advanced_router, prefix="/advanced")
