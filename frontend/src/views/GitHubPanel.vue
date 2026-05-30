@@ -1,12 +1,12 @@
 <template>
   <div class="gh-panel">
     <div class="page-header">
-      <div><h2>🐙 GitHub MCP</h2><p>仓库管理 / Issues / PRs / Actions / 提交</p></div>
-      <el-tag :type="configured ? 'success' : 'danger'" size="small">{{ configured ? '已配置' : '未配置Token' }}</el-tag>
+      <div><h2>馃悪 GitHub MCP</h2><p>浠撳簱绠＄悊 / Issues / PRs / Actions / 鎻愪氦</p></div>
+      <el-tag :type="configured ? 'success' : 'danger'" size="small">{{ configured ? '宸查厤缃? : '鏈厤缃甌oken' }}</el-tag>
     </div>
 
     <el-tabs v-model="tab" type="border-card">
-      <el-tab-pane name="overview" label="概览">
+      <el-tab-pane name="overview" label="姒傝">
         <el-row :gutter="16" v-if="repo">
           <el-col :span="6" v-for="s in stats" :key="s.label">
             <div class="metric-card"><div class="metric-label">{{ s.label }}</div><div class="metric-value">{{ s.value }}</div></div>
@@ -14,10 +14,10 @@
         </el-row>
         <el-card shadow="never" style="margin-top:16px" v-if="repo">
           <div class="card-tt">{{ repo.name }}</div>
-          <p style="color:var(--text-muted)">{{ repo.desc || '暂无描述' }}</p>
+          <p style="color:var(--text-muted)">{{ repo.desc || '鏆傛棤鎻忚堪' }}</p>
           <div style="display:flex;gap:16px;margin-top:12px;font-size:13px">
-            <span>⭐ {{ repo.stars }}</span><span>⑂ {{ repo.forks }}</span>
-            <span>📂 {{ repo.lang }}</span><span>🌿 {{ repo.branch }}</span>
+            <span>猸?{{ repo.stars }}</span><span>鈶?{{ repo.forks }}</span>
+            <span>馃搨 {{ repo.lang }}</span><span>馃尶 {{ repo.branch }}</span>
           </div>
         </el-card>
         <el-card shadow="never" style="margin-top:16px" v-else>
@@ -25,60 +25,60 @@
         </el-card>
       </el-tab-pane>
 
-      <el-tab-pane name="commits" label="提交记录">
+      <el-tab-pane name="commits" label="鎻愪氦璁板綍">
         <el-table :data="commits" stripe size="small" height="500">
           <el-table-column prop="sha" label="SHA" width="90" />
-          <el-table-column prop="message" label="提交信息" min-width="300" />
-          <el-table-column prop="author" label="作者" width="120" />
-          <el-table-column prop="date" label="日期" width="100" />
+          <el-table-column prop="message" label="鎻愪氦淇℃伅" min-width="300" />
+          <el-table-column prop="author" label="浣滆€? width="120" />
+          <el-table-column prop="date" label="鏃ユ湡" width="100" />
         </el-table>
       </el-tab-pane>
 
       <el-tab-pane name="issues" label="Issues">
-        <div class="tb-bar"><el-button type="primary" size="small" @click="showCreateIssue=true">创建Issue</el-button></div>
+        <div class="tb-bar"><el-button type="primary" size="small" @click="showCreateIssue=true">鍒涘缓Issue</el-button></div>
         <el-table :data="issues" stripe size="small" height="500">
           <el-table-column type="index" label="#" width="50" />
-          <el-table-column prop="title" label="标题" min-width="300" />
-          <el-table-column prop="state" label="状态" width="80">
+          <el-table-column prop="title" label="鏍囬" min-width="300" />
+          <el-table-column prop="state" label="鐘舵€? width="80">
             <template #default="{row}"><el-tag :type="row.state==='open'?'success':'info'" size="small">{{ row.state }}</el-tag></template>
           </el-table-column>
-          <el-table-column prop="user" label="创建者" width="100" />
-          <el-table-column prop="created" label="日期" width="100" />
+          <el-table-column prop="user" label="鍒涘缓鑰? width="100" />
+          <el-table-column prop="created" label="鏃ユ湡" width="100" />
         </el-table>
       </el-tab-pane>
 
       <el-tab-pane name="prs" label="PRs">
         <el-table :data="prs" stripe size="small" height="500">
           <el-table-column type="index" label="#" width="50" />
-          <el-table-column prop="title" label="标题" min-width="300" />
-          <el-table-column prop="state" label="状态" width="80" />
-          <el-table-column prop="user" label="创建者" width="100" />
-          <el-table-column prop="created" label="日期" width="100" />
+          <el-table-column prop="title" label="鏍囬" min-width="300" />
+          <el-table-column prop="state" label="鐘舵€? width="80" />
+          <el-table-column prop="user" label="鍒涘缓鑰? width="100" />
+          <el-table-column prop="created" label="鏃ユ湡" width="100" />
         </el-table>
       </el-tab-pane>
 
       <el-tab-pane name="workflows" label="Actions">
         <el-table :data="workflows" stripe size="small" height="500">
-          <el-table-column prop="name" label="工作流名称" min-width="250" />
-          <el-table-column prop="state" label="状态" width="100" />
-          <el-table-column prop="path" label="路径" min-width="200" />
+          <el-table-column prop="name" label="宸ヤ綔娴佸悕绉? min-width="250" />
+          <el-table-column prop="state" label="鐘舵€? width="100" />
+          <el-table-column prop="path" label="璺緞" min-width="200" />
         </el-table>
       </el-tab-pane>
 
-      <el-tab-pane name="branches" label="分支">
+      <el-tab-pane name="branches" label="鍒嗘敮">
         <el-table :data="branches" stripe size="small" height="500">
-          <el-table-column prop="name" label="分支名" min-width="200" />
-          <el-table-column prop="sha" label="最新提交" width="100" />
+          <el-table-column prop="name" label="鍒嗘敮鍚? min-width="200" />
+          <el-table-column prop="sha" label="鏈€鏂版彁浜? width="100" />
         </el-table>
       </el-tab-pane>
     </el-tabs>
 
-    <el-dialog v-model="showCreateIssue" title="创建 Issue" width="500">
+    <el-dialog v-model="showCreateIssue" title="鍒涘缓 Issue" width="500">
       <el-form label-width="60">
-        <el-form-item label="标题"><el-input v-model="issueTitle" placeholder="Issue 标题" /></el-form-item>
-        <el-form-item label="内容"><el-input v-model="issueBody" type="textarea" :rows="4" placeholder="描述" /></el-form-item>
+        <el-form-item label="鏍囬"><el-input v-model="issueTitle" placeholder="Issue 鏍囬" /></el-form-item>
+        <el-form-item label="鍐呭"><el-input v-model="issueBody" type="textarea" :rows="4" placeholder="鎻忚堪" /></el-form-item>
       </el-form>
-      <template #footer><el-button @click="showCreateIssue=false">取消</el-button><el-button type="primary" @click="doCreateIssue" :loading="creating">创建</el-button></template>
+      <template #footer><el-button @click="showCreateIssue=false">鍙栨秷</el-button><el-button type="primary" @click="doCreateIssue" :loading="creating">鍒涘缓</el-button></template>
     </el-dialog>
   </div>
 </template>
@@ -104,10 +104,10 @@ const creating = ref(false)
 const stats = computed(() => {
   if (!repo.value) return []
   return [
-    { label: '⭐ Stars', value: repo.value.stars },
-    { label: '⑂ Forks', value: repo.value.forks },
-    { label: '📂 Issues', value: repo.value.issues },
-    { label: '📦 大小', value: repo.value.size_mb + 'MB' },
+    { label: '猸?Stars', value: repo.value.stars },
+    { label: '鈶?Forks', value: repo.value.forks },
+    { label: '馃搨 Issues', value: repo.value.issues },
+    { label: '馃摝 澶у皬', value: repo.value.size_mb + 'MB' },
   ]
 })
 
@@ -124,7 +124,7 @@ async function loadAll() {
     if (pr?.data?.prs) prs.value = pr.data.prs
     if (wf?.data?.workflows) workflows.value = wf.data.workflows
     if (br?.data?.branches) branches.value = br.data.branches
-  } catch { ElMessage.error('GitHub API调用失败，请检查GITHUB_TOKEN配置') }
+  } catch { ElMessage.error('GitHub API璋冪敤澶辫触锛岃妫€鏌ITHUB_TOKEN閰嶇疆') }
 }
 
 async function doCreateIssue() {
@@ -132,9 +132,9 @@ async function doCreateIssue() {
   creating.value = true
   try {
     const res = await createIssue('maopujie10-sys/mall-project', issueTitle.value, issueBody.value)
-    if (res?.data?.ok) { ElMessage.success('Issue已创建'); showCreateIssue.value = false; issueTitle.value = ''; issueBody.value = ''; listIssues().then(r=>issues.value=r?.data?.issues||[]) }
-    else ElMessage.error('创建失败')
-  } catch { ElMessage.error('创建失败') }
+    if (res?.data?.ok) { ElMessage.success('Issue宸插垱寤?); showCreateIssue.value = false; issueTitle.value = ''; issueBody.value = ''; listIssues().then(r=>issues.value=r?.data?.issues||[]) }
+    else ElMessage.error('鍒涘缓澶辫触')
+  } catch { ElMessage.error('鍒涘缓澶辫触') }
   creating.value = false
 }
 
@@ -151,5 +151,6 @@ onMounted(loadAll)
 .metric-value { font-size:24px;font-weight:700; }
 .card-tt { font-size:15px;font-weight:600;margin-bottom:8px; }
 .tb-bar { margin-bottom:12px; }
+@media (max-width: 768px) { .page-shell, [class*="page-shell"] { padding: 10px !important; } .page-header h2 { font-size: 16px !important; } .el-row { flex-direction: column !important; } .el-col { max-width: 100% !important; flex: 0 0 100% !important; margin-bottom: 12px; } .el-table { font-size: 12px; } .el-card { margin-bottom: 12px; } }
 </style>
 

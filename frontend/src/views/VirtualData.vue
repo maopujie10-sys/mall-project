@@ -2,28 +2,28 @@
   <div class="page-container">
     <div class="page-header">
       <div>
-        <h1>👥 虚拟数据引擎</h1>
-        <p>一键生成真实感数据 · 实时活动模拟 · 让商城活起来</p>
+        <h1>馃懃 铏氭嫙鏁版嵁寮曟搸</h1>
+        <p>涓€閿敓鎴愮湡瀹炴劅鏁版嵁 路 瀹炴椂娲诲姩妯℃嫙 路 璁╁晢鍩庢椿璧锋潵</p>
       </div>
     </div>
 
-    <!-- 数据规模选择 -->
+    <!-- 鏁版嵁瑙勬ā閫夋嫨 -->
     <el-row :gutter="16" style="margin-bottom: 20px;">
       <el-col :span="6" v-for="scale in scales" :key="scale.key">
         <el-card shadow="never" class="scale-card" :class="{ selected: selectedScale === scale.key }" @click="selectedScale = scale.key">
           <div class="scale-icon">{{ scale.icon }}</div>
           <div class="scale-name">{{ scale.name }}</div>
           <div class="scale-desc">{{ scale.desc }}</div>
-          <div class="scale-meta">用户:{{ scale.users }} 商品:{{ scale.products }} 订单:{{ scale.orders }}</div>
+          <div class="scale-meta">鐢ㄦ埛:{{ scale.users }} 鍟嗗搧:{{ scale.products }} 璁㈠崟:{{ scale.orders }}</div>
         </el-card>
       </el-col>
     </el-row>
 
-    <!-- 生成控制 -->
+    <!-- 鐢熸垚鎺у埗 -->
     <el-row :gutter="16" style="margin-bottom: 20px;">
       <el-col :span="14">
         <el-card shadow="never">
-          <template #header><span>🎮 数据生成控制台</span></template>
+          <template #header><span>馃幃 鏁版嵁鐢熸垚鎺у埗鍙?/span></template>
           <el-row :gutter="16">
             <el-col :span="8" v-for="gen in generators" :key="gen.key">
               <div class="gen-card" @click="runGenerate(gen.key)">
@@ -31,7 +31,7 @@
                 <div class="gen-name">{{ gen.name }}</div>
                 <div class="gen-count">{{ gen.count }}</div>
                 <el-button type="primary" size="small" :loading="gen.running" @click.stop="runGenerate(gen.key)">
-                  {{ gen.running ? '生成中...' : '一键生成' }}
+                  {{ gen.running ? '鐢熸垚涓?..' : '涓€閿敓鎴? }}
                 </el-button>
               </div>
             </el-col>
@@ -39,44 +39,44 @@
           <el-divider/>
           <div style="text-align:center;">
             <el-button type="success" size="large" @click="generateAll" :loading="allRunning">
-              <el-icon><MagicStick /></el-icon> 🚀 一键全量生成
+              <el-icon><MagicStick /></el-icon> 馃殌 涓€閿叏閲忕敓鎴?
             </el-button>
             <el-button size="large" @click="clearAll" style="margin-left:12px;">
-              <el-icon><Delete /></el-icon> 清除虚拟数据
+              <el-icon><Delete /></el-icon> 娓呴櫎铏氭嫙鏁版嵁
             </el-button>
           </div>
         </el-card>
       </el-col>
 
-      <!-- 实时活动 -->
+      <!-- 瀹炴椂娲诲姩 -->
       <el-col :span="10">
         <el-card shadow="never">
           <template #header>
             <div class="panel-header">
-              <span>📡 实时活动模拟</span>
-              <el-switch v-model="realtimeRunning" active-text="运行中" inactive-text="已停止"/>
+              <span>馃摗 瀹炴椂娲诲姩妯℃嫙</span>
+              <el-switch v-model="realtimeRunning" active-text="杩愯涓? inactive-text="宸插仠姝?/>
             </div>
           </template>
           <div class="realtime-status">
             <div class="rt-stat-box">
               <div class="rt-stat-num">{{ rtStats.onlineUsers }}</div>
-              <div class="rt-stat-label">在线用户</div>
+              <div class="rt-stat-label">鍦ㄧ嚎鐢ㄦ埛</div>
             </div>
             <div class="rt-stat-box">
               <div class="rt-stat-num">{{ rtStats.browsing }}</div>
-              <div class="rt-stat-label">浏览中</div>
+              <div class="rt-stat-label">娴忚涓?/div>
             </div>
             <div class="rt-stat-box">
               <div class="rt-stat-num">{{ rtStats.ordering }}</div>
-              <div class="rt-stat-label">下单中</div>
+              <div class="rt-stat-label">涓嬪崟涓?/div>
             </div>
             <div class="rt-stat-box">
               <div class="rt-stat-num">{{ rtStats.newToday }}</div>
-              <div class="rt-stat-label">今日新增</div>
+              <div class="rt-stat-label">浠婃棩鏂板</div>
             </div>
           </div>
           <div class="live-feed">
-            <div class="live-title">📺 实时动态</div>
+            <div class="live-title">馃摵 瀹炴椂鍔ㄦ€?/div>
             <div class="live-item" v-for="(item, i) in liveFeed" :key="i">
               <span class="live-emoji">{{ item.icon }}</span>
               <span class="live-text">{{ item.text }}</span>
@@ -87,15 +87,15 @@
       </el-col>
     </el-row>
 
-    <!-- 数据统计 -->
+    <!-- 鏁版嵁缁熻 -->
     <el-card shadow="never">
-      <template #header><span>📊 数据统计面板</span></template>
+      <template #header><span>馃搳 鏁版嵁缁熻闈㈡澘</span></template>
       <el-row :gutter="20">
         <el-col :span="4" v-for="s in dataStats" :key="s.label">
           <div class="data-stat">
             <div class="ds-num">{{ s.value }}</div>
             <div class="ds-label">{{ s.label }}</div>
-            <div class="ds-trend" :style="{ color: s.trendUp ? '#52c41a' : '#ff4d4f' }">{{ s.trendUp ? '↗' : '↘' }} {{ s.change }}</div>
+            <div class="ds-trend" :style="{ color: s.trendUp ? '#52c41a' : '#ff4d4f' }">{{ s.trendUp ? '鈫? : '鈫? }} {{ s.change }}</div>
           </div>
         </el-col>
       </el-row>
@@ -114,19 +114,19 @@ let feedTimer = null
 let rtTimer = null
 
 const scales = [
-  { key:'small', icon:'🌱', name:'小型店铺', desc:'初创阶段', users:'500', products:'50', orders:'200' },
-  { key:'medium', icon:'🏪', name:'中型商城', desc:'成长阶段', users:'5,000', products:'200', orders:'2,000' },
-  { key:'large', icon:'🏢', name:'大型平台', desc:'成熟阶段', users:'50,000', products:'1,000', orders:'20,000' },
-  { key:'huge', icon:'🌍', name:'超级平台', desc:'行业领先', users:'500,000', products:'5,000', orders:'200,000' },
+  { key:'small', icon:'馃尡', name:'灏忓瀷搴楅摵', desc:'鍒濆垱闃舵', users:'500', products:'50', orders:'200' },
+  { key:'medium', icon:'馃彧', name:'涓瀷鍟嗗煄', desc:'鎴愰暱闃舵', users:'5,000', products:'200', orders:'2,000' },
+  { key:'large', icon:'馃彚', name:'澶у瀷骞冲彴', desc:'鎴愮啛闃舵', users:'50,000', products:'1,000', orders:'20,000' },
+  { key:'huge', icon:'馃實', name:'瓒呯骇骞冲彴', desc:'琛屼笟棰嗗厛', users:'500,000', products:'5,000', orders:'200,000' },
 ]
 
 const generators = reactive([
-  { key:'users', icon:'👤', name:'虚拟用户', count:'5,000人', running:false },
-  { key:'products', icon:'📦', name:'虚拟商品', count:'200件', running:false },
-  { key:'orders', icon:'📋', name:'虚拟订单', count:'2,000单', running:false },
-  { key:'reviews', icon:'⭐', name:'商品评价', count:'800条', running:false },
-  { key:'kline', icon:'📈', name:'K线数据', count:'90天', running:false },
-  { key:'customers', icon:'💬', name:'客服记录', count:'300条', running:false },
+  { key:'users', icon:'馃懁', name:'铏氭嫙鐢ㄦ埛', count:'5,000浜?, running:false },
+  { key:'products', icon:'馃摝', name:'铏氭嫙鍟嗗搧', count:'200浠?, running:false },
+  { key:'orders', icon:'馃搵', name:'铏氭嫙璁㈠崟', count:'2,000鍗?, running:false },
+  { key:'reviews', icon:'猸?, name:'鍟嗗搧璇勪环', count:'800鏉?, running:false },
+  { key:'kline', icon:'馃搱', name:'K绾挎暟鎹?, count:'90澶?, running:false },
+  { key:'customers', icon:'馃挰', name:'瀹㈡湇璁板綍', count:'300鏉?, running:false },
 ])
 
 const rtStats = reactive({
@@ -137,21 +137,21 @@ const rtStats = reactive({
 })
 
 const liveFeed = reactive([
-  { icon:'👤', text:'用户 user_8823 注册成功', time:'刚刚' },
-  { icon:'🛒', text:'用户 Lily 下单购买了 iPhone 15 Pro', time:'30秒前' },
-  { icon:'⭐', text:'用户 Tom 给 MacBook Air 打了5星好评', time:'1分钟前' },
-  { icon:'👀', text:'用户 Jerry 正在浏览 Nike Air Max 270', time:'2分钟前' },
-  { icon:'💬', text:'用户 Amy 咨询了产品尺码问题', time:'3分钟前' },
-  { icon:'📦', text:'订单 #202405280045 已发货', time:'4分钟前' },
+  { icon:'馃懁', text:'鐢ㄦ埛 user_8823 娉ㄥ唽鎴愬姛', time:'鍒氬垰' },
+  { icon:'馃洅', text:'鐢ㄦ埛 Lily 涓嬪崟璐拱浜?iPhone 15 Pro', time:'30绉掑墠' },
+  { icon:'猸?, text:'鐢ㄦ埛 Tom 缁?MacBook Air 鎵撲簡5鏄熷ソ璇?, time:'1鍒嗛挓鍓? },
+  { icon:'馃憖', text:'鐢ㄦ埛 Jerry 姝ｅ湪娴忚 Nike Air Max 270', time:'2鍒嗛挓鍓? },
+  { icon:'馃挰', text:'鐢ㄦ埛 Amy 鍜ㄨ浜嗕骇鍝佸昂鐮侀棶棰?, time:'3鍒嗛挓鍓? },
+  { icon:'馃摝', text:'璁㈠崟 #202405280045 宸插彂璐?, time:'4鍒嗛挓鍓? },
 ])
 
 const dataStats = [
-  { label:'总用户', value:'5,248', trendUp:true, change:'12%' },
-  { label:'总商品', value:'236', trendUp:true, change:'8%' },
-  { label:'总订单', value:'2,156', trendUp:true, change:'23%' },
-  { label:'交易额', value:'¥128,450', trendUp:true, change:'18%' },
-  { label:'好评率', value:'94.2%', trendUp:true, change:'2%' },
-  { label:'复购率', value:'32.5%', trendUp:false, change:'3%' },
+  { label:'鎬荤敤鎴?, value:'5,248', trendUp:true, change:'12%' },
+  { label:'鎬诲晢鍝?, value:'236', trendUp:true, change:'8%' },
+  { label:'鎬昏鍗?, value:'2,156', trendUp:true, change:'23%' },
+  { label:'浜ゆ槗棰?, value:'楼128,450', trendUp:true, change:'18%' },
+  { label:'濂借瘎鐜?, value:'94.2%', trendUp:true, change:'2%' },
+  { label:'澶嶈喘鐜?, value:'32.5%', trendUp:false, change:'3%' },
 ]
 
 async function runGenerate(type) {
@@ -160,7 +160,7 @@ async function runGenerate(type) {
   gen.running = true
   await new Promise(r => setTimeout(r, 1500))
   gen.running = false
-  ElMessage.success(`${gen.name}已生成完成！`)
+  ElMessage.success(`${gen.name}宸茬敓鎴愬畬鎴愶紒`)
 }
 
 async function generateAll() {
@@ -171,31 +171,31 @@ async function generateAll() {
     gen.running = false
   }
   allRunning.value = false
-  ElMessage.success('🚀 全量虚拟数据生成完毕！商城现在看起来像真实大平台了！')
+  ElMessage.success('馃殌 鍏ㄩ噺铏氭嫙鏁版嵁鐢熸垚瀹屾瘯锛佸晢鍩庣幇鍦ㄧ湅璧锋潵鍍忕湡瀹炲ぇ骞冲彴浜嗭紒')
 }
 
 async function clearAll() {
   try {
-    await ElMessageBox.confirm('确认清除所有虚拟数据？此操作不可撤销。', '警告', { type: 'warning', confirmButtonText: '确认清除' })
-    ElMessage.success('虚拟数据已清除')
+    await ElMessageBox.confirm('纭娓呴櫎鎵€鏈夎櫄鎷熸暟鎹紵姝ゆ搷浣滀笉鍙挙閿€銆?, '璀﹀憡', { type: 'warning', confirmButtonText: '纭娓呴櫎' })
+    ElMessage.success('铏氭嫙鏁版嵁宸叉竻闄?)
   } catch { }
 }
 
-// 实时动态模拟
+// 瀹炴椂鍔ㄦ€佹ā鎷?
 function addLiveItem() {
   const items = [
-    { icon:'👤', text:'用户 ' + randomName() + ' 注册成功' },
-    { icon:'🛒', text:'用户 ' + randomName() + ' 下单购买了商品' },
-    { icon:'⭐', text:'用户 ' + randomName() + ' 发表了商品评价' },
-    { icon:'👀', text:'用户 ' + randomName() + ' 正在浏览商城' },
+    { icon:'馃懁', text:'鐢ㄦ埛 ' + randomName() + ' 娉ㄥ唽鎴愬姛' },
+    { icon:'馃洅', text:'鐢ㄦ埛 ' + randomName() + ' 涓嬪崟璐拱浜嗗晢鍝? },
+    { icon:'猸?, text:'鐢ㄦ埛 ' + randomName() + ' 鍙戣〃浜嗗晢鍝佽瘎浠? },
+    { icon:'馃憖', text:'鐢ㄦ埛 ' + randomName() + ' 姝ｅ湪娴忚鍟嗗煄' },
   ]
   const item = items[Math.floor(Math.random() * items.length)]
-  liveFeed.unshift({ ...item, time: '刚刚' })
+  liveFeed.unshift({ ...item, time: '鍒氬垰' })
   if (liveFeed.length > 10) liveFeed.pop()
 }
 
 function randomName() {
-  const names = ['小明','Lily','Tom','Jerry','Amy','Jack','Rose','Lucy','David','Emma','Leo','Mia']
+  const names = ['灏忔槑','Lily','Tom','Jerry','Amy','Jack','Rose','Lucy','David','Emma','Leo','Mia']
   return names[Math.floor(Math.random() * names.length)] + '_' + Math.floor(Math.random() * 9000 + 1000)
 }
 
@@ -265,4 +265,5 @@ onUnmounted(() => {
 .ds-num { font-size: 28px; font-weight: 700; color: var(--text-primary); }
 .ds-label { font-size: 12px; color: var(--text-muted); margin: 4px 0; }
 .ds-trend { font-size: 12px; font-weight: 500; }
+@media (max-width: 768px) { .page-shell, [class*="page-shell"] { padding: 10px !important; } .page-header h2 { font-size: 16px !important; } .el-row { flex-direction: column !important; } .el-col { max-width: 100% !important; flex: 0 0 100% !important; margin-bottom: 12px; } .el-table { font-size: 12px; } .el-card { margin-bottom: 12px; } }
 </style>

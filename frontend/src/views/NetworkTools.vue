@@ -1,70 +1,70 @@
 <template>
   <div class="net-tools">
-    <div class="page-header"><h2>🌐 网络工具</h2><p>Ping · DNS · 端口扫描 · HTTP检查 · 路由追踪</p></div>
+    <div class="page-header"><h2>馃寪 缃戠粶宸ュ叿</h2><p>Ping 路 DNS 路 绔彛鎵弿 路 HTTP妫€鏌?路 璺敱杩借釜</p></div>
 
     <el-row :gutter="16">
       <el-col :span="12">
         <el-card shadow="never" style="margin-bottom:16px">
-          <template #header><span>🏓 Ping</span></template>
+          <template #header><span>馃彄 Ping</span></template>
           <div style="display:flex;gap:8px">
-            <el-input v-model="pingHost" placeholder="域名或IP" size="small" @keyup.enter="runPing" />
+            <el-input v-model="pingHost" placeholder="鍩熷悕鎴朓P" size="small" @keyup.enter="runPing" />
             <el-button @click="runPing" size="small" type="primary" :loading="pingLoading">Ping</el-button>
           </div>
-          <pre v-if="pingResult" class="result-box">{{ pingResult.stdout || pingResult.error || "无结果" }}</pre>
+          <pre v-if="pingResult" class="result-box">{{ pingResult.stdout || pingResult.error || "鏃犵粨鏋? }}</pre>
         </el-card>
 
         <el-card shadow="never" style="margin-bottom:16px">
-          <template #header><span>🔍 DNS 查询</span></template>
+          <template #header><span>馃攳 DNS 鏌ヨ</span></template>
           <div style="display:flex;gap:8px">
-            <el-input v-model="dnsDomain" placeholder="域名" size="small" @keyup.enter="runDns" />
-            <el-button @click="runDns" size="small" type="primary" :loading="dnsLoading">查询</el-button>
+            <el-input v-model="dnsDomain" placeholder="鍩熷悕" size="small" @keyup.enter="runDns" />
+            <el-button @click="runDns" size="small" type="primary" :loading="dnsLoading">鏌ヨ</el-button>
           </div>
           <div v-if="dnsResult" class="result-box">
-            <div v-if="dnsResult.ips">IP地址：<code v-for="ip in dnsResult.ips" :key="ip" style="display:block">{{ ip }}</code></div>
+            <div v-if="dnsResult.ips">IP鍦板潃锛?code v-for="ip in dnsResult.ips" :key="ip" style="display:block">{{ ip }}</code></div>
             <div v-else style="color:#ff4d4f">{{ dnsResult.error }}</div>
           </div>
         </el-card>
 
         <el-card shadow="never">
-          <template #header><span>🔌 HTTP 状态检查</span></template>
+          <template #header><span>馃攲 HTTP 鐘舵€佹鏌?/span></template>
           <div style="display:flex;gap:8px">
             <el-input v-model="httpUrl" placeholder="https://example.com" size="small" @keyup.enter="runHttp" />
-            <el-button @click="runHttp" size="small" type="primary" :loading="httpLoading">检查</el-button>
+            <el-button @click="runHttp" size="small" type="primary" :loading="httpLoading">妫€鏌?/el-button>
           </div>
           <div v-if="httpResult" class="result-box">
-            <div>状态码：<el-tag :type="httpResult.status < 400 ? 'success' : 'danger'">{{ httpResult.status }}</el-tag></div>
-            <div>响应时间：{{ httpResult.elapsed_ms }}ms</div>
-            <div>大小：{{ httpResult.size }} bytes</div>
+            <div>鐘舵€佺爜锛?el-tag :type="httpResult.status < 400 ? 'success' : 'danger'">{{ httpResult.status }}</el-tag></div>
+            <div>鍝嶅簲鏃堕棿锛歿{ httpResult.elapsed_ms }}ms</div>
+            <div>澶у皬锛歿{ httpResult.size }} bytes</div>
           </div>
         </el-card>
       </el-col>
 
       <el-col :span="12">
         <el-card shadow="never" style="margin-bottom:16px">
-          <template #header><span>🔓 端口扫描</span></template>
+          <template #header><span>馃敁 绔彛鎵弿</span></template>
           <div style="display:flex;gap:8px;margin-bottom:8px">
-            <el-input v-model="scanHost" placeholder="域名或IP" size="small" style="width:200px" />
+            <el-input v-model="scanHost" placeholder="鍩熷悕鎴朓P" size="small" style="width:200px" />
             <el-input v-model="scanPorts" placeholder="22,80,443,3306..." size="small" style="width:250px" />
-            <el-button @click="runPortScan" size="small" type="primary" :loading="scanLoading">扫描</el-button>
+            <el-button @click="runPortScan" size="small" type="primary" :loading="scanLoading">鎵弿</el-button>
           </div>
           <div v-if="scanResult" class="result-box">
-            <div style="margin-bottom:8px">开放端口：{{ scanResult.open_count }}/{{ scanResult.results?.length || 0 }}</div>
+            <div style="margin-bottom:8px">寮€鏀剧鍙ｏ細{{ scanResult.open_count }}/{{ scanResult.results?.length || 0 }}</div>
             <div v-for="r in scanResult.results" :key="r.port" style="display:flex;align-items:center;gap:8px;padding:2px 0">
-              <span :style="{color:r.open?'#52c41a':'#999'}">{{ r.open ? '🟢' : '⚪' }}</span>
-              <span style="font-family:monospace">端口 {{ r.port }}</span>
-              <el-tag v-if="r.open" size="small" type="success">开放</el-tag>
-              <el-tag v-else size="small">关闭</el-tag>
+              <span :style="{color:r.open?'#52c41a':'#999'}">{{ r.open ? '馃煝' : '鈿? }}</span>
+              <span style="font-family:monospace">绔彛 {{ r.port }}</span>
+              <el-tag v-if="r.open" size="small" type="success">寮€鏀?/el-tag>
+              <el-tag v-else size="small">鍏抽棴</el-tag>
             </div>
           </div>
         </el-card>
 
         <el-card shadow="never">
-          <template #header><span>🛤️ 路由追踪</span></template>
+          <template #header><span>馃洡锔?璺敱杩借釜</span></template>
           <div style="display:flex;gap:8px">
-            <el-input v-model="traceHost" placeholder="域名或IP" size="small" @keyup.enter="runTrace" />
-            <el-button @click="runTrace" size="small" type="primary" :loading="traceLoading">追踪</el-button>
+            <el-input v-model="traceHost" placeholder="鍩熷悕鎴朓P" size="small" @keyup.enter="runTrace" />
+            <el-button @click="runTrace" size="small" type="primary" :loading="traceLoading">杩借釜</el-button>
           </div>
-          <pre v-if="traceResult" class="result-box">{{ traceResult.stdout || traceResult.error || "无结果" }}</pre>
+          <pre v-if="traceResult" class="result-box">{{ traceResult.stdout || traceResult.error || "鏃犵粨鏋? }}</pre>
         </el-card>
       </el-col>
     </el-row>
@@ -143,4 +143,5 @@ async function runTrace() {
   font-size: 12px; font-family: monospace; max-height: 200px; overflow-y: auto;
   line-height: 1.5;
 }
+@media (max-width: 768px) { .page-shell, [class*="page-shell"] { padding: 10px !important; } .page-header h2 { font-size: 16px !important; } .el-row { flex-direction: column !important; } .el-col { max-width: 100% !important; flex: 0 0 100% !important; margin-bottom: 12px; } .el-table { font-size: 12px; } .el-card { margin-bottom: 12px; } }
 </style>

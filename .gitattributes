@@ -1,13 +1,33 @@
+# Auto detect text files and prevent CRLF corruption
 * text=auto
-*.py text working-tree-encoding=UTF-8
-*.vue text working-tree-encoding=UTF-8
-*.js text working-tree-encoding=UTF-8
-*.md text working-tree-encoding=UTF-8
-*.json text working-tree-encoding=UTF-8
-*.yml text working-tree-encoding=UTF-8
-*.yaml text working-tree-encoding=UTF-8
-*.toml text working-tree-encoding=UTF-8
-*.cfg text working-tree-encoding=UTF-8
-*.txt text working-tree-encoding=UTF-8
-*.css text working-tree-encoding=UTF-8
-*.html text working-tree-encoding=UTF-8
+
+# Python files must stay LF
+*.py text eol=lf
+
+# Frontend files
+*.vue text eol=lf
+*.js text eol=lf
+*.ts text eol=lf
+*.json text eol=lf
+*.css text eol=lf
+*.html text eol=lf
+
+# Config files
+*.yml text eol=lf
+*.yaml text eol=lf
+*.md text eol=lf
+*.sh text eol=lf
+Dockerfile* text eol=lf
+.dockerignore text eol=lf
+.gitattributes text eol=lf
+.gitignore text eol=lf
+
+# Binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.ttf binary
+*.woff binary
+*.woff2 binary

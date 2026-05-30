@@ -1,15 +1,15 @@
 <template>
   <div class="dashboard">
     <div class="page-header">
-      <h2>📊 系统仪表盘</h2>
-      <p>实时监控 · 历史趋势 · 健康状态</p>
+      <h2>馃搳 绯荤粺浠〃鐩?/h2>
+      <p>瀹炴椂鐩戞帶 路 鍘嗗彶瓒嬪娍 路 鍋ュ悍鐘舵€?/p>
     </div>
 
-    <!-- 健康分 -->
+    <!-- 鍋ュ悍鍒?-->
     <el-row :gutter="16" style="margin-bottom:20px">
       <el-col :span="6">
         <div class="health-card" :class="healthLevel">
-          <div class="health-label">系统健康分</div>
+          <div class="health-label">绯荤粺鍋ュ悍鍒?/div>
           <div class="health-value">{{ health.score || 0 }}</div>
           <div class="health-level">{{ healthLevelText }}</div>
         </div>
@@ -23,7 +23,7 @@
       </el-col>
       <el-col :span="6">
         <div class="metric-card">
-          <div class="metric-label">内存</div>
+          <div class="metric-label">鍐呭瓨</div>
           <div class="metric-value" :style="{color: metrics.memory_percent > 80 ? '#ff4d4f' : metrics.memory_percent > 60 ? '#faad14' : '#52c41a'}">{{ metrics.memory_percent }}%</div>
           <el-progress :percentage="metrics.memory_percent" :stroke-width="6" :color="metrics.memory_percent > 80 ? '#ff4d4f' : metrics.memory_percent > 60 ? '#faad14' : '#52c41a'" :show-text="false" />
           <div class="metric-sub">{{ metrics.memory_used_gb }} / {{ metrics.memory_total_gb }} GB</div>
@@ -31,7 +31,7 @@
       </el-col>
       <el-col :span="6">
         <div class="metric-card">
-          <div class="metric-label">磁盘</div>
+          <div class="metric-label">纾佺洏</div>
           <div class="metric-value" :style="{color: metrics.disk_percent > 80 ? '#ff4d4f' : metrics.disk_percent > 60 ? '#faad14' : '#52c41a'}">{{ metrics.disk_percent }}%</div>
           <el-progress :percentage="metrics.disk_percent" :stroke-width="6" :color="metrics.disk_percent > 80 ? '#ff4d4f' : metrics.disk_percent > 60 ? '#faad14' : '#52c41a'" :show-text="false" />
           <div class="metric-sub">{{ metrics.disk_used_gb }} / {{ metrics.disk_total_gb }} GB</div>
@@ -39,33 +39,33 @@
       </el-col>
     </el-row>
 
-    <!-- 图表 -->
+    <!-- 鍥捐〃 -->
     <el-row :gutter="16" style="margin-bottom:20px">
       <el-col :span="12">
         <el-card shadow="never">
-          <template #header>📈 CPU / 内存 历史趋势（最近60个采样点）</template>
+          <template #header>馃搱 CPU / 鍐呭瓨 鍘嗗彶瓒嬪娍锛堟渶杩?0涓噰鏍风偣锛?/template>
           <div ref="cpuMemChart" style="height:280px"></div>
         </el-card>
       </el-col>
       <el-col :span="12">
         <el-card shadow="never">
-          <template #header>💾 磁盘使用趋势</template>
+          <template #header>馃捑 纾佺洏浣跨敤瓒嬪娍</template>
           <div ref="diskChart" style="height:280px"></div>
         </el-card>
       </el-col>
     </el-row>
 
-    <!-- 快捷操作 -->
+    <!-- 蹇嵎鎿嶄綔 -->
     <el-card shadow="never">
-      <template #header>⚡ 快捷操作</template>
+      <template #header>鈿?蹇嵎鎿嶄綔</template>
       <div style="display:flex;gap:10px;flex-wrap:wrap">
-        <el-button @click="goTo('/chat')" type="primary">💬 AI 对话</el-button>
-        <el-button @click="goTo('/server')">📊 服务器面板</el-button>
-        <el-button @click="goTo('/rotation')">🌐 轮值系统</el-button>
-        <el-button @click="goTo('/audit')">📋 审计日志</el-button>
-        <el-button @click="goTo('/network')">🌐 网络工具</el-button>
-        <el-button @click="recordMetrics" :loading="recording">📝 记录指标</el-button>
-        <el-button @click="refreshAll" :loading="loading">🔄 刷新</el-button>
+        <el-button @click="goTo('/chat')" type="primary">馃挰 AI 瀵硅瘽</el-button>
+        <el-button @click="goTo('/server')">馃搳 鏈嶅姟鍣ㄩ潰鏉?/el-button>
+        <el-button @click="goTo('/rotation')">馃寪 杞€肩郴缁?/el-button>
+        <el-button @click="goTo('/audit')">馃搵 瀹¤鏃ュ織</el-button>
+        <el-button @click="goTo('/network')">馃寪 缃戠粶宸ュ叿</el-button>
+        <el-button @click="recordMetrics" :loading="recording">馃摑 璁板綍鎸囨爣</el-button>
+        <el-button @click="refreshAll" :loading="loading">馃攧 鍒锋柊</el-button>
       </div>
     </el-card>
   </div>
@@ -116,9 +116,9 @@ export default {
       recording.value = true
       try {
         await agentApi.post("/dashboard/record")
-        ElMessage.success("已记录")
+        ElMessage.success("宸茶褰?)
         await fetchHistory()
-      } catch { ElMessage.error("记录失败") }
+      } catch { ElMessage.error("璁板綍澶辫触") }
       recording.value = false
     }
 
@@ -147,7 +147,7 @@ export default {
         yAxis: { type: "value", max: 100, axisLabel: { fontSize: 10, formatter: "{value}%" } },
         series: [
           { name: "CPU", type: "line", data: h.map(p => p.cpu), smooth: true, lineStyle: { width: 2 }, itemStyle: { color: "#1890ff" }, areaStyle: { color: "rgba(24,144,255,0.1)" } },
-          { name: "内存", type: "line", data: h.map(p => p.memory_percent), smooth: true, lineStyle: { width: 2 }, itemStyle: { color: "#52c41a" }, areaStyle: { color: "rgba(82,196,26,0.1)" } },
+          { name: "鍐呭瓨", type: "line", data: h.map(p => p.memory_percent), smooth: true, lineStyle: { width: 2 }, itemStyle: { color: "#52c41a" }, areaStyle: { color: "rgba(82,196,26,0.1)" } },
         ],
         legend: { bottom: 0, textStyle: { fontSize: 11 } },
       })
@@ -158,7 +158,7 @@ export default {
         grid: { left: 50, right: 20, bottom: 30, top: 10 },
         xAxis: { type: "category", data: times, axisLabel: { fontSize: 10 } },
         yAxis: { type: "value", max: 100, axisLabel: { fontSize: 10, formatter: "{value}%" } },
-        series: [{ name: "磁盘", type: "line", data: h.map(p => p.disk_percent), smooth: true, lineStyle: { width: 2, color: "#faad14" }, areaStyle: { color: "rgba(250,173,20,0.1)" }, itemStyle: { color: "#faad14" } }],
+        series: [{ name: "纾佺洏", type: "line", data: h.map(p => p.disk_percent), smooth: true, lineStyle: { width: 2, color: "#faad14" }, areaStyle: { color: "rgba(250,173,20,0.1)" }, itemStyle: { color: "#faad14" } }],
         legend: { bottom: 0, textStyle: { fontSize: 11 } },
       })
       // Resize on window resize
@@ -166,7 +166,7 @@ export default {
     }
 
     const healthLevel = computed(() => health.value.level || "unknown")
-    const healthLevelText = computed(() => ({ excellent: "🟢 优秀", good: "🔵 良好", warning: "🟡 警告", critical: "🔴 危险" }[healthLevel.value] || "未知"))
+    const healthLevelText = computed(() => ({ excellent: "馃煝 浼樼", good: "馃數 鑹ソ", warning: "馃煛 璀﹀憡", critical: "馃敶 鍗遍櫓" }[healthLevel.value] || "鏈煡"))
 
     async function refreshAll() {
       loading.value = true
@@ -209,4 +209,5 @@ export default {
 .metric-label { font-size: 12px; color: #999; margin-bottom: 4px; }
 .metric-value { font-size: 28px; font-weight: 700; }
 .metric-sub { font-size: 11px; color: #999; margin-top: 6px; }
+@media (max-width: 768px) { .page-shell, [class*="page-shell"] { padding: 10px !important; } .page-header h2 { font-size: 16px !important; } .el-row { flex-direction: column !important; } .el-col { max-width: 100% !important; flex: 0 0 100% !important; margin-bottom: 12px; } .el-table { font-size: 12px; } .el-card { margin-bottom: 12px; } }
 </style>

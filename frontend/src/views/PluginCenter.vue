@@ -1,30 +1,30 @@
 <template>
   <div class="skill-center">
     <div class="page-header">
-      <h2>🧩 技能市场</h2>
-      <p>浏览 · 安装 · 管理 · 发布 AI 技能</p>
+      <h2>馃З 鎶€鑳藉競鍦?/h2>
+      <p>娴忚 路 瀹夎 路 绠＄悊 路 鍙戝竷 AI 鎶€鑳?/p>
       <div class="header-stats">
-        <el-tag type="primary">内置 {{ totalSkills }} 个</el-tag>
-        <el-tag type="success">已装 {{ installedCount }}</el-tag>
-        <el-tag type="warning">社区 {{ communityCount }}</el-tag>
+        <el-tag type="primary">鍐呯疆 {{ totalSkills }} 涓?/el-tag>
+        <el-tag type="success">宸茶 {{ installedCount }}</el-tag>
+        <el-tag type="warning">绀惧尯 {{ communityCount }}</el-tag>
       </div>
     </div>
 
     <el-tabs v-model="activeTab">
-      <!-- Tab 1: 内置技能市场 -->
-      <el-tab-pane label="🛒 内置市场" name="market">
+      <!-- Tab 1: 鍐呯疆鎶€鑳藉競鍦?-->
+      <el-tab-pane label="馃洅 鍐呯疆甯傚満" name="market">
         <div class="toolbar">
-          <el-input v-model="search" placeholder="搜索..." clearable style="width:240px" size="small" />
-          <el-select v-model="categoryFilter" placeholder="全部分类" clearable style="width:140px" size="small">
-            <el-option v-for="c in categories" :key="c.category" :label="(c.icon||'📦') + ' ' + c.category + ' (' + c.count + ')'" :value="c.category" />
+          <el-input v-model="search" placeholder="鎼滅储..." clearable style="width:240px" size="small" />
+          <el-select v-model="categoryFilter" placeholder="鍏ㄩ儴鍒嗙被" clearable style="width:140px" size="small">
+            <el-option v-for="c in categories" :key="c.category" :label="(c.icon||'馃摝') + ' ' + c.category + ' (' + c.count + ')'" :value="c.category" />
           </el-select>
-          <el-button @click="fetchMarket" size="small" :loading="loading">刷新</el-button>
+          <el-button @click="fetchMarket" size="small" :loading="loading">鍒锋柊</el-button>
         </div>
         <el-row :gutter="16">
           <el-col :xs="24" :sm="12" :md="8" v-for="s in filteredSkills" :key="s.id" style="margin-bottom:16px">
             <el-card shadow="hover" class="skill-card" :class="{installed:s.installed}">
               <div class="skill-header">
-                <span class="skill-icon">{{ s.icon || "📦" }}</span>
+                <span class="skill-icon">{{ s.icon || "馃摝" }}</span>
                 <div class="skill-info">
                   <h3>{{ s.name }}</h3>
                   <el-tag size="small">{{ s.category }}</el-tag>
@@ -32,10 +32,10 @@
               </div>
               <p class="skill-desc">{{ s.desc }}</p>
               <div class="skill-meta">
-                <span>⭐ {{ s.stars }}</span>
-                <span>📥 {{ s.downloads }}</span>
+                <span>猸?{{ s.stars }}</span>
+                <span>馃摜 {{ s.downloads }}</span>
                 <span>v{{ s.version }}</span>
-                <span>✍️ {{ s.author }}</span>
+                <span>鉁嶏笍 {{ s.author }}</span>
               </div>
               <div class="skill-tags" v-if="s.tags">
                 <el-tag v-for="t in s.tags.slice(0,3)" :key="t" size="small" effect="plain">{{ t }}</el-tag>
@@ -46,21 +46,21 @@
                 @click="s.installed ? null : installSkill(s)"
                 :disabled="s.installed || installing === s.id"
                 :loading="installing === s.id"
-              >{{ s.installed ? '✅ 已安装' : '📥 安装' }}</el-button>
+              >{{ s.installed ? '鉁?宸插畨瑁? : '馃摜 瀹夎' }}</el-button>
             </el-card>
           </el-col>
         </el-row>
-        <el-empty v-if="filteredSkills.length===0" description="没有匹配的技能" />
+        <el-empty v-if="filteredSkills.length===0" description="娌℃湁鍖归厤鐨勬妧鑳? />
       </el-tab-pane>
 
-      <!-- Tab 2: 社区市场 -->
-      <el-tab-pane label="🌍 社区市场" name="community">
+      <!-- Tab 2: 绀惧尯甯傚満 -->
+      <el-tab-pane label="馃實 绀惧尯甯傚満" name="community">
         <div class="toolbar">
-          <el-input v-model="communitySearch" placeholder="搜索社区技能..." clearable style="width:240px" size="small" />
-          <el-select v-model="communityCategory" placeholder="全部分类" clearable style="width:140px" size="small">
+          <el-input v-model="communitySearch" placeholder="鎼滅储绀惧尯鎶€鑳?.." clearable style="width:240px" size="small" />
+          <el-select v-model="communityCategory" placeholder="鍏ㄩ儴鍒嗙被" clearable style="width:140px" size="small">
             <el-option v-for="c in communityCategories" :key="c" :label="c" :value="c" />
           </el-select>
-          <el-button @click="fetchCommunity" size="small" :loading="communityLoading">刷新</el-button>
+          <el-button @click="fetchCommunity" size="small" :loading="communityLoading">鍒锋柊</el-button>
         </div>
         <el-row :gutter="16">
           <el-col :xs="24" :sm="12" :md="8" v-for="s in filteredCommunity" :key="s.id" style="margin-bottom:16px">
@@ -75,16 +75,16 @@
               </div>
               <p class="skill-desc">{{ s.desc }}</p>
               <div class="skill-meta">
-                <span>⭐ {{ s.stars }}</span>
-                <span>📥 {{ s.downloads }}</span>
-                <span>✍️ {{ s.author }}</span>
-                <span>🕐 {{ s.updated_at }}</span>
+                <span>猸?{{ s.stars }}</span>
+                <span>馃摜 {{ s.downloads }}</span>
+                <span>鉁嶏笍 {{ s.author }}</span>
+                <span>馃晲 {{ s.updated_at }}</span>
               </div>
               <div class="skill-tags" v-if="s.tags">
                 <el-tag v-for="t in s.tags.slice(0,3)" :key="t" size="small" effect="plain">{{ t }}</el-tag>
               </div>
               <div style="font-size:11px;color:#999;margin-top:6px;padding:6px;background:#f5f5f5;border-radius:4px">
-                📖 {{ s.readme }}
+                馃摉 {{ s.readme }}
               </div>
               <el-button
                 :type="isCommunityInstalled(s.id) ? 'success' : 'primary'"
@@ -92,52 +92,52 @@
                 :disabled="isCommunityInstalled(s.id) || communityInstalling === s.id"
                 :loading="communityInstalling === s.id"
                 @click="installCommunity(s)"
-              >{{ isCommunityInstalled(s.id) ? '✅ 已安装' : '📥 安装' }}</el-button>
+              >{{ isCommunityInstalled(s.id) ? '鉁?宸插畨瑁? : '馃摜 瀹夎' }}</el-button>
             </el-card>
           </el-col>
         </el-row>
-        <el-empty v-if="filteredCommunity.length===0" description="暂无社区技能" />
+        <el-empty v-if="filteredCommunity.length===0" description="鏆傛棤绀惧尯鎶€鑳? />
       </el-tab-pane>
 
-      <!-- Tab 3: 已安装 -->
-      <el-tab-pane label="📦 已安装" name="installed">
+      <!-- Tab 3: 宸插畨瑁?-->
+      <el-tab-pane label="馃摝 宸插畨瑁? name="installed">
         <el-table :data="allInstalledSkills" stripe size="small">
-          <el-table-column label="技能" min-width="200">
+          <el-table-column label="鎶€鑳? min-width="200">
             <template #default="{row}">
-              <span style="font-size:18px;margin-right:6px">{{ row.icon || "📦" }}</span>
+              <span style="font-size:18px;margin-right:6px">{{ row.icon || "馃摝" }}</span>
               <span style="font-weight:500">{{ row.name }}</span>
             </template>
           </el-table-column>
-          <el-table-column prop="version" label="版本" width="80" />
-          <el-table-column prop="category" label="分类" width="100">
+          <el-table-column prop="version" label="鐗堟湰" width="80" />
+          <el-table-column prop="category" label="鍒嗙被" width="100">
             <template #default="{row}"><el-tag size="small">{{ row.category }}</el-tag></template>
           </el-table-column>
-          <el-table-column label="来源" width="80">
+          <el-table-column label="鏉ユ簮" width="80">
             <template #default="{row}">
-              <el-tag v-if="row.id" size="small" :type="row._source==='package'?'warning':'default'">{{ row._source==='package'?'包':'内置' }}</el-tag>
+              <el-tag v-if="row.id" size="small" :type="row._source==='package'?'warning':'default'">{{ row._source==='package'?'鍖?:'鍐呯疆' }}</el-tag>
             </template>
           </el-table-column>
-          <el-table-column prop="desc" label="描述" min-width="200" show-overflow-tooltip />
-          <el-table-column label="状态" width="90">
+          <el-table-column prop="desc" label="鎻忚堪" min-width="200" show-overflow-tooltip />
+          <el-table-column label="鐘舵€? width="90">
             <template #default="{row}">
               <el-switch v-model="row.enabled" @change="toggleSkill(row)" size="small" :disabled="row._source==='package'" />
             </template>
           </el-table-column>
-          <el-table-column label="操作" width="100" fixed="right">
+          <el-table-column label="鎿嶄綔" width="100" fixed="right">
             <template #default="{row}">
-              <el-button v-if="row._source==='package'" text type="danger" size="small" @click="uninstallPackage(row)">卸载</el-button>
-              <el-button v-else text type="danger" size="small" @click="uninstallSkill(row)">卸载</el-button>
+              <el-button v-if="row._source==='package'" text type="danger" size="small" @click="uninstallPackage(row)">鍗歌浇</el-button>
+              <el-button v-else text type="danger" size="small" @click="uninstallSkill(row)">鍗歌浇</el-button>
             </template>
           </el-table-column>
         </el-table>
-        <el-empty v-if="allInstalledSkills.length===0" description="暂无已安装技能" />
+        <el-empty v-if="allInstalledSkills.length===0" description="鏆傛棤宸插畨瑁呮妧鑳? />
       </el-tab-pane>
 
-      <!-- Tab 4: 发布技能 -->
-      <el-tab-pane label="📤 发布技能" name="publish">
+      <!-- Tab 4: 鍙戝竷鎶€鑳?-->
+      <el-tab-pane label="馃摛 鍙戝竷鎶€鑳? name="publish">
         <el-card shadow="never">
-          <h3 style="margin-top:0">📤 发布技能包</h3>
-          <p style="color:#999;font-size:13px">将你的 skill.json + main.py 打包成 ZIP 上传，即可在系统中安装使用</p>
+          <h3 style="margin-top:0">馃摛 鍙戝竷鎶€鑳藉寘</h3>
+          <p style="color:#999;font-size:13px">灏嗕綘鐨?skill.json + main.py 鎵撳寘鎴?ZIP 涓婁紶锛屽嵆鍙湪绯荤粺涓畨瑁呬娇鐢?/p>
           <el-upload
             drag
             accept=".zip"
@@ -146,39 +146,33 @@
             :file-list="publishFileList"
           >
             <el-icon style="font-size:48px;color:#667eea"><UploadFilled /></el-icon>
-            <div style="font-size:14px;margin-top:8px">拖拽 ZIP 文件到此处，或 <em>点击上传</em></div>
+            <div style="font-size:14px;margin-top:8px">鎷栨嫿 ZIP 鏂囦欢鍒版澶勶紝鎴?<em>鐐瑰嚮涓婁紶</em></div>
             <template #tip>
               <div style="font-size:12px;color:#999;margin-top:4px">
-                需包含 skill.json（清单）+ main.py（入口代码）
+                闇€鍖呭惈 skill.json锛堟竻鍗曪級+ main.py锛堝叆鍙ｄ唬鐮侊級
               </div>
             </template>
           </el-upload>
           <div style="margin-top:16px">
             <el-button type="primary" @click="publishSkill" :loading="publishing" :disabled="!publishFile">
-              📤 发布并安装
-            </el-button>
+              馃摛 鍙戝竷骞跺畨瑁?            </el-button>
           </div>
           <el-divider />
-          <h4>🔗 从 URL 安装</h4>
+          <h4>馃敆 浠?URL 瀹夎</h4>
           <div style="display:flex;gap:8px">
             <el-input v-model="publishUrl" placeholder="https://example.com/my-skill.zip" style="flex:1" size="small" />
-            <el-button @click="publishFromUrl" :loading="publishingUrl" size="small" :disabled="!publishUrl">安装</el-button>
+            <el-button @click="publishFromUrl" :loading="publishingUrl" size="small" :disabled="!publishUrl">瀹夎</el-button>
           </div>
           <el-divider />
-          <h4>📦 技能包格式要求</h4>
+          <h4>馃摝 鎶€鑳藉寘鏍煎紡瑕佹眰</h4>
           <pre style="font-size:12px;background:#f5f5f5;padding:12px;border-radius:4px">
 my-skill.zip
-├── skill.json          # 必填：技能清单
-│   ├── id              # 唯一标识
-│   ├── name            # 显示名称
-│   ├── version         # 版本号
-│   ├── desc            # 描述
-│   ├── author          # 作者
-│   ├── category        # 分类
-│   ├── entry           # 入口文件（默认 main.py）
-│   └── dependencies    # 依赖列表
-├── main.py             # 入口代码（需实现 async def execute(params)）
-└── assets/             # 资源文件（可选）
+鈹溾攢鈹€ skill.json          # 蹇呭～锛氭妧鑳芥竻鍗?鈹?  鈹溾攢鈹€ id              # 鍞竴鏍囪瘑
+鈹?  鈹溾攢鈹€ name            # 鏄剧ず鍚嶇О
+鈹?  鈹溾攢鈹€ version         # 鐗堟湰鍙?鈹?  鈹溾攢鈹€ desc            # 鎻忚堪
+鈹?  鈹溾攢鈹€ author          # 浣滆€?鈹?  鈹溾攢鈹€ category        # 鍒嗙被
+鈹?  鈹溾攢鈹€ entry           # 鍏ュ彛鏂囦欢锛堥粯璁?main.py锛?鈹?  鈹斺攢鈹€ dependencies    # 渚濊禆鍒楄〃
+鈹溾攢鈹€ main.py             # 鍏ュ彛浠ｇ爜锛堥渶瀹炵幇 async def execute(params)锛?鈹斺攢鈹€ assets/             # 璧勬簮鏂囦欢锛堝彲閫夛級
           </pre>
         </el-card>
       </el-tab-pane>
@@ -199,7 +193,7 @@ const categoryFilter = ref("")
 const allSkills = ref([])
 const categories = ref([])
 
-// 社区
+// 绀惧尯
 const communitySearch = ref("")
 const communityCategory = ref("")
 const communityLoading = ref(false)
@@ -207,17 +201,17 @@ const communityInstalling = ref("")
 const communitySkills = ref([])
 const communityInstalledIds = ref([])
 
-// 发布
+// 鍙戝竷
 const publishFile = ref(null)
 const publishFileList = ref([])
 const publishing = ref(false)
 const publishUrl = ref("")
 const publishingUrl = ref(false)
 
-// 已安装包
+// 宸插畨瑁呭寘
 const installedPackages = ref([])
 
-// === 计算属性 ===
+// === 璁＄畻灞炴€?===
 const totalSkills = computed(() => allSkills.value.length)
 const communityCount = computed(() => communitySkills.value.length)
 const installedCount = computed(() => allSkills.value.filter(s => s.installed).length + installedPackages.value.length)
@@ -259,7 +253,7 @@ function isCommunityInstalled(id) {
   return communityInstalledIds.value.includes(id)
 }
 
-// === 内置市场 ===
+// === 鍐呯疆甯傚満 ===
 async function fetchMarket() {
   loading.value = true
   try {
@@ -278,39 +272,39 @@ async function installSkill(s) {
   try {
     const r = await agentApi.post("/agent/plugins/install", { plugin_id: s.id })
     if (r.ok || r.status === "installed" || r.status === "already_installed") {
-      ElMessage.success("✅ " + s.name + " 安装成功")
+      ElMessage.success("鉁?" + s.name + " 瀹夎鎴愬姛")
       s.installed = true
     }
   } catch (e) {
-    ElMessage.error("安装失败: " + (e.response?.data?.detail || e.message))
+    ElMessage.error("瀹夎澶辫触: " + (e.response?.data?.detail || e.message))
   }
   installing.value = ""
 }
 
 async function uninstallSkill(s) {
   try {
-    await ElMessageBox.confirm("确定卸载 " + s.name + "？", "确认", { type: "warning" })
+    await ElMessageBox.confirm("纭畾鍗歌浇 " + s.name + "锛?, "纭", { type: "warning" })
     const r = await agentApi.post("/agent/plugins/uninstall", { plugin_id: s.id })
     if (r.ok || r.uninstalled) {
-      ElMessage.success(s.name + " 已卸载")
+      ElMessage.success(s.name + " 宸插嵏杞?)
       s.installed = false
     }
   } catch (e) {
-    if (e !== "cancel") ElMessage.error("卸载失败")
+    if (e !== "cancel") ElMessage.error("鍗歌浇澶辫触")
   }
 }
 
 async function toggleSkill(s) {
   try {
     await agentApi.post("/agent/plugins/toggle", { plugin_id: s.id, enabled: s.enabled })
-    ElMessage.success(s.enabled ? s.name + " 已启用" : s.name + " 已禁用")
+    ElMessage.success(s.enabled ? s.name + " 宸插惎鐢? : s.name + " 宸茬鐢?)
   } catch {
     s.enabled = !s.enabled
-    ElMessage.error("操作失败")
+    ElMessage.error("鎿嶄綔澶辫触")
   }
 }
 
-// === 社区市场 ===
+// === 绀惧尯甯傚満 ===
 async function fetchCommunity() {
   communityLoading.value = true
   try {
@@ -328,17 +322,17 @@ async function installCommunity(s) {
   try {
     const r = await agentApi.post("/agent/plugins/community/install", { skill_id: s.id })
     if (r.ok || r.status === "installed") {
-      ElMessage.success("✅ " + s.name + " 安装成功")
+      ElMessage.success("鉁?" + s.name + " 瀹夎鎴愬姛")
       communityInstalledIds.value.push(s.id)
       fetchInstalledPackages()
     }
   } catch (e) {
-    ElMessage.error("安装失败: " + (e.response?.data?.detail || e.message))
+    ElMessage.error("瀹夎澶辫触: " + (e.response?.data?.detail || e.message))
   }
   communityInstalling.value = ""
 }
 
-// === 安装包管理 ===
+// === 瀹夎鍖呯鐞?===
 async function fetchInstalledPackages() {
   try {
     const r = await agentApi.get("/agent/plugins/installed/packages")
@@ -348,18 +342,18 @@ async function fetchInstalledPackages() {
 
 async function uninstallPackage(s) {
   try {
-    await ElMessageBox.confirm("确定卸载技能包 " + s.name + "？\n文件将被删除。", "确认", { type: "warning" })
+    await ElMessageBox.confirm("纭畾鍗歌浇鎶€鑳藉寘 " + s.name + "锛焅n鏂囦欢灏嗚鍒犻櫎銆?, "纭", { type: "warning" })
     const r = await agentApi.post("/agent/plugins/uninstall/" + s.id)
     if (r.ok || r.uninstalled) {
-      ElMessage.success(s.name + " 已卸载")
+      ElMessage.success(s.name + " 宸插嵏杞?)
       installedPackages.value = installedPackages.value.filter(p => p.id !== s.id)
     }
   } catch (e) {
-    if (e !== "cancel") ElMessage.error("卸载失败")
+    if (e !== "cancel") ElMessage.error("鍗歌浇澶辫触")
   }
 }
 
-// === 发布技能 ===
+// === 鍙戝竷鎶€鑳?===
 function handleFileChange(file) {
   publishFile.value = file.raw
   return false
@@ -375,15 +369,15 @@ async function publishSkill() {
       headers: { "Content-Type": "multipart/form-data" }
     })
     if (r.ok) {
-      ElMessage.success("✅ 技能发布并安装成功")
+      ElMessage.success("鉁?鎶€鑳藉彂甯冨苟瀹夎鎴愬姛")
       publishFile.value = null
       publishFileList.value = []
       fetchInstalledPackages()
     } else {
-      ElMessage.error("发布失败: " + (r.error || "未知错误"))
+      ElMessage.error("鍙戝竷澶辫触: " + (r.error || "鏈煡閿欒"))
     }
   } catch (e) {
-    ElMessage.error("发布失败: " + (e.response?.data?.detail || e.message))
+    ElMessage.error("鍙戝竷澶辫触: " + (e.response?.data?.detail || e.message))
   }
   publishing.value = false
 }
@@ -394,14 +388,14 @@ async function publishFromUrl() {
   try {
     const r = await agentApi.post("/agent/plugins/publish", { download_url: publishUrl.value })
     if (r.ok) {
-      ElMessage.success("✅ 安装成功")
+      ElMessage.success("鉁?瀹夎鎴愬姛")
       publishUrl.value = ""
       fetchInstalledPackages()
     } else {
-      ElMessage.error("安装失败: " + (r.error || "未知错误"))
+      ElMessage.error("瀹夎澶辫触: " + (r.error || "鏈煡閿欒"))
     }
   } catch (e) {
-    ElMessage.error("安装失败: " + (e.response?.data?.detail || e.message))
+    ElMessage.error("瀹夎澶辫触: " + (e.response?.data?.detail || e.message))
   }
   publishingUrl.value = false
 }
@@ -430,4 +424,5 @@ onMounted(() => {
 .skill-desc { font-size: 12px; color: #666; margin: 8px 0; line-height: 1.5; }
 .skill-meta { display: flex; gap: 12px; font-size: 11px; color: #999; margin-bottom: 8px; }
 .skill-tags { display: flex; gap: 4px; flex-wrap: wrap; }
+@media (max-width: 768px) { .page-shell, [class*="page-shell"] { padding: 10px !important; } .page-header h2 { font-size: 16px !important; } .el-row { flex-direction: column !important; } .el-col { max-width: 100% !important; flex: 0 0 100% !important; margin-bottom: 12px; } .el-table { font-size: 12px; } .el-card { margin-bottom: 12px; } }
 </style>

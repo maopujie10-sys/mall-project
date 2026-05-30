@@ -1,6 +1,6 @@
 <template>
   <div class="self-service">
-    <h2>自助运维</h2>
+    <h2>鑷姪杩愮淮</h2>
     <el-row :gutter="16">
       <el-col :span="8" v-for="rb in runbooks" :key="rb.id">
         <el-card shadow="never" class="rb-card" :class="{ running: runningId === rb.id }">
@@ -11,26 +11,26 @@
             </div>
           </template>
           <el-button type="primary" @click="run(rb.id)" :loading="runningId === rb.id" :disabled="runningId">
-            {{ runningId === rb.id ? '执行中...' : '一键执行' }}
+            {{ runningId === rb.id ? '鎵ц涓?..' : '涓€閿墽琛? }}
           </el-button>
         </el-card>
       </el-col>
     </el-row>
 
-    <!-- 客服订单查询 -->
+    <!-- 瀹㈡湇璁㈠崟鏌ヨ -->
     <el-card shadow="never" style="margin-top:16px">
-      <template #header>客服订单查询</template>
-      <el-input v-model="queryUserId" placeholder="用户ID" style="width:200px;margin-right:8px" />
-      <el-input v-model="queryOrderId" placeholder="订单ID" style="width:200px;margin-right:8px" />
-      <el-button type="primary" @click="runCustomerQuery" :loading="queryLoading">查询</el-button>
+      <template #header>瀹㈡湇璁㈠崟鏌ヨ</template>
+      <el-input v-model="queryUserId" placeholder="鐢ㄦ埛ID" style="width:200px;margin-right:8px" />
+      <el-input v-model="queryOrderId" placeholder="璁㈠崟ID" style="width:200px;margin-right:8px" />
+      <el-button type="primary" @click="runCustomerQuery" :loading="queryLoading">鏌ヨ</el-button>
     </el-card>
 
-    <!-- 执行结果 -->
+    <!-- 鎵ц缁撴灉 -->
     <el-card v-if="report" shadow="never" style="margin-top:16px">
       <template #header>
-        <span>执行报告</span>
+        <span>鎵ц鎶ュ憡</span>
         <el-tag :type="report.all_passed ? 'success' : 'danger'" size="small" style="margin-left:8px">
-          {{ report.all_passed ? '全部通过' : `${report.failed} 项异常` }}
+          {{ report.all_passed ? '鍏ㄩ儴閫氳繃' : `${report.failed} 椤瑰紓甯竊 }}
         </el-tag>
       </template>
       <el-timeline>
@@ -43,8 +43,8 @@
           <p v-if="s.evidence" style="font-size:12px;color:#999">{{ s.evidence }}</p>
         </el-timeline-item>
       </el-timeline>
-      <el-alert v-if="!report.all_passed" title="检测到异常" :description="report.summary" type="warning" show-icon style="margin-top:12px" />
-      <el-alert v-else title="一切正常" :description="report.summary" type="success" show-icon style="margin-top:12px" />
+      <el-alert v-if="!report.all_passed" title="妫€娴嬪埌寮傚父" :description="report.summary" type="warning" show-icon style="margin-top:12px" />
+      <el-alert v-else title="涓€鍒囨甯? :description="report.summary" type="success" show-icon style="margin-top:12px" />
     </el-card>
   </div>
 </template>
@@ -65,7 +65,7 @@ async function fetchRunbooks() {
   try {
     const r = await agentApi.get('/self-service/runbooks')
     runbooks.value = r.runbooks || []
-  } catch { ElMessage.error('获取场景列表失败') }
+  } catch { ElMessage.error('鑾峰彇鍦烘櫙鍒楄〃澶辫触') }
 }
 
 async function run(id) {
@@ -74,11 +74,11 @@ async function run(id) {
   try {
     report.value = await agentApi.post(`/self-service/run/${id}`)
     if (report.value.all_passed) {
-      ElMessage.success('所有检查通过 ✅')
+      ElMessage.success('鎵€鏈夋鏌ラ€氳繃 鉁?)
     } else {
-      ElMessage.warning(`${report.value.failed} 项异常，请查看报告`)
+      ElMessage.warning(`${report.value.failed} 椤瑰紓甯革紝璇锋煡鐪嬫姤鍛奰)
     }
-  } catch { ElMessage.error('执行失败') }
+  } catch { ElMessage.error('鎵ц澶辫触') }
   runningId.value = ''
 }
 
@@ -90,7 +90,7 @@ async function runCustomerQuery() {
     if (queryUserId.value) params.user_id = queryUserId.value
     if (queryOrderId.value) params.order_id = queryOrderId.value
     report.value = await agentApi.post('/self-service/run/customer_order', params)
-  } catch { ElMessage.error('查询失败') }
+  } catch { ElMessage.error('鏌ヨ澶辫触') }
   queryLoading.value = false
 }
 
@@ -104,4 +104,5 @@ h2 { margin-bottom: 16px; font-size: 18px; }
 .rb-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
 .rb-card.running { opacity: 0.7; }
 .rb-header { display: flex; justify-content: space-between; align-items: center; }
+@media (max-width: 768px) { .page-shell, [class*="page-shell"] { padding: 10px !important; } .page-header h2 { font-size: 16px !important; } .el-row { flex-direction: column !important; } .el-col { max-width: 100% !important; flex: 0 0 100% !important; margin-bottom: 12px; } .el-table { font-size: 12px; } .el-card { margin-bottom: 12px; } }
 </style>

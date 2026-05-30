@@ -35,6 +35,6 @@ HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
   CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:9000/agent/health')" || exit 1
 
 # Clean BOM from Python files
-RUN find /app -name "*.py" -exec sed -i "1s/^\\xEF\\xBB\\xBF//" {} \;
+RUN python -c "import os; [open(f,\"wb\").write(open(f,\"rb\").read().lstrip(b\"\\xef\\xbb\\xbf\")) for f in __import__(\"glob\").glob(\"/app/**/*.py\",recursive=True) if open(f,\"rb\").read(3)==b\"\\xef\\xbb\\xbf\"]"
 
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "9000", "--workers", "2"]
