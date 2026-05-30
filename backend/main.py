@@ -157,7 +157,8 @@ from routers.abtest_router import router as abtest_router
 from routers.security_scan_router import router as security_scan_router
 from routers.capabilities_router import router as capabilities_router
 from routers.key_router import router as key_router
-from routers.wechat_admin import router as wechat_admin_router`nfrom routers.ecommerce_ai import router as ecommerce_ai_router
+from routers.wechat_admin import router as wechat_admin_router
+from routers.ecommerce_ai import router as ecommerce_ai_router
 # === 钀藉湴椤佃疆鍊?===
 ROTATION_DOMAINS = [
     "chxhx.eu.cc", "drrgr.eu.cc", "drrimrf.eu.cc", "drriiu.eu.cc",
@@ -262,7 +263,8 @@ app.include_router(abtest_router)
 app.include_router(security_scan_router)
 app.include_router(capabilities_router)
 app.include_router(key_router, prefix="/keys")
-app.include_router(wechat_admin_router, prefix="/agent/wechat")`napp.include_router(ecommerce_ai_router)
+app.include_router(wechat_admin_router, prefix="/agent/wechat")
+app.include_router(ecommerce_ai_router)
 
 app.include_router(code_deploy_router, prefix="/agent/deploy")
 app.include_router(emergency_panel_router, prefix="/agent/emergency")
