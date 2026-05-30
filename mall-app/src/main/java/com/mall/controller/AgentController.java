@@ -67,8 +67,11 @@ public class AgentController {
 
     @PostMapping("/cache/flush")
     public Result<?> flushCache() {
-        redisTemplate.getConnectionFactory().getConnection().serverCommands().flushAll();
-        return Result.ok();
+        Set<String> keys = redisTemplate.keys("mall:*");
+        if (keys != null && !keys.isEmpty()) {
+            redisTemplate.delete(keys);
+        }
+        return Result.ok(Map.of("cleared", keys != null ? keys.size() : 0));
     }
 
     @PostMapping("/notify/telegram")

@@ -25,13 +25,9 @@ public class MallOrder {
     private String receiverAddress;
     private String logisticsNo;
     private String logisticsCompany;
-    @TableField(exist = false)
     private String remark;
-    @TableField(exist = false)
     private LocalDateTime payTime;
-    @TableField(exist = false)
     private LocalDateTime deliveryTime;
-    @TableField(exist = false)
     private LocalDateTime finishTime;
     private LocalDateTime createTime;
     private LocalDateTime updateTime;

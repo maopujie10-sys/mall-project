@@ -665,8 +665,8 @@ public class MerchantServiceImpl implements MerchantService {
         if (balance == null || UserBalanceUtil.getAvailable(balance).compareTo(amount) < 0)
             throw new BizException("可用余额不足");
 
-        int rows = userBalanceMapper.deductBalance(merchant.getUserId(), amount, balance.getVersion());
-        if (rows == 0) throw new BizException("余额扣减失败，请重试");
+        int rows = userBalanceMapper.freezeBalance(merchant.getUserId(), amount, balance.getVersion());
+        if (rows == 0) throw new BizException("余额冻结失败，请重试");
 
         WithdrawOrder order = WithdrawOrder.builder()
             .orderNo(OrderNoUtil.generateWithdrawNo())

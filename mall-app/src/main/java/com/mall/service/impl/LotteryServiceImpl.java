@@ -147,12 +147,8 @@ public class LotteryServiceImpl implements LotteryService {
             int extraNeeded = drawTimes - leftTimes;
             int pointsNeeded = extraNeeded * exchangeRatio;
             if (userPoints.getPoints() < pointsNeeded) throw new BizException("积分不足");
-            activityUserPointsMapper.update(null,
-                new UpdateWrapper<MallActivityUserPoints>().eq("id", userPoints.getId())
-                    .setSql("points = points - " + pointsNeeded));
-            activityUserMapper.update(null,
-                new UpdateWrapper<MallActivityUser>().eq("id", activityUser.getId())
-                    .setSql("allow_join_times = allow_join_times + " + extraNeeded));
+            activityUserPointsMapper.deductPoints(userPoints.getId(), pointsNeeded);
+            activityUserMapper.addAllowJoinTimes(activityUser.getId(), extraNeeded);
         }
 
         // Load prizes
@@ -186,9 +182,7 @@ public class LotteryServiceImpl implements LotteryService {
                 lotteryRecordMapper.insert(record);
 
                 if (won.getMaxQuantity() != null && won.getMaxQuantity() > 0) {
-                    activityPrizeMapper.update(null,
-                        new UpdateWrapper<MallActivityPrize>().eq("id", won.getId())
-                            .gt("left_quantity", 0).setSql("left_quantity = left_quantity - 1"));
+                    activityPrizeMapper.decrementLeftQuantity(won.getId());
                 }
             }
 
@@ -200,9 +194,7 @@ public class LotteryServiceImpl implements LotteryService {
             drawResults.add(prizeDto);
         }
 
-        activityUserMapper.update(null,
-            new UpdateWrapper<MallActivityUser>().eq("id", activityUser.getId())
-                .setSql("join_times = join_times + " + drawTimes));
+        activityUserMapper.addJoinTimes(activityUser.getId(), drawTimes);
 
         Map<String, Object> result = new HashMap<>();
         result.put("prizes", drawResults);
@@ -296,9 +288,7 @@ public class LotteryServiceImpl implements LotteryService {
             int pointsPerUsdt = Integer.parseInt(config.getOrDefault("rechargePointsPerUsdt", "10"));
             int points = amount.multiply(new BigDecimal(pointsPerUsdt)).intValue();
             MallActivityUserPoints up = getOrCreateUserPoints(userId, act.getId());
-            activityUserPointsMapper.update(null,
-                new UpdateWrapper<MallActivityUserPoints>().eq("id", up.getId())
-                    .setSql("points = points + " + points));
+            activityUserPointsMapper.addPoints(up.getId(), points);
         }
     }
 
