@@ -60,9 +60,7 @@ const categories = reactive([
     id: 'core', icon: '\u{1F9E0}', label: 'AI\u6838\u5FC3', x: 0, y: 0, dragging: false,
     items: [
       { to: 'friday', icon: '\u{1F9E0}', label: 'Friday \u5927\u8111' },
-      { to: '', icon: '\u{1F4AC}', label: 'AI \u5BF9\u8BDD', action: 'openChat' },
-      { to: 'ai-brain', icon: '\u{1F9E0}', label: 'AI \u5927\u8111' },
-      { to: 'agents', icon: '\u{1F916}', label: 'Agent \u5217\u8868' },
+      { to: '', icon: '\u{1F4AC}', label: 'AI \u5BF9\u8BDD', action: 'openChat' },      { to: 'agents', icon: '\u{1F916}', label: 'Agent \u5217\u8868' },
       { to: 'models', icon: '\u{1F52C}', label: '\u6A21\u578B\u4E2D\u5FC3' },
       { to: 'memory', icon: '\u{1F4BE}', label: '\u8BB0\u5FC6\u4E2D\u5FC3' },
       { to: 'evolution', icon: '\u{1F331}', label: '\u8FDB\u5316\u62A5\u544A' },
