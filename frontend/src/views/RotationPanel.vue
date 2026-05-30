@@ -57,12 +57,12 @@
           </template>
         </el-table-column>
       </el-table>
-      <el-empty v-if="domains.length===0&&!loading" description="鏆傛棤鍩熷悕锛岀偣鍑讳笂鏂广€屾坊鍔犲煙鍚嶃€嶅紑濮嬮厤缃' :image-size="80" style="padding:60px 0" />
+      <el-empty v-if="domains.length===0&&!loading" description="暂无域名，点击上方「添加域名」开始配置" :image-size="80" style="padding:60px 0" />
     </el-card>
 
     <!-- ===== 浜岀骇杞€奸厤缃?===== -->
     <el-card shadow="never" style="margin-top:20px">
-      <template #header><span style="font-weight:600">浜岀骇杞€奸厤缃紙涓诲煙鍚?+ 杞€肩粍 + 瀛愬煙鍚嶏級</span></template>
+      <template #header><span style="font-weight:600">浜岀骇杞€奸厤缃紙主域名"+ 杞€肩粍 + 瀛愬煙鍚嶏級</span></template>
       <div v-if="!twoLevelConfig">鏆傛棤浜岀骇杞€奸厤缃</div>
       <div v-else>
         <div style="margin-bottom:16px">
@@ -73,7 +73,7 @@
           <div style="display:flex;justify-content:space-between;align-items:center">
             <div><strong>{{ g.main }}</strong><el-tag size="small" style="margin-left:8px">鏉冮噸 {{ g.weight }}</el-tag></div>
             <div style="display:flex;gap:6px">
-              <el-button text size="small" :type="g.enabled!==false?'success':'info'" @click="toggleRotationGroup(g.id)">{{ g.enabled!==false''宸插惎鐢':'宸插仠鐢' }}</el-button>
+              <el-button text size="small" :type="g.enabled!==false?'success':'info'" @click="toggleRotationGroup(g.id)">{{ g.enabled!==false?'已启用':'已停用' }}</el-button>
               <el-button text size="small" type="primary" @click="showAddSubDomain(g)">锛瀛愬煙鍚</el-button>
             </div>
           </div>
@@ -95,12 +95,12 @@
         </el-form-item>
         <el-form-item label="绫诲瀷">
           <el-select v-model="newDomain.type" style="width:100%">
-            <el-option label="..." value="涓诲煙鍚? />
-            <el-option label="..." value="杞€? />
+            <el-option label="..." value="主域名" />
+            <el-option label="..." value="轮值" />
             <el-option label="CDN鍥剧墖" value="CDN鍥剧墖" />
           </el-select>
         </el-form-item>
-        <el-form-item label="鏉冮噸锛?-10锛?>
+        <el-form-item label="权重（1-10）">
           <el-input-number v-model="newDomain.weight" :min="1" :max="10" />
         </el-form-item>
       </el-form>
@@ -111,9 +111,9 @@
     </el-dialog>
 
     <!-- 娣诲姞瀛愬煙鍚嶅脊绐?-->
-    <el-dialog v-model="subDialogVisible" :title="'涓?'+(subGroup?.main||'')+' 娣诲姞瀛愬煙鍚?" width="400px">
+    <el-dialog v-model="subDialogVisible" :title="'为'+(subGroup?.main||'')+' 添加子域名'" width="400px">
       <el-form label-position="top">
-        <el-form-item label="瀛愬煙鍚?>
+        <el-form-item label="子域名">
           <el-input v-model="newSubDomain.host" placeholder="shop.example.com" />
         </el-form-item>
         <el-form-item label="鏉冮噸">
@@ -146,7 +146,7 @@ const twoLevelConfig = ref(null)
 // 娣诲姞鍩熷悕
 const addDialogVisible = ref(false)
 const adding = ref(false)
-const newDomain = reactive({ domain: "", type: "杞€?, weight: 3 })
+const newDomain = reactive({ domain: "", type: "轮值", weight: 3 })
 
 // 娣诲姞瀛愬煙鍚?
 const subDialogVisible = ref(false)
@@ -166,10 +166,10 @@ async function fetchDomains() {
       domains.splice(0, domains.length, ...data.map(d => ({
         domain: d.domain || d.host || "",
         ip: d.ip || d.address || "",
-        active: d.active '? d.status === "ok",
+        active: d.active ?? d.status === "ok",
         status: d.status || (d.active ? "ok" : "paused"),
         latency: d.latency ?? 0,
-        type: d.type || "杞€?,
+        type: d.type || "轮值",
         weight: d.weight ?? 3,
         sslExpiry: d.sslExpiry || "",
         sslDays: d.sslDays ?? 0,
@@ -187,11 +187,11 @@ async function fetchTwoLevelConfig() {
 }
 
 async function handleAdd() {
-  if (!newDomain.domain) { ElMessage.warning("璇疯緭鍏ュ煙鍚?); return }
+  if (!newDomain.domain) { ElMessage.warning("请输入域名"); return }
   adding.value = true
   try {
     await addDomain(newDomain.domain, newDomain.type)
-    ElMessage.success(`宸叉坊鍔犲煙鍚?${newDomain.domain}`)
+    ElMessage.success(`已添加域名"${newDomain.domain}`)
     addDialogVisible.value = false
     newDomain.domain = ""
     await fetchDomains()
@@ -201,9 +201,9 @@ async function handleAdd() {
 
 async function handleRemove(row) {
   try {
-    await ElMessageBox.confirm(`纭畾鍒犻櫎鍩熷悕 ${row.domain}锛焋, "纭鍒犻櫎", { type: "warning" })
+    await ElMessageBox.confirm(`确定删除域名 ${row.domain}？`, "确认删除", { type: "warning" })
     await removeDomain(row.domain)
-    ElMessage.success(`宸插垹闄?${row.domain}`)
+    ElMessage.success(`已删除"${row.domain}`)
     await fetchDomains()
   } catch {}
 }
@@ -213,17 +213,17 @@ async function handleToggle(row) {
     await toggleDomain(row.domain, !row.active)
     row.active = !row.active
     row.status = row.active ? "ok" : "paused"
-    ElMessage.success(row.active ? "宸叉仮澶' : "宸叉殏鍋?)
-  } catch { ElMessage.error("鎿嶄綔澶辫触") }
+    ElMessage.success(row.active ? "已恢复" : "已暂停")
+  } catch { ElMessage.error("操作失败") }
 }
 
 async function handleCheckOne(row) {
   ElMessage.info(`姝ｅ湪妫€娴?${row.domain}...`)
   try {
     const r = await checkDomain(row.domain)
-    if (r) { row.latency = r.latency '? row.latency; row.active = r.online ?? row.active }
-    ElMessage.success(`${row.domain} 妫€娴嬪畬鎴恅)
-  } catch { ElMessage.warning("妫€娴嬭姹傚凡鍙戦€?) }
+    if (r) { row.latency = r.latency ?? row.latency; row.active = r.online ?? row.active }
+    ElMessage.success(`${row.domain} 检测完成"`)
+  } catch { ElMessage.warning("检测请求已发送") }
 }
 
 async function handleCheckAll() {
@@ -231,7 +231,7 @@ async function handleCheckAll() {
   try {
     await Promise.all(domains.map(d => checkDomain(d.domain).catch(()=>{})))
     await fetchDomains()
-    ElMessage.success("鍏ㄩ噺妫€娴嬪畬鎴?)
+    ElMessage.success("全量检测完成")
   } catch {}
   finally { checkingAll.value = false }
 }
@@ -244,8 +244,8 @@ async function toggleRotationGroup(id) {
   try {
     await apiToggleGroup(id)
     await fetchTwoLevelConfig()
-    ElMessage.success("宸插垏鎹?)
-  } catch { ElMessage.error("鎿嶄綔澶辫触") }
+    ElMessage.success("已切换")
+  } catch { ElMessage.error("操作失败") }
 }
 
 function showAddSubDomain(g) {
@@ -256,11 +256,11 @@ function showAddSubDomain(g) {
 }
 
 async function handleAddSub() {
-  if (!newSubDomain.host) { ElMessage.warning("璇疯緭鍏ュ瓙鍩熷悕"); return }
+  if (!newSubDomain.host) { ElMessage.warning("请输入子域名"); return }
   addingSub.value = true
   try {
     await addSubdomain(subGroup.value.id, newSubDomain.host, newSubDomain.weight)
-    ElMessage.success("瀛愬煙鍚嶅凡娣诲姞")
+    ElMessage.success("子域名已添加")
     subDialogVisible.value = false
     await fetchTwoLevelConfig()
   } catch (e) { ElMessage.error(e.message) }
@@ -269,9 +269,9 @@ async function handleAddSub() {
 
 async function removeSubDomain(groupId, host) {
   try {
-    await ElMessageBox.confirm(`纭畾绉婚櫎瀛愬煙鍚?${host}锛焋, "纭", { type: "warning" })
+    await ElMessageBox.confirm(`确定移除子域名?${host}？`, "确认", { type: "warning" })
     await removeSubdomain(groupId, host)
-    ElMessage.success("宸茬Щ闄?)
+    ElMessage.success("已移除")
     await fetchTwoLevelConfig()
   } catch {}
 }
@@ -279,7 +279,7 @@ async function removeSubDomain(groupId, host) {
 const refreshDomains = async () => {
   loading.value = true
   await fetchDomains()
-  ElMessage.success("宸插埛鏂?)
+  ElMessage.success("已刷新")
 }
 
 onMounted(() => {

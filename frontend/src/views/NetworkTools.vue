@@ -10,7 +10,7 @@
             <el-input v-model="pingHost" placeholder="鍩熷悕鎴朓P" size="small" @keyup.enter="runPing" />
             <el-button @click="runPing" size="small" type="primary" :loading="pingLoading">Ping</el-button>
           </div>
-          <pre v-if="pingResult" class="result-box">{{ pingResult.stdout || pingResult.error || "鏃犵粨鏋' }}</pre>
+          <pre v-if="pingResult" class="result-box">{{ pingResult.stdout || pingResult.error || "无结果" }}</pre>
         </el-card>
 
         <el-card shadow="never" style="margin-bottom:16px">
@@ -20,7 +20,7 @@
             <el-button @click="runDns" size="small" type="primary" :loading="dnsLoading">鏌ヨ</el-button>
           </div>
           <div v-if="dnsResult" class="result-box">
-            <div v-if="dnsResult.ips">IP鍦板潃锛?code v-for="ip in dnsResult.ips" :key="ip" style="display:block">{{ ip }}</code></div>
+            <div v-if="dnsResult.ips">IP地址：<code v-for="ip in dnsResult.ips" :key="ip" style="display:block">{{ ip }}</code></div>
             <div v-else style="color:#ff4d4f">{{ dnsResult.error }}</div>
           </div>
         </el-card>
@@ -32,7 +32,7 @@
             <el-button @click="runHttp" size="small" type="primary" :loading="httpLoading">妫€鏌</el-button>
           </div>
           <div v-if="httpResult" class="result-box">
-            <div>鐘舵€佺爜锛?el-tag :type="httpResult.status < 400 ? 'success' : 'danger'">{{ httpResult.status }}</el-tag></div>
+            <div>状态码：<el-tag :type="httpResult.status < 400 ? 'success' : 'danger'">{{ httpResult.status }}</el-tag></div>
             <div>鍝嶅簲鏃堕棿锛歿{ httpResult.elapsed_ms }}ms</div>
             <div>澶у皬锛歿{ httpResult.size }} bytes</div>
           </div>
@@ -64,7 +64,7 @@
             <el-input v-model="traceHost" placeholder="鍩熷悕鎴朓P" size="small" @keyup.enter="runTrace" />
             <el-button @click="runTrace" size="small" type="primary" :loading="traceLoading">杩借釜</el-button>
           </div>
-          <pre v-if="traceResult" class="result-box">{{ traceResult.stdout || traceResult.error || "鏃犵粨鏋' }}</pre>
+          <pre v-if="traceResult" class="result-box">{{ traceResult.stdout || traceResult.error || "无结果" }}</pre>
         </el-card>
       </el-col>
     </el-row>

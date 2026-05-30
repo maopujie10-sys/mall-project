@@ -5,7 +5,7 @@
       <p>璇煶IVR 路 鑷姩鎺ュ崟 路 杞汉宸路 24h鍦ㄧ嚎</p>
       <div class="header-stats">
         <el-statistic title="浠婃棩鏉ョ數" :value="stats.today_calls" />
-        <el-statistic title="鑷姩瑙ｅ喅鐜? :value="stats.auto_resolved" suffix="%" />
+        <el-statistic title="自动解决率" :value="stats.auto_resolved" suffix="%" />
         <el-statistic title="骞冲潎鏃堕暱" :value="stats.avg_duration" />
         <el-statistic title="鍦ㄧ嚎鍧愬腑" :value="status.active_calls + '/' + status.lines" />
       </div>
@@ -18,7 +18,7 @@
           <el-table-column prop="caller" label="鏉ョ數鍙风爜" width="140" />
           <el-table-column prop="intent" label="鎰忓浘" width="120" />
           <el-table-column prop="duration_sec" label="鏃堕暱(绉?" width="90" />
-          <el-table-column label="鐘舵€?><template #default="{row}"><el-tag :type="row.resolved?'success':'warning'">{{ row.resolved''宸茶В鍐':'寰呭鐞' }}</el-tag></template></el-table-column>
+          <el-table-column label="状态"><template #default="{row}"><el-tag :type="row.resolved?'success':'warning'">{{ row.resolved ? '已解决' : '待处理' }}</el-tag></template></el-table-column>
           <el-table-column prop="note" label="澶囨敞" min-width="150" />
         </el-table>
       </el-tab-pane>
@@ -27,12 +27,12 @@
       </el-tab-pane>
       <el-tab-pane label="馃搳 鏁版嵁缁熻" name="stats">
         <el-descriptions :column="2" border>
-          <el-descriptions-item label="鎬婚€氳瘽鏁?>{{ stats.total_calls }}</el-descriptions-item>
+          <el-descriptions-item label="总通话数">{{ stats.total_calls }}</el-descriptions-item>
           <el-descriptions-item label="浠婃棩鏉ョ數">{{ stats.today_calls }}</el-descriptions-item>
-          <el-descriptions-item label="瑙ｅ喅鐜?>{{ stats.resolution_rate }}</el-descriptions-item>
+          <el-descriptions-item label="解决率">{{ stats.resolution_rate }}</el-descriptions-item>
           <el-descriptions-item label="鑷姩瑙ｅ喅">{{ stats.auto_resolved }}</el-descriptions-item>
           <el-descriptions-item label="骞冲潎鏃堕暱">{{ stats.avg_duration }}</el-descriptions-item>
-          <el-descriptions-item label="杞汉宸?>{{ stats.transferred }}</el-descriptions-item>
+          <el-descriptions-item label="转人工">{{ stats.transferred }}</el-descriptions-item>
         </el-descriptions>
       </el-tab-pane>
     </el-tabs>

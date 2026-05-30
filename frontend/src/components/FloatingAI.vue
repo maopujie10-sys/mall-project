@@ -37,7 +37,7 @@
                         <button class="header-btn" @click="toggleVoiceInput" :title="voiceActive ? '鍋滄璇煶' : '璇煶杈撳叆'" :class="{ active: voiceActive }">馃帳</button>
             <button class="header-btn" @click="toggleVoiceCall" :title="voiceCallActive ? '鍏抽棴鏈楄' : '鏈楄鍥炲'" :class="{ active: voiceCallActive }">馃攰</button>
                         <button class="header-btn" @click="toggleExpand" :title="chatExpanded ? '缂╁皬' : '鎵╁ぇ'">
-              {{ chatExpanded ' '鈯' : '鈯' }}
+              {{ chatExpanded ? '⊟' : '⊞' }}
             </button>
             <button class="header-btn" @click="minimizeChat" title="鏈€灏忓寲">鈭</button>
             <button class="header-btn close-btn" @click="closeChat" title="鍏抽棴">脳</button>
@@ -410,14 +410,14 @@ async function sendMessage() {
       const token = getAgentToken()
       const res = await fetch('/agent/vision/analyze', {
         method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Agent-Token': token },
-        body: JSON.stringify({ image_base64: files[0].dataUrl.split(',')[1], question: '璇锋弿杩拌繖寮犲浘鐗? })
+        body: JSON.stringify({ image_base64: files[0].dataUrl.split(',')[1], question: '请描述这张图片' })
       })
       if (res.ok) {
         const data = await res.json()
         messages.value.push({ role: 'assistant', content: data.result || '鍒嗘瀽瀹屾垚', time: new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }) })
         speakIfActive(data.result)
       }
-    } catch (e) { messages.value.push({ role: 'assistant', content: '鍥剧墖鍒嗘瀽澶辫触', time: now }) } loading.value = false; return } // ?- SSE messages.value.push({ role:'user', content: text, time: now })
+    } catch (e) { messages.value.push({ role: 'assistant', content: '图片分析失败', time: now }) } loading.value = false; return; } // ?- SSE messages.value.push({ role:'user', content: text, time: now })
   inputText.value = ''
   loading.value = true; window.dispatchEvent(new CustomEvent('brain:thinking', {detail:true}))
   await nextTick(); scrollBottom()
@@ -534,7 +534,7 @@ async function loadPromptTemplates() {
 
 function applyTemplate(tmpl) {
   inputText.value = ''; selectedTemplate.value = tmpl.name
-  ElMessage.info('宸查€夋嫨妯℃澘: ' + tmpl.name + '锛岃緭鍏ュ唴瀹瑰悗鍙戦€?)
+  ElMessage.info('已选择模板: ' + tmpl.name + '，输入内容后发送')
 }
 
 
@@ -544,7 +544,7 @@ const attachments = ref([])
 function onFileSelected(e) {
   const files = Array.from(e.target.files || [])
   for (const file of files) {
-    if (attachments.value.length >= 5) { alert('' ?); break } const reader = new FileReader() reader.onload = (ev) => { let type ='file'
+    if (attachments.value.length >= 5) { alert('已达上限'); break } const reader = new FileReader(); reader.onload = (ev) => { let type ='file'
       if (file.type.startsWith('image/')) type = 'image'
       else if (file.type.startsWith('video/')) type = 'video'
       attachments.value.push({ name: file.name, size: file.size, type, dataUrl: ev.target.result, mimeType: file.type, file })
@@ -572,7 +572,7 @@ function startMatrixRain() {
     canvas.width = parent.clientWidth
     canvas.height = parent.clientHeight
     const ctx = canvas.getContext('2d')
-    const chars = ''????????????????????????01'
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
     const fontSize = 10
     const columns = Math.floor(canvas.width / fontSize)
     const drops = Array(columns).fill(1)
@@ -607,7 +607,7 @@ minimizeChat = function() { stopMatrixRain(); origMin() }
 function detectTask(msg) {
   const m = msg.toLowerCase();
   processingSteps.value = [];
-  if (m.includes('鏈嶅姟')||m.includes('server')||m.includes('鐘舵€?)||m.includes('cpu')||m.includes('鍐呭瓨')) {
+  if (m.includes('鏈嶅姟')||m.includes('server')||m.includes('状态')||m.includes('cpu')||m.includes('鍐呭瓨')) {
     processingSteps.value = ['杩炴帴鏈嶅姟鍣?..', 'CPU ?..', '璇诲彇鍐呭瓨鏁版嵁...', '鍒嗘瀽璐熻浇鎯呭喌...', '鐢熸垚鎶ュ憡...'];
     return '绯荤粺璇婃柇';
   }
@@ -627,7 +627,7 @@ function detectTask(msg) {
     processingSteps.value = ['鑾峰彇甯傚満鏁版嵁...', '绔炲搧鍒嗘瀽...', 'AI ...'];
     return '鏅鸿兘瀹氫环';
   }
-  if (m.includes('缂栫▼')||m.includes('浠ｇ爜')||m.includes('寮€鍙?)) {
+  if (m.includes('缂栫▼')||m.includes('浠ｇ爜')||m.includes('开发')) {
     processingSteps.value = ['鍒嗘瀽闇€姹?..', 'AI鐢熸垚浠ｇ爜...', '楠岃瘉娴嬭瘯...'];
     return 'AI缂栫▼';
   }
@@ -635,7 +635,7 @@ function detectTask(msg) {
     processingSteps.value = ['蹇収鐘舵€?..', '鎵撳寘鏁版嵁...', '瀹夊叏瀛樺偍...'];
     return '澶囦唤鍥炴粴';
   }
-  if (m.includes('閲囬泦')||m.includes('鐖?)||m.includes('scrape')) {
+  if (m.includes('閲囬泦')||m.includes('爬')||m.includes('scrape')) {
     processingSteps.value = ['杩炴帴鏁版嵁婧?..', '...', '娓呮礂鍘婚噸...', '鍏ュ簱瀛樺偍...'];
     return '鏁版嵁閲囬泦';
   }
@@ -693,7 +693,7 @@ async function compareModels() {
   }catch(e){messages.value.push({role:"assistant",content:"妯″瀷瀵规瘮澶辫触",time:new Date().toLocaleTimeString("zh-CN",{hour:"2-digit",minute:"2-digit"})})}
   loading.value=false 
 }
-function applyTemplateByName(name) { const t=promptTemplates.value.find(p=>p.name===name); if(t){selectedTemplate.value=t.name;ElMessage.info("宸查€夋ā鏉? "+t.name);inputText.value="";inputText.focus()} }
+function applyTemplateByName(name) { const t=promptTemplates.value.find(p=>p.name===name); if(t){selectedTemplate.value=t.name;ElMessage.info("已选模板: "+t.name);inputText.value="";inputText.focus()} }
 loadPromptTemplates()
 </script>
 

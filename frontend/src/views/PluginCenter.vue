@@ -50,7 +50,7 @@
             </el-card>
           </el-col>
         </el-row>
-        <el-empty v-if="filteredSkills.length===0" description="娌℃湁鍖归厤鐨勬妧鑳? />
+        <el-empty v-if="filteredSkills.length===0" description="没有匹配的技能" />
       </el-tab-pane>
 
       <!-- Tab 2: 绀惧尯甯傚満 -->
@@ -96,7 +96,7 @@
             </el-card>
           </el-col>
         </el-row>
-        <el-empty v-if="filteredCommunity.length===0" description="鏆傛棤绀惧尯鎶€鑳? />
+        <el-empty v-if="filteredCommunity.length===0" description="暂无社区技能" />
       </el-tab-pane>
 
       <!-- Tab 3: 宸插畨瑁?-->
@@ -130,13 +130,13 @@
             </template>
           </el-table-column>
         </el-table>
-        <el-empty v-if="allInstalledSkills.length===0" description="鏆傛棤宸插畨瑁呮妧鑳? />
+        <el-empty v-if="allInstalledSkills.length===0" description="暂无已安装技能" />
       </el-tab-pane>
 
       <!-- Tab 4: 鍙戝竷鎶€鑳?-->
       <el-tab-pane label="..." name="publish">
         <el-card shadow="never">
-          <h3 style="margin-top:0">馃摛 鍙戝竷鎶€鑳藉寘</h3>
+          <h3 style="margin-top:0">馃摛 鍙戝竷技能包</h3>
           <p style="color:#999;font-size:13px">灏嗕綘鐨?skill.json + main.py 鎵撳寘鎴?ZIP 涓婁紶锛屽嵆鍙湪绯荤粺涓畨瑁呬娇鐢</p>
           <el-upload
             drag
@@ -164,7 +164,7 @@
             <el-button @click="publishFromUrl" :loading="publishingUrl" size="small" :disabled="!publishUrl">瀹夎</el-button>
           </div>
           <el-divider />
-          <h4>馃摝 鎶€鑳藉寘鏍煎紡瑕佹眰</h4>
+          <h4>馃摝 技能包鏍煎紡瑕佹眰</h4>
           <pre style="font-size:12px;background:#f5f5f5;padding:12px;border-radius:4px">
 my-skill.zip
 鈹溾攢鈹€ skill.json          # 蹇呭～锛氭妧鑳芥竻鍗鈹?  鈹溾攢鈹€ id              # 鍞竴鏍囪瘑
@@ -283,21 +283,21 @@ async function installSkill(s) {
 
 async function uninstallSkill(s) {
   try {
-    await ElMessageBox.confirm("纭畾鍗歌浇 " + s.name + "锛?, "纭", { type: "warning" })
+    await ElMessageBox.confirm("确定卸载 " + s.name + "？", "确认", { type: "warning" })
     const r = await agentApi.post("/agent/plugins/uninstall", { plugin_id: s.id })
     if (r.ok || r.uninstalled) {
-      ElMessage.success(s.name + " 宸插嵏杞?)
+      ElMessage.success(s.name + " 已卸载")
       s.installed = false
     }
   } catch (e) {
-    if (e !== "cancel") ElMessage.error("鍗歌浇澶辫触")
+    if (e !== "cancel") ElMessage.error("卸载失败")
   }
 }
 
 async function toggleSkill(s) {
   try {
     await agentApi.post("/agent/plugins/toggle", { plugin_id: s.id, enabled: s.enabled })
-    ElMessage.success(s.enabled ? s.name + " 宸插惎鐢' : s.name + " 宸茬鐢?)
+    ElMessage.success(s.enabled ? s.name + " 已启用" : s.name + " 已禁用")
   } catch {
     s.enabled = !s.enabled
     ElMessage.error("鎿嶄綔澶辫触")
@@ -342,14 +342,14 @@ async function fetchInstalledPackages() {
 
 async function uninstallPackage(s) {
   try {
-    await ElMessageBox.confirm("纭畾鍗歌浇鎶€鑳藉寘 " + s.name + "锛焅n鏂囦欢灏嗚鍒犻櫎銆?, "纭", { type: "warning" })
+    await ElMessageBox.confirm("确定卸载技能包 " + s.name + "？\n文件将被删除。", "确认", { type: "warning" })
     const r = await agentApi.post("/agent/plugins/uninstall/" + s.id)
     if (r.ok || r.uninstalled) {
-      ElMessage.success(s.name + " 宸插嵏杞?)
+      ElMessage.success(s.name + " 已卸载")
       installedPackages.value = installedPackages.value.filter(p => p.id !== s.id)
     }
   } catch (e) {
-    if (e !== "cancel") ElMessage.error("鍗歌浇澶辫触")
+    if (e !== "cancel") ElMessage.error("卸载失败")
   }
 }
 

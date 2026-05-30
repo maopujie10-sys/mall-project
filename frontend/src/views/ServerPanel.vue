@@ -116,11 +116,11 @@ async function doRelease(mode) {
 }
 async function checkLeaks() {
   leakLoading.value = true
-  try { leaks.value = (await getMemoryLeaks()).leaks || []; leakChecked.value = true } catch { ElMessage.error("妫€娴嬪け璐?) }
+  try { leaks.value = (await getMemoryLeaks()).leaks || []; leakChecked.value = true } catch { ElMessage.error("检测失败") }
   leakLoading.value = false
 }
 async function killPid(pid) {
-  try { await killServerProcess(pid); ElMessage.success(`宸茬粓姝?PID=${pid}`); fetchAll() } catch { ElMessage.error("缁堟澶辫触") }
+  try { await killServerProcess(pid); ElMessage.success(`已终止 PID=${pid}`); fetchAll() } catch { ElMessage.error("终止失败") }
 }
 onMounted(fetchAll)
 </script>

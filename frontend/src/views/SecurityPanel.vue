@@ -33,7 +33,7 @@
         <el-card shadow="never">
           <div class="card-title">鐘舵€</div>
           <div style="padding:20px 0;">
-            <el-result :icon="verified?'success':'warning'" :title="verified?'宸插惎鐢':'鏈惎鐢?" :sub-title="verified?'涓ゆ楠岃瘉宸插紑鍚紝鐧诲綍鏃堕渶瑕佽緭鍏ラ獙璇佺爜':'璐︽埛鏈紑鍚袱姝ラ獙璇佷繚鎶?" />
+            <el-result :icon="verified?'success':'warning'" :title="verified?'宸插惎鐢':'未启用'" :sub-title="verified?'两步验证已开启，登录时需要输入验证码':'账户未开启两步验证保护'" />
           </div>
         </el-card>
       </el-col>
@@ -69,19 +69,20 @@ async function doSetup() {
     secret.value = data.secret
     setupDone.value = true
   } catch (e) {
-    ElMessage.error(e.response?.data?.detail || '璁剧疆澶辫触')
+    ElMessage.error(e.response?.data?.detail || '设置失败')
   } finally { settingUp.value = false }
 }
 
 async function doVerify() {
-  if (!code.value || code.value.length !== 6) { ElMessage.warning('璇疯緭鍏浣嶉獙璇佺爜'); return }
+  if (!code.value || code.value.length !== 6) { ElMessage.warning('请输入6位验证码'); return }
   verifying.value = true
   try {
     await agentApi.post(`/2fa/verify?code=${code.value}`)
     verified.value = true
-    ElMessage.success('?) code.value =''
+    ElMessage.success('验证成功')
+    code.value = ''
   } catch (e) {
-    ElMessage.error(e.response?.data?.detail || '楠岃瘉鐮佹棤鏁?)
+    ElMessage.error(e.response?.data?.detail || '验证码无效')
   } finally { verifying.value = false }
 }
 
@@ -89,8 +90,8 @@ async function doReset() {
   try {
     await agentApi.delete('/2fa/reset')
     verified.value = false; setupDone.value = false; qrCode.value = ''; secret.value = ''
-    ElMessage.success('宸查噸缃?)
-  } catch (e) { ElMessage.error('閲嶇疆澶辫触') }
+    ElMessage.success('已重置')
+  } catch (e) { ElMessage.error('重置失败') }
 }
 
 onMounted(checkStatus)

@@ -73,7 +73,7 @@
               {{ a.product }}: {{ a.from }}鈫抺{ a.to }} ({{ a.change_pct }}%)
             </el-timeline-item>
           </el-timeline>
-          <el-empty v-else description="鏃犲憡璀?/>
+          <el-empty v-else description="无告警" />
         </el-card>
       </el-col>
       <el-col :span="12">
@@ -144,12 +144,12 @@ const priceForm = ref({ trackId:'', product:'', price:0, currency:'USD' })
 const promoForm = ref({ trackId:'', product:'', title:'', discount:'' })
 
 const summaryCards = computed(() => [
-  { label:'鐩戞帶鎬绘暟', value: summary.value.total_tracks || 0 },
-  { label:'娲昏穬', value: summary.value.active_tracks || 0 },
-  { label:'浠锋牸鍙樺姩(7d)', value: summary.value.price_changes_7d || 0 },
-  { label:'鎬诲憡璀?, value: summary.value.total_alerts || 0 },
-  { label:'鎬讳績閿€', value: summary.value.total_promotions || 0 },
-  { label:'骞冲彴鏁?, value: Object.keys(summary.value.by_platform||{}).length || 0 },
+  { label:'监控总数', value: summary.value.total_tracks || 0 },
+  { label:'活跃', value: summary.value.active_tracks || 0 },
+  { label:'价格变动(7d)', value: summary.value.price_changes_7d || 0 },
+  { label:'总告警', value: summary.value.total_alerts || 0 },
+  { label:'总促销', value: summary.value.total_promotions || 0 },
+  { label:'平台数', value: Object.keys(summary.value.by_platform||{}).length || 0 },
 ])
 
 async function loadAll() {
@@ -173,26 +173,26 @@ async function loadAll() {
 async function doAdd() {
   try {
     await addTrack(addForm.value.product_name, addForm.value.platform, addForm.value.url, addForm.value.target_price, addForm.value.category)
-    ElMessage.success('宸叉坊鍔?)
+    ElMessage.success('已添加')
     showAddDialog.value = false
     addForm.value = { product_name:'', platform:'ebay', url:'', target_price:0, category:'' }
     loadAll()
-  } catch(e) { ElMessage.error('娣诲姞澶辫触') }
+  } catch(e) { ElMessage.error('添加失败') }
 }
 
 async function doRemove(id) {
-  try { await removeTrack(id); ElMessage.success('宸插垹闄?); loadAll() } catch(e) { ElMessage.error('鍒犻櫎澶辫触') }
+  try { await removeTrack(id); ElMessage.success('已删除'); loadAll() } catch(e) { ElMessage.error('删除失败') }
 }
 
 function showPriceDialog(row) { priceForm.value = { trackId: row.id, product: row.product, price: 0, currency: 'USD' }; showPriceDlg.value = true }
 function showPromoDialog(row) { promoForm.value = { trackId: row.id, product: row.product, title: '', discount: '' }; showPromoDlg.value = true }
 
 async function doRecordPrice() {
-  try { await recordPrice(priceForm.value.trackId, priceForm.value.price, priceForm.value.currency); ElMessage.success('?); showPriceDlg.value = false; loadAll() } catch(e) { ElMessage.error('璁板綍澶辫触') }
+  try { await recordPrice(priceForm.value.trackId, priceForm.value.price, priceForm.value.currency); ElMessage.success('已记录'); showPriceDlg.value = false; loadAll() } catch(e) { ElMessage.error('记录失败') }
 }
 
 async function doRecordPromo() {
-  try { await recordPromotion(promoForm.value.trackId, promoForm.value.title, promoForm.value.discount); ElMessage.success('宸茶褰?); showPromoDlg.value = false; loadAll() } catch(e) { ElMessage.error('璁板綍澶辫触') }
+  try { await recordPromotion(promoForm.value.trackId, promoForm.value.title, promoForm.value.discount); ElMessage.success('已记录'); showPromoDlg.value = false; loadAll() } catch(e) { ElMessage.error('记录失败') }
 }
 
 onMounted(() => loadAll())

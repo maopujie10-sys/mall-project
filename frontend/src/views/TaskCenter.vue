@@ -47,7 +47,7 @@
         <el-table-column label="..." width="90">
           <template #default="{row}">
             <el-tag :type="row.status==='running'?'success':'warning'" size="small">
-              {{ row.status==='running'''杩愯涓':'宸叉殏鍋' }}
+              {{ row.status==='running'?'运行中':'已暂停' }}
             </el-tag>
           </template>
         </el-table-column>
@@ -94,7 +94,7 @@ async function loadTasks() {
 async function doTrigger(id) {
   try {
     await triggerTask(id)
-    ElMessage.success('浠诲姟宸茶Е鍙?)
+    ElMessage.success('任务已触发')
     loadTasks()
   } catch (e) { ElMessage.error('瑙﹀彂澶辫触') }
 }
@@ -102,7 +102,7 @@ async function doTrigger(id) {
 async function doPause(id) {
   try {
     await pauseTask(id)
-    ElMessage.success('宸叉殏鍋?)
+    ElMessage.success('已暂停')
     loadTasks()
   } catch (e) { ElMessage.error('鏆傚仠澶辫触') }
 }
@@ -110,7 +110,7 @@ async function doPause(id) {
 async function doResume(id) {
   try {
     await resumeTask(id)
-    ElMessage.success('宸叉仮澶?)
+    ElMessage.success('已恢复')
     loadTasks()
   } catch (e) { ElMessage.error('鎭㈠澶辫触') }
 }

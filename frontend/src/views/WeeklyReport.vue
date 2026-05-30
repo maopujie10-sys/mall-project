@@ -38,13 +38,13 @@
     <el-card shadow="never">
       <template #header>馃摎 鍘嗗彶鍛ㄦ姤 (鏈€杩?2鍛?</template>
       <el-timeline v-if="reports.length">
-        <el-timeline-item v-for="r in reports" :key="r.id" :timestamp="'绗?+r.week+'鍛路 '+r.date" placement="top">
+        <el-timeline-item v-for="r in reports" :key="r.id" :timestamp="'第'+r.week+'周· '+r.date" placement="top">
           <el-card shadow="never">
             <pre class="summary-text" style="font-size:12px">{{ r.summary }}</pre>
           </el-card>
         </el-timeline-item>
       </el-timeline>
-      <el-empty v-else description="鏆傛棤鍛ㄦ姤锛岀偣鍑讳笂鏂规寜閽敓鎴?/>
+      <el-empty v-else description="暂无周报，点击上方按钮生成" />
     </el-card>
   </div>
 </template>
@@ -67,7 +67,7 @@ const metrics = computed(() => {
     { label: '鐢ㄦ埛鎬绘暟', value: d.users_total || 0 },
     { label: 'TODO', value: d.alerts_this_week || 0 },
     { label: '瀹㈡湇娑堟伅', value: d.customer_messages || 0 },
-    { label: '鍋ュ悍鍒?, value: d.avg_health_score || 0 },
+    { label: '健康分', value: d.avg_health_score || 0 },
   ]
 })
 
@@ -76,7 +76,7 @@ async function doGenerate() {
   try {
     const { data } = await generateWeeklyReport()
     latestReport.value = data.report
-    ElMessage.success('鍛ㄦ姤宸茬敓鎴?)
+    ElMessage.success('周报已生成')
     loadReports()
   } catch (e) { ElMessage.error('鐢熸垚澶辫触') }
   finally { genLoading.value = false }

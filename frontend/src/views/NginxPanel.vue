@@ -3,12 +3,12 @@
     <div class="page-header"><h1>馃敡 Nginx 绠＄悊</h1><p>杩涚▼鐩戞帶 路 閰嶇疆绠＄悊 路 绔欑偣绠＄悊 路 鏃ュ織鍒嗘瀽 路 SSL</p></div>
     <el-row :gutter="16" style="margin-bottom:20px">
       <el-col :span="6"><el-card shadow="never"><template #header>杩涚▼鐘舵€</template>
-        <el-tag :type="status?.running ? 'success' : 'danger'" size="large">{{ status?.running ? "杩愯涓' : "宸插仠姝' }}</el-tag>
+        <el-tag :type="status?.running ? 'success' : 'danger'" size="large">{{ status?.running ? '运行中' : '已停止' }}</el-tag>
         <div style="margin-top:8px;font-size:12px;color:var(--text-muted)">HTTP杩炴帴: {{ conn?.http_connections || "?" }} | HTTPS: {{ conn?.https_connections || "?" }}</div>
       </el-card></el-col>
       <el-col :span="6"><el-card shadow="never"><template #header>閰嶇疆璇硶</template>
         <el-button @click="testConfig" :loading="cfgLoading" size="small">娴嬭瘯 nginx -t</el-button>
-        <div v-if="cfgResult" :style="{color:cfgResult.ok?'#52c41a':'#ff4d4f',fontSize:'12px',marginTop:'8px'}">{{ cfgResult.ok ? "閰嶇疆姝ｇ‘" : "閰嶇疆鏈夎" }}</div>
+        <div v-if="cfgResult" :style="{color:cfgResult.ok?'#52c41a':'#ff4d4f',fontSize:'12px',marginTop:'8px'}">{{ cfgResult.ok ? '配置正确' : '配置有误' }}</div>
       </el-card></el-col>
       <el-col :span="6"><el-card shadow="never"><template #header>绔欑偣鏁</template>
         <div style="font-size:28px;font-weight:700;color:var(--color-primary)">{{ sites.length }}</div>
@@ -33,7 +33,7 @@
           <div v-for="(cnt,type) in errors?.by_type" :key="type" style="display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:13px">
             <span style="width:60px">{{ type }}</span><el-progress :percentage="Math.round(cnt/errors.total*100)" :stroke-width="12" :color="type==='error'?'#ff4d4f':type==='warn'?'#faad14':'#1890ff'" />
           </div>
-          <el-empty v-if="!errors?.total" description="鏃犻敊璇棩蹇? />
+          <el-empty v-if="!errors?.total" description="无错误日志" />
         </el-card>
       </el-col>
     </el-row>

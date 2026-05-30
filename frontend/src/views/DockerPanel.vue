@@ -129,10 +129,10 @@ async function fetchAll() {
 }
 
 async function fetchLogs() {
-  if (!logContainer.value) return ElMessage.warning("璇疯緭鍏ュ鍣ㄥ悕绉?)
+  if (!logContainer.value) return ElMessage.warning("请输入容器名称")
   try {
     const r = await agentApi.get("/docker/logs", { params: { container: logContainer.value, lines: 100 } })
-    logs.value = r.content || "鏃犳棩蹇?
+    logs.value = r.content || "无日志"
   } catch (e) {
     logs.value = "鑾峰彇鏃ュ織澶辫触: " + (e.response?.data?.detail || e.message)
   }
@@ -142,7 +142,7 @@ async function restartContainer(name) {
   restarting.value = name
   try {
     const r = await agentApi.post("/docker/restart", { container_id: name, action: "restart" })
-    ElMessage.success(r.ok ? `瀹瑰櫒 ${name} 宸查噸鍚痐 : (r.error || "宸叉彁浜ゅ鎵?))
+    ElMessage.success(r.ok ? `容器 ${name} 已重启` : (r.error || "已提交审计"))
   } catch (e) {
     ElMessage.error("閲嶅惎澶辫触: " + (e.response?.data?.detail || e.message))
   }

@@ -132,7 +132,7 @@ async function doCreateIssue() {
   creating.value = true
   try {
     const res = await createIssue('maopujie10-sys/mall-project', issueTitle.value, issueBody.value)
-    if (res?.data?.ok) { ElMessage.success('Issue宸插垱寤?); showCreateIssue.value = false; issueTitle.value = ''; issueBody.value = ''; listIssues().then(r=>issues.value=r?.data?.issues||[]) }
+    if (res?.data?.ok) { ElMessage.success('Issue已创建'); showCreateIssue.value = false; issueTitle.value = ''; issueBody.value = ''; listIssues().then(r=>issues.value=r?.data?.issues||[]) }
     else ElMessage.error('鍒涘缓澶辫触')
   } catch { ElMessage.error('鍒涘缓澶辫触') }
   creating.value = false

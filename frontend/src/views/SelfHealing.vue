@@ -13,9 +13,9 @@
             <el-button type="primary" :loading="patrolLoading" @click="doPatrol">馃攳 绔嬪嵆宸℃</el-button>
             <el-button type="warning" :loading="fixLoading" @click="doAutoFix">馃敡 涓€閿嚜鎰</el-button>
             <el-select v-model="historyDays" style="width:120px" @change="loadHistory">
-              <el-option :value="1" label="鏈€杩澶?/>
-              <el-option :value="7" label="鏈€杩澶?/>
-              <el-option :value="30" label="鏈€杩?0澶?/>
+              <el-option :value="1" label="最近1天" />
+              <el-option :value="7" label="最近7天" />
+              <el-option :value="30" label="最近30天" />
             </el-select>
             <el-button @click="loadHistory">馃攧 鍒锋柊</el-button>
           </el-space>
@@ -48,7 +48,7 @@
         <el-table-column prop="source" label="鏉ユ簮" width="100"/>
         <el-table-column prop="detail" label="璇︽儏"/>
       </el-table>
-      <el-empty v-else description="涓€鍒囨甯革紝鏈彂鐜板紓甯' :image-size="60"/>
+      <el-empty v-else description="一切正常，未发现异常" :image-size="60"/>
     </el-card>
 
     <!-- 淇缁撴灉 -->
@@ -56,7 +56,7 @@
       <template #header>馃敡 淇缁撴灉</template>
       <el-descriptions :column="3" border size="small">
         <el-descriptions-item label="灏濊瘯淇">{{ fixResult.attempted || 0 }}</el-descriptions-item>
-        <el-descriptions-item label="宸蹭慨澶?>{{ fixResult.fixed || 0 }}</el-descriptions-item>
+        <el-descriptions-item label="已修复">{{ fixResult.fixed || 0 }}</el-descriptions-item>
         <el-descriptions-item label="澶辫触">{{ fixResult.failed || 0 }}</el-descriptions-item>
       </el-descriptions>
       <el-table v-if="fixResult.results && fixResult.results.length" :data="fixResult.results" size="small" style="margin-top:12px">
@@ -71,7 +71,7 @@
     <!-- 寮傚父鍘嗗彶 -->
     <el-card shadow="never">
       <template #header>馃搳 寮傚父鍘嗗彶 (鏈€杩憑{ historyDays }}澶?</template>
-      <el-table :data="anomalies" size="small" v-loading="historyLoading" empty-text="鏆傛棤寮傚父璁板綍锛岀郴缁熻繍琛屾甯?>
+      <el-table :data="anomalies" size="small" v-loading="historyLoading" empty-text="暂无异常记录，系统运行正常">
         <el-table-column prop="id" label="ID" width="100"/>
         <el-table-column prop="severity" label="绾у埆" width="80">
           <template #default="{row}"><el-tag :type="sevType(row.severity)" size="small">{{ row.severity }}</el-tag></template>
@@ -82,7 +82,7 @@
         <el-table-column prop="status" label="..." width="100">
           <template #default="{row}">
             <el-tag :type="row.status==='resolved'?'success':row.status==='open'?'danger':'warning'" size="small">
-              {{ row.status === 'resolved' ' '宸茶В鍐' : row.status === 'open' ' '寰呭鐞' : '澶勭悊涓' }}
+              {{ row.status === 'resolved' ? '已解决' : row.status === 'open' ? '待处理' : '处理中' }}
             </el-tag>
           </template>
         </el-table-column>
@@ -112,8 +112,8 @@ const historySummary = ref({})
 
 const statCards = computed(() => [
   { label: '寮傚父鎬绘暟', value: historySummary.value.total || 0, type: 'total' },
-  { label: '?, value: historySummary.value.open || 0, type:'open' },
-  { label: '宸茶В鍐?, value: historySummary.value.resolved || 0, type: 'resolved' },
+  { label: '未解决', value: historySummary.value.open || 0, type:'open' },
+  { label: '已解决', value: historySummary.value.resolved || 0, type: 'resolved' },
   { label: 'TODO', value: historySummary.value.auto_fixed || 0, type: 'auto' },
 ])
 
@@ -126,7 +126,7 @@ async function doPatrol() {
   try {
     const { data } = await runPatrol()
     patrolResult.value = data
-    ElMessage.success(`宸℃瀹屾垚锛?{data.checks_passed || 0}椤归€氳繃锛?{(data.issues || []).length}涓棶棰榒)
+    ElMessage.success(`巡检完成：${data.checks_passed || 0}项通过，${(data.issues || []).length}个问题`)
   } catch (e) {
     ElMessage.error('TODO')
   } finally { patrolLoading.value = false }
@@ -137,7 +137,7 @@ async function doAutoFix() {
   try {
     const { data } = await autoFix()
     fixResult.value = data
-    ElMessage.success(`淇瀹屾垚锛?{data.fixed || 0}/${data.attempted || 0}`)
+    ElMessage.success(`修复完成：${data.fixed || 0}/${data.attempted || 0}`)
     loadHistory()
   } catch (e) {
     ElMessage.error('TODO')
@@ -158,7 +158,7 @@ async function loadHistory() {
 async function doResolve(id) {
   try {
     await resolveAnomaly(id)
-    ElMessage.success('宸叉爣璁拌В鍐?)
+    ElMessage.success('已标记解决')
     loadHistory()
   } catch (e) {
     ElMessage.error('鎿嶄綔澶辫触')

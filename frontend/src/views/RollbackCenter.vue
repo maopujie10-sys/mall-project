@@ -243,7 +243,7 @@ const handleCreateBackup = async () => {
 const refreshBackups = async () => {
   loading.value = true
   await fetchBackups()
-  ElMessage.success('澶囦唤鍒楄〃宸插埛鏂?)
+  ElMessage.success('备份列表已刷新')
 }
 
 onMounted(() => {

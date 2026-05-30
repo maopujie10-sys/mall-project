@@ -44,7 +44,7 @@
     <el-row :gutter="16">
       <el-col :span="24">
         <div v-if="pendingTasks.length === 0" style="padding: 60px 0;">
-          <el-empty description="鏆傛棤寰呭鎵逛换鍔? />
+          <el-empty description="暂无待审批任务" />
         </div>
         <div
           v-for="task in pendingTasks"
@@ -180,7 +180,7 @@ async function fetchApprovals() {
 
 const approveTask = async (task) => {
   try {
-    await ElMessageBox.confirm(`纭鎵ц銆?{task.name}銆嶅悧锛熸鎿嶄綔涓嶅彲鎾ら攢銆俙, 'TODO', {
+    await ElMessageBox.confirm(`确认执行「${task.name}」吗？此操作不可撤销。`, 'TODO', {
       confirmButtonText: 'TODO',
       cancelButtonText: '鍙栨秷',
       type: 'warning',
@@ -196,7 +196,7 @@ const approveTask = async (task) => {
           result: '閫氳繃', reviewer: 'Admin', time: new Date().toTimeString().slice(0, 5),
         })
       }
-      ElMessage.success(`宸叉壒鍑嗐€?{task.name}銆峘)
+      ElMessage.success(`已批准「${task.name}」`)
     } else {
       task.approving = false
     }
@@ -207,7 +207,7 @@ const approveTask = async (task) => {
 
 const rejectTask = async (task) => {
   try {
-    await ElMessageBox.confirm(`纭鎷掔粷銆?{task.name}銆嶅悧锛焋, 'TODO', {
+    await ElMessageBox.confirm(`确认拒绝「${task.name}」吗？`, 'TODO', {
       confirmButtonText: 'TODO',
       cancelButtonText: '鍙栨秷',
       type: 'warning',
@@ -223,7 +223,7 @@ const rejectTask = async (task) => {
           result: '鎷掔粷', reviewer: 'Admin', time: new Date().toTimeString().slice(0, 5),
         })
       }
-      ElMessage.warning(`宸叉嫆缁濄€?{task.name}銆峘)
+      ElMessage.warning(`已拒绝「${task.name}」`)
     } else {
       task.rejecting = false
     }

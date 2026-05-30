@@ -26,8 +26,8 @@
         </el-col>
         <el-col :span="4">
           <el-select v-model="logLines" style="width:100%">
-            <el-option :value="50" label="50琛?/><el-option :value="100" label="100琛?/>
-            <el-option :value="200" label="200琛?/><el-option :value="500" label="500琛?/>
+            <el-option :value="50" label="50行"/><el-option :value="100" label="100行"/>
+            <el-option :value="200" label="200行"/><el-option :value="500" label="500行"/>
           </el-select>
         </el-col>
         <el-col :span="4">

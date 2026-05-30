@@ -30,7 +30,7 @@
       <template #header>
         <span>鎵ц鎶ュ憡</span>
         <el-tag :type="report.all_passed ? 'success' : 'danger'" size="small" style="margin-left:8px">
-          {{ report.all_passed ? '鍏ㄩ儴閫氳繃' : `${report.failed} 椤瑰紓甯竊 }}
+          {{ report.all_passed ? '全部通过' : `${report.failed} 项异常` }}
         </el-tag>
       </template>
       <el-timeline>
@@ -44,7 +44,7 @@
         </el-timeline-item>
       </el-timeline>
       <el-alert v-if="!report.all_passed" title="妫€娴嬪埌寮傚父" :description="report.summary" type="warning" show-icon style="margin-top:12px" />
-      <el-alert v-else title="涓€鍒囨甯' :description="report.summary" type="success" show-icon style="margin-top:12px" />
+      <el-alert v-else title="一切正常" :description="report.summary" type="success" show-icon style="margin-top:12px" />
     </el-card>
   </div>
 </template>
@@ -74,7 +74,11 @@ async function run(id) {
   try {
     report.value = await agentApi.post(`/self-service/run/${id}`)
     if (report.value.all_passed) {
-      ElMessage.success('?) } else { ElMessage.warning(`${report.value.failed} ) } } catch { ElMessage.error('鎵ц澶辫触') }
+      ElMessage.success('全部通过')
+    } else {
+      ElMessage.warning(`${report.value.failed} 项异常`)
+    }
+  } catch { ElMessage.error('执行失败') }
   runningId.value = ''
 }
 

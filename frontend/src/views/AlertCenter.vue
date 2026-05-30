@@ -30,7 +30,7 @@
         <el-table-column prop="source" label="鏉ユ簮" width="80" />
         <el-table-column label="..." width="80">
           <template #default="{row}">
-            <el-tag :type="row.resolved ? 'info' : 'danger'" size="small">{{ row.resolved ' '宸茶В鍐' : '鏈В鍐' }}</el-tag>
+            <el-tag :type="row.resolved ? 'info' : 'danger'" size="small">{{ row.resolved ? '已解决' : '未解决' }}</el-tag>
           </template>
         </el-table-column>
         <el-table-column label="鎿嶄綔" width="100">
@@ -48,7 +48,7 @@ import { ref, computed, onMounted } from 'vue'
 import { getAlertList, getAlertStats, resolveAlert } from '@/api/alert'
 import { ElMessage } from 'element-plus'
 
-const levelMap = { P1: '绱ф€?, P2: '涓ラ噸', P3: '涓€鑸?, P4: '瑙傚療' }
+const levelMap = { P1: '紧急', P2: '严重', P3: '一般', P4: '观察' }
 const alerts = ref([])
 const stats = ref({})
 const filterLevel = ref('')
@@ -70,13 +70,13 @@ async function fetchAlerts() {
     const params = filterLevel.value ? { level: filterLevel.value } : {}
     const r = await getAlertList(params)
     alerts.value = r.alerts || []
-  } catch { ElMessage.error('TODO') }
+  } catch { ElMessage.error('å è½½å¤±è´¥') }
 }
 async function fetchStats() {
   try { const r = await getAlertStats(); stats.value = r.stats || {} } catch {}
 }
 async function doResolve(id) {
-  try { await resolveAlert(id); ElMessage.success('宸叉爣璁拌В鍐?); fetchAlerts(); fetchStats() } catch { ElMessage.error('鎿嶄綔澶辫触') }
+  try { await resolveAlert(id); ElMessage.success('已标记解决'); fetchAlerts(); fetchStats() } catch { ElMessage.error('操作失败') }
 }
 onMounted(() => { fetchAlerts(); fetchStats() })
 </script>
