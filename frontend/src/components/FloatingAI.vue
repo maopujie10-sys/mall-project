@@ -1,7 +1,7 @@
 <template>
-  <!-- 鍏ㄥ眬鎮诞AI鍔╂墜 鈥?鏂囧瓧+璇煶+瑙嗛鍏ㄩ泦鎴?-->
+  <!-- AI ?++?-->
   <div class="floating-ai" :class="{ 'chat-open': chatOpen, 'chat-expanded': chatExpanded, 'video-mode': videoActive }">
-    <!-- ====== 鎮诞鎸夐挳 ====== -->
+    <!-- ======  ====== -->
     <div
       v-if="!chatOpen"
       class="ai-float-btn"
@@ -9,7 +9,7 @@
       @mousedown="startDrag" @touchstart="startDrag"
       :style="{ left: posX + 'px', top: posY + 'px' }"
     >
-      <div class="btn-glow"></div>
+      <div class="btn-glow">{{ \('floatingAI.title') }}</div>
       <div class="btn-inner">
         <svg width="28" height="28" viewBox="0 0 64 64">
           <defs><linearGradient id="aiGrad2" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#667eea"/><stop offset="100%" stop-color="#764ba2"/></linearGradient></defs>
@@ -17,102 +17,101 @@
           <text x="32" y="42" text-anchor="middle" font-size="22" font-weight="bold" fill="white">AI</text>
         </svg>
       </div>
-      <span class="btn-pulse" v-if="hasUnread"></span>
+      -
     </div>
 
-    <!-- ====== 鑱婂ぉ闈㈡澘 ====== -->
+    <!-- ====== Chat Panel ====== -->
     <transition name="slide-up">
       <div v-if="chatOpen" class="ai-chat-panel" :class="{ expanded: chatExpanded, video: videoActive }">
-        <!-- 澶撮儴宸ュ叿鏍?-->
-        <div class="chat-header" @mousedown="startPanelDrag"><div class="header-scanline"></div>
+        <!-- ?-->
+        <div class="chat-header" @mousedown="startPanelDrag"><div class="header-scanline">{{ \('floatingAI.title') }}</div>
           <div class="header-left">
-            <div class="ai-avatar-small"><div class="avatar-holo"></div>AI</div>
+            <div class="ai-avatar-small"><div class="avatar-holo">{{ \('floatingAI.title') }}</div>AI</div>
             <div>
-              <div class="header-title">{{ voiceActive ? '馃帳 鑱嗗惉涓? : (voiceCallActive ? '馃攰 鏈楄涓? : 'Friday AI 鍔╂墜') }}</div>
-              <div class="header-status">{{ voiceActive ? '馃帳 姝ｅ湪鍚綘璇磋瘽...' : (voiceCallActive ? '馃攰 鑷姩鏈楄鍥炲' : '鍦ㄧ嚎 路 闅忔椂涓烘偍鏈嶅姟') }}</div>
+              <div class="header-title">{{ voiceActive ? ' ? : (voiceCallActive ? ' ? : 'Friday AI ') }}</div>
+              <div class="header-status">{{ voiceActive ? ' ...' : (voiceCallActive ? '' : '') }}</div>
             </div>
           </div>
           <div class="header-actions">
-                        <button class="header-btn" @click="compareModels" title="妯″瀷瀵规瘮">鈿栵笍</button>
-                        <button class="header-btn" @click="toggleVoiceInput" :title="voiceActive ? '鍋滄璇煶' : '璇煶杈撳叆'" :class="{ active: voiceActive }">馃帳</button>
-            <button class="header-btn" @click="toggleVoiceCall" :title="voiceCallActive ? '鍏抽棴鏈楄' : '鏈楄鍥炲'" :class="{ active: voiceCallActive }">馃攰</button>
-                        <button class="header-btn" @click="toggleExpand" :title="chatExpanded ? '缂╁皬' : '鎵╁ぇ'">
-              {{ chatExpanded ? '鈯? : '鈯? }}
+                        <button class="header-btn" @click="compareModels" :title="\('floatingAI.title')"></button>
+                        <button class="header-btn" @click="toggleVoiceInput" :title="voiceActive ? '' : ''' :class="{ active: voiceActive }"></button>
+            <button class="header-btn" @click="toggleVoiceCall" :title="voiceCallActive ? '' : ''' :class="{ active: voiceCallActive }"></button>
+                        <button class="header-btn" @click="toggleExpand" :title="chatExpanded ? '' : '''>
+              {{ chatExpanded ? '? : '? }}
             </button>
-            <button class="header-btn" @click="minimizeChat" title="鏈€灏忓寲">鈭?/button>
-            <button class="header-btn close-btn" @click="closeChat" title="鍏抽棴">脳</button>
+            <button class="header-btn" @click="minimizeChat" :title="\('floatingAI.title')">?/button>
+            <button class="header-btn close-btn" @click="closeChat" title=''></button>
           </div>
         </div>
 
-                <!-- ====== 娑堟伅鍖?====== -->
+                <!-- ====== ?====== -->
         <div class="chat-messages" ref="msgList"><canvas ref="matrixCanvas" class="matrix-bg"></canvas>
           <div v-if="messages.length === 0" class="empty-chat">
-            <div class="empty-icon">馃</div>
-            <p>浣犲ソ锛佹垜鏄?Friday AI 鍔╂墜</p>
-            <p class="empty-sub">鏂囧瓧 路 璇煶 路 瑙嗛 路 浼犲浘 路 浼犳枃浠?/p>
+            -
+            <p>?Friday AI </p>
+            <p class="empty-sub">        ?/p>
             <div class="quick-actions">
-              <button @click="quickAsk('鏈嶅姟鍣ㄧ姸鎬佹€庝箞鏍凤紵')">馃搳 鏈嶅姟鍣ㄧ姸鎬?/button>
-              <button @click="quickAsk('浠婂ぉ鏈夊灏戣鍗曪紵')">馃摝 浠婃棩璁㈠崟</button>
-              <button @click="quickAsk('甯垜鍒嗘瀽鏈€杩戠殑寮傚父')">馃攳 寮傚父鍒嗘瀽</button>
-              <button @click="quickAsk('鐢熸垚浠婃棩杩愯惀鎶ュ憡')">馃摑 杩愯惀鎶ュ憡</button>
+              <button @click="quickAsk('')"> ?/button>
+              <button @click="quickAsk('')"> </button>
+              <button @click="quickAsk('')"> </button>
+              <button @click="quickAsk('')"> </button>
             </div>
           </div>
 
           <div v-for="(msg, i) in messages" :key="i" class="msg-row" :class="msg.role">
-            <div class="msg-avatar">{{ msg.role === 'user' ? '馃懁' : 'AI' }}</div>
+            <div class="msg-avatar">{{ msg.role === 'user' ? '' : 'AI' }}</div>
             <div class="msg-bubble" :class="msg.role">
-              <div class="msg-text" v-html="renderMsg(msg.content)"></div>
+              -
               <div class="msg-time">
                 {{ msg.time }}
-                <span v-if="msg.voice" class="voice-tag">馃帳 璇煶</span>
+                -
               </div>
             </div>
-            <!-- 璇煶鎾斁鎸夐挳 -->
-            <button v-if="msg.role === 'assistant'" class="play-voice-btn" @click="speakText(msg.content)" title="鏈楄">
-              馃攰
+            
+            <button v-if="msg.role === 'assistant'' class="play-voice-btn" @click="speakText(msg.content)" :title="\('floatingAI.title')">
+              
             </button>
           </div>
 
           <div v-if="loading" class="msg-row assistant">
             <div class="msg-avatar">AI</div>
             <div class="msg-bubble assistant typing">
-              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="dot">{{ \('floatingAI.title') }}</span><span class="dot">{{ \('floatingAI.title') }}</span><span class="dot">{{ \('floatingAI.title') }}</span>
             </div>
           </div>
         </div>
 
-        <!-- ====== 杈撳叆鍖?====== -->
+        <!-- ====== ?====== -->
         <div v-if="!videoActive" class="chat-input-area">
-          <!-- 璇煶杈撳叆鎻愮ず -->
-          <div v-if="attachments.length > 0" class="attachments-bar"><div v-for="(att, i) in attachments" :key="i" class="attach-item"><div v-if="att.type === 'image'" class="attach-preview-img"><img :src="att.dataUrl" /><button class="attach-remove" @click="removeAttachment(i)">x</button></div><div v-else-if="att.type === 'video'" class="attach-preview-video"><video :src="att.dataUrl" controls preload="metadata"></video><button class="attach-remove" @click="removeAttachment(i)">x</button></div><div v-else class="attach-tag"><span class="attach-icon">{{ getFileIcon(att.name) }}</span><span class="attach-name">{{ att.name }}</span><span class="attach-size">{{ formatSize(att.size) }}</span><button class="attach-remove" @click="removeAttachment(i)">x</button></div></div></div>
+          
+          <div v-if="attachments.length > 0" class="attachments-bar"><div v-for="(att, i) in attachments" :key="i" class="attach-item"><div v-if="att.type === 'image'' class="attach-preview-img"><img :src="att.dataUrl" /><button class="attach-remove" @click="removeAttachment(i)">x</button></div><div v-else-if="att.type === 'video'' class="attach-preview-video"><video :src="att.dataUrl" controls preload="metadata"></video><button class="attach-remove" @click="removeAttachment(i)">x</button></div><div v-else class="attach-tag"><span class="attach-icon">{{ getFileIcon(att.name) }}</span><span class="attach-name">{{ att.name }}</span><span class="attach-size">{{ formatSize(att.size) }}</span><button class="attach-remove" @click="removeAttachment(i)">x</button></div></div></div>
           <div v-if="voiceActive" class="voice-indicator">
             <div class="voice-wave">
-              <span v-for="n in 5" :key="n" :style="{ animationDelay: n * 0.1 + 's' }"></span>
+              -
             </div>
-            <span>姝ｅ湪鑱嗗惉... 鐐瑰嚮楹﹀厠椋庡仠姝?/span>
+            <span>... ?/span>
           </div>
 
           <div class="input-row">
-            <!-- 璇煶杈撳叆鎸夐挳 -->
+            
             <button
               class="voice-input-btn"
               :class="{ recording: voiceActive }"
               @click="toggleVoiceInput"
-              title="璇煶杈撳叆"
+              :title="\('floatingAI.title')"
             >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" :stroke="voiceActive ? '#fff' : '#889'" stroke-width="2">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" :stroke="voiceActive ? '#fff' : '#889'' stroke-width="2">
                 <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
                 <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
                 <line x1="12" y1="19" x2="12" y2="23"/>
-                <line x1="8" y1="23" x2="16" y2="23"/>
-              </svg>
+                <line x1="8" y1="23" x2="16" y2="23"/>{{ \('floatingAI.title') }}</svg>
             </button>
 
             <textarea
               v-model="inputText"
               @keydown.enter.exact.prevent="sendMessage"
-              @keydown.enter.shift.exact="inputText += '\n'"
-              :placeholder="voiceActive ? '璇煶璇嗗埆涓?..' : '杈撳叆娑堟伅... (Enter鍙戦€?'"
+              @keydown.enter.shift.exact="inputText += '\n''
+              :placeholder="voiceActive ? '?..' : '... (Enter?''
               rows="1"
               ref="inputBox"
               :disabled="loading || voiceActive"
@@ -120,8 +119,7 @@
 
             <button class="send-btn" @click="sendMessage" :disabled="loading || (!inputText.trim() && !attachments.length)">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                <path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/>
-              </svg>
+                <path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/>{{ \('floatingAI.title') }}</svg>
             </button>
           </div>
         </div>
@@ -133,7 +131,7 @@
 <script setup>
 import { ref, nextTick, onMounted, onUnmounted, watch } from 'vue'
 
-// === 鐘舵€?===
+// === ?===
 const chatOpen = ref(false)
 const chatExpanded = ref(false)
 const messages = ref([])
@@ -141,13 +139,13 @@ const inputText = ref('')
 const loading = ref(false)
 const hasUnread = ref(false)
 
-// 璇煶
+
 const voiceActive = ref(false)
 const voiceCallActive = ref(false)
 let recognition = null
 let synth = null
 
-// 瑙嗛
+
 const videoActive = ref(false)
 const videoConnected = ref(false)
 const micMuted = ref(false)
@@ -157,7 +155,7 @@ const localVideo = ref(null)
 let localStream = null
 let peerConnection = null
 
-// 浣嶇疆
+
 const posX = ref(0)
 const posY = ref(0)
 let isDragging = false
@@ -175,7 +173,7 @@ let floatPaused = false
 
 const STORAGE_KEY = 'friday_floating_chat'
 
-// === 鍒濆鍖?===
+// === ?===
 onMounted(() => {
   try {
     const saved = localStorage.getItem(STORAGE_KEY)
@@ -196,11 +194,13 @@ watch(messages, (val) => {
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(val.slice(-50))) } catch (e) {}
 }, { deep: true })
 
-// === 闈㈡澘鎺у埗 ===
+// ===  ===
+// === Chat Controls ===
 function openChat() { if (!isDragging) { floatPaused = false; chatOpen.value = true; hasUnread.value = false; window.dispatchEvent(new CustomEvent("brain:active", {detail:true})); nextTick(() => scrollBottom()) } }
 function closeChat() { stopVoiceInput(); stopVideoCall(); chatOpen.value = false; chatExpanded.value = false; window.dispatchEvent(new CustomEvent("brain:active", {detail:false})) }
 function minimizeChat() { stopTw(); stopStepAnimation(); chatOpen.value = false }
 function toggleExpand() { chatExpanded.value = !chatExpanded.value; nextTick(() => scrollBottom()) }
+// === Drag Handling ===
 function startDrag(e) {
   e.preventDefault()
   isDragging = false
@@ -278,7 +278,8 @@ function onPanelDragUp() {
   document.ontouchend = null
 }
 
-// === 璇煶鍚堟垚 (TTS) ===
+// ===  (TTS) ===
+// === TTS (Text-to-Speech) ===
 function initSpeechSynth() {
   if ('speechSynthesis' in window) {
     synth = window.speechSynthesis
@@ -297,16 +298,17 @@ function speakText(text) {
   synth.speak(utterance)
 }
 
-// === 璇煶璇嗗埆 (STT) ===
+// ===  (STT) ===
 function toggleVoiceInput() {
   if (voiceActive.value) { stopVoiceInput(); return }
   startVoiceInput()
 }
 
-function startVoiceInput() {
+// === STT (Speech-to-Text) ===
+function startVoiceInput() { emitBrain("brain:active", {detail: true}) {
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
   if (!SpeechRecognition) {
-    inputText.value = '[娴忚鍣ㄤ笉鏀寔璇煶璇嗗埆锛岃浣跨敤Chrome]'
+    inputText.value = '[Chrome]'
     return
   }
   recognition = new SpeechRecognition()
@@ -333,18 +335,18 @@ function stopVoiceInput() {
   voiceActive.value = false
 }
 
-// === 璇煶閫氳瘽 ===
+// ===  ===
 function toggleVoiceCall() {
   if (voiceCallActive.value) {
     synth && synth.cancel()
     voiceCallActive.value = false
   } else {
     voiceCallActive.value = true
-    // 鑷姩鏈楄妯″紡锛氭敹鍒癆I鍥炲鍚庤嚜鍔ㄦ湕璇?
+    // I?
   }
 }
 
-// === 瑙嗛閫氳瘽 ===
+// ===  ===
 async function toggleVideoCall() {
   if (videoActive.value) { endVideoCall(); return }
   try {
@@ -352,12 +354,12 @@ async function toggleVideoCall() {
     if (localVideo.value) {
       localVideo.value.srcObject = localStream
     }
-    videoActive.value = true
+    videoActive.value = true; emitBrain("brain:active", {detail: true})
     videoConnected.value = false
-    // 妯℃嫙杩炴帴锛堢湡瀹炲満鏅渶瑕乄ebRTC淇′护鏈嶅姟鍣級
+    // ebRTC
     setTimeout(() => { videoConnected.value = true }, 2000)
   } catch (e) {
-    alert('鏃犳硶璁块棶鎽勫儚澶?楹﹀厠椋? ' + e.message)
+    alert('?? ' + e.message)
   }
 }
 
@@ -377,7 +379,7 @@ function captureSnapshot() {
   canvas.getContext('2d').drawImage(videoEl, 0, 0)
   const dataUrl = canvas.toDataURL('image/jpeg', 0.9)
   attachments.value.push({ name: 'snapshot.jpg', type: 'image', dataUrl, mimeType: 'image/jpeg', size: 0 })
-  ElMessage.success('宸叉埅鍥撅紝鍙彂閫佺粰AI鍒嗘瀽')
+  ElMessage.success('AI')
 }
 
 function toggleMic() {
@@ -398,7 +400,9 @@ function stopVideoCall() {
   endVideoCall()
 }
 
-// === 娑堟伅 ===
+// ===  ===
+// === Message Sending ===
+function emitBrain(event, detail) { window.dispatchEvent(new CustomEvent(event, { detail })) }
 async function sendMessage() {
   const text = inputText.value.trim(); const files = [...attachments.value]
   if ((!text && !files.length) || loading.value) return
@@ -407,40 +411,40 @@ async function sendMessage() {
   const now = new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
   clearAttachments()
   
-  // 鍥剧墖鍒嗘瀽妯″紡
+  
   if (files.length && files[0].type === 'image' && text && files[0].dataUrl) {
-    messages.value.push({ role: 'user', content: text + ' [鍥剧墖]', time: now })
+    messages.value.push({ role: 'user', content: text + ' []', time: now })
     await analyzeWithVision(files[0].dataUrl, text)
     return
   }
   
-  // 鍥剧墖鍙戦€侊紙鏃犳枃瀛楋級
+  
   if (files.length && files[0].type === 'image') {
-    messages.value.push({ role: 'user', content: '[鍥剧墖]', time: now, image: files[0].dataUrl })
-    loading.value = true; window.dispatchEvent(new CustomEvent('brain:thinking', {detail:true}))
+    messages.value.push({ role: 'user', content: '[]', time: now, image: files[0].dataUrl })
+    loading.value = true; emitBrain("brain:thinking", {detail: true}); emitBrain("brain:active", {detail: true}); window.dispatchEvent(new CustomEvent('brain:thinking', {detail:true}))
     await nextTick(); scrollBottom()
     try {
       const token = getAgentToken()
       const res = await fetch('/agent/vision/analyze', {
         method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Agent-Token': token },
-        body: JSON.stringify({ image_base64: files[0].dataUrl.split(',')[1], question: '璇锋弿杩拌繖寮犲浘鐗? })
+        body: JSON.stringify({ image_base64: files[0].dataUrl.split(',')[1], question: '? })
       })
       if (res.ok) {
         const data = await res.json()
-        messages.value.push({ role: 'assistant', content: data.result || '鍒嗘瀽瀹屾垚', time: new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }) })
+        messages.value.push({ role: 'assistant', content: data.result || '', time: new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }) })
         speakIfActive(data.result)
       }
-    } catch (e) { messages.value.push({ role: 'assistant', content: '鍥剧墖鍒嗘瀽澶辫触', time: now }) }
-    loading.value = false; return
+    } catch (e) { messages.value.push({ role: 'assistant', content: '', time: now }) }
+    loading.value = false; emitBrain("brain:speaking", {}); emitBrain("brain:thinking", {detail: false}); return
   }
 
-  // 鏅€氭枃鏈秷鎭?- 浣跨敤SSE娴佸紡
+  // ?- SSE
   messages.value.push({ role: 'user', content: text, time: now })
   inputText.value = ''
   loading.value = true; window.dispatchEvent(new CustomEvent('brain:thinking', {detail:true}))
   await nextTick(); scrollBottom()
 
-  // 娣诲姞AI鍗犱綅娑堟伅
+  // AI
   const aiMsg = { role: 'assistant', content: '', time: new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }) }
   messages.value.push(aiMsg)
   await nextTick(); scrollBottom()
@@ -479,7 +483,7 @@ async function sendMessage() {
       }
     }
   } catch (e) {
-    aiMsg.content = '杩炴帴澶辫触锛岃閲嶈瘯'
+    aiMsg.content = ''
   }
   loading.value = false; window.dispatchEvent(new CustomEvent('brain:thinking', {detail:false}))
 }
@@ -506,14 +510,15 @@ async function analyzeWithVision(dataUrl, question) {
     })
     if (res.ok) {
       const data = await res.json()
-      aiMsg.content = data.result || '鍒嗘瀽瀹屾垚'
+      aiMsg.content = data.result || ''
       speakIfActive(aiMsg.content)
     }
-  } catch(e) { aiMsg.content = '鍒嗘瀽澶辫触' }
+  } catch(e) { aiMsg.content = '' }
   loading.value = false; window.dispatchEvent(new CustomEvent('brain:thinking', {detail:false}))
 }
 
 // Load conversations on mount
+// === Chat History ===
 async function loadConversations() {
   try {
     const token = getAgentToken()
@@ -552,7 +557,7 @@ async function loadPromptTemplates() {
 
 function applyTemplate(tmpl) {
   inputText.value = ''; selectedTemplate.value = tmpl.name
-  ElMessage.info('宸查€夋嫨妯℃澘: ' + tmpl.name + '锛岃緭鍏ュ唴瀹瑰悗鍙戦€?)
+  ElMessage.info(': ' + tmpl.name + '?)
 }
 
 
@@ -562,7 +567,7 @@ const attachments = ref([])
 function onFileSelected(e) {
   const files = Array.from(e.target.files || [])
   for (const file of files) {
-    if (attachments.value.length >= 5) { alert('鏈€澶?涓枃浠?); break }
+    if (attachments.value.length >= 5) { alert('??); break }
     const reader = new FileReader()
     reader.onload = (ev) => {
       let type = 'file'
@@ -628,40 +633,40 @@ minimizeChat = function() { stopMatrixRain(); origMin() }
 function detectTask(msg) {
   const m = msg.toLowerCase();
   processingSteps.value = [];
-  if (m.includes('鏈嶅姟')||m.includes('server')||m.includes('鐘舵€?)||m.includes('cpu')||m.includes('鍐呭瓨')) {
-    processingSteps.value = ['杩炴帴鏈嶅姟鍣?..', '鏌ヨCPU鐘舵€?..', '璇诲彇鍐呭瓨鏁版嵁...', '鍒嗘瀽璐熻浇鎯呭喌...', '鐢熸垚鎶ュ憡...'];
-    return '绯荤粺璇婃柇';
+  if (m.includes('')||m.includes('server')||m.includes('?)||m.includes('cpu')||m.includes('')) {
+    processingSteps.value = ['?..', 'CPU?..', '...', '...', '...'];
+    return '';
   }
-  if (m.includes('璁㈠崟')||m.includes('order')) {
-    processingSteps.value = ['鏌ヨ鏁版嵁搴?..', '缁熻璁㈠崟鏁版嵁...', '鐢熸垚姹囨€?..'];
-    return '璁㈠崟鏌ヨ';
+  if (m.includes('')||m.includes('order')) {
+    processingSteps.value = ['?..', '...', '?..'];
+    return '';
   }
-  if (m.includes('鎶ュ憡')||m.includes('report')||m.includes('鍛ㄦ姤')) {
-    processingSteps.value = ['鏀堕泦杩愯鏁版嵁...', '鍒嗘瀽瓒嬪娍...', 'AI鐢熸垚鎽樿...', '鎺掔増杈撳嚭...'];
-    return '鎶ュ憡鐢熸垚';
+  if (m.includes('')||m.includes('report')||m.includes('')) {
+    processingSteps.value = ['...', '...', 'AI...', '...'];
+    return '';
   }
-  if (m.includes('寮傚父')||m.includes('鍛婅')||m.includes('閿欒')||m.includes('鏁呴殰')) {
-    processingSteps.value = ['鎵弿寮傚父鐐?..', '鍏宠仈鍒嗘瀽...', 'AI璇婃柇...', '鐢熸垚澶勭悊寤鸿...'];
-    return '寮傚父鎺掓煡';
+  if (m.includes('')||m.includes('')||m.includes('')||m.includes('')) {
+    processingSteps.value = ['?..', '...', 'AI...', '...'];
+    return '';
   }
-  if (m.includes('瀹氫环')||m.includes('浠锋牸')||m.includes('price')) {
-    processingSteps.value = ['鑾峰彇甯傚満鏁版嵁...', '绔炲搧鍒嗘瀽...', 'AI瀹氫环寤鸿...'];
-    return '鏅鸿兘瀹氫环';
+  if (m.includes('')||m.includes('')||m.includes('price')) {
+    processingSteps.value = ['...', '...', 'AI...'];
+    return '';
   }
-  if (m.includes('缂栫▼')||m.includes('浠ｇ爜')||m.includes('寮€鍙?)) {
-    processingSteps.value = ['鍒嗘瀽闇€姹?..', 'AI鐢熸垚浠ｇ爜...', '楠岃瘉娴嬭瘯...'];
-    return 'AI缂栫▼';
+  if (m.includes('')||m.includes('')||m.includes('?)) {
+    processingSteps.value = ['?..', 'AI...', '...'];
+    return 'AI';
   }
-  if (m.includes('澶囦唤')||m.includes('backup')) {
-    processingSteps.value = ['蹇収鐘舵€?..', '鎵撳寘鏁版嵁...', '瀹夊叏瀛樺偍...'];
-    return '澶囦唤鍥炴粴';
+  if (m.includes('')||m.includes('backup')) {
+    processingSteps.value = ['?..', '...', '...'];
+    return '';
   }
-  if (m.includes('閲囬泦')||m.includes('鐖?)||m.includes('scrape')) {
-    processingSteps.value = ['杩炴帴鏁版嵁婧?..', '瑙ｆ瀽瀛楁...', '娓呮礂鍘婚噸...', '鍏ュ簱瀛樺偍...'];
-    return '鏁版嵁閲囬泦';
+  if (m.includes('')||m.includes('?)||m.includes('scrape')) {
+    processingSteps.value = ['?..', '...', '...', '...'];
+    return '';
   }
-  processingSteps.value = ['鍒嗘瀽涓?..', '澶勭悊涓?..', 'AI鎬濊€?..'];
-  return 'AI 澶勭悊';
+  processingSteps.value = ['?..', '?..', 'AI?..'];
+  return 'AI ';
 }
 function startStepAnimation() {
   if (stepTimer) clearInterval(stepTimer);
@@ -682,6 +687,7 @@ function stopStepAnimation() {
   processingSteps.value = [];
 }
 
+// === Quick Actions ===
 function quickAsk(question) { inputText.value = question; sendMessage() }
 
 
@@ -702,19 +708,20 @@ function scrollBottom() {
   })
 }
 
-// === v7: Prompt妯℃澘 + 妯″瀷瀵规瘮 ===
+// === v7: Prompt +  ===
+// === Model Comparison ===
 async function compareModels() { 
-  const text=inputText.value.trim(); if(!text)return; inputText.value=""
+  const text=inputText.value.trim(); if(!text)return; inputText.value=''
   messages.value.push({role:"user",content:text,time:new Date().toLocaleTimeString("zh-CN",{hour:"2-digit",minute:"2-digit"})})
   loading.value=true
   try{
     const t=localStorage.getItem("agent_token")||localStorage.getItem("friday_token")||"kWs4N6GiD4vtjnuHV31r14m6HPpKttBSI35lFnpiI90"
     const r=await fetch("/agent/chat/compare",{method:"POST",headers:{"Content-Type":"application/json","X-Agent-Token":t},body:JSON.stringify({message:text})})
-    if(r.ok){const d=await r.json();const results=(d.results||[]).map(x=>"**"+x.model+"**: "+((x.reply||x.error||"").slice(0,300))).join("\n\n");messages.value.push({role:"assistant",content:results,time:new Date().toLocaleTimeString("zh-CN",{hour:"2-digit",minute:"2-digit"})})}
-  }catch(e){messages.value.push({role:"assistant",content:"妯″瀷瀵规瘮澶辫触",time:new Date().toLocaleTimeString("zh-CN",{hour:"2-digit",minute:"2-digit"})})}
+    if(r.ok){const d=await r.json();const results=(d.results||[]).map(x=>"**"+x.model+"**: "+((x.reply||x.error||'').slice(0,300))).join("\n\n");messages.value.push({role:"assistant",content:results,time:new Date().toLocaleTimeString("zh-CN",{hour:"2-digit",minute:"2-digit"})})}
+  }catch(e){messages.value.push({role:"assistant",content:"",time:new Date().toLocaleTimeString("zh-CN",{hour:"2-digit",minute:"2-digit"})})}
   loading.value=false 
 }
-function applyTemplateByName(name) { const t=promptTemplates.value.find(p=>p.name===name); if(t){selectedTemplate.value=t.name;ElMessage.info("宸查€夋ā鏉? "+t.name);inputText.value="";inputText.focus()} }
+function applyTemplateByName(name) { const t=promptTemplates.value.find(p=>p.name===name); if(t){selectedTemplate.value=t.name;ElMessage.info("? "+t.name);inputText.value='';inputText.focus()} }
 loadPromptTemplates()
 </script>
 
@@ -725,7 +732,7 @@ loadPromptTemplates()
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
-/* === 鎮诞鎸夐挳 === */
+/* ===  === */
 .ai-float-btn {
   position: fixed;
   width: 56px; height: 56px;
@@ -765,7 +772,7 @@ loadPromptTemplates()
   100% { box-shadow: 0 0 0 0 rgba(255,71,87,0); }
 }
 
-/* === 闈㈡澘 === */
+/* ===  === */
 .ai-chat-panel {
   position: fixed;
   bottom: 20px; right: 20px;
@@ -785,7 +792,7 @@ loadPromptTemplates()
   bottom: 20px; right: 20px;
 }
 
-/* === 澶撮儴 === */
+/* ===  === */
 .chat-header {
   display: flex; align-items: center; justify-content: space-between;
   padding: 10px 14px;
@@ -813,7 +820,7 @@ loadPromptTemplates()
 .header-btn.active { background: rgba(255,255,255,0.35); box-shadow: 0 0 8px rgba(255,255,255,0.3); }
 .close-btn:hover { background: rgba(255,71,87,0.6); }
 
-/* === 瑙嗛鍖哄煙 === */
+/* ===  === */
 .video-area {
   flex: 1; position: relative; background: #000;
   display: flex; align-items: center; justify-content: center;
@@ -857,7 +864,7 @@ loadPromptTemplates()
   font-size: 14px !important;
 }
 
-/* === 娑堟伅鍖?=== */
+/* === ?=== */
 .chat-messages {
   flex: 1; overflow-y: auto; padding: 14px;
   display: flex; flex-direction: column; gap: 10px;
@@ -908,7 +915,7 @@ loadPromptTemplates()
 }
 .play-voice-btn:hover { background: rgba(102,126,234,0.35); }
 
-/* === 璇煶鎸囩ず鍣?=== */
+/* === ?=== */
 .voice-indicator {
   display: flex; align-items: center; gap: 10px;
   padding: 8px 12px; margin-bottom: 8px;
@@ -930,7 +937,7 @@ loadPromptTemplates()
   50% { transform: scaleY(0.4); }
 }
 
-/* === 杈撳叆鍖?=== */
+/* === ?=== */
 .chat-input-area { padding: 10px 12px; border-top: 1px solid rgba(255,255,255,0.06); }
 .input-row { display: flex; gap: 8px; align-items: flex-end; }
 .voice-input-btn {
@@ -963,7 +970,7 @@ loadPromptTemplates()
 .send-btn:hover:not(:disabled) { transform: scale(1.05); }
 .send-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
-/* === 鍔ㄧ敾 === */
+/* ===  === */
 .slide-up-enter-active { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
 .slide-up-leave-active { transition: all 0.2s ease-in; }
 .slide-up-enter-from { opacity: 0; transform: translateY(20px) scale(0.95); }
@@ -1100,7 +1107,7 @@ loadPromptTemplates()
 }
 
 
-/* ===== 绉诲姩绔€傞厤 ===== */
+/* =====  ===== */
 @media (max-width: 768px) {
   .floating-ai { z-index: 99999; }
   .ai-float-btn {

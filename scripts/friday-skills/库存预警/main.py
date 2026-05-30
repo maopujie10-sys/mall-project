@@ -1,4 +1,4 @@
-"""库存自动预警 — 库存监控+阈值告警"""
+""" — +"""
 import json
 from datetime import datetime
 
@@ -13,7 +13,7 @@ async def execute(params: dict) -> dict:
             "product_id": product_id,
             "threshold": threshold,
             "current_stock": 5,
-            "status": "低于阈值，已触发告警",
+            "status": "",
             "time": datetime.now().isoformat()
         }
     }

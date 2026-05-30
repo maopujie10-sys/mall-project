@@ -1,4 +1,4 @@
-"""备份恢复系统 -- 校验+一键恢复+保留策略"""
+''" -- ++''"
 import os, hashlib, glob, json, subprocess
 from datetime import datetime, timedelta
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -11,13 +11,13 @@ router = APIRouter(prefix="/agent/backup", tags=["Backup"])
 
 @router.get("/list")
 async def list_backups(_=Depends(verify_token)):
-    """备份列表(含校验状态)"""
+    ''"()''"
     backups = []
     for f in sorted(glob.glob(os.path.join(BACKUP_DIR, "*.sql*")) + glob.glob(os.path.join(BACKUP_DIR, "*.tar*")), reverse=True):
         size = os.path.getsize(f)
         name = os.path.basename(f)
         mtime = datetime.fromtimestamp(os.path.getmtime(f)).strftime("%Y-%m-%d %H:%M")
-        # 校验文件是否存在hash
+        # hash
         hash_file = f + ".sha256"
         verified = False
         if os.path.exists(hash_file):
@@ -31,40 +31,31 @@ async def list_backups(_=Depends(verify_token)):
 
 @router.post("/verify/{backup_name}")
 async def verify_backup(backup_name: str, _=Depends(verify_token)):
-    """校验备份文件完整性"""
+    ''''''
     backup_path = os.path.join(BACKUP_DIR, backup_name)
     if not os.path.exists(backup_path):
-        raise HTTPException(404, "备份文件不存在")
+        raise HTTPException(404, '')
     file_hash = hashlib.sha256(open(backup_path, "rb").read()).hexdigest()
     hash_path = backup_path + ".sha256"
     with open(hash_path, "w") as f: f.write(file_hash)
     return {"ok": True, "file": backup_name, "hash": file_hash, "verified": True}
 
 @router.post("/restore/{backup_name}")
-async def restore_backup(backup_name: str, target_db: str = "", _=Depends(verify_token)):
-    """一键恢复数据库(需审批L4)"""
-    await handle_risk("L4", f"恢复数据库: {backup_name}", need_confirm=True)
+async def restore_backup(backup_name: str, target_db: str = '', _=Depends(verify_token)):
+    ''"(L4)''"
+    await handle_risk("L4", f": {backup_name}", need_confirm=True)
     backup_path = os.path.join(BACKUP_DIR, backup_name)
     if not os.path.exists(backup_path):
-        raise HTTPException(404, "备份文件不存在")
+        raise HTTPException(404, '')
     db = target_db or DB_CONFIG.get("name", "ai_agent")
     user = DB_CONFIG.get("user", "root")
-    password = DB_CONFIG.get("password", "")
+    password = DB_CONFIG.get("password", '')
     host = DB_CONFIG.get("host", "127.0.0.1")
     port = DB_CONFIG.get("port", 3306)
     try:
         if backup_name.endswith(".sql"):
-            import tempfile
-            fd, cnf_path = tempfile.mkstemp(suffix='.cnf')
-            with os.fdopen(fd, 'w') as f:
-                f.write(f"[client]\nuser={user}\npassword={password}\nhost={host}\nport={port}\n")
-            os.chmod(cnf_path, 0o600)
-            try:
-                result = subprocess.run(
-                    ["mysql", f"--defaults-extra-file={cnf_path}", db],
-                    stdin=open(backup_path, 'r'), capture_output=True, text=True, timeout=300)
-            finally:
-                os.unlink(cnf_path)
+            cmd = f"mysql -h{host} -P{port} -u{user} -p{password} {db} < {backup_path}"
+            result = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=300)
         else:
             result = subprocess.run(["tar", "-xzf", backup_path, "-C", "/"], capture_output=True, text=True, timeout=120)
         return {"ok": result.returncode == 0, "output": (result.stdout or result.stderr)[:500]}
@@ -73,7 +64,7 @@ async def restore_backup(backup_name: str, target_db: str = "", _=Depends(verify
 
 @router.delete("/cleanup")
 async def cleanup_old_backups(days: int = 30, _=Depends(verify_token)):
-    """清理超过N天的备份(保留最近30天)"""
+    ''"N(30)''"
     cutoff = datetime.now() - timedelta(days=days)
     deleted = 0
     for f in glob.glob(os.path.join(BACKUP_DIR, "*")):

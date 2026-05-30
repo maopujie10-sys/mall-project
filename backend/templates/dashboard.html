@@ -40,29 +40,29 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 </div>
 <div class="grid">
   <div class="card">
-    <h3>服务状态</h3>
-    <div id="services"><div class="service-row"><span>加载中...</span></div></div>
+    <h3></h3>
+    <div id="services"><div class="service-row"><span>...</span></div></div>
   </div>
   <div class="card">
-    <h3>快速操作</h3>
+    <h3></h3>
     <div style="display:flex;flex-wrap:wrap;gap:8px">
-      <button class="btn btn-success" onclick="restart('mall-app')">重启 mall-app</button>
-      <button class="btn btn-warning" onclick="restart('mall-nginx')">重启 mall-nginx</button>
-      <button class="btn btn-primary" onclick="restart('mall-redis')">重启 mall-redis</button>
-      <button class="btn btn-danger" onclick="restart('mall-db')">重启 mall-db</button>
+      <button class="btn btn-success" onclick="restart('mall-app')"> mall-app</button>
+      <button class="btn btn-warning" onclick="restart('mall-nginx')"> mall-nginx</button>
+      <button class="btn btn-primary" onclick="restart('mall-redis')"> mall-redis</button>
+      <button class="btn btn-danger" onclick="restart('mall-db')"> mall-db</button>
     </div>
     <div id="restartMsg" style="margin-top:12px;font-size:13px;color:#666"></div>
   </div>
   <div class="card">
-    <h3>环境变量</h3>
+    <h3></h3>
     <div id="env"></div>
   </div>
   <div class="card">
-    <h3>操作日志</h3>
-    <div class="log-area" id="log">等待操作...</div>
+    <h3></h3>
+    <div class="log-area" id="log">...</div>
   </div>
 </div>
-<div class="footer">TikTokMall Agent v1.0.0 | :9000 | 内网访问</div>
+<div class="footer">TikTokMall Agent v1.0.0 | :9000 | </div>
 
 <script>
 const BASE = '';
@@ -91,19 +91,19 @@ async function refresh() {
   try {
     const ns = await api('/agent/notify/config');
     const e = document.getElementById('env');
-    e.innerHTML = `<table class="env-table"><tr><td>Telegram</td><td>${ns.telegram.configured?'已配置':'未配置'}</td></tr><tr><td>Chat ID</td><td>${ns.telegram.chat_id_set?'已设置':'未设置'}</td></tr></table>`;
+    e.innerHTML = `<table class="env-table"><tr><td>Telegram</td><td>${ns.telegram.configured?'':''}</td></tr><tr><td>Chat ID</td><td>${ns.telegram.chat_id_set?'':''}</td></tr></table>`;
   } catch(e) {}
 }
 async function restart(svc) {
-  log(`重启 ${svc}...`);
-  document.getElementById('restartMsg').textContent = `正在重启 ${svc}...`;
+  log(` ${svc}...`);
+  document.getElementById('restartMsg').textContent = ` ${svc}...`;
   try {
     const r = await api('/agent/restart/'+svc, {method:'POST'});
-    log(`重启 ${svc}: ${JSON.stringify(r)}`);
-    document.getElementById('restartMsg').textContent = `${svc} 重启完成`;
+    log(` ${svc}: ${JSON.stringify(r)}`);
+    document.getElementById('restartMsg').textContent = `${svc} `;
   } catch(e) {
-    log(`重启 ${svc} 失败: ${e.message}`);
-    document.getElementById('restartMsg').textContent = `${svc} 重启失败`;
+    log(` ${svc} : ${e.message}`);
+    document.getElementById('restartMsg').textContent = `${svc} `;
   }
   setTimeout(refresh, 3000);
 }

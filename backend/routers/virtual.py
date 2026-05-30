@@ -1,4 +1,4 @@
-"""Docker 容器管理 -- 列表/详情/日志"""
+''"Docker  -- //''"
 import subprocess
 from fastapi import APIRouter, Depends, HTTPException
 from auth import verify_token
@@ -8,7 +8,7 @@ router = APIRouter(prefix="/agent/docker", tags=["Docker"])
 
 @router.get("/containers")
 async def list_containers(_=Depends(verify_token)):
-    await handle_risk("L1", "查看Docker容器列表")
+    await handle_risk("L1", "Docker")
     try:
         result = subprocess.run(
             ["docker", "ps", "--format", "{{.ID}}|{{.Names}}|{{.Status}}|{{.Image}}"],
@@ -25,7 +25,7 @@ async def list_containers(_=Depends(verify_token)):
 
 @router.get("/containers/{container_id}/logs")
 async def container_logs(container_id: str, _=Depends(verify_token), tail: int = 100):
-    await handle_risk("L1", f"查看容器日志", container_id)
+    await handle_risk("L1", f'', container_id)
     try:
         result = subprocess.run(
             ["docker", "logs", "--tail", str(tail), container_id],

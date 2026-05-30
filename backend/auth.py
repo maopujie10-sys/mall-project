@@ -1,4 +1,4 @@
-"""认证模块 v3 -- JWT + RBAC角色权限 + 审计日志"""
+''" v3 -- JWT + RBAC + ''"
 import jwt, time, secrets, os, sqlite3, hashlib
 from pathlib import Path
 from datetime import datetime, timedelta
@@ -7,21 +7,21 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
 security = HTTPBearer(auto_error=False)
 
-# JWT配置
+# JWT
 JWT_SECRET = os.getenv("JWT_SECRET", secrets.token_hex(32))
 JWT_ALGORITHM = "HS256"
 JWT_EXPIRE_HOURS = 24
 
 from config import AGENT_TOKEN
 
-# 角色定义
+
 ROLES = {
-    "admin": {"level": 100, "desc": "超级管理员", "permissions": ["*"]},
-    "operator": {"level": 50, "desc": "运营人员", "permissions": ["read:*", "execute:L1", "execute:L2", "approve:L3"]},
-    "viewer": {"level": 10, "desc": "只读用户", "permissions": ["read:*"]},
+    "admin": {"level": 100, "desc": '', "permissions": ["*"]},
+    "operator": {"level": 50, "desc": '', "permissions": ["read:*", "execute:L1", "execute:L2", "approve:L3"]},
+    "viewer": {"level": 10, "desc": '', "permissions": ["read:*"]},
 }
 
-# 用户存储 -- SQLite持久化
+#  -- SQLite
 USER_DB = Path(__file__).parent / "data" / "users.db"
 
 def _get_user_db():
@@ -74,7 +74,7 @@ def update_user_role(username, role):
 
 # ===== JWT =====
 def create_token(username: str, role: str) -> str:
-    """创建JWT Token"""
+    ''"JWT Token''"
     payload = {
         "sub": username,
         "role": role,
@@ -85,39 +85,39 @@ def create_token(username: str, role: str) -> str:
     return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
 
 def _decode_jwt(token: str) -> dict:
-    """解码JWT Token(内部使用)"""
+    ''"JWT Token()''"
     try:
         payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
         return {"valid": True, "user": payload["sub"], "role": payload["role"]}
     except jwt.ExpiredSignatureError:
-        return {"valid": False, "error": "Token已过期"}
+        return {"valid": False, "error": "Token"}
     except jwt.InvalidTokenError:
-        return {"valid": False, "error": "Token无效"}
+        return {"valid": False, "error": "Token"}
 
-# ===== FastAPI依赖:verify_token(兼容旧路由 Depends(verify_token)) =====
+# ===== FastAPI:verify_token( Depends(verify_token)) =====
 async def verify_token(
     request: Request,
     credentials: HTTPAuthorizationCredentials = Depends(security),
 ) -> dict:
-    """验证请求Token -- 同时支持X-Agent-Token(JWT或AgentToken)和Bearer Token"""
-    agent_token = request.headers.get("X-Agent-Token", "")
+    ''"Token -- X-Agent-Token(JWTAgentToken)Bearer Token''"
+    agent_token = request.headers.get("X-Agent-Token", '')
     if agent_token:
-        # 匹配AGENT_TOKEN -> admin权限
+        # AGENT_TOKEN -> admin
         if agent_token == AGENT_TOKEN:
             return {"user": "agent", "role": "admin"}
-        # 尝试作为JWT解码(登录后的token)
+        # JWT(token)
         result = _decode_jwt(agent_token)
         if result["valid"]:
             return {"user": result["user"], "role": result["role"]}
     if not credentials:
-        raise HTTPException(401, "未提供认证Token")
+        raise HTTPException(401, "Token")
     result = _decode_jwt(credentials.credentials)
     if not result["valid"]:
-        raise HTTPException(401, result.get("error", "认证失败"))
+        raise HTTPException(401, result.get("error", ''))
     return {"user": result["user"], "role": result["role"]}
 
 def create_jwt(payload: dict, hours: int = 24) -> str:
-    """创建JWT Token(兼容security.py/user_auth_router调用)"""
+    ''"JWT Token(security.py/user_auth_router)''"
     payload["iat"] = datetime.utcnow()
     payload["exp"] = datetime.utcnow() + timedelta(hours=hours)
     if "jti" not in payload:
@@ -125,64 +125,64 @@ def create_jwt(payload: dict, hours: int = 24) -> str:
     return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
 
 def verify_jwt(token: str):
-    """验证JWT Token,返回payload或None(兼容security.py调用)"""
+    ''"JWT Token,payloadNone(security.py)''"
     try:
         return jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
     except (jwt.ExpiredSignatureError, jwt.InvalidTokenError):
         return None
 
 def get_audit_logs(page: int = 1, size: int = 20, user: str = None, action: str = None) -> dict:
-    """获取审计日志(兼容security.py调用)"""
+    ''"(security.py)''"
     return {"items": [], "total": 0, "page": page, "size": size}
 
 def get_rate_limit_stats() -> dict:
-    """获取速率限制统计(兼容security.py调用)"""
+    ''"(security.py)''"
     return {"requests_per_minute": 0, "blocked_ips": [], "total_requests_today": 0}
 
 def has_permission(role: str, permission: str) -> bool:
-    """检查角色权限"""
+    ''''''
     role_def = ROLES.get(role, {})
     perms = role_def.get("permissions", [])
     if "*" in perms:
         return True
     if permission in perms:
         return True
-    # 通配符匹配 read:*
+    #  read:*
     for p in perms:
         if p.endswith(":*") and permission.startswith(p[:-1]):
             return True
     return False
 
-# ===== FastAPI依赖 =====
+# ===== FastAPI =====
 async def get_current_user(request: Request, credentials: HTTPAuthorizationCredentials = Depends(security)) -> dict:
-    """获取当前用户(Bearer Token)"""
-    # 兼容旧X-Agent-Token
-    agent_token = request.headers.get("X-Agent-Token", "")
+    ''"(Bearer Token)''"
+    # X-Agent-Token
+    agent_token = request.headers.get("X-Agent-Token", '')
     if agent_token:
         if agent_token == AGENT_TOKEN:
             return {"user": "agent", "role": "admin"}
     
     if not credentials:
-        raise HTTPException(401, "未提供认证Token")
+        raise HTTPException(401, "Token")
 
     result = _decode_jwt(credentials.credentials)
     if not result["valid"]:
-        raise HTTPException(401, result.get("error", "认证失败"))
+        raise HTTPException(401, result.get("error", ''))
     
     return {"user": result["user"], "role": result["role"]}
 
 def require_role(min_role: str = "viewer"):
-    """角色权限装饰器"""
+    ''''''
     async def dependency(user: dict = Depends(get_current_user)):
         role = user.get("role", "viewer")
         role_level = ROLES.get(role, {}).get("level", 0)
         min_level = ROLES.get(min_role, {}).get("level", 0)
         if role_level < min_level:
-            raise HTTPException(403, f"权限不足,需要{min_role}角色")
+            raise HTTPException(403, f",{min_role}")
         return user
     return dependency
 
-# ===== API路由 =====
+# ===== API =====
 from fastapi import APIRouter, Query
 from pydantic import BaseModel
 
@@ -194,10 +194,10 @@ class LoginRequest(BaseModel):
 
 @auth_router.post("/login")
 async def login(req: LoginRequest):
-    """用户登录,返回JWT Token"""
+    ''",JWT Token''"
     user = verify_user_password(req.username, req.password)
     if not user:
-        raise HTTPException(401, "用户名或密码错误")
+        raise HTTPException(401, '')
     
     token = create_token(user["username"], user["role"])
     return {
@@ -210,7 +210,7 @@ async def login(req: LoginRequest):
 
 @auth_router.get("/me")
 async def get_me(user: dict = Depends(get_current_user)):
-    """获取当前用户信息"""
+    ''''''
     role = user.get("role", "viewer")
     return {
         "ok": True,
@@ -221,17 +221,16 @@ async def get_me(user: dict = Depends(get_current_user)):
 
 @auth_router.post("/refresh")
 async def refresh_token(user: dict = Depends(get_current_user)):
-    """刷新Token"""
+    ''"Token''"
     token = create_token(user["user"], user["role"])
     return {"ok": True, "access_token": token, "token_type": "bearer"}
 
 @auth_router.get("/roles")
 async def list_roles(_=Depends(require_role("admin"))):
-    """列出所有角色(仅管理员)"""
+    ''"()''"
     return {"ok": True, "roles": ROLES}
 
-
-# ===== 用户管理 API (仅admin) =====
+# =====  API (admin) =====
 class CreateUserRequest(BaseModel):
     username: str
     password: str
@@ -247,27 +246,27 @@ async def list_users(_=Depends(require_role("admin"))):
 @auth_router.post("/users")
 async def create_user(req: CreateUserRequest, _=Depends(require_role("admin"))):
     if not req.username or not req.password:
-        raise HTTPException(400, "用户名和密码不能为空")
+        raise HTTPException(400, '')
     if req.role not in ROLES:
-        raise HTTPException(400, f"无效角色: {req.role}")
+        raise HTTPException(400, f": {req.role}")
     if add_user(req.username, req.password, req.role):
-        return {"ok": True, "message": f"用户 {req.username} 创建成功"}
-    raise HTTPException(409, "用户名已存在")
+        return {"ok": True, "message": f" {req.username} "}
+    raise HTTPException(409, '')
 
 @auth_router.delete("/users/{username}")
 async def remove_user(username: str, _=Depends(require_role("admin"))):
     if delete_user(username):
-        return {"ok": True, "message": f"用户 {username} 已删除"}
-    raise HTTPException(400, "无法删除该用户")
+        return {"ok": True, "message": f" {username} "}
+    raise HTTPException(400, '')
 
 @auth_router.patch("/users/{username}/role")
 async def change_role(username: str, req: UpdateRoleRequest, _=Depends(require_role("admin"))):
     if update_user_role(username, req.role):
-        return {"ok": True, "message": f"用户 {username} 角色更新为 {req.role}"}
-    raise HTTPException(400, "更新失败")
+        return {"ok": True, "message": f" {username}  {req.role}"}
+    raise HTTPException(400, '')
 
 def verify_token_raw(token: str) -> bool:
-    """WebSocket用简单Token验证"""
+    ''"WebSocketToken''"
     if not token:
         return False
     if token == AGENT_TOKEN:

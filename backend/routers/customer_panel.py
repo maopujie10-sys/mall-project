@@ -1,4 +1,4 @@
-"""客服面板 API -- 消息管理/自动回复/日报"""
+''" API -- //''"
 from datetime import datetime
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
@@ -17,13 +17,13 @@ class ReplyRequest(BaseModel):
 
 @router.get("/messages")
 async def list_messages(limit: int = 50, _=Depends(verify_token)):
-    await handle_risk("L1", "查看客服消息")
+    await handle_risk("L1", '')
     msgs = _get_messages()[-limit:]
     return {"messages": msgs, "total": len(_get_messages()), "unreplied": sum(1 for m in msgs if not m.get("replied"))}
 
 @router.post("/reply")
 async def reply_message(req: ReplyRequest, _=Depends(verify_token)):
-    await handle_risk("L2", f"回复消息: {req.message_id}")
+    await handle_risk("L2", f": {req.message_id}")
     for m in _get_messages():
         if m.get("id") == req.message_id:
             m["reply"] = req.reply
@@ -31,7 +31,7 @@ async def reply_message(req: ReplyRequest, _=Depends(verify_token)):
             m["replied_at"] = datetime.now().isoformat()
             state._save()
             return {"ok": True, "message_id": req.message_id}
-    return {"ok": False, "error": "消息不存在"}
+    return {"ok": False, "error": ''}
 
 @router.get("/messages/stats")
 async def customer_message_stats(_=Depends(verify_token)):
@@ -49,7 +49,7 @@ async def mark_read(req: ReadRequest, _=Depends(verify_token)):
             m["read"] = True
             state._save()
             return {"ok": True}
-    return {"ok": False, "error": "消息不存在"}
+    return {"ok": False, "error": ''}
 
 @router.post("/read-all")
 async def mark_all_read(_=Depends(verify_token)):
@@ -63,7 +63,7 @@ class TransferRequest(BaseModel):
 
 @router.post("/transfer")
 async def transfer_to_human(req: TransferRequest, _=Depends(verify_token)):
-    await handle_risk("L2", f"转人工: {len(req.messageIds)}条消息")
+    await handle_risk("L2", f": {len(req.messageIds)}")
     for m in _get_messages():
         if m.get("id") in req.messageIds:
             m["transferred"] = True
@@ -73,7 +73,7 @@ async def transfer_to_human(req: TransferRequest, _=Depends(verify_token)):
 
 @router.get("/report")
 async def daily_report(_=Depends(verify_token)):
-    await handle_risk("L1", "生成客服日报")
+    await handle_risk("L1", '')
     from services import DiaryService
     journal = DiaryService.generate_daily()
     return {"ok": True, "report": journal}

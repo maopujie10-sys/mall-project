@@ -1,4 +1,4 @@
-"""全链路请求追踪 + 全局异常处理 -- trace_id贯穿每个请求,出问题秒定位"""
+''" +  -- trace_id,''"
 import time, uuid, traceback, json
 from datetime import datetime
 from fastapi import Request, Response
@@ -7,23 +7,21 @@ from tools.logger import get_logger
 
 logger = get_logger("trace")
 
-# 请求追踪存储(环形缓冲区)
+# ()
 _trace_buffer = []
 MAX_TRACE = 1000
-_slow_threshold_ms = 1000  # 慢请求阈值
-
-
+_slow_threshold_ms = 1000  
 class TraceContext:
-    """请求追踪上下文"""
+    ''''''
     __slots__ = ("trace_id", "path", "method", "start_time", "status", "error")
 
-    def __init__(self, trace_id: str = ""):
+    def __init__(self, trace_id: str = ''):
         self.trace_id = trace_id or self._gen_id()
-        self.path = ""
-        self.method = ""
+        self.path = ''
+        self.method = ''
         self.start_time = 0.0
         self.status = "processing"
-        self.error = ""
+        self.error = ''
 
     @staticmethod
     def _gen_id() -> str:
@@ -37,23 +35,23 @@ class TraceContext:
             "method": self.method,
             "elapsed_ms": elapsed,
             "status": self.status,
-            "error": self.error[:200] if self.error else "",
+            "error": self.error[:200] if self.error else '',
             "time": datetime.now().isoformat(),
         }
 
 
 async def trace_middleware(request: Request, call_next):
-    """全链路请求追踪中间件 -- 每个请求分配trace_id"""
+    ''" -- trace_id''"
     trace_ctx = TraceContext()
     trace_ctx.path = request.url.path
     trace_ctx.method = request.method
     trace_ctx.start_time = time.time()
 
-    # 注入trace_id到request state
+    # trace_idrequest state
     request.state.trace_id = trace_ctx.trace_id
     request.state.trace_start = trace_ctx.start_time
 
-    # 记录请求
+    
     logger.info(f"[{trace_ctx.trace_id}] -> {request.method} {request.url.path}")
 
     try:
@@ -61,13 +59,13 @@ async def trace_middleware(request: Request, call_next):
         elapsed = round((time.time() - trace_ctx.start_time) * 1000, 1)
         trace_ctx.status = "ok"
 
-        # 在响应头注入trace_id
+        # trace_id
         response.headers["X-Trace-Id"] = trace_ctx.trace_id
         response.headers["X-Response-Time-Ms"] = str(elapsed)
 
-        # 慢请求告警
+        
         if elapsed > _slow_threshold_ms:
-            logger.info(f"[{trace_ctx.trace_id}] ⚠️ 慢请求 {elapsed}ms {request.url.path}")
+            logger.info(f"[{trace_ctx.trace_id}]   {elapsed}ms {request.url.path}")
             trace_ctx.status = "slow"
 
         _add_trace(trace_ctx.to_dict())
@@ -79,32 +77,32 @@ async def trace_middleware(request: Request, call_next):
         trace_ctx.error = str(e)[:500]
         _add_trace(trace_ctx.to_dict())
 
-        # 全局异常处理
-        logger.info(f"[{trace_ctx.trace_id}] ❌ 异常 {elapsed}ms {request.url.path}: {str(e)[:200]}")
+        
+        logger.info(f"[{trace_ctx.trace_id}]   {elapsed}ms {request.url.path}: {str(e)[:200]}")
         traceback.print_exc()
 
         return JSONResponse(
             status_code=500,
             content={
                 "ok": False,
-                "error": "服务器内部错误",
+                "error": '',
                 "trace_id": trace_ctx.trace_id,
-                "detail": str(e)[:200] if isinstance(e, (ValueError, KeyError, TypeError)) else "请查看日志",
+                "detail": str(e)[:200] if isinstance(e, (ValueError, KeyError, TypeError)) else '',
             },
             headers={"X-Trace-Id": trace_ctx.trace_id}
         )
 
 
 def _add_trace(trace_dict: dict):
-    """添加追踪记录到环形缓冲区"""
+    ''''''
     global _trace_buffer
     _trace_buffer.append(trace_dict)
     if len(_trace_buffer) > MAX_TRACE:
         _trace_buffer = _trace_buffer[-MAX_TRACE:]
 
 
-def get_recent_traces(limit: int = 100, status_filter: str = "") -> list:
-    """获取最近追踪记录"""
+def get_recent_traces(limit: int = 100, status_filter: str = '') -> list:
+    ''''''
     traces = list(_trace_buffer)
     if status_filter:
         traces = [t for t in traces if t.get("status") == status_filter]
@@ -112,7 +110,7 @@ def get_recent_traces(limit: int = 100, status_filter: str = "") -> list:
 
 
 def get_trace_stats() -> dict:
-    """追踪统计"""
+    ''''''
     if not _trace_buffer:
         return {"total": 0}
     total = len(_trace_buffer)

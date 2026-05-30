@@ -1,25 +1,25 @@
 <template>
   <div class="page-shell">
-    <div class="page-header"><h2>🎯 AI推荐引擎</h2><p>协同过滤+内容推荐 — 个性化商品推荐</p></div>
+    <div class="page-header"><h2> AI</h2><p>+  </p></div>
     <el-row :gutter="16">
       <el-col :span="12">
-        <el-card><template #header>👤 用户推荐</template>
-          <el-input v-model="userId" placeholder="用户ID"/>
-          <el-button type="primary" style="margin-top:8px" @click="recUser">推荐</el-button>
+        <el-card><template #header> </template>
+          <el-input v-model="userId" placeholder="ID"/>
+          <el-button type="primary" style="margin-top:8px" @click="recUser">OK</el-button>
           <div v-if="userRecs.length" class="rec-list">
             <div v-for="item in userRecs" :key="item.item_id" class="rec-item">
-              <span class="rec-id">{{ item.item_id }}</span><span class="rec-score">⭐ {{ item.score }}</span>
+              <span class="rec-id">{{ item.item_id }}</span><span class="rec-score"> {{ item.score }}</span>
             </div>
           </div>
         </el-card>
       </el-col>
       <el-col :span="12">
-        <el-card><template #header>🔗 相似商品</template>
-          <el-input v-model="itemId" placeholder="商品ID"/>
-          <el-button type="primary" style="margin-top:8px" @click="recSimilar">推荐</el-button>
+        <el-card><template #header> </template>
+          <el-input v-model="itemId" placeholder="ID"/>
+          <el-button type="primary" style="margin-top:8px" @click="recSimilar">OK</el-button>
           <div v-if="simItems.length" class="rec-list">
             <div v-for="item in simItems" :key="item.item_id" class="rec-item">
-              <span class="rec-id">{{ item.item_id }}</span><span class="rec-score">⭐ {{ item.score }}</span>
+              <span class="rec-id">{{ item.item_id }}</span><span class="rec-score"> {{ item.score }}</span>
             </div>
           </div>
         </el-card>
@@ -29,14 +29,14 @@
 </template>
 <script setup>
 import { ref } from "vue"; import { ElMessage } from "element-plus"; import { agentApi } from "@/api"
-const userId = ref(""); const itemId = ref(""); const userRecs = ref([]); const simItems = ref([])
+const userId = ref(''); const itemId = ref(''); const userRecs = ref([]); const simItems = ref([])
 async function recUser() {
   if (!userId.value) return
-  try { const r = await agentApi.get("/agent/recommend/for_user/" + userId.value); if (r?.ok) userRecs.value = r.items } catch (e) { ElMessage.error(e.message) }
+  try { const r = await agentApi.get("/agent/recommend/for_user/" + userId.value); if (r?.data?.ok) userRecs.value = r.data.items } catch (e) { ElMessage.error(e.message) }
 }
 async function recSimilar() {
   if (!itemId.value) return
-  try { const r = await agentApi.get("/agent/recommend/similar/" + itemId.value); if (r?.ok) simItems.value = r.items } catch (e) { ElMessage.error(e.message) }
+  try { const r = await agentApi.get("/agent/recommend/similar/" + itemId.value); if (r?.data?.ok) simItems.value = r.data.items } catch (e) { ElMessage.error(e.message) }
 }
 </script>
 <style scoped>

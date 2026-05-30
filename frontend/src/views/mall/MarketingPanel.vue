@@ -1,39 +1,39 @@
 <template>
   <div>
     <el-tabs type="card">
-      <el-tab-pane label="邀请">
+      <el-tab-pane label=''>
         <el-row :gutter="12" style="margin-bottom:12px">
-          <el-col :span="12"><div class="metric-card"><div class="metric-label">邀请统计</div><div class="metric-value">{{ inviteStats.total || 0 }}</div></div></el-col>
+          <el-col :span="12"><div class="metric-card"><div class="metric-label">{{ \('mallSub.title') }}</div><div class="metric-value">{{ inviteStats.total || 0 }}</div></div></el-col>
         </el-row>
         <el-table :data="invites" stripe size="small" v-loading="iv">
           <el-table-column prop="uuid" label="UUID" width="200" />
-          <el-table-column prop="inviter_id" label="邀请人ID" width="100" />
-          <el-table-column prop="invitee_id" label="被邀请人ID" width="100" />
-          <el-table-column prop="create_time" label="时间" width="160" />
+          <el-table-column prop="inviter_id" label="ID" width="100" />
+          <el-table-column prop="invitee_id" label="ID" width="100" />
+          <el-table-column prop="create_time" label='' width="160" />
         </el-table>
       </el-tab-pane>
-      <el-tab-pane label="抽奖">
+      <el-tab-pane label=''>
         <el-table :data="lotteryList" stripe size="small" v-loading="lt">
-          <el-table-column prop="activity_id" label="活动ID" width="200" />
-          <el-table-column prop="title" label="标题" />
-          <el-table-column prop="status" label="状态" width="80" />
+          <el-table-column prop="activity_id" label="ID" width="200" />
+          <el-table-column prop="title" label='' />
+          <el-table-column prop="status" label='' width="80" />
         </el-table>
       </el-tab-pane>
-      <el-tab-pane label="促销">
+      <el-tab-pane label=''>
         <el-table :data="promotes" stripe size="small" v-loading="pm">
           <el-table-column prop="uuid" label="UUID" width="200" />
-          <el-table-column prop="title" label="标题" />
-          <el-table-column prop="discount" label="折扣" width="80" />
-          <el-table-column prop="status" label="状态" width="80" />
+          <el-table-column prop="title" label='' />
+          <el-table-column prop="discount" label='' width="80" />
+          <el-table-column prop="status" label='' width="80" />
         </el-table>
       </el-tab-pane>
-      <el-tab-pane label="订阅">
+      <el-tab-pane label=''>
         <el-table :data="subscribes" stripe size="small" v-loading="sb">
           <el-table-column prop="id" label="ID" width="60" />
-          <el-table-column prop="user_id" label="用户ID" width="80" />
-          <el-table-column prop="plan" label="套餐" width="120" />
-          <el-table-column prop="status" label="状态" width="80" />
-          <el-table-column prop="create_time" label="时间" width="160" />
+          <el-table-column prop="user_id" label="ID" width="80" />
+          <el-table-column prop="plan" label='' width="120" />
+          <el-table-column prop="status" label='' width="80" />
+          <el-table-column prop="create_time" label='' width="160" />
         </el-table>
       </el-tab-pane>
     </el-tabs>

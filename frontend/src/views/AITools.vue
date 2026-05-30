@@ -1,39 +1,39 @@
-<template><div class="page-shell"><div class="page-header"><h2>🔧 AI工具箱</h2><p>代码解释器 · 联网搜索 · 图片生成 · 用量统计 · 评测</p></div>
+<template><div class="page-shell"><div class="page-header"><h2> AI</h2>-</div>
 <el-tabs v-model="tab" type="border-card">
 
-<el-tab-pane label="🐍 代码解释器" name="code">
-<el-radio-group v-model="lang" size="small" style="margin-bottom:8px"><el-radio-button value="python">Python</el-radio-button><el-radio-button value="sql">SQL查询</el-radio-button></el-radio-group>
-<el-input v-model="code" type="textarea" :rows="6" :placeholder="lang==='python'?'print(sum(range(1,101)))  # Python代码':'SELECT COUNT(*) FROM products  # SQL查询'"/>
-<el-button type="primary" @click="runCode" :loading="loading" style="margin-top:8px">▶ 运行</el-button>
+<el-tab-pane label=" " name="code">
+<el-radio-group v-model="lang" size="small" style="margin-bottom:8px"><el-radio-button value="python">Python</el-radio-button><el-radio-button value="sql">SQL</el-radio-button></el-radio-group>
+<el-input v-model="code" type="textarea" :rows="6" :placeholder="lang==='python'?'print(sum(range(1,101)))  # Python':'SELECT COUNT(*) FROM products  # SQL''/>
+
 <div v-if="codeResult" class="result-box"><pre>{{codeResult}}</pre></div></el-tab-pane>
 
-<el-tab-pane label="🌐 联网搜索" name="search">
-<el-input v-model="searchQ" placeholder="搜索内容..." @keydown.enter="runSearch"/><el-button type="primary" @click="runSearch" :loading="loading" style="margin-left:8px">搜索</el-button>
+<el-tab-pane label=" " name="search">
+<el-input v-model="searchQ" placeholder="..." @keydown.enter="runSearch"/><el-button type="primary" @click="runSearch" :loading="loading" style="margin-left:8px">OK</el-button>
 <div v-if="searchResults.length" class="search-list"><div v-for="r in searchResults" :key="r.url" class="search-item"><a :href="r.url" target="_blank" class="search-title">{{r.title}}</a><div class="search-snippet">{{r.snippet}}</div></div></div></el-tab-pane>
 
-<el-tab-pane label="🎨 图片生成" name="image">
-<el-input v-model="imgPrompt" placeholder="描述你想生成的图片..." type="textarea" :rows="3"/><el-button type="primary" @click="genImage" :loading="loading" style="margin-top:8px">🎨 DALL-E生成</el-button>
-<div v-if="genImages.length" class="image-grid"><img v-for="(url,i) in genImages" :key="i" :src="url" class="gen-img"/></div></el-tab-pane>
+<el-tab-pane label=" " name="image">
+<el-input v-model="imgPrompt" placeholder="..." type="textarea" :rows="3"/><el-button type="primary" @click="genImage" :loading="loading" style="margin-top:8px"> DALL-E</el-button>
+<div v-if="genImages.length" class="image-grid">-</el-tab-pane>
 
-<el-tab-pane label="📊 用量统计" name="usage">
-<el-button @click="loadUsage" :loading="loading">刷新</el-button>
-<div v-if="usage"><div class="stat-row"><span>总输入Token:</span><b>{{usage.total_tokens_in?.toLocaleString()}}</b></div><div class="stat-row"><span>总输出Token:</span><b>{{usage.total_tokens_out?.toLocaleString()}}</b></div><div class="stat-row"><span>总费用:</span><b style="color:#fbbf24">${{usage.total_cost?.toFixed(4)}}</b></div>
-<div v-if="usage.models?.length" style="margin-top:12px"><div v-for="m in usage.models" :key="m.model" class="stat-row"><span>{{m.model}}:</span><span>{{(m.tokens_in+m.tokens_out).toLocaleString()}} tokens / ${{m.cost.toFixed(4)}} ({{m.calls}}次)</span></div></div></div></el-tab-pane>
+<el-tab-pane label=" " name="usage">
+<el-button @click="loadUsage" :loading="loading">OK</el-button>
+<div v-if="usage"><div class="stat-row"><span>Token:</span><b>{{usage.total_tokens_in?.toLocaleString()}}</b></div><div class="stat-row"><span>Token:</span><b>{{usage.total_tokens_out?.toLocaleString()}}</b></div><div class="stat-row"><span>:</span><b style="color:#fbbf24">${{usage.total_cost?.toFixed(4)}}</b></div>
+<div v-if="usage.models?.length" style="margin-top:12px"><div v-for="m in usage.models" :key="m.model" class="stat-row"><span>{{m.model}}:</span><span>{{(m.tokens_in+m.tokens_out).toLocaleString()}} tokens / ${{m.cost.toFixed(4)}} ({{m.calls}})</span></div></div></div></el-tab-pane>
 
-<el-tab-pane label="⭐ 评测" name="eval">
-<el-input v-model="evalQ" placeholder="问题"/><el-input v-model="evalA" placeholder="AI回答" type="textarea" :rows="3" style="margin-top:8px"/><el-input v-model="evalE" placeholder="期望答案(可选)" style="margin-top:8px"/>
-<el-button type="primary" @click="runEval" :loading="loading" style="margin-top:8px">评分</el-button>
-<div v-if="evalResult" class="result-box"><div class="eval-score">评分: {{evalResult.score}}/10</div><div>{{evalResult.feedback}}</div></div></el-tab-pane>
+<el-tab-pane label=" " name="eval">
+<el-input v-model="evalQ" placeholder=''/><el-input v-model="evalA" placeholder="AI" type="textarea" :rows="3" style="margin-top:8px"/><el-input v-model="evalE" placeholder="()" style="margin-top:8px"/>
+<el-button type="primary" @click="runEval" :loading="loading" style="margin-top:8px">OK</el-button>
+<div v-if="evalResult" class="result-box"><div class="eval-score">: {{evalResult.score}}/10</div><div>{{evalResult.feedback}}</div></div></el-tab-pane>
 
 </el-tabs></div></template>
 <script setup>
 import {ref,onMounted} from "vue";import {ElMessage} from "element-plus";import {agentApi} from "@/api"
 const tab=ref("code");const loading=ref(false)
-const lang=ref("python");const code=ref("");const codeResult=ref("")
-const searchQ=ref("");const searchResults=ref([])
-const imgPrompt=ref("");const genImages=ref([])
+const lang=ref("python");const code=ref('');const codeResult=ref('')
+const searchQ=ref('');const searchResults=ref([])
+const imgPrompt=ref('');const genImages=ref([])
 const usage=ref(null)
-const evalQ=ref("");const evalA=ref("");const evalE=ref("");const evalResult=ref(null)
+const evalQ=ref('');const evalA=ref('');const evalE=ref('');const evalResult=ref(null)
 const api=async(u,b)=>{loading.value=true;try{const r=await agentApi.post(u,b);loading.value=false;return r?.data}catch(e){loading.value=false;ElMessage.error(e.message)}}
 async function runCode(){const d=await api("/agent/tools/code",{code:code.value,language:lang.value});codeResult.value=d?.ok?d.output||JSON.stringify(d.result,null,2):d?.error}
 async function runSearch(){const d=await api("/agent/tools/search",{query:searchQ.value});searchResults.value=d?.ok?d.results||[]:[]}

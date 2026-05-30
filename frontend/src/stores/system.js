@@ -20,24 +20,24 @@ export const useSystemStore = defineStore('system', () => {
 
   const modeLabel = computed(() => {
     const map = {
-      'ai-control': 'AI 接管模式',
-      'ai_control': 'AI 接管模式',
-      assist: '辅助模式',
-      readonly: '只读模式',
-      'human-control': '人工接管模式',
-      human_control: '人工接管模式',
+      'ai-control': 'AI ',
+      'ai_control': 'AI ',
+      assist: '',
+      readonly: '',
+      'human-control': '',
+      human_control: '',
     }
     return map[currentMode.value] || currentMode.value
   })
 
   const emergencyModeLabel = computed(() => {
     const map = {
-      'ai-control': 'AI 接管中',
-      'ai_control': 'AI 接管中',
-      human_control: '人工接管',
-      'human-control': '人工接管',
-      readonly: '只读模式',
-      assist: '辅助模式',
+      'ai-control': 'AI ',
+      'ai_control': 'AI ',
+      human_control: '',
+      'human-control': '',
+      readonly: '',
+      assist: '',
     }
     return map[currentMode.value] || currentMode.value
   })

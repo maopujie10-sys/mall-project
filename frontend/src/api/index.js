@@ -1,7 +1,7 @@
 import axios from 'axios'
 import { ElMessage } from 'element-plus'
 
-// 从 localStorage 读取 Token，没有则用默认值
+//  localStorage  Token
 function getToken() {
   return localStorage.getItem('agent_token') || localStorage.getItem('friday_token') || 'kWs4N6GiD4vtjnuHV31r14m6HPpKttBSI35lFnpiI90'
 }
@@ -10,8 +10,8 @@ function unwrapResponse(response) {
   const data = response.data
   if (data && typeof data === 'object' && 'code' in data) {
     if (data.code !== 0 && data.code !== 200) {
-      ElMessage.error(data.message || '请求失败')
-      return Promise.reject(new Error(data.message || '请求失败'))
+      ElMessage.error(data.message || '')
+      return Promise.reject(new Error(data.message || ''))
     }
     return data.data !== undefined ? data.data : data
   }
@@ -19,16 +19,16 @@ function unwrapResponse(response) {
 }
 
 function handleError(error) {
-  const msg = error.response?.data?.detail || error.response?.data?.message || error.message || '网络错误'
+  const msg = error.response?.data?.detail || error.response?.data?.message || error.message || ''
   if (error.response?.status === 403) {
-    ElMessage.error('Token 无效或未设置，请在右上角用户菜单中配置 Agent Token')
+    ElMessage.error('Token  Agent Token')
   } else {
     ElMessage.error(msg)
   }
   return Promise.reject(error)
 }
 
-// Java 商城后端 (mall-app:8080)
+// Java  (mall-app:8080)
 const api = axios.create({
   baseURL: '/api',
   timeout: 30000,
@@ -37,13 +37,13 @@ const api = axios.create({
 api.interceptors.request.use((c) => c, (e) => Promise.reject(e))
 api.interceptors.response.use(unwrapResponse, handleError)
 
-// Agent 后端 (mall-agent:9000)
+// Agent  (mall-agent:9000)
 const agentApi = axios.create({
   baseURL: '/ai/api',
   timeout: 30000,
   headers: { 'Content-Type': 'application/json' },
 })
-// 自动注入 X-Agent-Token
+//  X-Agent-Token
 agentApi.interceptors.request.use((config) => {
   const token = getToken()
   if (token) {

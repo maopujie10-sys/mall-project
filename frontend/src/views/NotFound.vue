@@ -5,14 +5,14 @@
         <el-icon :size="80" color="var(--text-disabled)"><WarningFilled /></el-icon>
       </div>
       <h1 class="nf-code">404</h1>
-      <h2 class="nf-title">页面未找到</h2>
-      <p class="nf-desc">您访问的页面不存在，或已被移动到其他位置</p>
+      <h2 class="nf-title">{{ \('notFound.title') }}</h2>
+      <p class="nf-desc">{{ \('notFound.title') }}</p>
       <div class="nf-actions">
         <el-button type="primary" size="large" @click="$router.push('/dashboard')">
-          <el-icon><HomeFilled /></el-icon> 返回总控台
+          <el-icon><HomeFilled /></el-icon> 
         </el-button>
         <el-button size="large" @click="$router.go(-1)">
-          <el-icon><Back /></el-icon> 返回上一页
+          <el-icon><Back /></el-icon> 
         </el-button>
       </div>
     </div>

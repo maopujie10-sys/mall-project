@@ -1,5 +1,5 @@
-"""工具注册中心 -- 所有AI可调用工具的统一注册与管理
-v3: 全部65工具绑定真实执行函数"""
+''" -- AI
+v3: 65''"
 from dataclasses import dataclass, field
 from typing import Callable, Optional
 import asyncio
@@ -8,7 +8,7 @@ import os
 
 @dataclass
 class ToolDef:
-    """工具定义"""
+    ''''''
     name: str
     display_name: str
     description: str
@@ -29,11 +29,11 @@ class ToolDef:
                 return {"ok": True, "tool": self.name, "result": result}
             except Exception as e:
                 return {"ok": False, "tool": self.name, "error": str(e)}
-        return {"ok": False, "tool": self.name, "error": "工具未绑定执行函数"}
+        return {"ok": False, "tool": self.name, "error": ''}
 
 
 class ToolRegistry:
-    """工具注册中心"""
+    ''''''
     def __init__(self):
         self._tools: dict[str, ToolDef] = {}
     def register(self, tool: ToolDef):
@@ -49,24 +49,24 @@ class ToolRegistry:
     async def execute(self, name: str, **params) -> dict:
         tool = self._tools.get(name)
         if not tool:
-            return {"ok": False, "tool": name, "error": f"工具不存在: {name}"}
+            return {"ok": False, "tool": name, "error": f": {name}"}
         return await tool.execute(**params)
 
 
 registry = ToolRegistry()
 
 
-# ========== 工具执行函数工厂 ==========
+# ==========  ==========
 
 def _cmd(cmd: str):
-    """创建执行shell命令的handler"""
+    ''"shellhandler''"
     async def h(**kw):
         from executor import execute
         return await execute(cmd)
     return h
 
 def _cmd_fmt(cmd_tpl: str):
-    """创建带参数格式化命令的handler"""
+    ''"handler''"
     async def h(**kw):
         from executor import execute
         cmd = cmd_tpl.format(**kw)
@@ -74,14 +74,14 @@ def _cmd_fmt(cmd_tpl: str):
     return h
 
 def _state(key: str, default=None):
-    """创建读取state的handler"""
+    ''"statehandler''"
     async def h(**kw):
         from state import state as _s
         return _s._data.get(key, default or {})
     return h
 
 def _import_handler(mod_path: str, func_name: str):
-    """创建延迟导入模块函数的handler"""
+    ''"handler''"
     async def h(**kw):
         import importlib
         mod = importlib.import_module(mod_path)
@@ -93,7 +93,7 @@ def _import_handler(mod_path: str, func_name: str):
     return h
 
 def _import_handler_noargs(mod_path: str, func_name: str):
-    """创建无参调用handler"""
+    ''"handler''"
     async def h(**kw):
         import importlib
         mod = importlib.import_module(mod_path)
@@ -105,7 +105,7 @@ def _import_handler_noargs(mod_path: str, func_name: str):
     return h
 
 async def _mall_proxy(path: str, method: str = "GET", **kw):
-    """代理到Java后端"""
+    ''"Java''"
     import httpx
     from config import MALL_BASE_URL
     url = f"{MALL_BASE_URL}{path}"
@@ -115,22 +115,22 @@ async def _mall_proxy(path: str, method: str = "GET", **kw):
             if r.status_code < 500:
                 try: return r.json()
                 except: return {"raw": r.text[:500]}
-            return {"error": f"mall返回{r.status_code}", "detail": r.text[:200]}
+            return {"error": f"mall{r.status_code}", "detail": r.text[:200]}
     except Exception as e:
-        return {"error": f"mall不可达: {str(e)[:100]}"}
+        return {"error": f"mall: {str(e)[:100]}"}
 
 
 def register_builtin_tools():
-    """注册所有内置工具 + 全部绑定真实执行函数"""
+    ''" + ''"
     from executor import execute as _exe
 
-    # ---- server面板工具 ----
+    # ---- server ----
     _srv_status_h = _import_handler_noargs("routers.server_panel", "_get_metrics")
     _srv_ports_h = _cmd("ss -tlnp 2>/dev/null || netstat -an 2>/dev/null | findstr LISTENING")
     _srv_procs_h = _cmd("ps aux --sort=-%cpu 2>/dev/null | head -20 || tasklist /FO CSV /NH 2>nul")
     _srv_disk_h = _cmd("df -h 2>/dev/null || wmic logicaldisk get size,freespace,caption 2>nul")
 
-    # ---- Docker工具 ----
+    # ---- Docker ----
     _dk_ps_h = _cmd("docker ps -a --format '{{.ID}}|{{.Names}}|{{.Status}}|{{.Image}}' 2>/dev/null || echo no-docker")
     _dk_logs_h = _cmd_fmt("docker logs --tail 50 {container_id} 2>&1")
     _dk_status_h = _cmd("docker info --format '{{.ContainersRunning}}/{{.Containers}}' 2>/dev/null || echo no-docker")
@@ -140,13 +140,13 @@ def register_builtin_tools():
     _dk_stats_h = _cmd("docker stats --no-stream --format '{{.Name}}|{{.CPUPerc}}|{{.MemPerc}}' 2>/dev/null || echo no-docker")
     _dk_compose_h = _cmd("docker compose ps --format '{{.Name}}|{{.Status}}' 2>/dev/null || echo no-compose")
 
-    # ---- Nginx工具 ----
+    # ---- Nginx ----
     _nx_status_h = _cmd("systemctl is-active nginx 2>/dev/null || pgrep -a nginx 2>/dev/null || echo unknown")
     _nx_test_h = _cmd("nginx -t 2>&1")
     _nx_logs_h = _cmd("tail -n 50 /var/log/nginx/error.log 2>/dev/null || echo no-nginx-log")
     _nx_reload_h = _cmd("nginx -s reload 2>&1 && echo ok || echo fail")
 
-    # ---- Site检测工具 ----
+    # ---- Site ----
     async def _site_check_h(**kw):
         import httpx
         url = kw.get("url", "http://localhost:8080")
@@ -163,16 +163,16 @@ def register_builtin_tools():
     async def _site_dns_h(**kw):
         return await _exe(f"nslookup {kw.get('domain','localhost')} 2>/dev/null || echo dns-check-failed")
 
-    # ---- System工具 ----
+    # ---- System ----
     async def _sys_mode_h(**kw):
         from state import state as _s
         return {"mode": _s.mode, "pending": len(_s.pending_approvals)}
     async def _sys_emergency_h(**kw):
         from state import state as _s
         _s.mode = "human_control"
-        return {"mode": "human_control", "note": "紧急停止已触发"}
+        return {"mode": "human_control", "note": ''}
 
-    # ---- Backup工具 ----
+    # ---- Backup ----
     _backup_list_h = _import_handler_noargs("routers.rollback_center", "_load_backups")
     async def _backup_create_h(**kw):
         from routers.rollback_center import create_backup as _cb
@@ -182,11 +182,11 @@ def register_builtin_tools():
     async def _backup_rollback_h(**kw):
         from state import state as _s; from routers.rollback_center import _load_backups
         for r in _load_backups():
-            if r.get("id") == kw.get("backup_id", ""):
+            if r.get("id") == kw.get("backup_id", ''):
                 return {"status": "rollback_initiated", "backup": r["name"], "target": r.get("target", "unknown")}
         return {"error": "backup not found"}
 
-    # ---- Rotation工具 ----
+    # ---- Rotation ----
     _rot_list_h = _state("rotation_domains", [])
     async def _rot_check_h(**kw):
         from routers.rotation_panel import _check_one
@@ -195,24 +195,24 @@ def register_builtin_tools():
         from state import state as _s
         domains = _s._data.setdefault("rotation_domains", [])
         for d in domains:
-            if d["domain"] == kw.get("domain", ""):
+            if d["domain"] == kw.get("domain", ''):
                 d["active"] = kw.get("active", not d.get("active", True))
                 _s._save()
                 return {"domain": d["domain"], "active": d["active"]}
         return {"error": "domain not found"}
 
-    # ---- Customer工具 ----
+    # ---- Customer ----
     async def _cust_msgs_h(**kw):
         from state import state as _s
         return _s._data.get("customer_messages", [])[-20:]
     async def _cust_reply_h(**kw):
         from state import state as _s
         msgs = _s._data.setdefault("customer_messages", [])
-        msgs.append({"reply": kw.get("message", ""), "to": kw.get("user_id", ""), "time": __import__("datetime").datetime.now().isoformat()})
+        msgs.append({"reply": kw.get("message", ''), "to": kw.get("user_id", ''), "time": __import__("datetime").datetime.now().isoformat()})
         _s._save()
-        return {"ok": True, "replied_to": kw.get("user_id", "")}
+        return {"ok": True, "replied_to": kw.get("user_id", '')}
 
-    # ---- Mall/Shop工具 ----
+    # ---- Mall/Shop ----
     async def _mall_products_h(**kw):
         return await _mall_proxy("/api/products", page=1, size=10)
     async def _mall_scan_h(**kw):
@@ -228,27 +228,27 @@ def register_builtin_tools():
                 results[ep] = str(e)[:50]
         return results
 
-    # ---- Autopilot工具 ----
+    # ---- Autopilot ----
     _auto_visit_h = _cmd("curl -sI https://example.com 2>/dev/null | head -5 || echo visit-simulated")
     _auto_schedule_h = _state("autopilot_schedule", {"status": "idle", "interval_min": 30})
     _auto_logs_h = _state("autopilot_logs", [])
 
-    # ---- Report工具 ----
+    # ---- Report ----
     _report_daily_h = _import_handler_noargs("routers.daily_report", "generate_daily_report")
     async def _report_trend_h(**kw):
         from state import state as _s
         return {"recent_actions": _s.tasks[-20:]}
 
-    # ---- DB工具 ----
+    # ---- DB ----
     async def _db_query_h(**kw):
         from executor import execute_db
         sql = kw.get("sql", "SHOW TABLES")
         return await execute_db(sql)
     _db_status_h = _cmd("mysqladmin ping 2>/dev/null -h localhost -u root || echo db-unreachable")
-    _db_schema_h = _cmd("mysql -e 'SELECT TABLE_NAME,ENGINE,TABLE_ROWS FROM information_schema.TABLES WHERE TABLE_SCHEMA=\"mall_db\"' 2>/dev/null | head -30 || echo db-unreachable")
+    _db_schema_h = _cmd("mysql -e 'SELECT TABLE_NAME,ENGINE,TABLE_ROWS FROM information_schema.TABLES WHERE TABLE_SCHEMA=\"mall_db\'' 2>/dev/null | head -30 || echo db-unreachable")
     _db_tables_h = _cmd("mysql -e 'SHOW TABLES' mall_db 2>/dev/null | head -30 || echo db-unreachable")
 
-    # ---- Scraper工具 ----
+    # ---- Scraper ----
     async def _scraper_start_h(**kw):
         from routers.scraper import start_job
         from pydantic import BaseModel
@@ -261,7 +261,7 @@ def register_builtin_tools():
         from state import state as _s
         return _s._data.get("scraped_products", [])[:20]
 
-    # ---- Security工具 ----
+    # ---- Security ----
     async def _sec_block_h(**kw):
         from routers.security import block_ip as _b
         from pydantic import BaseModel
@@ -273,15 +273,15 @@ def register_builtin_tools():
         class _UR(BaseModel): ip: str = kw.get("ip", "0.0.0.0"); reason: str = "ai_unblock"; hours: int = 1
         return await _u(_UR())
 
-    # ---- Inspector工具 ----
+    # ---- Inspector ----
     async def _insp_run_h(**kw):
         from routers.inspector import run_inspection as _ri
-        return await _ri() if _ri else {"status": "inspector功能未加载"}
+        return await _ri() if _ri else {"status": "inspector"}
     async def _insp_history_h(**kw):
         from state import state as _s
         return _s._data.get("inspection_history", [])[-20:]
 
-    # ---- Playwright工具 ----
+    # ---- Playwright ----
     async def _pw_screenshot_h(**kw):
         from agents.playwright_agent import PlaywrightAgent
         return await PlaywrightAgent.screenshot(kw.get("url", "https://example.com"))
@@ -290,9 +290,9 @@ def register_builtin_tools():
         return await PlaywrightAgent.scrape_page(kw.get("url", "https://example.com"))
     async def _pw_search_h(**kw):
         from agents.playwright_agent import PlaywrightAgent
-        return await PlaywrightAgent.search_and_scrape(kw.get("keyword", ""), kw.get("site", "ebay"))
+        return await PlaywrightAgent.search_and_scrape(kw.get("keyword", ''), kw.get("site", "ebay"))
 
-    # ---- Virtual工具 ----
+    # ---- Virtual ----
     async def _virt_gen_h(**kw):
         from routers.virtual_data_router import generate_data as _g
         from pydantic import BaseModel
@@ -305,7 +305,7 @@ def register_builtin_tools():
         return await _r(_RR())
     _virt_dashboard_h = _import_handler_noargs("routers.virtual_data_router", "dashboard_stats")
 
-    # ---- MallBrain工具 ----
+    # ---- MallBrain ----
     async def _mb_scan_h(**kw):
         from tools.autopilot_mall import MallBrain
         ps = await MallBrain.scan_products()
@@ -328,9 +328,9 @@ def register_builtin_tools():
         from tools.autopilot_mall import MallBrain
         ps = await MallBrain.scan_products()
         r = MallBrain.generate_report(ps)
-        return {"status": "Friday AI 商城大脑运行中", "total": r.total_products, "hot": r.hot_products, "dead": r.dead_products}
+        return {"status": "Friday AI ", "total": r.total_products, "hot": r.hot_products, "dead": r.dead_products}
 
-    # ---- Evolution工具 ----
+    # ---- Evolution ----
     async def _evo_report_h(**kw):
         from tools.evolution import EvolutionEngine
         return EvolutionEngine.evolve_report()
@@ -338,18 +338,106 @@ def register_builtin_tools():
     _evo_rate_h = _state("evolution_rates", {})
     async def _evo_learn_h(**kw):
         from tools.evolution import EvolutionEngine
-        return EvolutionEngine.learn(kw.get("correction", ""), kw.get("context", ""))
+        return EvolutionEngine.learn(kw.get("correction", ''), kw.get("context", ''))
     _evo_knowledge_h = _state("evolution_knowledge", [])
 
-    # ---- Notification工具 ----
+    # ---- Notification ----
     async def _notify_config_h(**kw):
         from state import state as _s
         return _s._data.get("notify_config", {"enabled": False, "channels": []})
     async def _notify_send_h(**kw):
         from routers.notify import send_notification
-        return {"ok": True, "sent_to": kw.get("channel", "unknown"), "message": kw.get("message", "")[:50]}
+        return {"ok": True, "sent_to": kw.get("channel", "unknown"), "message": kw.get("message", '')[:50]}
 
-    # ---- Desktop控制工具 ----
+    tools = [
+        ToolDef("server.status", '', "CPU///", "L1", "server", handler=_srv_status_h),
+        ToolDef("server.ports", '', '', "L1", "server", handler=_srv_ports_h),
+        ToolDef("server.processes", '', "CPU", "L1", "server", handler=_srv_procs_h),
+        ToolDef("server.disk", '', '', "L1", "server", handler=_srv_disk_h),
+
+        ToolDef("docker.list", '', "Docker", "L1", "docker", handler=_dk_ps_h),
+        ToolDef("docker.logs", '', '', "L1", "docker", params_schema={"container_id": {"type":"string"}}, handler=_dk_logs_h),
+        ToolDef("docker.status", "Docker", "Docker", "L1", "docker", handler=_dk_status_h),
+        ToolDef("docker.restart", '', "Docker", "L3", "docker", need_confirm=True, handler=_dk_restart_h),
+        ToolDef("docker.images", '', "Docker", "L1", "docker", handler=_dk_images_h),
+        ToolDef("docker.network", '', "Docker", "L1", "docker", handler=_dk_net_h),
+        ToolDef("docker.stats", '', "CPU/", "L1", "docker", handler=_dk_stats_h),
+        ToolDef("docker.compose", "Compose", "docker compose", "L1", "docker", handler=_dk_compose_h),
+
+        ToolDef("nginx.status", "Nginx", "Nginx", "L1", "nginx", handler=_nx_status_h),
+        ToolDef("nginx.test", "Nginx", "Nginx", "L1", "nginx", handler=_nx_test_h),
+        ToolDef("nginx.logs", "Nginx", "Nginx/", "L1", "nginx", handler=_nx_logs_h),
+        ToolDef("nginx.reload", "Nginx", "Nginx", "L3", "nginx", need_confirm=True, handler=_nx_reload_h),
+
+        ToolDef("site.check", '', '', "L1", "site", params_schema={"url":{"type":"string"}}, handler=_site_check_h),
+        ToolDef("site.ssl", "SSL", "SSL", "L1", "site", params_schema={"domain":{"type":"string"}}, handler=_site_ssl_h),
+        ToolDef("site.dns", "DNS", '', "L1", "site", params_schema={"domain":{"type":"string"}}, handler=_site_dns_h),
+
+        ToolDef("system.mode", '', '', "L1", "system", handler=_sys_mode_h),
+        ToolDef("system.emergency", '', "Kill Switch", "L4", "system", need_confirm=True, handler=_sys_emergency_h),
+
+        ToolDef("backup.list", '', '', "L1", "backup", handler=_backup_list_h),
+        ToolDef("backup.create", '', "/", "L2", "backup", need_confirm=True, need_backup=True, handler=_backup_create_h),
+        ToolDef("backup.rollback", '', '', "L4", "backup", need_confirm=True, rollback_supported=True, handler=_backup_rollback_h),
+        ToolDef("backup.cleanup", '', '', "L2", "backup", need_confirm=True, handler=_import_handler_noargs("routers.rollback_center", "cleanup_old_backups")),
+
+        ToolDef("rotation.list", '', '', "L1", "rotation", handler=_rot_list_h),
+        ToolDef("rotation.check", '', '', "L1", "rotation", params_schema={"domain":{"type":"string"}}, handler=_rot_check_h),
+        ToolDef("rotation.toggle", '', "/", "L3", "rotation", need_confirm=True, params_schema={"domain":{"type":"string"},"active":{"type":"boolean"}}, handler=_rot_toggle_h),
+
+        ToolDef("customer.messages", '', '', "L1", "customer", handler=_cust_msgs_h),
+        ToolDef("customer.reply", '', '', "L2", "customer", params_schema={"user_id":{"type":"string"},"message":{"type":"string"}}, handler=_cust_reply_h),
+
+        ToolDef("mall.products", '', '', "L1", "mall", handler=_mall_products_h),
+        ToolDef("mall.scan", '', '', "L1", "mall", handler=_mall_scan_h),
+
+        ToolDef("autopilot.visit", '', '', "L1", "autopilot", handler=_auto_visit_h),
+        ToolDef("autopilot.schedule", '', '', "L1", "autopilot", handler=_auto_schedule_h),
+        ToolDef("autopilot.logs", '', '', "L1", "autopilot", handler=_auto_logs_h),
+
+        ToolDef("report.daily", '', '', "L2", "report", handler=_report_daily_h),
+        ToolDef("report.trend", '', '', "L1", "report", handler=_report_trend_h),
+
+        ToolDef("db.status", '', '', "L1", "db", handler=_db_status_h),
+        ToolDef("db.schema", '', '', "L1", "db", handler=_db_schema_h),
+        ToolDef("db.query", "SQL", "SQL", "L2", "db", params_schema={"sql":{"type":"string"}}, handler=_db_query_h),
+        ToolDef("db.tables", '', '', "L1", "db", handler=_db_tables_h),
+
+        ToolDef("scraper.start", '', "eBay", "L2", "scraper", need_confirm=True, params_schema={"platform":{"type":"string"},"keyword":{"type":"string"}}, handler=_scraper_start_h),
+        ToolDef("scraper.jobs", '', '', "L1", "scraper", handler=_scraper_jobs_h),
+        ToolDef("scraper.products", '', '', "L1", "scraper", handler=_scraper_products_h),
+        ToolDef("scraper.import", '', '', "L3", "scraper", need_confirm=True),
+
+        ToolDef("security.block_ip", "IP", "IP", "L3", "security", need_confirm=True, params_schema={"ip":{"type":"string"}}, handler=_sec_block_h),
+        ToolDef("security.unblock_ip", "IP", "IP", "L3", "security", need_confirm=True, params_schema={"ip":{"type":"string"}}, handler=_sec_unblock_h),
+
+        ToolDef("inspector.run", '', '', "L2", "inspector", handler=_insp_run_h),
+        ToolDef("inspector.history", '', '', "L1", "inspector", handler=_insp_history_h),
+
+        ToolDef("playwright.screenshot", '', "URL", "L1", "playwright", params_schema={"url":{"type":"string"}}, handler=_pw_screenshot_h),
+        ToolDef("playwright.scrape", '', '', "L1", "playwright", params_schema={"url":{"type":"string"}}, handler=_pw_scrape_h),
+        ToolDef("playwright.search", '', "eBay/Amazon", "L2", "playwright", params_schema={"keyword":{"type":"string"},"site":{"type":"string"}}, handler=_pw_search_h),
+
+        ToolDef("virtual.generate", '', "//", "L3", "virtual", need_confirm=True, handler=_virt_gen_h),
+        ToolDef("virtual.realtime", '', '', "L2", "virtual", handler=_virt_realtime_h),
+        ToolDef("virtual.dashboard", '', '', "L1", "virtual", handler=_virt_dashboard_h),
+        ToolDef("virtual.stats", '', '', "L1", "virtual", handler=_state("virtual_stats", {})),
+
+        ToolDef("mallbrain.scan", "AI", "AI", "L1", "brain", handler=_mb_scan_h),
+        ToolDef("mallbrain.report", "AI", "AI", "L1", "brain", handler=_mb_report_h),
+        ToolDef("mallbrain.auto", "AI", "AI", "L3", "brain", need_confirm=True, handler=_mb_auto_h),
+        ToolDef("mallbrain.gaps", '', "AI", "L1", "brain", handler=_mb_gaps_h),
+        ToolDef("mallbrain.summary", "AI", '', "L1", "brain", handler=_mb_summary_h),
+
+        ToolDef("evolution.report", '', "AI", "L1", "evolution", handler=_evo_report_h),
+        ToolDef("evolution.history", '', "AI", "L1", "evolution", handler=_evo_history_h),
+        ToolDef("evolution.rate", '', "AI", "L1", "evolution", handler=_evo_rate_h),
+        ToolDef("evolution.learn", '', "AI", "L2", "evolution", params_schema={"correction":{"type":"string"}}, handler=_evo_learn_h),
+        ToolDef("evolution.knowledge", '', "AI", "L1", "evolution", handler=_evo_knowledge_h),
+
+        ToolDef("notify.config", '', '', "L1", "notify", handler=_notify_config_h),
+
+    # ---- Desktop ----
     async def _desktop_list_h(**kw):
         from agents.desktop_agent import desktop_control
         return await desktop_control.list_desktops()
@@ -361,13 +449,13 @@ def register_builtin_tools():
         return await desktop_control.click(kw.get("x",0),kw.get("y",0),kw.get("button","left"),kw.get("agent_id"))
     async def _desktop_type_h(**kw):
         from agents.desktop_agent import desktop_control
-        return await desktop_control.type_text(kw.get("text",""),kw.get("agent_id"))
+        return await desktop_control.type_text(kw.get("text",''),kw.get("agent_id"))
     async def _desktop_keys_h(**kw):
         from agents.desktop_agent import desktop_control
         return await desktop_control.press_keys(kw.get("keys",[]),kw.get("agent_id"))
     async def _desktop_open_app_h(**kw):
         from agents.desktop_agent import desktop_control
-        return await desktop_control.open_app(kw.get("app_path",""),kw.get("agent_id"))
+        return await desktop_control.open_app(kw.get("app_path",''),kw.get("agent_id"))
     async def _desktop_open_url_h(**kw):
         from agents.desktop_agent import desktop_control
         return await desktop_control.open_url(kw.get("url","https://google.com"),kw.get("agent_id"))
@@ -376,7 +464,7 @@ def register_builtin_tools():
         return await desktop_control.list_windows(kw.get("agent_id"))
     async def _desktop_focus_h(**kw):
         from agents.desktop_agent import desktop_control
-        return await desktop_control.focus_window(kw.get("title_part",""),kw.get("agent_id"))
+        return await desktop_control.focus_window(kw.get("title_part",''),kw.get("agent_id"))
     async def _desktop_ocr_h(**kw):
         from agents.desktop_agent import desktop_control
         return await desktop_control.ocr_screen(kw.get("region"),kw.get("agent_id"))
@@ -389,109 +477,21 @@ def register_builtin_tools():
     async def _desktop_drag_h(**kw):
         from agents.desktop_agent import desktop_control
         return await desktop_control.drag(kw.get("x1",0),kw.get("y1",0),kw.get("x2",100),kw.get("y2",100),kw.get("agent_id"))
+        ToolDef("notify.send", '', '', "L2", "notify", params_schema={"channel":{"type":"string"},"message":{"type":"string"}}, handler=_notify_send_h),
 
-    tools = [
-        ToolDef("server.status", "服务器状态", "查看CPU/内存/磁盘/负载", "L1", "server", handler=_srv_status_h),
-        ToolDef("server.ports", "端口列表", "查看服务器监听端口", "L1", "server", handler=_srv_ports_h),
-        ToolDef("server.processes", "进程列表", "查看占用CPU最高的进程", "L1", "server", handler=_srv_procs_h),
-        ToolDef("server.disk", "磁盘详情", "查看磁盘分区使用详情", "L1", "server", handler=_srv_disk_h),
-
-        ToolDef("docker.list", "容器列表", "查看所有Docker容器", "L1", "docker", handler=_dk_ps_h),
-        ToolDef("docker.logs", "容器日志", "查看指定容器日志", "L1", "docker", params_schema={"container_id": {"type":"string"}}, handler=_dk_logs_h),
-        ToolDef("docker.status", "Docker状态", "查看Docker运行状态统计", "L1", "docker", handler=_dk_status_h),
-        ToolDef("docker.restart", "重启容器", "重启指定Docker容器", "L3", "docker", need_confirm=True, handler=_dk_restart_h),
-        ToolDef("docker.images", "镜像列表", "查看Docker镜像列表", "L1", "docker", handler=_dk_images_h),
-        ToolDef("docker.network", "网络列表", "查看Docker网络列表", "L1", "docker", handler=_dk_net_h),
-        ToolDef("docker.stats", "资源占用", "查看容器CPU/内存占用", "L1", "docker", handler=_dk_stats_h),
-        ToolDef("docker.compose", "Compose状态", "查看docker compose服务状态", "L1", "docker", handler=_dk_compose_h),
-
-        ToolDef("nginx.status", "Nginx状态", "检查Nginx进程状态", "L1", "nginx", handler=_nx_status_h),
-        ToolDef("nginx.test", "Nginx配置测试", "测试Nginx配置文件语法", "L1", "nginx", handler=_nx_test_h),
-        ToolDef("nginx.logs", "Nginx日志", "查看Nginx错误/访问日志", "L1", "nginx", handler=_nx_logs_h),
-        ToolDef("nginx.reload", "重载Nginx", "重新加载Nginx配置", "L3", "nginx", need_confirm=True, handler=_nx_reload_h),
-
-        ToolDef("site.check", "站点检测", "检测网站可访问性", "L1", "site", params_schema={"url":{"type":"string"}}, handler=_site_check_h),
-        ToolDef("site.ssl", "SSL证书", "检测SSL证书有效期", "L1", "site", params_schema={"domain":{"type":"string"}}, handler=_site_ssl_h),
-        ToolDef("site.dns", "DNS检测", "检测域名解析记录", "L1", "site", params_schema={"domain":{"type":"string"}}, handler=_site_dns_h),
-
-        ToolDef("system.mode", "系统模式", "查看当前系统模式", "L1", "system", handler=_sys_mode_h),
-        ToolDef("system.emergency", "紧急停止", "触发Kill Switch紧急停止", "L4", "system", need_confirm=True, handler=_sys_emergency_h),
-
-        ToolDef("backup.list", "备份列表", "查看所有备份记录", "L1", "backup", handler=_backup_list_h),
-        ToolDef("backup.create", "创建备份", "创建数据库/项目备份", "L2", "backup", need_confirm=True, need_backup=True, handler=_backup_create_h),
-        ToolDef("backup.rollback", "执行回滚", "从备份恢复数据", "L4", "backup", need_confirm=True, rollback_supported=True, handler=_backup_rollback_h),
-        ToolDef("backup.cleanup", "清理备份", "清理过期备份文件", "L2", "backup", need_confirm=True, handler=_import_handler_noargs("routers.rollback_center", "cleanup_old_backups")),
-
-        ToolDef("rotation.list", "轮值列表", "查看所有轮值域名", "L1", "rotation", handler=_rot_list_h),
-        ToolDef("rotation.check", "轮值检测", "检测轮值域名健康状态", "L1", "rotation", params_schema={"domain":{"type":"string"}}, handler=_rot_check_h),
-        ToolDef("rotation.toggle", "域名切换", "启用/停用轮值域名", "L3", "rotation", need_confirm=True, params_schema={"domain":{"type":"string"},"active":{"type":"boolean"}}, handler=_rot_toggle_h),
-
-        ToolDef("customer.messages", "客服消息", "查看最近客服消息", "L1", "customer", handler=_cust_msgs_h),
-        ToolDef("customer.reply", "回复消息", "回复客户消息", "L2", "customer", params_schema={"user_id":{"type":"string"},"message":{"type":"string"}}, handler=_cust_reply_h),
-
-        ToolDef("mall.products", "商品列表", "查看商城商品概况", "L1", "mall", handler=_mall_products_h),
-        ToolDef("mall.scan", "商城扫描", "扫描商城各页面状态", "L1", "mall", handler=_mall_scan_h),
-
-        ToolDef("autopilot.visit", "自动养站", "模拟访问商城保持活跃", "L1", "autopilot", handler=_auto_visit_h),
-        ToolDef("autopilot.schedule", "养站状态", "查看自动养站定时状态", "L1", "autopilot", handler=_auto_schedule_h),
-        ToolDef("autopilot.logs", "养站日志", "查看自动养站操作日志", "L1", "autopilot", handler=_auto_logs_h),
-
-        ToolDef("report.daily", "运营日报", "生成每日运营数据报告", "L2", "report", handler=_report_daily_h),
-        ToolDef("report.trend", "趋势分析", "分析异常数据趋势", "L1", "report", handler=_report_trend_h),
-
-        ToolDef("db.status", "数据库状态", "检查数据库连接状态", "L1", "db", handler=_db_status_h),
-        ToolDef("db.schema", "数据库结构", "查看数据库表结构", "L1", "db", handler=_db_schema_h),
-        ToolDef("db.query", "SQL查询", "执行只读SQL查询", "L2", "db", params_schema={"sql":{"type":"string"}}, handler=_db_query_h),
-        ToolDef("db.tables", "表列表", "查看所有数据库表", "L1", "db", handler=_db_tables_h),
-
-        ToolDef("scraper.start", "启动商品采集", "从eBay等平台采集商品", "L2", "scraper", need_confirm=True, params_schema={"platform":{"type":"string"},"keyword":{"type":"string"}}, handler=_scraper_start_h),
-        ToolDef("scraper.jobs", "采集任务列表", "查看所有采集任务进度", "L1", "scraper", handler=_scraper_jobs_h),
-        ToolDef("scraper.products", "采集商品库", "浏览已采集的商品", "L1", "scraper", handler=_scraper_products_h),
-        ToolDef("scraper.import", "导入到商城", "将采集的商品批量导入商城", "L3", "scraper", need_confirm=True),
-
-        ToolDef("security.block_ip", "封禁IP", "封禁指定IP地址", "L3", "security", need_confirm=True, params_schema={"ip":{"type":"string"}}, handler=_sec_block_h),
-        ToolDef("security.unblock_ip", "解封IP", "解封指定IP地址", "L3", "security", need_confirm=True, params_schema={"ip":{"type":"string"}}, handler=_sec_unblock_h),
-
-        ToolDef("inspector.run", "执行巡检", "触发全量系统巡检", "L2", "inspector", handler=_insp_run_h),
-        ToolDef("inspector.history", "巡检历史", "查看巡检历史记录", "L1", "inspector", handler=_insp_history_h),
-
-        ToolDef("playwright.screenshot", "网页截图", "对指定URL全页截图", "L1", "playwright", params_schema={"url":{"type":"string"}}, handler=_pw_screenshot_h),
-        ToolDef("playwright.scrape", "抓取网页", "抓取网页内容", "L1", "playwright", params_schema={"url":{"type":"string"}}, handler=_pw_scrape_h),
-        ToolDef("playwright.search", "搜索商品", "在eBay/Amazon搜索商品", "L2", "playwright", params_schema={"keyword":{"type":"string"},"site":{"type":"string"}}, handler=_pw_search_h),
-
-        ToolDef("virtual.generate", "生成虚拟数据", "一键生成用户/商品/订单", "L3", "virtual", need_confirm=True, handler=_virt_gen_h),
-        ToolDef("virtual.realtime", "实时活动模拟", "模拟在线用户活动", "L2", "virtual", handler=_virt_realtime_h),
-        ToolDef("virtual.dashboard", "数据看板", "实时统计", "L1", "virtual", handler=_virt_dashboard_h),
-        ToolDef("virtual.stats", "数据统计", "查看虚拟数据总量", "L1", "virtual", handler=_state("virtual_stats", {})),
-
-        ToolDef("mallbrain.scan", "AI扫描商品", "AI分析全站商品健康度", "L1", "brain", handler=_mb_scan_h),
-        ToolDef("mallbrain.report", "AI运营报告", "AI生成完整运营分析报告", "L1", "brain", handler=_mb_report_h),
-        ToolDef("mallbrain.auto", "AI自动运维", "AI自动执行运维操作", "L3", "brain", need_confirm=True, handler=_mb_auto_h),
-        ToolDef("mallbrain.gaps", "品类缺口分析", "AI发现品类商品缺口", "L1", "brain", handler=_mb_gaps_h),
-        ToolDef("mallbrain.summary", "AI大脑总结", "商城健康度总结", "L1", "brain", handler=_mb_summary_h),
-
-        ToolDef("evolution.report", "进化报告", "AI自我评估报告", "L1", "evolution", handler=_evo_report_h),
-        ToolDef("evolution.history", "行动历史", "查看AI历史行动记录", "L1", "evolution", handler=_evo_history_h),
-        ToolDef("evolution.rate", "成功率查询", "查询AI各类行动的成功率", "L1", "evolution", handler=_evo_rate_h),
-        ToolDef("evolution.learn", "学习纠正", "让AI从用户纠正中学习", "L2", "evolution", params_schema={"correction":{"type":"string"}}, handler=_evo_learn_h),
-        ToolDef("evolution.knowledge", "知识库", "查看AI已学到的知识", "L1", "evolution", handler=_evo_knowledge_h),
-
-        ToolDef("notify.config", "通知配置", "查看通知渠道配置", "L1", "notify", handler=_notify_config_h),
-        ToolDef("notify.send", "发送通知", "通过指定渠道发送通知", "L2", "notify", params_schema={"channel":{"type":"string"},"message":{"type":"string"}}, handler=_notify_send_h),
-
-        ToolDef("desktop.list","列出桌面","查看所有连接的电脑桌面Agent","L1","desktop",handler=_desktop_list_h),
-        ToolDef("desktop.screenshot","电脑截图","截取连接电脑的屏幕","L1","desktop",params_schema={"agent_id":{"type":"string"}},handler=_desktop_screenshot_h),
-        ToolDef("desktop.click","鼠标点击","在电脑指定坐标点击鼠标","L2","desktop",need_confirm=True,params_schema={"x":{"type":"number"},"y":{"type":"number"}},handler=_desktop_click_h),
-        ToolDef("desktop.type","键盘输入","在电脑上模拟键盘打字","L2","desktop",need_confirm=True,params_schema={"text":{"type":"string"}},handler=_desktop_type_h),
-        ToolDef("desktop.keys","组合键","按下组合键如ctrl+c","L2","desktop",need_confirm=True,params_schema={"keys":{"type":"array"}},handler=_desktop_keys_h),
-        ToolDef("desktop.open_app","打开应用","打开电脑上的应用程序","L2","desktop",need_confirm=True,params_schema={"app_path":{"type":"string"}},handler=_desktop_open_app_h),
-        ToolDef("desktop.open_url","打开网页","在默认浏览器打开URL","L1","desktop",params_schema={"url":{"type":"string"}},handler=_desktop_open_url_h),
-        ToolDef("desktop.windows","窗口列表","列出电脑所有打开窗口","L1","desktop",handler=_desktop_windows_h),
-        ToolDef("desktop.focus","聚焦窗口","把指定标题的窗口切换到前台","L2","desktop",need_confirm=True,params_schema={"title_part":{"type":"string"}},handler=_desktop_focus_h),
-        ToolDef("desktop.ocr","屏幕OCR","截图并用OCR识别屏幕文字","L1","desktop",handler=_desktop_ocr_h),
-        ToolDef("desktop.move","移动鼠标","移动鼠标到指定坐标","L2","desktop",need_confirm=True,params_schema={"x":{"type":"number"},"y":{"type":"number"}},handler=_desktop_move_h),
-        ToolDef("desktop.scroll","滚轮滚动","在电脑上模拟鼠标滚轮","L1","desktop",params_schema={"amount":{"type":"number"}},handler=_desktop_scroll_h),
-        ToolDef("desktop.drag","鼠标拖拽","从(x1,y1)拖拽到(x2,y2)","L2","desktop",need_confirm=True,params_schema={"x1":{"type":"number"},"y1":{"type":"number"},"x2":{"type":"number"},"y2":{"type":"number"}},handler=_desktop_drag_h),
+        ToolDef("desktop.list",'',"Agent","L1","desktop",handler=_desktop_list_h),
+        ToolDef("desktop.screenshot",'','',"L1","desktop",params_schema={"agent_id":{"type":"string"}},handler=_desktop_screenshot_h),
+        ToolDef("desktop.click",'','',"L2","desktop",need_confirm=True,params_schema={"x":{"type":"number"},"y":{"type":"number"}},handler=_desktop_click_h),
+        ToolDef("desktop.type",'','',"L2","desktop",need_confirm=True,params_schema={"text":{"type":"string"}},handler=_desktop_type_h),
+        ToolDef("desktop.keys",'',"ctrl+c","L2","desktop",need_confirm=True,params_schema={"keys":{"type":"array"}},handler=_desktop_keys_h),
+        ToolDef("desktop.open_app",'','',"L2","desktop",need_confirm=True,params_schema={"app_path":{"type":"string"}},handler=_desktop_open_app_h),
+        ToolDef("desktop.open_url",'',"URL","L1","desktop",params_schema={"url":{"type":"string"}},handler=_desktop_open_url_h),
+        ToolDef("desktop.windows",'','',"L1","desktop",handler=_desktop_windows_h),
+        ToolDef("desktop.focus",'','',"L2","desktop",need_confirm=True,params_schema={"title_part":{"type":"string"}},handler=_desktop_focus_h),
+        ToolDef("desktop.ocr","OCR","OCR","L1","desktop",handler=_desktop_ocr_h),
+        ToolDef("desktop.move",'','',"L2","desktop",need_confirm=True,params_schema={"x":{"type":"number"},"y":{"type":"number"}},handler=_desktop_move_h),
+        ToolDef("desktop.scroll",'','',"L1","desktop",params_schema={"amount":{"type":"number"}},handler=_desktop_scroll_h),
+        ToolDef("desktop.drag",'',"(x1,y1)(x2,y2)","L2","desktop",need_confirm=True,params_schema={"x1":{"type":"number"},"y1":{"type":"number"},"x2":{"type":"number"},"y2":{"type":"number"}},handler=_desktop_drag_h),
     ]
 
     for t in tools:

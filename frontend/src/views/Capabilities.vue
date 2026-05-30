@@ -1,59 +1,59 @@
 <template>
   <div class="page-shell">
     <div class="page-header">
-      <h2>🔧 AI能力状态</h2>
-      <p>API Key配置检测 — 配得越多AI越强</p>
+      <h2> AI</h2>
+      <p>API Key  AI</p>
       <div class="cap-score" :class="status.grade">
-        总体: {{status.grade}}级 ({{status.score}}%) — {{status.available}}/{{status.total}} 可用
+        : {{status.grade}} ({{status.score}}%)  {{status.available}}/{{status.total}} 
       </div>
     </div>
 
     <div class="cap-grid">
       <div v-for="(v,k) in status.capabilities" :key="k" class="cap-card" :class="{ok:v.ok}">
-        <div class="cap-icon">{{v.ok?'✅':'❌'}}</div>
+        <div class="cap-icon">{{v.ok?'':''}}</div>
         <div class="cap-name">{{k}}</div>
         <div class="cap-label">{{v.label}}</div>
         <div v-if="v.models" class="cap-models">{{v.models.join(', ')}}</div>
         <div v-if="!v.ok" class="cap-action">
-          {{k==='ollama'?'免费安装即可':'需配置环境变量'}}
+          {{k==='ollama'?'':''}}
         </div>
       </div>
     </div>
 
-    <!-- 配置指南 -->
-    <el-card style="margin-top:20px"><template #header>📖 快速配置指南</template>
+    
+    <el-card style="margin-top:20px"><template #header> </template>
       <div class="guide-grid">
         <div class="guide-item">
           <div class="guide-num">1</div>
           <div class="guide-text">
-            <strong>Ollama(推荐)</strong> — 免费本地模型<br/>
+            <strong>Ollama()</strong>  <br/>
             <code>curl -fsSL https://ollama.com/install.sh | sh</code><br/>
             <code>ollama pull qwen2.5:7b</code><br/>
-            <span class="guide-gain">解锁：全部AI能力本地运行，零成本</span>
+            <span class="guide-gain">AI</span>
           </div>
         </div>
         <div class="guide-item">
           <div class="guide-num">2</div>
           <div class="guide-text">
-            <strong>DeepSeek</strong> — 最便宜云端模型<br/>
+            <strong>DeepSeek</strong>  <br/>
             <code>export DEEPSEEK_API_KEY=sk-xxx</code><br/>
-            <span class="guide-gain">解锁：Agent协作/RAG/预测/推荐/Text2SQL</span>
+            <span class="guide-gain">Agent/RAG///Text2SQL</span>
           </div>
         </div>
         <div class="guide-item">
           <div class="guide-num">3</div>
           <div class="guide-text">
-            <strong>OpenAI</strong> — 语音+视觉<br/>
+            <strong>OpenAI</strong>  +<br/>
             <code>export OPENAI_API_KEY=sk-xxx</code><br/>
-            <span class="guide-gain">解锁：语音对话STT/TTS + 视频分析 + 图片理解</span>
+            <span class="guide-gain">STT/TTS +  + </span>
           </div>
         </div>
       </div>
       <div class="guide-note">
-        ⚡ <strong>当前状态：</strong>
-        <span v-if="status.available>=3">AI满血运行！</span>
-        <span v-else-if="status.available>=1">AI基础可用，配更多Key提升能力</span>
-        <span v-else>AI以本地模式运行（关键词+模板），配任意Key即可激活LLM智能</span>
+         -
+        <span v-if="status.available>=3">AI</span>
+        <span v-else-if="status.available>=1">AIKey</span>
+        <span v-else>AI+KeyLLM</span>
       </div>
     </el-card>
   </div>

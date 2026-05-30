@@ -1,38 +1,38 @@
 <template>
   <div class="log-viewer-panel">
-    <div class="page-header"><h1>馃搵 鏃ュ織涓績</h1><p>Docker 路 Nginx 路 Tomcat 路 搴旂敤鏃ュ織缁熶竴鏌ヨ</p></div>
+    <div class="page-header">-<p>Docker  Nginx  Tomcat  </p></div>
 
-    <!-- 鏃ュ織婧?-->
+    <!-- ?-->
     <el-row :gutter="16" style="margin-bottom:20px">
       <el-col :span="6" v-for="s in sources" :key="s.id">
         <el-card shadow="never" :class="['src-card', { active: activeSource === s.id, unavailable: !s.available }]" @click="selectSource(s)">
           <div class="src-name">{{ s.name }}</div>
-          <div class="src-info">{{ s.available ? s.size : '涓嶅彲鐢' }}</div>
+          <div class="src-info">{{ s.available ? s.size : '? }}</div>
         </el-card>
       </el-col>
     </el-row>
 
-    <!-- 宸ュ叿鏍?-->
+    <!-- ?-->
     <el-card shadow="never" style="margin-bottom:20px">
       <el-row :gutter="12" align="middle">
         <el-col :span="4">
-          <el-select v-model="logLevel" placeholder="绾у埆杩囨护" clearable style="width:100%">
-            <el-option label="鍏ㄩ儴" value=""/><el-option label="ERROR" value="ERROR"/>
+          <el-select v-model="logLevel" :placeholder="\('logs.search')" clearable style="width:100%">
+            <el-option :label="\('logs.title')" value=''/><el-option label="ERROR" value="ERROR"/>
             <el-option label="WARN" value="WARN"/><el-option label="INFO" value="INFO"/>
           </el-select>
         </el-col>
         <el-col :span="6">
-          <el-input v-model="filterText" placeholder="搜索鍏抽敭璇?.." clearable @keyup.enter="loadLogs"/>
+          <el-input v-model="filterText" placeholder="?.." clearable @keyup.enter="loadLogs"/>
         </el-col>
         <el-col :span="4">
           <el-select v-model="logLines" style="width:100%">
-            <el-option :value="50" label="50行"/><el-option :value="100" label="100行"/>
-            <el-option :value="200" label="200行"/><el-option :value="500" label="500行"/>
+            <el-option :value="50" label="50?/><el-option :value="100" label="100?/>
+            <el-option :value="200" label="200?/><el-option :value="500" label="500?/>
           </el-select>
         </el-col>
         <el-col :span="4">
-          <el-button type="primary" @click="loadLogs">馃攳 鏌ヨ</el-button>
-          <el-button @click="loadSources">馃攧 刷新</el-button>
+          
+          <el-button @click="loadSources">OK</el-button>
         </el-col>
         <el-col :span="6">
           <el-space>
@@ -44,13 +44,13 @@
       </el-row>
     </el-card>
 
-    <!-- 鏃ュ織鍐呭 -->
+    
     <el-card shadow="never">
       <template #header>
-        <span>馃搫 {{ activeSourceName }} 鈥?{{ logData.total_filtered || 0 }} / {{ logData.total_raw || 0 }} 琛</span>
+        <span> {{ activeSourceName }} ?{{ logData.total_filtered || 0 }} / {{ logData.total_raw || 0 }} ?/span>
       </template>
       <div class="log-container" ref="logContainer">
-        <div v-if="!logLines_data.length" class="log-empty">璇烽€夋嫨鏃ュ織婧愬苟鐐瑰嚮鏌ヨ</div>
+        -
         <div v-for="(line, i) in logLines_data" :key="i" :class="['log-line', getLineClass(line)]">
           <span class="log-num">{{ i + 1 }}</span>
           <span class="log-text">{{ line }}</span>

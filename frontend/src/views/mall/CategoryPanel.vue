@@ -1,28 +1,28 @@
 <template>
   <el-card shadow="never">
     <template #header>
-      <div class="dt-header"><span>分类管理</span><el-button size="small" type="primary" @click="showForm(null)">新增分类</el-button></div>
+      <div class="dt-header"><span>{{ \('mallSub.title') }}</span><el-button size="small" type="primary" @click="showForm(null)">OK</el-button></div>
     </template>
     <el-table :data="list" stripe size="small" v-loading="loading">
       <el-table-column prop="uuid" label="UUID" width="200" />
-      <el-table-column prop="name" label="名称" width="150" />
-      <el-table-column prop="status" label="状态" width="80">
-        <template #default="{row}"><el-tag :type="row.status===1?'success':'info'" size="small">{{ row.status===1?'启用':'禁用' }}</el-tag></template>
+      <el-table-column prop="name" label='' width="150" />
+      <el-table-column prop="status" label='' width="80">
+        <template #default="{row}"><el-tag :type="row.status===1?'success':'info'' size="small">{{ row.status===1?'':'' }}</el-tag></template>
       </el-table-column>
-      <el-table-column label="操作" width="240">
+      <el-table-column label='' width="240">
         <template #default="{row}">
-          <el-button size="small" link type="primary" @click="showForm(row)">编辑</el-button>
-          <el-button size="small" link type="warning" @click="toggleStatus(row)">{{ row.status===1?'禁用':'启用' }}</el-button>
-          <el-button size="small" link type="danger" @click="del(row.uuid)">删除</el-button>
+          <el-button size="small" link type="primary" @click="showForm(row)">OK</el-button>
+          <el-button size="small" link type="warning" @click="toggleStatus(row)">{{ row.status===1?'':'' }}</el-button>
+          <el-button size="small" link type="danger" @click="del(row.uuid)">OK</el-button>
         </template>
       </el-table-column>
     </el-table>
-    <el-dialog :title="editing?.uuid?'编辑分类':'新增分类'" v-model="dialogVisible" width="400px">
+    <el-dialog :title="editing?.uuid?'':''" v-model="dialogVisible" width="400px">
       <el-form :model="form" label-width="80px">
-        <el-form-item label="名称"><el-input v-model="form.name" /></el-form-item>
-        <el-form-item label="排序"><el-input-number v-model="form.sort" :min="0" /></el-form-item>
+        <el-form-item label=''><el-input v-model="form.name" /></el-form-item>
+        <el-form-item label=''><el-input-number v-model="form.sort" :min="0" /></el-form-item>
       </el-form>
-      <template #footer><el-button @click="dialogVisible=false">取消</el-button><el-button type="primary" @click="save">保存</el-button></template>
+      <template #footer><el-button @click="dialogVisible=false">OK</el-button><el-button type="primary" @click="save">OK</el-button></template>
     </el-dialog>
   </el-card>
 </template>
@@ -51,21 +51,21 @@ async function save() {
   try {
     if (editing.value) await updateCategory(editing.value.uuid, form.value)
     else await saveCategory(form.value)
-    ElMessage.success('保存成功')
+    ElMessage.success('OK')
     dialogVisible.value = false
     load()
-  } catch { ElMessage.error('保存失败') }
+  } catch { ElMessage.error('Error') }
 }
 async function toggleStatus(row) {
   try {
     await updateCategoryStatus(row.uuid, { status: row.status === 1 ? 0 : 1 })
-    ElMessage.success('更新成功')
+    ElMessage.success('OK')
     load()
-  } catch { ElMessage.error('更新失败') }
+  } catch { ElMessage.error('Error') }
 }
 async function del(uuid) {
-  await ElMessageBox.confirm('确认删除?', '提示', { type: 'warning' })
-  try { await deleteCategory(uuid); ElMessage.success('删除成功'); load() } catch { ElMessage.error('删除失败') }
+  await ElMessageBox.confirm('?', '', { type: 'warning' })
+  try { await deleteCategory(uuid); ElMessage.success('OK'); load() } catch { ElMessage.error('Error') }
 }
 load()
 </script>

@@ -1,4 +1,4 @@
-"""数据库连接与操作 -- SQLAlchemy 模型"""
+''" -- SQLAlchemy ''"
 import json
 from datetime import datetime
 from config import DB_CONFIG
@@ -8,7 +8,7 @@ from sqlalchemy.orm import sessionmaker
 
 Base = declarative_base()
 
-# ===== 模型定义 =====
+# =====  =====
 class AgentTask(Base):
     __tablename__ = "agent_tasks"
     id = Column(BigInteger, primary_key=True, autoincrement=True)
@@ -37,7 +37,7 @@ class AgentAlert(Base):
     created_at = Column(DateTime, default=datetime.now)
 
 
-# ===== 全局引擎 =====
+# =====  =====
 _engine = None
 _SessionLocal = None
 
@@ -56,7 +56,7 @@ def get_session():
     return _SessionLocal() if _SessionLocal else None
 
 def init_db():
-    """初始化数据库表"""
+    ''''''
     engine = get_engine()
     if engine:
         Base.metadata.create_all(engine)
@@ -64,12 +64,12 @@ def init_db():
     return False
 
 def db_available():
-    """检查数据库是否可用"""
+    ''''''
     return get_engine() is not None
 
-# ===== 便捷操作 =====
+# =====  =====
 def save_task(task_id: str, data: dict):
-    """保存任务"""
+    ''''''
     if not db_available():
         return False
     session = get_session()
@@ -84,8 +84,8 @@ def save_task(task_id: str, data: dict):
     finally:
         session.close()
 
-def save_alert(alert_id: str, level: str, title: str, detail: str = "", source: str = "system"):
-    """保存告警"""
+def save_alert(alert_id: str, level: str, title: str, detail: str = '', source: str = "system"):
+    ''''''
     if not db_available():
         return False
     session = get_session()

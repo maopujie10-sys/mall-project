@@ -1,36 +1,36 @@
 <template>
   <div class="workflow-editor">
     <div class="wf-header">
-      <h2>可视化工作流编辑器</h2>
+      <h2>{{ \('workflow.title') }}</h2>
       <div class="wf-actions">
-        <input v-model="workflowName" placeholder="工作流名称" class="wf-name-input" />
-        <button @click="saveWorkflow" class="btn btn-primary">保存</button>
-        <button @click="executeWorkflow" class="btn btn-success">执行</button>
-        <button @click="loadWorkflows" class="btn btn-outline">加载</button>
+        <input v-model="workflowName" placeholder='' class="wf-name-input" />
+        <button @click="saveWorkflow" class="btn btn-primary"></button>
+        <button @click="executeWorkflow" class="btn btn-success"></button>
+        <button @click="loadWorkflows" class="btn btn-outline"></button>
       </div>
     </div>
     <div class="wf-body">
       <div class="wf-sidebar">
-        <h4>节点类型</h4>
+        <h4>{{ \('workflow.title') }}</h4>
         <div v-for="(info, type) in nodeTypes" :key="type" class="wf-node-item" :style="{ borderLeftColor: info.color }" draggable="true" @dragstart="onDragStart($event, type)">
-          <span class="node-dot" :style="{ background: info.color }"></span>{{ info.label }}
+          -{{ info.label }}
         </div>
       </div>
       <div class="wf-canvas" ref="canvasRef" @drop="onDrop" @dragover.prevent @mousedown="onCanvasMouseDown" @mousemove="onCanvasMouseMove" @mouseup="onCanvasMouseUp">
         <svg class="wf-edges" v-if="edges.length">
           <line v-for="(edge, i) in edges" :key="i" :x1="getNodeCenter(edge.from).x" :y1="getNodeCenter(edge.from).y" :x2="getNodeCenter(edge.to).x" :y2="getNodeCenter(edge.to).y" stroke="#666" stroke-width="2" marker-end="url(#arrowhead)"/>
-          <defs><marker id="arrowhead" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#666"/></marker></defs>
+          <defs><marker id="arrowhead" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#666"/>{{ \('workflow.title') }}</marker></defs>
         </svg>
         <div v-for="node in nodes" :key="node.id" class="wf-node" :style="{ left: node.x + 'px', top: node.y + 'px', borderColor: getNodeColor(node.type) }" @mousedown.stop="onNodeMouseDown($event, node.id)" @dblclick="startConnection(node.id)">
           <div class="wf-node-header" :style="{ background: getNodeColor(node.type) }">{{ node.label || node.type }}</div>
           <div class="wf-node-body">
             <div class="wf-node-ports">
-              <div class="port port-input" v-if="getNodeInfo(node.type).inputs > 0" title="输入"></div>
-              <div class="port port-output" v-if="getNodeInfo(node.type).outputs > 0" title="输出" @click.stop="startConnection(node.id)"></div>
+              <div class="port port-input" v-if="getNodeInfo(node.type).inputs > 0" title=''></div>
+              <div class="port port-output" v-if="getNodeInfo(node.type).outputs > 0" title='' @click.stop="startConnection(node.id)"></div>
             </div>
           </div>
         </div>
-        <div v-if="!nodes.length" class="wf-placeholder">从左侧拖拽节点到画布开始编排工作流</div>
+        -
       </div>
     </div>
   </div>
@@ -41,14 +41,14 @@ import { agentApi } from '@/api/index'
 
 const workflowName = ref(''); const canvasRef = ref(null); const nodes = ref([]); const edges = ref([])
 const nodeTypes = {
-  trigger: { label: '触发器', color: '#4CAF50', inputs: 0, outputs: 1 },
-  ai_task: { label: 'AI任务', color: '#2196F3', inputs: 1, outputs: 1 },
-  data_fetch: { label: '数据获取', color: '#FF9800', inputs: 1, outputs: 1 },
-  data_process: { label: '数据处理', color: '#9C27B0', inputs: 1, outputs: 1 },
-  condition: { label: '条件判断', color: '#F44336', inputs: 1, outputs: 2 },
-  notification: { label: '发送通知', color: '#00BCD4', inputs: 1, outputs: 1 },
-  action: { label: '执行动作', color: '#795548', inputs: 1, outputs: 1 },
-  end: { label: '结束', color: '#607D8B', inputs: 1, outputs: 0 },
+  trigger: { label: '', color: '#4CAF50', inputs: 0, outputs: 1 },
+  ai_task: { label: 'AI', color: '#2196F3', inputs: 1, outputs: 1 },
+  data_fetch: { label: '', color: '#FF9800', inputs: 1, outputs: 1 },
+  data_process: { label: '', color: '#9C27B0', inputs: 1, outputs: 1 },
+  condition: { label: '', color: '#F44336', inputs: 1, outputs: 2 },
+  notification: { label: '', color: '#00BCD4', inputs: 1, outputs: 1 },
+  action: { label: '', color: '#795548', inputs: 1, outputs: 1 },
+  end: { label: '', color: '#607D8B', inputs: 1, outputs: 0 },
 }
 let connectingFrom = null
 
@@ -62,8 +62,8 @@ function onCanvasMouseMove() {}
 function onCanvasMouseUp() {}
 function onNodeMouseDown(e, id) { e.stopPropagation() }
 function startConnection(id) { connectingFrom = id }
-async function saveWorkflow() { if (!workflowName.value) return; try { await agentApi.post('/agent/workflow/save', { name: workflowName.value, nodes: nodes.value, edges: edges.value }); alert('已保存') } catch (e) { alert('保存失败') } }
-async function executeWorkflow() { try { const r = await agentApi.post('/agent/workflow/execute', { message: workflowName.value || '执行工作流' }); alert('执行完成: ' + JSON.stringify(r?.data)) } catch (e) { alert('执行失败') } }
+async function saveWorkflow() { if (!workflowName.value) return; try { await agentApi.post('/agent/workflow/save', { name: workflowName.value, nodes: nodes.value, edges: edges.value }); alert('') } catch (e) { alert('') } }
+async function executeWorkflow() { try { const r = await agentApi.post('/agent/workflow/execute', { message: workflowName.value || '' }); alert(': ' + JSON.stringify(r?.data)) } catch (e) { alert('') } }
 async function loadWorkflows() { try { const r = await agentApi.get('/agent/workflow/list'); if (r?.data?.ok && r.data.workflows?.length) { const wf = r.data.workflows[0]; workflowName.value = wf.name; nodes.value = wf.nodes || []; edges.value = wf.edges || [] } } catch (e) {} }
 onMounted(async () => { try { const r = await agentApi.get('/agent/workflow/node-types'); if (r?.data?.ok) Object.assign(nodeTypes, r.data.types) } catch (e) {} })
 </script>

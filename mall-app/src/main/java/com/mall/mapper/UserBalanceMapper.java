@@ -19,12 +19,9 @@ public interface UserBalanceMapper extends BaseMapper<UserBalance> {
     @Update("UPDATE mall_user_balance SET balance = balance - #{amount}, frozen = frozen + #{amount}, version = version + 1 WHERE user_id = #{userId} AND balance >= #{amount} AND version = #{version}")
     int freezeBalance(@Param("userId") Long userId, @Param("amount") BigDecimal amount, @Param("version") Integer version);
 
-    @Update("UPDATE mall_user_balance SET frozen = frozen - #{amount}, version = version + 1 WHERE user_id = #{userId} AND frozen >= #{amount} AND version = #{version}")
-    int deductFrozen(@Param("userId") Long userId, @Param("amount") BigDecimal amount, @Param("version") Integer version);
+    @Update("UPDATE mall_user_balance SET frozen = frozen - #{amount} WHERE user_id = #{userId}")
+    int deductFrozen(@Param("userId") Long userId, @Param("amount") BigDecimal amount);
 
-    @Update("UPDATE mall_user_balance SET balance = balance + #{amount}, frozen = frozen - #{amount}, version = version + 1 WHERE user_id = #{userId} AND frozen >= #{amount} AND version = #{version}")
-    int unfreezeBalance(@Param("userId") Long userId, @Param("amount") BigDecimal amount, @Param("version") Integer version);
-
-    @Update("UPDATE mall_user_balance SET balance = balance + #{amount}, version = version + 1 WHERE user_id = #{userId} AND version = #{version}")
-    int addBalanceWithVersion(@Param("userId") Long userId, @Param("amount") BigDecimal amount, @Param("version") Integer version);
+    @Update("UPDATE mall_user_balance SET balance = balance + #{amount}, frozen = frozen - #{amount} WHERE user_id = #{userId}")
+    int unfreezeBalance(@Param("userId") Long userId, @Param("amount") BigDecimal amount);
 }

@@ -1,4 +1,4 @@
-"""数据库管理 -- 状态/表信息/查询/优化"""
+''" -- ///''"
 import os
 import subprocess
 from datetime import datetime
@@ -23,13 +23,13 @@ def _init():
         except Exception:
             DB_CONFIG.update({
                 "host": "127.0.0.1", "port": 3306,
-                "user": "root", "password": "",
+                "user": "root", "password": '',
                 "database": "mall",
             })
 
 
 def _mysql_cmd(sql: str) -> dict:
-    """执行 MySQL 查询返回结果"""
+    ''" MySQL ''"
     _init()
     try:
         cmd = [
@@ -52,25 +52,24 @@ def _mysql_cmd(sql: str) -> dict:
             rows.append(dict(zip(headers, vals)))
         return {"ok": True, "rows": rows, "count": len(rows)}
     except subprocess.TimeoutExpired:
-        return {"ok": False, "error": "查询超时"}
+        return {"ok": False, "error": ''}
     except FileNotFoundError:
-        return {"ok": False, "error": "mysql 客户端未安装"}
+        return {"ok": False, "error": "mysql "}
     except Exception as e:
         return {"ok": False, "error": str(e)}
 
 
 @router.get("/status")
 async def db_status(_=Depends(verify_token)):
-    """数据库运行状态"""
-    await handle_risk("L1", "查看数据库状态")
+    ''''''
+    await handle_risk("L1", '')
     _init()
-    info = _mysql_cmd("SHOW GLOBAL STATUS LIKE 'Uptime'")
-    vars = _mysql_cmd("SHOW VARIABLES LIKE 'max_connections'")
+    info = _mysql_cmd("SHOW GLOBAL STATUS LIKE 'Uptime'')
+    vars = _mysql_cmd("SHOW VARIABLES LIKE 'max_connections'')
     size = _mysql_cmd(
-        "SELECT table_schema AS db, ROUND(SUM(data_length+index_length)/1024/1024,1) AS size_mb, "
-        "COUNT(*) AS tables FROM information_schema.tables GROUP BY table_schema"
+        "SELECT table_schema AS db, ROUND(SUM(data_length+index_length)/1024/1024,1) AS size_mb, ''COUNT(*) AS tables FROM information_schema.tables GROUP BY table_schema"
     )
-    # 检测连接
+    
     try:
         import psutil
         conn_count = 0
@@ -83,7 +82,7 @@ async def db_status(_=Depends(verify_token)):
         "ok": True,
         "host": DB_CONFIG["host"],
         "port": DB_CONFIG["port"],
-        "version": _mysql_cmd("SELECT VERSION() AS v").get("rows", [{}])[0].get("v", "") if _mysql_cmd("SELECT VERSION() AS v").get("ok") else "",
+        "version": _mysql_cmd("SELECT VERSION() AS v").get("rows", [{}])[0].get("v", '') if _mysql_cmd("SELECT VERSION() AS v").get("ok") else '',
         "uptime_seconds": info.get("rows", [{}])[0].get("Value", 0) if info.get("ok") else 0,
         "max_connections": vars.get("rows", [{}])[0].get("Value", 151) if vars.get("ok") else 151,
         "active_connections": conn_count,
@@ -93,14 +92,11 @@ async def db_status(_=Depends(verify_token)):
 
 @router.get("/tables")
 async def db_tables(_=Depends(verify_token)):
-    """列出所有数据表"""
-    await handle_risk("L1", "查看数据库表")
+    ''''''
+    await handle_risk("L1", '')
     _init()
     result = _mysql_cmd(
-        "SELECT TABLE_NAME AS name, ENGINE AS engine, "
-        "ROUND((DATA_LENGTH+INDEX_LENGTH)/1024/1024,2) AS size_mb, "
-        "TABLE_ROWS AS rows, CREATE_TIME AS created "
-        "FROM information_schema.tables WHERE table_schema='{db}' "
+        "SELECT TABLE_NAME AS name, ENGINE AS engine, ''ROUND((DATA_LENGTH+INDEX_LENGTH)/1024/1024,2) AS size_mb, ''TABLE_ROWS AS rows, CREATE_TIME AS created ''FROM information_schema.tables WHERE table_schema='{db}''
         "ORDER BY size_mb DESC".format(db=DB_CONFIG["database"])
     )
     return {"ok": result.get("ok", False), "tables": result.get("rows", []), "count": result.get("count", 0)}

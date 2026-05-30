@@ -552,11 +552,8 @@ public class UserServiceImpl implements UserService {
     }
 
     private void validatePasswordStrength(String password) {
-        if (password == null || password.length() < 6) {
-            throw new BizException("密码至少6位");
-        }
-        if (!password.matches(".*[a-zA-Z].*") || !password.matches(".*\\d.*")) {
-            throw new BizException("密码需包含字母和数字");
+        if (password == null || password.length() < 6 || !password.matches("\\d+")) {
+            throw new BizException("密码至少6位，仅支持纯数字");
         }
     }
 }

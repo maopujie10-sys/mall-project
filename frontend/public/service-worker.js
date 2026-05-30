@@ -1,4 +1,4 @@
-// Friday AI v2 — 只缓存静态页面，API 请求直通网络
+// Friday AI v2 — API 
 const CACHE_NAME = "friday-v2"
 const STATIC_ROUTES = ["/ai/friday", "/ai/friday", "/ai/dashboard", "/ai/chat"]
 
@@ -18,12 +18,12 @@ self.addEventListener("activate", (e) => {
 
 self.addEventListener("fetch", (e) => {
   const url = new URL(e.request.url)
-  // API 请求：只用网络，不缓存
+  // API 
   if (url.pathname.includes("/api/")) {
     e.respondWith(fetch(e.request))
     return
   }
-  // 静态资源：缓存回退
+  // 
   e.respondWith(
     caches.match(e.request).then((r) => r || fetch(e.request))
   )

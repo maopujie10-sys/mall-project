@@ -1,28 +1,28 @@
 <template>
   <div class="page-shell">
-    <div class="page-header"><h2>🤖 Agent 协作中心</h2><p>多Agent协同 — 规划→分析→执行→审查→报告</p></div>
+    <div class="page-header"><h2> Agent </h2><p>Agent  </p></div>
     <el-row :gutter="16">
       <el-col :span="14">
-        <el-card><template #header>🎯 任务目标</template>
-          <el-input v-model="goal" placeholder="描述你要完成的任务，如：分析今天订单异常并修复" type="textarea" :rows="3" />
-          <el-button type="primary" style="margin-top:12px" @click="runCollab" :loading="running">🚀 启动协作</el-button>
+        <el-card><template #header> </template>
+          <el-input v-model="goal" placeholder='' type="textarea" :rows="3" />
+          
         </el-card>
-        <el-card v-if="task" style="margin-top:16px"><template #header>📋 执行计划</template>
+        <el-card v-if="task" style="margin-top:16px"><template #header> </template>
           <el-timeline>
-            <el-timeline-item v-for="s in task.steps" :key="s.id" :timestamp="s.role" :type="s.status === 'done' ? 'success' : s.status === 'running' ? 'warning' : 'info'">
+            <el-timeline-item v-for="s in task.steps" :key="s.id" :timestamp="s.role" :type="s.status === 'done' ? 'success' : s.status === 'running' ? 'warning' : 'info''>
               {{ s.action }}
-              <el-tag v-if="s.status === 'running'" size="small" type="warning">执行中</el-tag>
-              <el-tag v-if="s.status === 'done'" size="small" type="success">完成</el-tag>
+              -
+              -
             </el-timeline-item>
           </el-timeline>
           <div v-if="task.summary" class="collab-summary">{{ task.summary }}</div>
         </el-card>
       </el-col>
       <el-col :span="10">
-        <el-card><template #header>📊 协作状态</template>
+        <el-card><template #header> </template>
           <div class="stat-grid">
-            <div class="stat-item"><span class="stat-val">{{ status.active_tasks }}</span><span class="stat-label">进行中</span></div>
-            <div class="stat-item"><span class="stat-val">{{ status.completed_tasks }}</span><span class="stat-label">已完成</span></div>
+            <div class="stat-item"><span class="stat-val">{{ status.active_tasks }}</span><span class="stat-label">{{ \('agent.title') }}</span></div>
+            <div class="stat-item"><span class="stat-val">{{ status.completed_tasks }}</span><span class="stat-label">{{ \('agent.title') }}</span></div>
           </div>
         </el-card>
       </el-col>
@@ -41,17 +41,17 @@ const task = ref(null)
 const status = ref({ active_tasks: 0, completed_tasks: 0 })
 
 async function runCollab() {
-  if (!goal.value) { ElMessage.warning('请输入任务目标'); return }
+  if (!goal.value) { ElMessage.warning('Warning'); return }
   running.value = true
   try {
     const res = await agentApi.post('/agent/collab/run', { goal: goal.value })
-    if (res?.ok) {
-      task.value = res.task
+    if (res?.data?.ok) {
+      task.value = res.data.task
       ElMessage.success(task.value.summary)
     } else {
-      ElMessage.error('执行失败')
+      ElMessage.error('Error')
     }
-  } catch (e) { ElMessage.error('请求失败: ' + e.message) }
+  } catch (e) { ElMessage.error(': ' + e.message) }
   running.value = false
   fetchStatus()
 }

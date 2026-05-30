@@ -1,5 +1,5 @@
-"""In-memory state with JSON persistence for Agent operational data.
-v2: 原子写入 + 全key上限控制 + 敏感数据保护 + 连接池"""
+''"In-memory state with JSON persistence for Agent operational data.
+v2:  + key +  + ''"
 import json, os, tempfile
 import sqlite3
 from datetime import datetime
@@ -8,7 +8,7 @@ from typing import Optional
 _BASE = os.getenv("APP_STATE_DIR", os.path.dirname(os.path.abspath(__file__)))
 STATE_FILE = os.path.join(_BASE, "agent_state.json")
 
-# ===== 全局 key 上限控制 =====
+# =====  key  =====
 KEY_LIMITS = {
     "tasks": 200,
     "emergency_history": 50,
@@ -53,7 +53,7 @@ class _AgentState:
         self._ensure_limits()
 
     def _ensure_limits(self):
-        """强制所有key不超限(已知key按KEY_LIMITS,未知key默认上限1000)"""
+        ''"key(keyKEY_LIMITS,key1000)''"
         for key in list(self._data.keys()):
             val = self._data[key]
             limit = KEY_LIMITS.get(key, 1000)
@@ -66,7 +66,7 @@ class _AgentState:
                         del val[k]
 
     def _mask_sensitive(self, data):
-        """递归掩码敏感字段"""
+        ''''''
         if isinstance(data, dict):
             return {k: ("***masked***" if any(s in k.lower() for s in SENSITIVE_KEYS) else self._mask_sensitive(v))
                     for k, v in data.items()}
@@ -75,7 +75,7 @@ class _AgentState:
         return data
 
     def _atomic_save_json(self):
-        """原子写入:写临时文件 -> rename"""
+        ''": -> rename''"
         try:
             fd, tmp = tempfile.mkstemp(suffix=".json", dir=os.path.dirname(STATE_FILE))
             with os.fdopen(fd, "w", encoding="utf-8") as f:
@@ -88,13 +88,13 @@ class _AgentState:
                 pass
 
     def _save_db(self):
-        """SQLite持久化(复用连接+批量操作)"""
+        ''"SQLite(+)''"
         global _db_conn
         try:
             if _db_conn is None:
                 _db_conn = sqlite3.connect(_get_db_path(), check_same_thread=False)
-                _db_conn.execute("""CREATE TABLE IF NOT EXISTS agent_state (
-                    key TEXT PRIMARY KEY, value TEXT, updated_at TEXT)""")
+                _db_conn.execute(''"CREATE TABLE IF NOT EXISTS agent_state (
+                    key TEXT PRIMARY KEY, value TEXT, updated_at TEXT)''")
             for k, v in self._data.items():
                 if isinstance(v, (dict, list)):
                     v = json.dumps(v, ensure_ascii=False, default=str)
@@ -104,10 +104,10 @@ class _AgentState:
                 )
             _db_conn.commit()
         except Exception:
-            pass  # SQLite不可用时静默降级
+            pass  # SQLite
 
     def _load(self):
-        """启动时恢复状态"""
+        ''''''
         try:
             if os.path.exists(STATE_FILE):
                 with open(STATE_FILE, encoding="utf-8") as f:
@@ -115,7 +115,7 @@ class _AgentState:
                     self._data.update(saved)
         except Exception:
             pass
-        # 尝试从数据库恢复JSON可能丢失的最新数据
+        # JSON
         try:
             db_path = _get_db_path()
             if os.path.exists(db_path):
@@ -132,7 +132,7 @@ class _AgentState:
             pass
 
     def _save(self):
-        """统一持久化入口:JSON原子写入 + SQLite"""
+        ''":JSON + SQLite''"
         self._ensure_limits()
         self._atomic_save_json()
         self._save_db()
@@ -161,7 +161,7 @@ class _AgentState:
     def pending_approvals(self) -> list:
         return self._data.get("pending_approvals", [])
 
-    def add_approval(self, task_id: str, risk: str, name: str, description: str = ""):
+    def add_approval(self, task_id: str, risk: str, name: str, description: str = ''):
         entry = {"id": task_id, "risk": risk, "name": name, "description": description,
                  "time": datetime.now().strftime("%H:%M:%S")}
         lst = self._data.setdefault("pending_approvals", [])
@@ -194,7 +194,7 @@ class _AgentState:
     def tasks(self) -> list:
         return self._data.get("tasks", [])
 
-    def add_task(self, name: str, risk: str = "L1", status: str = "完成"):
+    def add_task(self, name: str, risk: str = "L1", status: str = ''):
         entry = {"id": f"task_{len(self._data.get('tasks',[]))+1}_{int(datetime.now().timestamp())}",
                  "name": name, "risk": risk, "status": status,
                  "time": datetime.now().strftime("%H:%M:%S")}
@@ -206,7 +206,7 @@ class _AgentState:
         return entry
 
     def set_data(self, key: str, value, max_size: int = None):
-        """安全设置_data中的key,带上限控制"""
+        ''"_datakey,''"
         self._data[key] = value
         if max_size and isinstance(value, list) and len(value) > max_size:
             self._data[key] = value[-max_size:]
@@ -218,7 +218,7 @@ class _AgentState:
         self._save()
 
     def append_data(self, key: str, item, max_size: int = None):
-        """安全追加到列表型key,超过上限自动裁剪"""
+        ''"key,''"
         lst = self._data.setdefault(key, [])
         lst.append(item)
         limit = max_size or KEY_LIMITS.get(key)

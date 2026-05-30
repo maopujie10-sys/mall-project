@@ -1,4 +1,4 @@
-"""清理腾讯云COS中 mall/products/ 目录的旧图片"""
+''"COS mall/products/ ''"
 import sys
 import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -18,8 +18,8 @@ def cos_sign(method, path, param_dict=None, expire=3600):
     key_time = f"{int(time.time())};{int(time.time())+expire}"
     sign_key = hmac.new(COS_SECRET_KEY.encode(), key_time.encode(), hashlib.sha1).hexdigest()
 
-    param_list = ""
-    param_str = ""
+    param_list = ''
+    param_str = ''
     if param_dict:
         sorted_keys = sorted(param_dict.keys())
         param_list = ";".join(k.lower() for k in sorted_keys)
@@ -40,9 +40,9 @@ def cos_sign(method, path, param_dict=None, expire=3600):
 
 
 def list_all_keys(prefix):
-    """一次列出所有匹配前缀的keys，返回列表"""
+    ''"keys''"
     all_keys = []
-    marker = ""
+    marker = ''
     page = 0
     while True:
         page += 1
@@ -57,7 +57,7 @@ def list_all_keys(prefix):
 
         r = httpx.get(url, headers=headers, timeout=30)
         if r.status_code != 200:
-            print(f"列表请求失败: {r.status_code}", flush=True)
+            print(f": {r.status_code}", flush=True)
             break
 
         root = ET.fromstring(r.text)
@@ -80,28 +80,28 @@ def list_all_keys(prefix):
         else:
             break
 
-        print(f"  第{page}页: 已发现 {len(all_keys)} 个文件...", flush=True)
+        print(f"  {page}:  {len(all_keys)} ...", flush=True)
 
     return all_keys
 
 
 def main():
     prefix = "mall/products/"
-    print(f"列出 COS {prefix} ...", flush=True)
+    print(f" COS {prefix} ...", flush=True)
     keys = list_all_keys(prefix)
     total = len(keys)
-    print(f"共 {total} 个文件", flush=True)
+    print(f" {total} ", flush=True)
 
     if total == 0:
-        print("没有文件，跳过。", flush=True)
+        print("", flush=True)
         return
 
-    # 先确认
-    print(f"\n确认删除 {total} 个文件？按回车继续，Ctrl+C 取消...", flush=True)
+    
+    print(f"\n {total} Ctrl+C ...", flush=True)
     try:
         input()
     except (EOFError, KeyboardInterrupt):
-        print("取消。", flush=True)
+        print("", flush=True)
         return
 
     deleted = 0
@@ -125,12 +125,12 @@ def main():
             elapsed = time.time() - t0
             rate = (i + 1) / elapsed
             eta = (total - i - 1) / rate
-            print(f"  进度: {i+1}/{total} | 已删 {deleted} 失败 {failed} | 速率 {rate:.0f}/s | ETA {eta:.0f}s", flush=True)
+            print(f"  : {i+1}/{total} |  {deleted}  {failed} |  {rate:.0f}/s | ETA {eta:.0f}s", flush=True)
 
     elapsed = time.time() - t0
-    print(f"\n完成! {elapsed:.1f}s", flush=True)
-    print(f"  成功删除: {deleted}", flush=True)
-    print(f"  失败: {failed}", flush=True)
+    print(f"\n! {elapsed:.1f}s", flush=True)
+    print(f"  : {deleted}", flush=True)
+    print(f"  : {failed}", flush=True)
 
 
 if __name__ == "__main__":

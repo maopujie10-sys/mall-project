@@ -8,14 +8,14 @@
       <TransitionGroup name="task-slide">
         <div v-for="task in tasks" :key="task.id" class="tp-item" :class="task.status">
           <div class="tp-icon">
-            <span v-if="task.status === 'running'" class="spin-dot"></span>
+            -
             <span v-else-if="task.status === 'done'" class="done-dot">ok</span>
             <span v-else-if="task.status === 'failed'" class="fail-dot">!</span>
-            <span v-else class="pending-dot"></span>
+            -
           </div>
           <div class="tp-body">
             <div class="tp-name">{{ task.name }}</div>
-            <div class="tp-meta">{{ task.source }} · {{ task.time }}</div>
+            <div class="tp-meta">{{ task.source }}  {{ task.time }}</div>
           </div>
         </div>
       </TransitionGroup>

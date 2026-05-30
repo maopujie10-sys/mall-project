@@ -4,16 +4,16 @@
       <button v-for="m in modes" :key="m.id" class="mode-tab" :class="{ active: currentMode === m.id, listening: m.id === 'voice' && isListening, recording: m.id === 'camera' && isRecording }" @click="m.id === 'voice' ? toggleVoice() : m.id === 'camera' ? toggleCamera() : switchMode(m.id)">{{ m.icon }} {{ m.label }}</button>
     </div>
     <div v-if="files.length" class="file-pills">
-      <span v-for="(f, i) in files" :key="i" class="file-pill">{{ f.type === 'image' ? '图片' : f.type === 'video' ? '视频' : '文件' }} {{ f.name }} <button class="pill-remove" @click="files.splice(i, 1)">x</button></span>
+      <span v-for="(f, i) in files" :key="i" class="file-pill">{{ f.type === 'image' ? '' : f.type === 'video' ? '' : '' }} {{ f.name }} <button class="pill-remove" @click="files.splice(i, 1)">x</button></span>
     </div>
-    <Transition name="fade"><div v-if="isDragging" class="drop-hint"><div class="drop-icon">drop</div><div>拖放文件到这里</div></div></Transition>
+    <Transition name="fade"><div v-if="isDragging" class="drop-hint"><div class="drop-icon">drop</div><div>{{ \('common.title') }}</div></div></Transition>
 
     <Transition name="fade">
       <div v-if="showCamera" class="camera-preview">
         <video ref="videoEl" autoplay playsinline class="camera-video"></video>
         <div class="camera-controls">
-          <button class="cam-btn capture" @click="capturePhoto">拍照</button>
-          <button class="cam-btn close" @click="stopCamera">关闭</button>
+          <button class="cam-btn capture" @click="capturePhoto"></button>
+          <button class="cam-btn close" @click="stopCamera"></button>
         </div>
         <canvas ref="canvasEl" style="display:none"></canvas>
       </div>
@@ -21,16 +21,16 @@
 
     <Transition name="fade">
       <div v-if="isListening" class="voice-indicator">
-        <span class="voice-pulse"></span>
-        <span>正在聆听... 请说中文</span>
+        <span class="voice-pulse">{{ \('common.title') }}</span>
+        <span>... </span>
       </div>
     </Transition>
 
     <div class="input-row">
       <span class="input-prefix">{{ currentMode === 'cmd' ? '>' : currentMode === 'voice' ? 'mic' : currentMode === 'camera' ? 'cam' : '' }}</span>
-      <input ref="inputEl" v-model="text" :placeholder="isListening ? '识别中...' : placeholders[currentMode]" @keydown.enter.exact="send" @keydown.esc="currentMode = 'chat'" :disabled="disabled || isListening" class="main-input" />
+      <input ref="inputEl" v-model="text" :placeholder="isListening ? '...' : placeholders[currentMode]" @keydown.enter.exact="send" @keydown.esc="currentMode = 'chat'' :disabled="disabled || isListening" class="main-input" />
       <input ref="fileInput" type="file" multiple hidden @change="onFilePick" accept="image/*,video/*,.pdf,.doc,.docx,.txt,.json,.csv,.md" />
-      <button class="action-btn" @click="fileInput.click()" title="上传">+</button>
+      <button class="action-btn" @click="fileInput.click()" title=''>+</button>
       <button class="action-btn send-btn" @click="send" :disabled="!canSend">></button>
     </div>
   </div>
@@ -52,24 +52,24 @@ const videoEl = ref(null)
 const canvasEl = ref(null)
 
 const modes = [
-  { id: 'chat', icon: 'chat', label: '聊天' },
-  { id: 'cmd', icon: 'cmd', label: '命令' },
-  { id: 'image', icon: 'img', label: '图片' },
-  { id: 'video', icon: 'vid', label: '视频' },
-  { id: 'voice', icon: 'mic', label: '语音' },
-  { id: 'camera', icon: 'cam', label: '拍照' },
+  { id: 'chat', icon: 'chat', label: '' },
+  { id: 'cmd', icon: 'cmd', label: '' },
+  { id: 'image', icon: 'img', label: '' },
+  { id: 'video', icon: 'vid', label: '' },
+  { id: 'voice', icon: 'mic', label: '' },
+  { id: 'camera', icon: 'cam', label: '' },
 ]
 
 const placeholders = {
-  chat: '告诉 AI 你想做什么...',
-  cmd: '输入命令...',
-  image: '描述图片或拖入参考图...',
-  video: '描述视频或拖入素材...',
-  voice: '点击话筒开始说话',
-  camera: '打开摄像头拍照',
+  chat: ' AI ...',
+  cmd: '...',
+  image: '...',
+  video: '...',
+  voice: '',
+  camera: '',
 }
 
-// ===== 语音识别 =====
+// =====  =====
 const isListening = ref(false)
 let recognition = null
 
@@ -105,7 +105,7 @@ function toggleVoice() {
   if (isListening.value) { stopListening(); return }
   if (!recognition) recognition = initRecognition()
   if (!recognition) {
-    alert('您的浏览器不支持语音识别，请使用 Chrome 浏览器')
+    alert(' Chrome ')
     return
   }
   currentMode.value = 'voice'
@@ -126,7 +126,7 @@ function stopListening() {
   if (currentMode.value === 'voice') currentMode.value = 'chat'
 }
 
-// ===== 摄像头 =====
+// =====  =====
 const showCamera = ref(false)
 const isRecording = ref(false)
 let mediaStream = null
@@ -143,7 +143,7 @@ async function toggleCamera() {
     await new Promise(r => setTimeout(r, 100))
     if (videoEl.value) videoEl.value.srcObject = mediaStream
   } catch (e) {
-    alert('无法访问摄像头，请检查权限设置')
+    alert('')
     isRecording.value = false
     currentMode.value = 'chat'
   }
@@ -174,7 +174,7 @@ function capturePhoto() {
   stopCamera()
 }
 
-// ===== 模式切换 =====
+// =====  =====
 function switchMode(mode) {
   if (isListening.value) stopListening()
   if (showCamera.value) stopCamera()
@@ -182,7 +182,7 @@ function switchMode(mode) {
   setTimeout(() => inputEl.value && inputEl.value.focus(), 50)
 }
 
-// ===== 发送 =====
+// =====  =====
 const canSend = computed(() => text.value.trim() || files.value.length)
 
 function send() {
@@ -195,7 +195,7 @@ function send() {
   currentMode.value = 'chat'
 }
 
-// ===== 文件上传 =====
+// =====  =====
 function onFilePick(e) {
   addFiles(e.target.files)
   e.target.value = ''

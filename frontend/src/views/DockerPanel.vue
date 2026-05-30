@@ -1,10 +1,10 @@
 <template>
   <div class="docker-panel">
     <div class="page-header">
-      <h1>馃惓 Docker 绠＄悊</h1>
+      <h1> Docker </h1>
       <div class="header-actions">
         <el-button type="primary" @click="fetchAll" :loading="loading" size="small">
-          <el-icon><Refresh /></el-icon> 刷新
+          <el-icon><Refresh /></el-icon> 
         </el-button>
       </div>
     </div>
@@ -13,49 +13,47 @@
       <el-col :span="6">
         <el-card shadow="hover">
           <div class="stat-value">{{ stats.running ?? "-" }}</div>
-          <div class="stat-label">杩愯涓</div>
+          <div class="stat-label">?/div>
         </el-card>
       </el-col>
       <el-col :span="6">
         <el-card shadow="hover">
           <div class="stat-value">{{ stats.total ?? "-" }}</div>
-          <div class="stat-label">鎬诲鍣ㄦ暟</div>
+          -
         </el-card>
       </el-col>
       <el-col :span="6">
         <el-card shadow="hover">
           <div class="stat-value">{{ containers.length }}</div>
-          <div class="stat-label">瀹瑰櫒鍒楄〃</div>
+          <div class="stat-label">{{ \('docker.title') }}</div>
         </el-card>
       </el-col>
       <el-col :span="6">
         <el-card shadow="hover">
           <div class="stat-value">{{ images.length }}</div>
-          <div class="stat-label">闀滃儚鏁</div>
+          <div class="stat-label">?/div>
         </el-card>
       </el-col>
     </el-row>
 
     <el-card class="section-card">
       <template #header>
-        <span>瀹瑰櫒鍒楄〃</span>
+        <span>{{ \('docker.title') }}</span>
       </template>
       <el-table :data="containers" stripe v-loading="loading" max-height="400">
-        <el-table-column prop="name" label="名称" min-width="160" />
-        <el-table-column prop="image" label="闀滃儚" min-width="200" />
-        <el-table-column prop="status" label="..." min-width="180">
+        <el-table-column prop="name" :label="\('docker.title')" min-width="160" />
+        <el-table-column prop="image" label='' min-width="200" />
+        <el-table-column prop="status" label="? min-width="180">
           <template #default="{ row }">
-            <el-tag :type="row.status?.includes('Up') ? 'success' : 'danger'" size="small">
+            <el-tag :type="row.status?.includes('Up') ? 'success' : 'danger'' size="small">
               {{ row.status?.substring(0, 30) }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="ports" label="绔彛" min-width="120" />
-        <el-table-column label="操作" width="100" fixed="right">
+        <el-table-column prop="ports" :label="\('docker.title')" min-width="120" />
+        <el-table-column label='' width="100" fixed="right">
           <template #default="{ row }">
-            <el-button size="small" type="warning" @click="restartContainer(row.name)" :loading="restarting === row.name">
-              閲嶅惎
-            </el-button>
+            <el-button size="small" type="warning" @click="restartContainer(row.name)" :loading="restarting === row.name">OK</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -64,31 +62,31 @@
     <el-row :gutter="16">
       <el-col :span="12">
         <el-card class="section-card">
-          <template #header><span>闀滃儚鍒楄〃</span></template>
+          <template #header><span>{{ \('docker.title') }}</span></template>
           <el-table :data="images" stripe v-loading="loading" max-height="300">
-            <el-table-column prop="repo" label="浠撳簱" min-width="200" />
-            <el-table-column prop="tag" label="鏍囩" width="100" />
-            <el-table-column prop="size" label="澶у皬" width="100" />
+            <el-table-column prop="repo" label='' min-width="200" />
+            <el-table-column prop="tag" :label="\('docker.title')" width="100" />
+            <el-table-column prop="size" :label="\('docker.title')" width="100" />
           </el-table>
         </el-card>
       </el-col>
       <el-col :span="12">
         <el-card class="section-card">
-          <template #header><span>缃戠粶鍒楄〃</span></template>
+          <template #header><span>{{ \('docker.title') }}</span></template>
           <el-table :data="networks" stripe v-loading="loading" max-height="300">
-            <el-table-column prop="name" label="名称" min-width="160" />
-            <el-table-column prop="driver" label="椹卞姩" width="100" />
-            <el-table-column prop="scope" label="鑼冨洿" width="80" />
+            <el-table-column prop="name" :label="\('docker.title')" min-width="160" />
+            <el-table-column prop="driver" label='' width="100" />
+            <el-table-column prop="scope" label='' width="80" />
           </el-table>
         </el-card>
       </el-col>
     </el-row>
 
     <el-card class="section-card">
-      <template #header><span>瀹瑰櫒鏃ュ織</span></template>
+      <template #header>-</template>
       <div style="display: flex; gap: 8px; margin-bottom: 12px;">
-        <el-input v-model="logContainer" placeholder="杈撳叆瀹瑰櫒名称鎴朓D" style="width: 300px;" size="small" />
-        <el-button @click="fetchLogs" type="primary" size="small">鏌ョ湅鏃ュ織</el-button>
+        <el-input v-model="logContainer" placeholder="D" style="width: 300px;" size="small" />
+        <el-button @click="fetchLogs" type="primary" size="small"></el-button>
       </div>
       <el-input type="textarea" :rows="8" :value="logs" readonly style="font-family: monospace; font-size: 12px;" />
     </el-card>
@@ -101,13 +99,13 @@ import { agentApi } from "@/api"
 import { ElMessage } from "element-plus"
 
 const loading = ref(false)
-const restarting = ref("")
+const restarting = ref('')
 const containers = ref([])
 const images = ref([])
 const networks = ref([])
 const stats = ref({})
-const logs = ref("")
-const logContainer = ref("")
+const logs = ref('')
+const logContainer = ref('')
 
 async function fetchAll() {
   loading.value = true
@@ -123,18 +121,18 @@ async function fetchAll() {
     images.value = imgs.images || []
     networks.value = nets.networks || []
   } catch (e) {
-    ElMessage.error("鑾峰彇Docker淇℃伅澶辫触")
+    ElMessage.error("Docker")
   }
   loading.value = false
 }
 
 async function fetchLogs() {
-  if (!logContainer.value) return ElMessage.warning("请输入容器名称")
+  if (!logContainer.value) return ElMessage.warning("?)
   try {
     const r = await agentApi.get("/docker/logs", { params: { container: logContainer.value, lines: 100 } })
-    logs.value = r.content || "无日志"
+    logs.value = r.content || "?
   } catch (e) {
-    logs.value = "鑾峰彇鏃ュ織澶辫触: " + (e.response?.data?.detail || e.message)
+    logs.value = ": " + (e.response?.data?.detail || e.message)
   }
 }
 
@@ -142,11 +140,11 @@ async function restartContainer(name) {
   restarting.value = name
   try {
     const r = await agentApi.post("/docker/restart", { container_id: name, action: "restart" })
-    ElMessage.success(r.ok ? `容器 ${name} 已重启` : (r.error || "已提交审计"))
+    ElMessage.success(r.ok ? ` ${name}  : (r.error || "?))
   } catch (e) {
-    ElMessage.error("閲嶅惎澶辫触: " + (e.response?.data?.detail || e.message))
+    ElMessage.error(": " + (e.response?.data?.detail || e.message))
   }
-  restarting.value = ""
+  restarting.value = ''
 }
 
 onMounted(fetchAll)

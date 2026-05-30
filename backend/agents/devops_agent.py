@@ -1,5 +1,5 @@
-"""DevOps Agent -- 服务器/Docker/Nginx/部署自动化
-职责:SSH控制、Docker运维、Linux管理、Nginx配置、自动部署、自动恢复"""
+''"DevOps Agent -- /Docker/Nginx/
+:SSHDockerLinuxNginx''"
 import os
 import time
 from datetime import datetime
@@ -9,7 +9,7 @@ from typing import Optional
 
 @dataclass
 class ServerHealth:
-    """服务器健康状态"""
+    ''''''
     host: str
     cpu_percent: float = 0
     mem_percent: float = 0
@@ -17,27 +17,27 @@ class ServerHealth:
     load_avg: list = field(default_factory=list)
     uptime_days: int = 0
     status: str = "unknown"  # healthy/warning/critical
-    checked_at: str = ""
+    checked_at: str = ''
 
 
 @dataclass
 class DockerService:
-    """Docker服务状态"""
+    ''"Docker''"
     name: str
     status: str = "unknown"  # running/stopped/restarting
-    uptime: str = ""
+    uptime: str = ''
     cpu_percent: float = 0
-    mem_usage: str = ""
-    ports: str = ""
+    mem_usage: str = ''
+    ports: str = ''
     restart_count: int = 0
 
 
 class DevOpsAgent:
-    """DevOps Agent -- 基础设施全自动运维"""
+    ''"DevOps Agent -- ''"
 
     @staticmethod
     async def check_server_health(host: str = "localhost") -> dict:
-        """全面服务器健康检查"""
+        ''''''
         import psutil
         health = ServerHealth(host=host, checked_at=datetime.now().isoformat())
         try:
@@ -49,7 +49,7 @@ class DevOpsAgent:
             load = os.getloadavg() if hasattr(os, "getloadavg") else [0, 0, 0]
             health.load_avg = [round(l, 2) for l in load]
 
-            # 判断健康状态
+            
             if health.cpu_percent > 90 or health.mem_percent > 90 or health.disk_percent > 90:
                 health.status = "critical"
             elif health.cpu_percent > 70 or health.mem_percent > 80 or health.disk_percent > 80:
@@ -73,21 +73,21 @@ class DevOpsAgent:
 
     @staticmethod
     def _get_suggestions(health: ServerHealth) -> list:
-        """根据健康状态生成建议"""
+        ''''''
         suggestions = []
         if health.cpu_percent > 70:
-            suggestions.append("CPU使用率偏高,建议检查高占用进程")
+            suggestions.append("CPU,")
         if health.mem_percent > 80:
-            suggestions.append("内存使用率偏高,建议检查内存泄漏或增加内存")
+            suggestions.append(",")
         if health.disk_percent > 80:
-            suggestions.append("磁盘使用率偏高,建议清理日志或扩容")
+            suggestions.append(",")
         if health.cpu_percent > 90:
-            suggestions.append("⚠️ CPU危急!建议立即排查")
+            suggestions.append(" CPU!")
         return suggestions
 
     @staticmethod
     async def check_ports() -> list:
-        """检查关键端口状态"""
+        ''''''
         key_ports = [80, 443, 22, 3306, 5432, 6379, 8080, 9000, 5173]
         results = []
         import socket
@@ -103,13 +103,13 @@ class DevOpsAgent:
                     80: "HTTP", 443: "HTTPS", 22: "SSH",
                     3306: "MySQL", 5432: "PostgreSQL", 6379: "Redis",
                     8080: "Java", 9000: "Agent API", 5173: "Vite Dev",
-                }.get(port, "未知"),
+                }.get(port, ''),
             })
         return results
 
     @staticmethod
     async def check_top_processes(limit: int = 10) -> list:
-        """查看高占用进程"""
+        ''''''
         try:
             import psutil
             procs = []
@@ -128,17 +128,17 @@ class DevOpsAgent:
 
     @staticmethod
     async def check_docker_status() -> dict:
-        """Docker全面状态检查"""
+        ''"Docker''"
         import subprocess
         try:
-            # 检查Docker是否运行
+            # Docker
             result = subprocess.run(["docker", "info"], capture_output=True, text=True, timeout=10)
             docker_running = result.returncode == 0
 
             if not docker_running:
-                return {"ok": False, "error": "Docker未运行", "containers": []}
+                return {"ok": False, "error": "Docker", "containers": []}
 
-            # 列出所有容器
+            
             result = subprocess.run(
                 ["docker", "ps", "-a", "--format", "{{.Names}}|{{.Status}}|{{.Ports}}|{{.Image}}"],
                 capture_output=True, text=True, timeout=10,
@@ -149,14 +149,14 @@ class DevOpsAgent:
                     continue
                 parts = line.split("|")
                 if len(parts) >= 3:
-                    name, status, ports = parts[0], parts[1], parts[2] if len(parts) > 2 else ""
+                    name, status, ports = parts[0], parts[1], parts[2] if len(parts) > 2 else ''
                     is_running = "Up" in status
                     containers.append({
                         "name": name,
                         "status": status,
                         "running": is_running,
                         "ports": ports,
-                        "image": parts[3] if len(parts) > 3 else "",
+                        "image": parts[3] if len(parts) > 3 else '',
                     })
 
             running_count = sum(1 for c in containers if c["running"])
@@ -168,13 +168,13 @@ class DevOpsAgent:
                 "containers": containers,
             }
         except FileNotFoundError:
-            return {"ok": False, "error": "Docker未安装", "containers": []}
+            return {"ok": False, "error": "Docker", "containers": []}
         except Exception as e:
             return {"ok": False, "error": str(e), "containers": []}
 
     @staticmethod
     async def restart_container(name: str) -> dict:
-        """重启Docker容器"""
+        ''"Docker''"
         import subprocess
         try:
             result = subprocess.run(
@@ -191,7 +191,7 @@ class DevOpsAgent:
 
     @staticmethod
     async def check_nginx_status() -> dict:
-        """Nginx状态检查"""
+        ''"Nginx''"
         import subprocess
         try:
             result = subprocess.run(
@@ -204,11 +204,11 @@ class DevOpsAgent:
                 "config_valid": config_ok,
             }
         except FileNotFoundError:
-            return {"ok": False, "error": "Nginx未安装"}
+            return {"ok": False, "error": "Nginx"}
 
     @staticmethod
     async def get_nginx_logs(lines: int = 50) -> dict:
-        """获取Nginx日志"""
+        ''"Nginx''"
         import subprocess
         log_files = ["/var/log/nginx/access.log", "/var/log/nginx/error.log"]
         logs = {}
@@ -220,40 +220,40 @@ class DevOpsAgent:
                 )
                 logs[os.path.basename(log_file)] = result.stdout.strip().split("\n")[-lines:]
             except Exception:
-                logs[os.path.basename(log_file)] = ["无法读取"]
+                logs[os.path.basename(log_file)] = ['']
         return {"ok": True, "logs": logs}
 
     @staticmethod
     async def auto_heal_check() -> dict:
-        """自动修复检查 -- 检测常见问题并尝试修复"""
+        ''" -- ''"
         fixes_applied = []
         issues_found = []
 
-        # 1. 检查Docker
+        # 1. Docker
         docker_status = await DevOpsAgent.check_docker_status()
         if not docker_status.get("docker_running"):
-            issues_found.append("Docker未运行")
+            issues_found.append("Docker")
             try:
                 import subprocess
                 subprocess.run(["systemctl", "start", "docker"], timeout=10)
-                fixes_applied.append("尝试启动Docker")
+                fixes_applied.append("Docker")
             except Exception:
                 pass
 
-        # 2. 检查关键容器
+        # 2. 
         for container in docker_status.get("containers", []):
             if not container["running"]:
-                issues_found.append(f"容器 {container['name']} 已停止")
+                issues_found.append(f" {container['name']} ")
                 try:
                     await DevOpsAgent.restart_container(container["name"])
-                    fixes_applied.append(f"重启容器 {container['name']}")
+                    fixes_applied.append(f" {container['name']}")
                 except Exception:
                     pass
 
-        # 3. 检查Nginx
+        # 3. Nginx
         nginx_status = await DevOpsAgent.check_nginx_status()
         if not nginx_status.get("ok"):
-            issues_found.append("Nginx配置异常")
+            issues_found.append("Nginx")
 
         return {
             "ok": True,

@@ -1,15 +1,15 @@
 <template>
   <div class="dashboard">
     <div class="page-header">
-      <h2>📈 系统仪表盘</h2>
-      <p>实时监控 · 历史趋势 · 健康状态</p>
+      <h2> ?/h2>
+      <p>    ?/p>
     </div>
 
-    <!-- 健康度 -->
+    <!-- ?-->
     <el-row :gutter="16" style="margin-bottom:20px">
       <el-col :span="6">
         <div class="health-card" :class="healthLevel">
-          <div class="health-label">系统健康度</div>
+          <div class="health-label">?/div>
           <div class="health-value">{{ health.score || 0 }}</div>
           <div class="health-level">{{ healthLevelText }}</div>
         </div>
@@ -18,61 +18,61 @@
         <div class="metric-card">
           <div class="metric-label">CPU</div>
           <div class="metric-value" :style="{color: metrics.cpu > 80 ? '#ff4d4f' : metrics.cpu > 60 ? '#faad14' : '#52c41a'}">{{ metrics.cpu }}%</div>
-          <el-progress :percentage="metrics.cpu" :stroke-width="6" :color="metrics.cpu > 80 ? '#ff4d4f' : metrics.cpu > 60 ? '#faad14' : '#52c41a'" :show-text="false" />
+          <el-progress :percentage="metrics.cpu" :stroke-width="6" :color="metrics.cpu > 80 ? '#ff4d4f' : metrics.cpu > 60 ? '#faad14' : '#52c41a'' :show-text="false" />
         </div>
       </el-col>
       <el-col :span="6">
         <div class="metric-card">
-          <div class="metric-label">内存</div>
+          <div class="metric-label">{{ \('dashboard.title') }}</div>
           <div class="metric-value" :style="{color: metrics.memory_percent > 80 ? '#ff4d4f' : metrics.memory_percent > 60 ? '#faad14' : '#52c41a'}">{{ metrics.memory_percent }}%</div>
-          <el-progress :percentage="metrics.memory_percent" :stroke-width="6" :color="metrics.memory_percent > 80 ? '#ff4d4f' : metrics.memory_percent > 60 ? '#faad14' : '#52c41a'" :show-text="false" />
+          <el-progress :percentage="metrics.memory_percent" :stroke-width="6" :color="metrics.memory_percent > 80 ? '#ff4d4f' : metrics.memory_percent > 60 ? '#faad14' : '#52c41a'' :show-text="false" />
           <div class="metric-sub">{{ metrics.memory_used_gb }} / {{ metrics.memory_total_gb }} GB</div>
         </div>
       </el-col>
       <el-col :span="6">
         <div class="metric-card">
-          <div class="metric-label">磁盘</div>
+          <div class="metric-label">{{ \('dashboard.title') }}</div>
           <div class="metric-value" :style="{color: metrics.disk_percent > 80 ? '#ff4d4f' : metrics.disk_percent > 60 ? '#faad14' : '#52c41a'}">{{ metrics.disk_percent }}%</div>
-          <el-progress :percentage="metrics.disk_percent" :stroke-width="6" :color="metrics.disk_percent > 80 ? '#ff4d4f' : metrics.disk_percent > 60 ? '#faad14' : '#52c41a'" :show-text="false" />
+          <el-progress :percentage="metrics.disk_percent" :stroke-width="6" :color="metrics.disk_percent > 80 ? '#ff4d4f' : metrics.disk_percent > 60 ? '#faad14' : '#52c41a'' :show-text="false" />
           <div class="metric-sub">{{ metrics.disk_used_gb }} / {{ metrics.disk_total_gb }} GB</div>
         </div>
       </el-col>
     </el-row>
 
-    <!-- 图表 -->
+    
     <el-row :gutter="16" style="margin-bottom:20px">
       <el-col :span="12">
         <el-card shadow="never">
-          <template #header>📱 CPU / 内存 历史趋势（最近60个采样点）</template>
-          <div ref="cpuMemChart" style="height:280px"></div>
+          <template #header> CPU /  ?0?/template>
+          -
         </el-card>
       </el-col>
       <el-col :span="12">
         <el-card shadow="never">
-          <template #header>📑 磁盘使用趋势</template>
-          <div ref="diskChart" style="height:280px"></div>
+          <template #header> </template>
+          -
         </el-card>
       </el-col>
     </el-row>
 
-    <!-- 快捷操作 -->
+    
     <el-card shadow="never">
-      <template #header>⚡ 快捷操作</template>
+      <template #header>?</template>
       <div style="display:flex;gap:10px;flex-wrap:wrap">
-        <el-button @click="goTo('/chat')" type="primary">💬 AI 对话</el-button>
-        <el-button @click="goTo('/server')">📈 服务器面板</el-button>
-        <el-button @click="goTo('/rotation')">🔀 轮值系统</el-button>
-        <el-button @click="goTo('/audit')">📕 审计日志</el-button>
-        <el-button @click="goTo('/network')">🔀 网络工具</el-button>
-        <el-button @click="recordMetrics" :loading="recording">📝 记录指标</el-button>
-        <el-button @click="refreshAll" :loading="loading">🔄 刷新</el-button>
+        <el-button @click="goTo('/chat')" type="primary"> AI </el-button>
+        <el-button @click="goTo('/server')"> ?/el-button>
+        <el-button @click="goTo('/rotation')"> ?/el-button>
+        
+        
+        <el-button @click="recordMetrics" :loading="recording">OK</el-button>
+        <el-button @click="refreshAll" :loading="loading">OK</el-button>
       </div>
     </el-card>
   </div>
 </template>
 
 <script>
-import { ref, computed, onMounted, onUnmounted, nextTick } from "vue"
+import { ref, onMounted, onUnmounted, nextTick } from "vue"
 import { ElMessage } from "element-plus"
 import { agentApi } from "@/api"
 import { useRouter } from "vue-router"
@@ -89,7 +89,6 @@ export default {
     const cpuMemChart = ref(null)
     const diskChart = ref(null)
     let chartInterval = null
-    let chartResizeHandler = null
 
     async function fetchMetrics() {
       try {
@@ -117,9 +116,9 @@ export default {
       recording.value = true
       try {
         await agentApi.post("/dashboard/record")
-        ElMessage.success("已记录")
+        ElMessage.success("?)
         await fetchHistory()
-      } catch { ElMessage.error("记录失败") }
+      } catch { ElMessage.error('Error') }
       recording.value = false
     }
 
@@ -148,7 +147,7 @@ export default {
         yAxis: { type: "value", max: 100, axisLabel: { fontSize: 10, formatter: "{value}%" } },
         series: [
           { name: "CPU", type: "line", data: h.map(p => p.cpu), smooth: true, lineStyle: { width: 2 }, itemStyle: { color: "#1890ff" }, areaStyle: { color: "rgba(24,144,255,0.1)" } },
-          { name: "内存", type: "line", data: h.map(p => p.memory_percent), smooth: true, lineStyle: { width: 2 }, itemStyle: { color: "#52c41a" }, areaStyle: { color: "rgba(82,196,26,0.1)" } },
+          { name: '', type: "line", data: h.map(p => p.memory_percent), smooth: true, lineStyle: { width: 2 }, itemStyle: { color: "#52c41a" }, areaStyle: { color: "rgba(82,196,26,0.1)" } },
         ],
         legend: { bottom: 0, textStyle: { fontSize: 11 } },
       })
@@ -159,17 +158,15 @@ export default {
         grid: { left: 50, right: 20, bottom: 30, top: 10 },
         xAxis: { type: "category", data: times, axisLabel: { fontSize: 10 } },
         yAxis: { type: "value", max: 100, axisLabel: { fontSize: 10, formatter: "{value}%" } },
-        series: [{ name: "磁盘", type: "line", data: h.map(p => p.disk_percent), smooth: true, lineStyle: { width: 2, color: "#faad14" }, areaStyle: { color: "rgba(250,173,20,0.1)" }, itemStyle: { color: "#faad14" } }],
+        series: [{ name: '', type: "line", data: h.map(p => p.disk_percent), smooth: true, lineStyle: { width: 2, color: "#faad14" }, areaStyle: { color: "rgba(250,173,20,0.1)" }, itemStyle: { color: "#faad14" } }],
         legend: { bottom: 0, textStyle: { fontSize: 11 } },
       })
-      // Resize on window resize (移除旧监听器防累积)
-      if (chartResizeHandler) window.removeEventListener("resize", chartResizeHandler)
-      chartResizeHandler = () => { cm.resize(); dc.resize() }
-      window.addEventListener("resize", chartResizeHandler)
+      // Resize on window resize
+      window.addEventListener("resize", () => { cm.resize(); dc.resize() })
     }
 
     const healthLevel = computed(() => health.value.level || "unknown")
-    const healthLevelText = computed(() => ({ excellent: "🌟 优秀", good: "📊 良好", warning: "🔥 警告", critical: "🚶 危险" }[healthLevel.value] || "未知"))
+    const healthLevelText = computed(() => ({ excellent: " ", good: " ", warning: " ", critical: '' }[healthLevel.value] || ""))
 
     async function refreshAll() {
       loading.value = true
@@ -184,10 +181,7 @@ export default {
       // Auto refresh every 30s
       chartInterval = setInterval(fetchMetrics, 30000)
     })
-    onUnmounted(() => {
-      if (chartInterval) clearInterval(chartInterval)
-      if (chartResizeHandler) { window.removeEventListener("resize", chartResizeHandler); chartResizeHandler = null }
-    })
+    onUnmounted(() => { if (chartInterval) clearInterval(chartInterval) })
 
     return { loading, recording, metrics, health, history, cpuMemChart, diskChart, healthLevel, healthLevelText, refreshAll, recordMetrics, goTo }
   }

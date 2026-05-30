@@ -14,10 +14,7 @@ RUN mvn clean package -DskipTests -B -q
 # ---- Stage 2: 运行 ----
 FROM eclipse-temurin:17-jre
 WORKDIR /app
-RUN useradd -m -s /bin/bash appuser && \
-    mkdir -p /app/logs /app/uploads && \
-    chown -R appuser:appuser /app
+RUN mkdir -p /app/logs /app/uploads
 COPY --from=builder /build/target/*.jar app.jar
-USER appuser
 EXPOSE 8080
 ENTRYPOINT ["java", "-Xms512m", "-Xmx1024m", "-XX:+UseG1GC", "-XX:MaxGCPauseMillis=200", "-jar", "app.jar", "--spring.profiles.active=prod"]

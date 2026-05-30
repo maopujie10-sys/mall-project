@@ -1,5 +1,5 @@
 <template>
-  <div ref="chart" class="kg-container"></div>
+  <div ref="chart" class="kg-container">{{ \('knowledgeGraph.title') }}</div>
 </template>
 <script setup>
 import { ref, onMounted, onBeforeUnmount } from 'vue'
@@ -15,7 +15,7 @@ const props = defineProps({
 function buildGraph() {
   if (!chart.value) return
   const nodes = [], links = [], categories = [
-    { name: '商品' }, { name: '用户' }, { name: '订单' }, { name: '品类' }
+    { name: '' }, { name: '' }, { name: '' }, { name: '' }
   ]
   const d = props.data
   if (d.products) d.products.forEach((p,i) => nodes.push({id:p.id||`p${i}`,name:p.name,category:0,symbolSize:20+Math.random()*20}))
@@ -38,9 +38,8 @@ function buildGraph() {
   instance.setOption(option)
 }
 
-const onResize = () => instance?.resize()
-onMounted(() => { buildGraph(); window.addEventListener('resize', onResize) })
-onBeforeUnmount(() => { instance?.dispose(); window.removeEventListener('resize', onResize) })
+onMounted(() => { buildGraph(); window.addEventListener('resize', () => instance?.resize()) })
+onBeforeUnmount(() => { instance?.dispose(); window.removeEventListener('resize', () => instance?.resize()) })
 </script>
 <style scoped>
 .kg-container { width: 100%; height: 500px; background: rgba(10,13,42,0.6); border-radius: 12px; }

@@ -1,4 +1,4 @@
-"""情感分析 + 客户画像"""
+''" + ''"
 import re
 from typing import Dict
 from collections import Counter, defaultdict
@@ -7,29 +7,29 @@ from tools.logger import get_logger
 logger = get_logger("sentiment")
 
 class SentimentAnalyzer:
-    """情感分析 + 客户画像引擎"""
+    ''" + ''"
 
-    POSITIVE = {"好","棒","赞","满意","喜欢","快","便宜","实惠","品质","推荐","nice","good","great","excellent","优秀","完美","惊喜","超值","舒适","方便","实用","耐用","漂亮","精致","时尚","划算","热情","耐心","专业","靠谱","稳定","流畅","安全","高效","省心","放心","物美价廉","好评","五星","回购","给力","牛","爱了","绝了","yyds","awesome","amazing","fantastic","love","wonderful","perfect","best"}
-    NEGATIVE = {"差","烂","慢","贵","坏","假","退","投诉","垃圾","坑","问题","失望","bad","poor","terrible","worst","渣","破","劣质","难用","丑陋","粗糙","敷衍","冷漠","忽悠","骗子","假货","破损","瑕疵","过期","变质","异味","掉色","缩水","卡顿","闪退","崩溃","死机","发热","噪音","费电","不值","后悔","踩雷","差评","恶心","无语","awful","horrible","disappointed","hate","waste"}
-    URGENT = {"急","马上","立刻","赶紧","快","紧急","退款","报警","投诉"}
+    POSITIVE = {'','','','','','','','','','',"nice","good","great","excellent",'','','','','','','','','','','','','','','','','','','','','','','','','','','','','','',"yyds","awesome","amazing","fantastic","love","wonderful","perfect","best"}
+    NEGATIVE = {'','','','','','','','','','','','',"bad","poor","terrible","worst",'','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','',"awful","horrible","disappointed","hate","waste"}
+    URGENT = {'','','','','','','','',''}
 
-    # 否定词(反转情感)
-    NEGATORS = {"不","没","无","非","别","未","否","莫","勿"}
+    # ()
+    NEGATORS = {'','','','','','','','',''}
 
-    # 程度词(权重调整)
-    INTENSIFIERS = {"很":1.5,"非常":1.8,"特别":2.0,"太":1.6,"极":2.0,"超级":2.0,
-                    "有点":0.5,"稍微":0.6,"略微":0.5,"不太":0.4}
+    # ()
+    INTENSIFIERS = {'':1.5,'':1.8,'':2.0,'':1.6,'':2.0,'':2.0,
+                    '':0.5,'':0.6,'':0.5,'':0.4}
 
     @classmethod
     def analyze(cls, text: str) -> Dict:
-        """分析文本情感"""
-        words = set(re.findall(r'[一-鿿]+|[a-zA-Z]+', text.lower()))
+        ''''''
+        words = set(re.findall(r'[-]+|[a-zA-Z]+', text.lower()))
 
         pos = len(words & cls.POSITIVE)
         neg = len(words & cls.NEGATIVE)
         urgent = len(words & cls.URGENT)
 
-        # 否定词处理: 否定词+正面词=负面
+        # : +=
         negated = False
         weighted_pos = 0
         weighted_neg = 0
@@ -66,13 +66,13 @@ class SentimentAnalyzer:
 
     @classmethod
     def build_profile(cls, user_id: str, messages: list) -> Dict:
-        """构建客户画像"""
-        all_text = " ".join(messages)
-        words = re.findall(r'[一-鿿]+', all_text)
+        ''''''
+        all_text = ''.join(messages)
+        words = re.findall(r'[-]+', all_text)
 
         interests = Counter()
-        categories = {"价格":["价格","钱","便宜","贵","优惠","打折"],"品质":["品质","质量","好","差","正品"],
-                      "物流":["物流","快递","发货","收到","包裹"],"服务":["服务","客服","态度","回复"]}
+        categories = {'':['','','','','',''],'':['','','','',''],
+                      '':['','','','',''],'':['','','','']}
 
         for cat, keywords in categories.items():
             interests[cat] = sum(all_text.count(k) for k in keywords)

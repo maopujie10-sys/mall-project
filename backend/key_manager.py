@@ -1,4 +1,4 @@
-"""密钥管理 - 密钥轮换/审计/安全存储"""
+''" - //''"
 import os, secrets, re, json, shutil
 from datetime import datetime
 from pathlib import Path
@@ -36,7 +36,7 @@ class KeyManager:
         KeyManager._audit(key_name,"rotate",backup_file.name)
         return {"ok":True,"key":key_name,"backup":str(backup_file)}
     @staticmethod
-    def _audit(key_name,action,detail=""):
+    def _audit(key_name,action,detail=''):
         entry={"time":datetime.now().isoformat(),"key":key_name,"action":action,"detail":detail}
         logs=[]
         if KEYS_FILE.exists():

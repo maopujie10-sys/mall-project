@@ -1,4 +1,4 @@
-"""可观测性 -- Prometheus指标导出 + 系统资源实时监控"""
+''" -- Prometheus + ''"
 import time, psutil
 from datetime import datetime
 from fastapi import APIRouter, Depends
@@ -6,12 +6,12 @@ from auth import verify_token
 
 router = APIRouter(prefix="/agent/observability", tags=["Observability"])
 
-# 请求统计
+
 _request_count = {"total": 0, "errors": 0, "by_path": {}}
 _start_time = time.time()
 
 def record_request(path: str, is_error: bool = False):
-    """记录请求"""
+    ''''''
     _request_count["total"] += 1
     if is_error:
         _request_count["errors"] += 1
@@ -19,7 +19,7 @@ def record_request(path: str, is_error: bool = False):
 
 @router.get("/metrics")
 async def prometheus_metrics():
-    """Prometheus格式指标导出"""
+    ''"Prometheus''"
     uptime = int(time.time() - _start_time)
     mem = psutil.virtual_memory()
     disk = psutil.disk_usage("/")
@@ -64,14 +64,14 @@ async def prometheus_metrics():
 
 @router.get("/dashboard")
 async def system_dashboard(_=Depends(verify_token)):
-    """系统实时监控面板数据"""
+    ''''''
     mem = psutil.virtual_memory()
     disk = psutil.disk_usage("/")
     cpu_percent = psutil.cpu_percent(interval=0.3)
     load = psutil.getloadavg() if hasattr(psutil, 'getloadavg') else [0,0,0]
     net = psutil.net_io_counters()
     
-    # Top 5 高CPU进程
+    # Top 5 CPU
     top_procs = []
     for p in sorted(psutil.process_iter(['pid','name','cpu_percent','memory_percent']), 
                     key=lambda x: x.info.get('cpu_percent', 0) or 0, reverse=True)[:5]:

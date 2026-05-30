@@ -8,7 +8,7 @@ WORKDIR /app
 COPY . .
 
 # 彻底清理所有Python文件的UTF-8 BOM（在pip安装前）
-RUN python3 << 'PYEOF'
+RUN python3 -c "
 import os, glob
 count = 0
 for f in glob.glob('/app/**/*.py', recursive=True):
@@ -22,7 +22,7 @@ for f in glob.glob('/app/**/*.py', recursive=True):
     except:
         pass
 print(f'BOM cleaned: {count} files')
-PYEOF
+"
 
 # 安装系统依赖
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -39,12 +39,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 RUN pip install --no-cache-dir playwright && \
     python -m playwright install chromium 2>/dev/null || echo "playwright chromium install skipped"
 
-# 创建必要目录和非root用户
-RUN mkdir -p /app/data/screenshots /app/memory /app/state /app/backups /app/logs && \
-    useradd -m -s /bin/bash appuser && \
-    chown -R appuser:appuser /app
+# 创建必要目录
+RUN mkdir -p /app/data/screenshots /app/memory /app/state /app/backups /app/logs
 
-USER appuser
+# Docker socket挂载
 EXPOSE 9000
 ENV TZ=Asia/Shanghai
 

@@ -40,8 +40,6 @@ export function getRotationHistory() {
   return agentApi.get("/rotation/history")
 }
 
-
-// ═══ 两级轮值配置管理 ═══
 export function getTwoLevelConfig() {
   return agentApi.get("/rotation/two-level/config")
 }

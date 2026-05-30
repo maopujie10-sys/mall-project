@@ -8,7 +8,7 @@
     </template>
     <el-table :data="tableData" stripe size="small" v-loading="loading">
       <el-table-column v-for="col in columns" :key="col.prop" v-bind="col" />
-      <el-table-column label="操作" width="180" v-if="actions.length">
+      <el-table-column label='' width="180" v-if="actions.length">
         <template #default="{row}">
           <el-button v-for="act in actions" :key="act.label" :type="act.type" size="small" link @click="act.handler(row)">
             {{ act.label }}
@@ -36,7 +36,7 @@ const props = defineProps({
   onStatus: Function,
   onBalance: Function,
   onTrace: Function,
-  searchPlaceholder: { type: String, default: '搜索...' },
+  searchPlaceholder: { type: String, default: '...' },
 })
 
 const search = ref('')
@@ -48,14 +48,14 @@ const size = ref(20)
 
 const actions = computed(() => {
   const acts = []
-  if (props.onDetail) acts.push({ label: '详情', type: 'primary', handler: (r) => props.onDetail(r.id || r.order_id) })
-  if (props.onAudit) acts.push({ label: '审核', type: 'warning', handler: (r) => props.onAudit(r) })
-  if (props.onStatus) acts.push({ label: '状态', type: 'info', handler: (r) => props.onStatus(r) })
-  if (props.onBalance) acts.push({ label: '调余额', type: 'warning', handler: (r) => props.onBalance(r) })
-  if (props.onRefund) acts.push({ label: '退款', type: 'danger', handler: (r) => props.onRefund(r.order_id) })
-  if (props.onLogs) acts.push({ label: '日志', type: 'info', handler: (r) => props.onLogs(r.order_id || r.id) })
-  if (props.onTrace) acts.push({ label: '轨迹', type: 'primary', handler: (r) => props.onTrace(r.order_id || r.id) })
-  if (props.onDelete) acts.push({ label: '删除', type: 'danger', handler: (r) => props.onDelete(r.id || r.uuid) })
+  if (props.onDetail) acts.push({ label: '', type: 'primary', handler: (r) => props.onDetail(r.id || r.order_id) })
+  if (props.onAudit) acts.push({ label: '', type: 'warning', handler: (r) => props.onAudit(r) })
+  if (props.onStatus) acts.push({ label: '', type: 'info', handler: (r) => props.onStatus(r) })
+  if (props.onBalance) acts.push({ label: '', type: 'warning', handler: (r) => props.onBalance(r) })
+  if (props.onRefund) acts.push({ label: '', type: 'danger', handler: (r) => props.onRefund(r.order_id) })
+  if (props.onLogs) acts.push({ label: '', type: 'info', handler: (r) => props.onLogs(r.order_id || r.id) })
+  if (props.onTrace) acts.push({ label: '', type: 'primary', handler: (r) => props.onTrace(r.order_id || r.id) })
+  if (props.onDelete) acts.push({ label: '', type: 'danger', handler: (r) => props.onDelete(r.id || r.uuid) })
   return acts
 })
 

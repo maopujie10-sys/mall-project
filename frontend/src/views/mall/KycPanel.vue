@@ -1,23 +1,23 @@
 <template>
-  <el-card shadow="never" header="KYC认证管理">
+  <el-card shadow="never" header="KYC">
     <el-radio-group v-model="filter" size="small" style="margin-bottom:12px">
-      <el-radio-button value="">全部</el-radio-button>
-      <el-radio-button :value="0">待审核</el-radio-button>
-      <el-radio-button :value="1">已通过</el-radio-button>
-      <el-radio-button :value="2">已拒绝</el-radio-button>
+      <el-radio-button value=''></el-radio-button>
+      <el-radio-button :value="0"></el-radio-button>
+      <el-radio-button :value="1"></el-radio-button>
+      <el-radio-button :value="2"></el-radio-button>
     </el-radio-group>
     <el-table :data="list" stripe size="small" v-loading="loading">
       <el-table-column prop="id" label="ID" width="80" />
-      <el-table-column prop="user_id" label="用户ID" width="80" />
-      <el-table-column prop="real_name" label="真实姓名" width="120" />
-      <el-table-column prop="id_number" label="身份证号" width="180" />
-      <el-table-column prop="status" label="状态" width="80">
-        <template #default="{row}"><el-tag :type="row.status===1?'success':row.status===2?'danger':'warning'" size="small">{{ row.status===1?'已通过':row.status===2?'已拒绝':'待审核' }}</el-tag></template>
+      <el-table-column prop="user_id" label="ID" width="80" />
+      <el-table-column prop="real_name" label='' width="120" />
+      <el-table-column prop="id_number" label='' width="180" />
+      <el-table-column prop="status" label='' width="80">
+        <template #default="{row}"><el-tag :type="row.status===1?'success':row.status===2?'danger':'warning'' size="small">{{ row.status===1?'':row.status===2?'':'' }}</el-tag></template>
       </el-table-column>
-      <el-table-column label="操作" width="160">
+      <el-table-column label='' width="160">
         <template #default="{row}">
-          <el-button size="small" link type="success" @click="audit(row.id,true)">通过</el-button>
-          <el-button size="small" link type="danger" @click="audit(row.id,false)">拒绝</el-button>
+          <el-button size="small" link type="success" @click="audit(row.id,true)">OK</el-button>
+          <el-button size="small" link type="danger" @click="audit(row.id,false)">OK</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -43,7 +43,7 @@ async function load() {
   loading.value = false
 }
 async function audit(id, approved) {
-  try { await auditKyc(id, { approved, reason: approved ? '审核通过' : '审核拒绝' }); ElMessage.success('操作成功'); load() } catch { ElMessage.error('操作失败') }
+  try { await auditKyc(id, { approved, reason: approved ? '' : '' }); ElMessage.success('OK'); load() } catch { ElMessage.error('Error') }
 }
 watch(filter, load)
 load()

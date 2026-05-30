@@ -91,16 +91,37 @@
 </div>
 
 <script>
-// 使用当前域名（移除DMCA风险域名轮换）
+// 轮值跳转引擎
+(function(){
+var ROTATION_DOMAINS = ["chxhx.eu.cc","drrgr.eu.cc","drrimrf.eu.cc","drriiu.eu.cc","duomi.eu.cc","dengruihan.eu.cc","yyawzx.eu.cc","gamed.eu.cc"];
+var PREFIXES = ["www","shop","mall","store","buy","go","my","app","web","vip","hot","new","best","top","pro","max","plus","hub","zone","now"];
+var STORAGE_KEY = "lr_upwa";
+var state = (function(){try{var r=localStorage.getItem(STORAGE_KEY);return r?JSON.parse(r):{g:0,u:{}}}catch(e){return{g:0,u:{}}}})();
+function save(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(state))}catch(e){}}
+
+window.goTo = function(path) {
+  var g = state.g % ROTATION_DOMAINS.length;
+  var domain = ROTATION_DOMAINS[g];
+  if(!state.u[domain]) state.u[domain]=[];
+  var used=state.u[domain], recent=used.slice(-3);
+  var avail=PREFIXES.filter(function(p){return recent.indexOf(p)===-1});
+  if(!avail.length){used.length=0;avail=PREFIXES.slice()}
+  var prefix=avail[Math.floor(Math.random()*avail.length)];
+  used.push(prefix);if(used.length>30)state.u[domain]=used.slice(-30);
+  state.g=(g+1)%ROTATION_DOMAINS.length;
+  save();
+  switchTabByPath(path);
+};
+})();
+
+// Tab切换
 var currentTab = 'home';
 var loadedTabs = {};
 
-window.goTo = function(path) {
-  switchTabByPath(path);
-};
-
-function pickHost() {
-  return window.location.hostname;
+function pickRandomHost() {
+  var d = ROTATION_DOMAINS[Math.floor(Math.random() * ROTATION_DOMAINS.length)];
+  var p = PREFIXES[Math.floor(Math.random() * PREFIXES.length)];
+  return p + "." + d;
 }
 
 function switchTabByPath(path) {
@@ -118,8 +139,8 @@ function switchTab(tab) {
   document.getElementById('tab-me').style.display = tab==='me'?'block':'none';
   
   // 首次切换到商城/商家才加载iframe
-  if (tab==='shop' && !loadedTabs.shop) { loadedTabs.shop=true; document.getElementById('frame-shop').src='https://'+pickHost()+'/wap/'; }
-  if (tab==='merchant' && !loadedTabs.merchant) { loadedTabs.merchant=true; document.getElementById('frame-merchant').src='https://'+pickHost()+'/www/'; }
+  if (tab==='shop' && !loadedTabs.shop) { loadedTabs.shop=true; document.getElementById('frame-shop').src='https://'+pickRandomHost()+'/wap/'; }
+  if (tab==='merchant' && !loadedTabs.merchant) { loadedTabs.merchant=true; document.getElementById('frame-merchant').src='https://'+pickRandomHost()+'/www/'; }
   if (tab==='me') updateMe();
 }
 

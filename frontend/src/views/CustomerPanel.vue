@@ -1,50 +1,50 @@
 <template>
   <div class="page-container customer-panel">
     <div class="page-header">
-      <h2>客服管理面板</h2>
-      <p>消息处理 · 客户服务 · 投诉监控</p>
+      <h2>{{ \('customer.title') }}</h2>
+      -
     </div>
 
-    <!-- 统计卡片 -->
+    
     <el-row :gutter="16" style="margin-bottom: 20px;">
       <el-col :span="6">
         <div class="metric-card">
-          <div class="metric-label">今日消息总量</div>
+          <div class="metric-label">{{ \('customer.title') }}</div>
           <div class="metric-value">{{ stats.totalMessages }}</div>
-          <div class="metric-sub">较昨日 {{ stats.messageTrend }}</div>
+          <div class="metric-sub"> {{ stats.messageTrend }}</div>
         </div>
       </el-col>
       <el-col :span="6">
         <div class="metric-card">
-          <div class="metric-label">活跃会话</div>
+          <div class="metric-label">{{ \('customer.title') }}</div>
           <div class="metric-value" style="color: var(--color-primary);">{{ stats.activeConversations }}</div>
-          <div class="metric-sub">其中 {{ stats.unreadCount }} 条未读</div>
+          <div class="metric-sub"> {{ stats.unreadCount }} </div>
         </div>
       </el-col>
       <el-col :span="6">
         <div class="metric-card">
-          <div class="metric-label">平均响应时间</div>
+          <div class="metric-label">{{ \('customer.title') }}</div>
           <div class="metric-value" style="color: var(--color-success);">{{ stats.avgResponseTime }}</div>
-          <div class="metric-sub">目标: &lt; 3 分钟</div>
+          <div class="metric-sub">: &lt; 3 </div>
         </div>
       </el-col>
       <el-col :span="6">
         <div class="metric-card">
-          <div class="metric-label">满意度</div>
+          <div class="metric-label">{{ \('customer.title') }}</div>
           <div class="metric-value" style="color: var(--color-warning);">{{ stats.satisfaction }}%</div>
-          <div class="metric-sub">基于 {{ stats.satisfactionCount }} 条评价</div>
+          <div class="metric-sub"> {{ stats.satisfactionCount }} </div>
         </div>
       </el-col>
     </el-row>
 
-    <!-- 主体：左列表 + 右对话 -->
+    <!--  +  -->
     <div class="panel-body">
-      <!-- 左侧客户列表 -->
+      
       <div class="customer-list-panel">
         <div class="list-header">
           <el-input
             v-model="searchKeyword"
-            placeholder="搜索客户或消息..."
+            placeholder="..."
             :prefix-icon="Search"
             size="default"
             clearable
@@ -52,19 +52,19 @@
         </div>
         <div class="list-filters">
           <el-radio-group v-model="filterType" size="small">
-            <el-radio-button value="all">全部</el-radio-button>
-            <el-radio-button value="unread">未读</el-radio-button>
-            <el-radio-button value="urgent">紧急</el-radio-button>
-            <el-radio-button value="complaint">投诉</el-radio-button>
+            <el-radio-button value="all"></el-radio-button>
+            <el-radio-button value="unread"></el-radio-button>
+            <el-radio-button value="urgent"></el-radio-button>
+            <el-radio-button value="complaint"></el-radio-button>
           </el-radio-group>
           <div class="list-actions-top">
-            <el-button size="small" text @click="markAllReadHandler">全部已读</el-button>
+            <el-button size="small" text @click="markAllReadHandler">OK</el-button>
             <el-button
               size="small" text type="warning"
               :disabled="selectedIds.length === 0"
               @click="transferHuman"
             >
-              转人工 ({{ selectedIds.length }})
+               ({{ selectedIds.length }})
             </el-button>
           </div>
         </div>
@@ -72,7 +72,7 @@
           <div v-if="error" class="error-banner">
             <el-icon color="#ff4d4f"><WarningFilled /></el-icon>
             <span>{{ error }}</span>
-            <el-button size="small" text type="primary" @click="fetchMessages">重试</el-button>
+            <el-button size="small" text type="primary" @click="fetchMessages">OK</el-button>
           </div>
           <div
             v-for="customer in filteredCustomers"
@@ -102,23 +102,23 @@
               </div>
               <div class="customer-preview">{{ customer.content }}</div>
               <div class="customer-tags">
-                <span v-if="customer.type === 'complaint'" class="complaint-tag">投诉</span>
-                <span v-if="customer.type === 'urgent'" class="urgent-tag">紧急</span>
-                <span v-if="customer.type === 'inquiry'" class="inquiry-tag">咨询</span>
-                <span v-if="customer.escalated" class="escalated-tag">已升级</span>
+                -
+                -
+                -
+                -
               </div>
             </div>
           </div>
           <div v-if="filteredCustomers.length === 0 && !loading" class="empty-list">
-            <p>暂无匹配的客户消息</p>
+            <p>{{ \('customer.title') }}</p>
           </div>
         </div>
       </div>
 
-      <!-- 右侧对话窗口 -->
+      
       <div class="conversation-panel" :class="{ 'no-selection': !activeCustomer }">
         <template v-if="activeCustomer">
-          <!-- 对话头部 -->
+          
           <div class="conversation-header">
             <div class="conv-user-info">
               <el-avatar :size="38" :style="{ background: activeCustomer.avatarColor }">
@@ -127,34 +127,34 @@
               <div class="conv-user-detail">
                 <span class="conv-user-name">{{ activeCustomer.sender }}</span>
                 <span class="conv-user-status">
-                  <span class="status-dot online"><span class="dot"></span>在线</span>
-                  <span v-if="activeCustomer.type === 'complaint'" class="complaint-flag">
-                    <el-icon color="#ff4d4f" :size="14"><WarningFilled /></el-icon> 投诉
+                  <span class="status-dot online"><span class="dot">{{ \('customer.title') }}</span></span>
+                  <span v-if="activeCustomer.type === 'complaint'' class="complaint-flag">
+                    <el-icon color="#ff4d4f" :size="14"><WarningFilled /></el-icon> 
                   </span>
-                  <span v-if="activeCustomer.type === 'urgent'" class="urgent-flag">紧急</span>
+                  -
                 </span>
               </div>
             </div>
             <div class="conv-actions">
               <el-button
-                v-if="activeCustomer.type === 'complaint'"
+                v-if="activeCustomer.type === 'complaint''
                 type="danger" size="small" plain
                 @click="flagComplaint(activeCustomer)"
               >
-                <el-icon><WarningFilled /></el-icon> 标记投诉
+                <el-icon><WarningFilled /></el-icon> 
               </el-button>
               <el-button type="warning" size="small" plain @click="escalateToHuman(activeCustomer)">
-                <el-icon><Switch /></el-icon> 转人工
+                <el-icon><Switch /></el-icon> 
               </el-button>
               <el-button size="small" @click="handleMarkRead(activeCustomer)">
-                <el-icon><Check /></el-icon> 标记已读
+                <el-icon><Check /></el-icon> 
               </el-button>
             </div>
           </div>
 
-          <!-- 消息列表 -->
+          
           <div class="messages-area" ref="messagesArea">
-            <!-- 客户原始消息 -->
+            
             <div class="message-row msg-left">
               <el-avatar :size="32" :style="{ background: activeCustomer.avatarColor }" class="msg-avatar">
                 {{ activeCustomer.avatar }}
@@ -165,11 +165,11 @@
               </div>
             </div>
 
-            <!-- 回复消息列表 -->
+            
             <template v-for="msg in conversationMessages[activeCustomer.id]" :key="msg.id">
-              <div v-if="msg.from === 'system'" class="system-message">{{ msg.text }}</div>
-              <div v-else class="message-row" :class="msg.from === 'customer' ? 'msg-left' : 'msg-right'">
-                <template v-if="msg.from === 'customer'">
+              <div v-if="msg.from === 'system'' class="system-message">{{ msg.text }}</div>
+              <div v-else class="message-row" :class="msg.from === 'customer' ? 'msg-left' : 'msg-right''>
+                <template v-if="msg.from === 'customer''>
                   <el-avatar :size="32" :style="{ background: activeCustomer.avatarColor }" class="msg-avatar">
                     {{ activeCustomer.avatar }}
                   </el-avatar>
@@ -183,14 +183,14 @@
                     <div class="msg-text">{{ msg.text }}</div>
                     <div class="msg-time">{{ msg.time }}</div>
                   </div>
-                  <el-avatar :size="32" style="background: #1552F0;" class="msg-avatar">客</el-avatar>
+                  <el-avatar :size="32" style="background: #1552F0;" class="msg-avatar"></el-avatar>
                 </template>
               </div>
             </template>
 
-            <!-- AI 智能回复建议 -->
+            <!-- AI  -->
             <div v-if="showSmartReplies" class="smart-replies-row">
-              <span class="smart-label">AI 建议回复：</span>
+              <span class="smart-label">AI </span>
               <span
                 v-for="(reply, idx) in smartReplies"
                 :key="idx"
@@ -202,11 +202,11 @@
             </div>
           </div>
 
-          <!-- 输入区域 -->
+          
           <div class="input-area">
-            <!-- 快捷回复模板 -->
+            
             <div class="quick-templates">
-              <span class="template-label">快捷回复：</span>
+              <span class="template-label">{{ \('customer.title') }}</span>
               <template v-for="tpl in quickReplies" :key="tpl.title">
                 <el-popover placement="top" :width="280" trigger="hover" :content="tpl.content">
                   <template #reference>
@@ -221,13 +221,13 @@
               <el-input
                 v-model="replyText"
                 type="textarea" :rows="2"
-                placeholder="输入回复内容，按 Enter 发送..."
+                placeholder=" Enter ..."
                 resize="none"
                 @keydown.enter.exact.prevent="sendReply"
               />
               <div class="input-actions">
                 <el-button type="primary" @click="sendReply" :disabled="!replyText.trim()">
-                  <el-icon><Promotion /></el-icon> 发送
+                  <el-icon><Promotion /></el-icon> 
                 </el-button>
               </div>
             </div>
@@ -239,10 +239,9 @@
               <circle cx="60" cy="60" r="50" stroke="#d9d9d9" stroke-width="2" stroke-dasharray="8 4"/>
               <path d="M35 45 L55 45 M35 55 L65 55 M35 65 L50 65" stroke="#d9d9d9" stroke-width="2.5" stroke-linecap="round"/>
               <circle cx="85" cy="45" r="18" fill="#1552F0" opacity="0.1"/>
-              <path d="M78 45 L85 52 L92 38" stroke="#1552F0" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-            <h3>选择一位客户开始对话</h3>
-            <p>左侧面板显示待处理的客户消息</p>
+              <path d="M78 45 L85 52 L92 38" stroke="#1552F0" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>{{ \('customer.title') }}</svg>
+            <h3>{{ \('customer.title') }}</h3>
+            <p>{{ \('customer.title') }}</p>
           </div>
         </template>
       </div>
@@ -256,18 +255,18 @@ import { ElMessage, ElMessageBox, ElNotification } from 'element-plus'
 import { Search, Check, Switch, Promotion, WarningFilled } from '@element-plus/icons-vue'
 import { getMessages, markRead, markAllRead, transferToHuman } from '@/api/customer'
 
-// ===== 统计数据 =====
+// =====  =====
 const stats = reactive({
   totalMessages: 294,
   messageTrend: '+12%',
   activeConversations: 18,
   unreadCount: 7,
-  avgResponseTime: '2.3分',
+  avgResponseTime: '2.3',
   satisfaction: 94.2,
   satisfactionCount: 156,
 })
 
-// ===== API 数据 =====
+// ===== API  =====
 const selectedIds = ref([])
 const loading = ref(true)
 const error = ref(null)
@@ -282,8 +281,8 @@ async function fetchMessages() {
     if (Array.isArray(data)) {
       messages.splice(0, messages.length, ...data.map((m, i) => ({
         id: m.id || i + 1,
-        sender: m.sender || m.customerName || '用户',
-        avatar: m.avatar || (m.sender || '用').charAt(0),
+        sender: m.sender || m.customerName || '',
+        avatar: m.avatar || (m.sender || '').charAt(0),
         avatarColor: m.avatarColor || avatarColors[i % avatarColors.length],
         content: m.content || m.message || '',
         time: m.time || '-',
@@ -302,7 +301,7 @@ async function fetchMessages() {
   }
 }
 
-// ===== 筛选 =====
+// =====  =====
 const searchKeyword = ref('')
 const filterType = ref('all')
 
@@ -325,7 +324,7 @@ const filteredCustomers = computed(() => {
   return result
 })
 
-// ===== 选择 =====
+// =====  =====
 const toggleSelect = (msg) => {
   const idx = selectedIds.value.indexOf(msg.id)
   if (idx > -1) {
@@ -335,13 +334,13 @@ const toggleSelect = (msg) => {
   }
 }
 
-// ===== 标记已读 =====
+// =====  =====
 const handleMarkRead = async (msg) => {
   try {
     await markRead(msg.id)
     msg.unread = false
     stats.unreadCount = messages.filter(m => m.unread).length
-    ElMessage.success(`已标记「${msg.sender}」的消息为已读`)
+    ElMessage.success(`${msg.sender}`)
   } catch {
     msg.unread = false
     stats.unreadCount = messages.filter(m => m.unread).length
@@ -353,24 +352,24 @@ const markAllReadHandler = async () => {
     await markAllRead()
     messages.forEach((m) => (m.unread = false))
     stats.unreadCount = 0
-    ElMessage.success('已全部标记为已读')
+    ElMessage.success('OK')
   } catch {
     messages.forEach((m) => (m.unread = false))
     stats.unreadCount = 0
   }
 }
 
-// ===== 转人工 =====
+// =====  =====
 const transferHuman = async () => {
   try {
     await transferToHuman(selectedIds.value)
     messages.forEach(m => {
       if (selectedIds.value.includes(m.id)) m.escalated = true
     })
-    ElMessage.success(`已将 ${selectedIds.value.length} 条消息转人工处理`)
+    ElMessage.success(` ${selectedIds.value.length} `)
     selectedIds.value = []
   } catch {
-    ElMessage.warning('转人工请求已提交')
+    ElMessage.warning('Warning')
     messages.forEach(m => {
       if (selectedIds.value.includes(m.id)) m.escalated = true
     })
@@ -378,7 +377,7 @@ const transferHuman = async () => {
   }
 }
 
-// ===== 对话管理 =====
+// =====  =====
 const activeCustomer = ref(null)
 const replyText = ref('')
 const messagesArea = ref(null)
@@ -386,16 +385,16 @@ const showSmartReplies = ref(false)
 const smartReplies = ref([])
 const conversationMessages = reactive({})
 
-// ===== 快捷回复模板 =====
+// =====  =====
 const quickReplies = [
-  { title: '问候语', content: '您好！很高兴为您服务，请问有什么可以帮助您的？' },
-  { title: '请稍等', content: '好的，我正在为您查询相关信息，请稍等片刻。' },
-  { title: '确认问题', content: '感谢您的反馈，我已经记录了您的问题，会尽快为您处理。' },
-  { title: '致歉', content: '非常抱歉给您带来不便，我们会立即核实并给您一个满意的答复。' },
-  { title: '退款说明', content: '您的退款将在3-5个工作日内原路返回，请注意查收。如有问题可随时联系我们。' },
-  { title: '发货进度', content: '您的订单已在处理中，预计在48小时内发货，发货后会短信通知您物流单号。' },
-  { title: '投诉升级', content: '您的投诉已记录并升级至主管处理，24小时内会有专人电话联系您，请保持电话畅通。' },
-  { title: '结束对话', content: '感谢您的耐心等待！如果还有其他问题，随时联系我们。祝您生活愉快！' },
+  { title: '', content: '' },
+  { title: '', content: '' },
+  { title: '', content: '' },
+  { title: '', content: '' },
+  { title: '', content: '3-5' },
+  { title: '', content: '48' },
+  { title: '', content: '24' },
+  { title: '', content: '' },
 ]
 
 const openConversation = (customer) => {
@@ -438,7 +437,7 @@ const sendReply = () => {
   replyText.value = ''
   showSmartReplies.value = false
   nextTick(() => scrollToBottom())
-  ElMessage.success('回复已发送')
+  ElMessage.success('OK')
   generateSmartReplies()
 }
 
@@ -452,18 +451,18 @@ const generateSmartReplies = () => {
   if (!c) return
   if (c.type === 'complaint') {
     smartReplies.value = [
-      '感谢您的反馈，我们会认真对待您提出的问题。',
-      '非常抱歉，我已记录您的情况，会有专人跟进处理。',
+      '',
+      '',
     ]
   } else if (c.type === 'urgent') {
     smartReplies.value = [
-      '好的，我马上为您查询，请稍等！',
-      '正在为您加急处理中，预计5分钟内给您答复。',
+      '',
+      '5',
     ]
   } else {
     smartReplies.value = [
-      '好的，已为您记录。还有其他可以帮助您的吗？',
-      '感谢您的咨询，如有任何疑问随时联系我们！',
+      '',
+      '',
     ]
   }
   showSmartReplies.value = true
@@ -471,9 +470,9 @@ const generateSmartReplies = () => {
 
 const escalateToHuman = (customer) => {
   ElMessageBox.confirm(
-    `确认将「${customer.sender}」的会话转接至人工客服？`,
-    '转人工确认',
-    { confirmButtonText: '确认转接', cancelButtonText: '取消', type: 'warning' }
+    `${customer.sender}`,
+    '',
+    { confirmButtonText: '', cancelButtonText: '', type: 'warning' }
   ).then(() => {
     customer.escalated = true
     if (!conversationMessages[customer.id]) {
@@ -482,12 +481,12 @@ const escalateToHuman = (customer) => {
     conversationMessages[customer.id].push({
       id: Date.now(),
       from: 'system',
-      text: '--- 会话已转接至人工客服，请稍候 ---',
+      text: '---  ---',
       time: new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }),
     })
     ElNotification({
-      title: '已转接人工',
-      message: `客户「${customer.sender}」的会话已转接至人工客服队列`,
+      title: '',
+      message: `${customer.sender}`,
       type: 'warning',
       duration: 4000,
     })
@@ -497,20 +496,20 @@ const escalateToHuman = (customer) => {
 
 const flagComplaint = (customer) => {
   ElMessageBox.confirm(
-    `确认将「${customer.sender}」标记为投诉客户？此操作将通知主管。`,
-    '投诉标记确认',
-    { confirmButtonText: '确认标记', cancelButtonText: '取消', type: 'danger' }
+    `${customer.sender}`,
+    '',
+    { confirmButtonText: '', cancelButtonText: '', type: 'danger' }
   ).then(() => {
     ElNotification({
-      title: '投诉已标记',
-      message: `客户「${customer.sender}」已被标记为投诉，级别: L3，已通知主管处理`,
+      title: '',
+      message: `${customer.sender}: L3`,
       type: 'error',
       duration: 5000,
     })
   }).catch(() => {})
 }
 
-// ===== 生命周期 =====
+// =====  =====
 onMounted(() => {
   fetchMessages()
   pollTimer = setInterval(fetchMessages, 15000)
@@ -526,7 +525,7 @@ onUnmounted(() => {
   padding: 20px 24px;
 }
 
-/* ===== 主体布局 ===== */
+/* =====  ===== */
 .panel-body {
   display: flex;
   gap: 0;
@@ -540,7 +539,7 @@ onUnmounted(() => {
   transition: var(--theme-transition);
 }
 
-/* ===== 左侧客户列表 ===== */
+/* =====  ===== */
 .customer-list-panel {
   width: 380px;
   min-width: 340px;
@@ -706,7 +705,7 @@ onUnmounted(() => {
   font-size: 13px;
 }
 
-/* ===== 右侧对话窗口 ===== */
+/* =====  ===== */
 .conversation-panel {
   flex: 1;
   display: flex;
@@ -719,7 +718,7 @@ onUnmounted(() => {
   background: rgba(13,16,37,0.55);
 }
 
-/* 对话头部 */
+/*  */
 .conversation-header {
   display: flex;
   align-items: center;
@@ -779,7 +778,7 @@ onUnmounted(() => {
   flex-shrink: 0;
 }
 
-/* 消息区域 */
+/*  */
 .messages-area {
   flex: 1;
   overflow-y: auto;
@@ -840,7 +839,7 @@ onUnmounted(() => {
   padding: 4px 0;
 }
 
-/* 智能回复建议 */
+/*  */
 .smart-replies-row {
   display: flex;
   flex-wrap: wrap;
@@ -878,7 +877,7 @@ onUnmounted(() => {
   color: #fff;
 }
 
-/* 输入区域 */
+/*  */
 .input-area {
   border-top: 1px solid var(--border-color);
   padding: 12px 20px;
@@ -929,7 +928,7 @@ onUnmounted(() => {
   gap: 6px;
 }
 
-/* 空状态 */
+/*  */
 .no-conversation {
   flex: 1;
   display: flex;

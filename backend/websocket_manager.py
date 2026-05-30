@@ -1,5 +1,5 @@
-"""Friday AI OS -- WebSocket实时推送管理器
-v2: 心跳检测 + 自动清理断连 + 连接数上限 + 消息队列"""
+''"Friday AI OS -- WebSocket
+v2:  +  +  + ''"
 import asyncio
 import json
 from datetime import datetime
@@ -7,12 +7,12 @@ from fastapi import WebSocket
 from typing import Dict, Set, Optional
 
 MAX_CONNECTIONS = 100
-HEARTBEAT_INTERVAL = 30  # 30s无消息则Ping
-DISCONNECT_TIMEOUT = 120  # 120s无Pong则断开
+HEARTBEAT_INTERVAL = 30  # 30sPing
+DISCONNECT_TIMEOUT = 120  # 120sPong
 
 
 class WSManager:
-    """WebSocket连接管理器"""
+    ''"WebSocket''"
 
     def __init__(self):
         self.connections: Dict[str, Dict[str, any]] = {}  # client_id -> {sockets, last_heartbeat}
@@ -20,14 +20,14 @@ class WSManager:
         self._heartbeat_task: Optional[asyncio.Task] = None
 
     def _start_heartbeat(self):
-        """启动后台心跳检测"""
+        ''''''
         if self._running:
             return
         self._running = True
         self._heartbeat_task = asyncio.create_task(self._heartbeat_loop())
 
     async def _heartbeat_loop(self):
-        """定时心跳检测循环"""
+        ''''''
         while self._running:
             await asyncio.sleep(HEARTBEAT_INTERVAL)
             now = datetime.now().timestamp()
@@ -38,7 +38,7 @@ class WSManager:
                         await ws.send_text(json.dumps({"type": "ping"}))
                     except Exception:
                         dead.append((cid, ws))
-                    # 检查最后心跳时间
+                    
                     last = info.get("last_heartbeat", 0)
                     if now - last > DISCONNECT_TIMEOUT:
                         dead.append((cid, ws))
@@ -47,10 +47,10 @@ class WSManager:
 
     async def connect(self, ws: WebSocket, client_id: str = "default"):
         await ws.accept()
-        # 连接数上限检查
+        
         total = self.count()
         if total >= MAX_CONNECTIONS:
-            await ws.send_text(json.dumps({"type": "error", "message": "连接数已满"}))
+            await ws.send_text(json.dumps({"type": "error", "message": ''}))
             await ws.close()
             return
 
@@ -72,7 +72,7 @@ class WSManager:
         return sum(len(info.get("sockets", set())) for info in self.connections.values())
 
     async def broadcast(self, event_type: str, data: dict):
-        """广播消息到所有连接"""
+        ''''''
         message = json.dumps({
             "type": event_type, "data": data,
             "timestamp": datetime.now().isoformat(),
@@ -88,7 +88,7 @@ class WSManager:
             await self.disconnect(ws, cid)
 
     async def send_to(self, client_id: str, event_type: str, data: dict):
-        """发送给指定客户端"""
+        ''''''
         info = self.connections.get(client_id)
         if not info:
             return
@@ -108,7 +108,7 @@ class WSManager:
     async def agent_status_update(self, agents: list):
         await self.broadcast("agent_status", {"agents": agents})
 
-    async def task_progress(self, task_id: str, step: int, status: str, detail: str = ""):
+    async def task_progress(self, task_id: str, step: int, status: str, detail: str = ''):
         await self.broadcast("task_progress", {"task_id": task_id, "step": step, "status": status, "detail": detail})
 
     async def trend_alert(self, platform: str, title: str, hot_score: int):

@@ -58,7 +58,7 @@ export const useAgentStore = defineStore('agent', () => {
         for (const step of response.steps) {
           addStep({
             id: step.id || Date.now() + Math.random(),
-            name: step.name || step.tool || '执行中',
+            name: step.name || step.tool || '',
             tool: step.tool || '',
             status: step.status || 'pending',
             evidence: step.evidence || '',
@@ -68,7 +68,7 @@ export const useAgentStore = defineStore('agent', () => {
 
       const risk = response.risk || 'l1'
       const needConfirm = response.needConfirm || false
-      const reply = response.reply || response.message || response.text || 'AI 正在思考...'
+      const reply = response.reply || response.message || response.text || 'AI ...'
       const stepsOut = response.steps?.map((s, i) => ({
         step: i + 1,
         name: s.name || s.tool || '',
@@ -83,7 +83,7 @@ export const useAgentStore = defineStore('agent', () => {
       addAIMessage(reply, risk, needConfirm, stepsOut)
     } catch (error) {
       addAIMessage(
-        `抱歉，出现错误: ${error.message || '请稍后重试'}`,
+        `: ${error.message || ''}`,
         'l3',
         false,
         null
@@ -102,14 +102,14 @@ export const useAgentStore = defineStore('agent', () => {
       if (approved) {
         messages.value.push({
           role: 'ai',
-          text: '已确认执行，正在处理...',
+          text: '...',
           risk: 'l2',
           time: new Date().toLocaleTimeString(),
         })
       } else {
         messages.value.push({
           role: 'ai',
-          text: '已取消该操作。',
+          text: '',
           risk: 'l3',
           time: new Date().toLocaleTimeString(),
         })
@@ -119,7 +119,7 @@ export const useAgentStore = defineStore('agent', () => {
     } catch (error) {
       messages.value.push({
         role: 'ai',
-        text: `操作失败: ${error.message}`,
+        text: `: ${error.message}`,
         risk: 'l3',
         time: new Date().toLocaleTimeString(),
       })

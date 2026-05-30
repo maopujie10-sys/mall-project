@@ -1,4 +1,4 @@
-"""消息通知 -- Telegram / SMTP 邮件 / 钉钉 / 企业微信"""
+''" -- Telegram / SMTP  /  / ''"
 from datetime import datetime
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
@@ -18,11 +18,11 @@ class NotifyRequest(BaseModel):
     level: str = "info"
     channel: str = "telegram"  # telegram / email / dingtalk / wecom / all
 
-EMOJI = {"info": "ℹ️", "warn": "⚠️", "error": "❌", "critical": "🚨"}
+EMOJI = {"info": "", "warn": "", "error": "", "critical": ""}
 
 async def send_telegram(message: str, level: str) -> dict:
     if not TELEGRAM_BOT_TOKEN or not TELEGRAM_CHAT_ID:
-        return {"sent": False, "error": "Telegram 未配置"}
+        return {"sent": False, "error": "Telegram "}
     emoji = EMOJI.get(level, "??")
     text = f"{emoji} <b>TikTokMall</b>\n{message}"
     try:
@@ -37,13 +37,13 @@ async def send_telegram(message: str, level: str) -> dict:
 
 async def send_email(message: str, level: str) -> dict:
     if not SMTP_HOST or not SMTP_TO:
-        return {"sent": False, "error": "邮件未配置"}
+        return {"sent": False, "error": ''}
     import smtplib
     from email.message import EmailMessage
     try:
         msg = EmailMessage()
         msg.set_content(f"[{level}] TikTokMall\n\n{message}\n\n{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-        msg["Subject"] = f"[TikTokMall] {level} 通知"
+        msg["Subject"] = f"[TikTokMall] {level} "
         msg["From"] = SMTP_USER
         msg["To"] = SMTP_TO
         with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as s:
@@ -57,7 +57,7 @@ async def send_email(message: str, level: str) -> dict:
 
 async def send_dingtalk(message: str, level: str) -> dict:
     if not DINGTALK_WEBHOOK:
-        return {"sent": False, "error": "钉钉未配置"}
+        return {"sent": False, "error": ''}
     try:
         async with httpx.AsyncClient(timeout=10) as c:
             r = await c.post(DINGTALK_WEBHOOK, json={"msgtype": "text", "text": {"content": f"[{level}] TikTokMall\n{message}"}})
@@ -67,7 +67,7 @@ async def send_dingtalk(message: str, level: str) -> dict:
 
 async def send_wecom(message: str, level: str) -> dict:
     if not WECOM_WEBHOOK:
-        return {"sent": False, "error": "企业微信未配置"}
+        return {"sent": False, "error": ''}
     try:
         async with httpx.AsyncClient(timeout=10) as c:
             r = await c.post(WECOM_WEBHOOK, json={"msgtype": "text", "text": {"content": f"[{level}] TikTokMall\n{message}"}})
@@ -84,8 +84,8 @@ CHANNEL_MAP = {
 
 @router.post("/send")
 async def send_notification(req: NotifyRequest, _=Depends(verify_token)):
-    """消息通知 -- Telegram / SMTP 邮件 / 钉钉 / 企业微信"""
-    await handle_risk("L1", f"发送通知 ({req.channel})", req.message[:50])
+    ''" -- Telegram / SMTP  /  / ''"
+    await handle_risk("L1", f" ({req.channel})", req.message[:50])
 
     if req.channel == "all":
         results = {}
@@ -95,13 +95,13 @@ async def send_notification(req: NotifyRequest, _=Depends(verify_token)):
 
     func = CHANNEL_MAP.get(req.channel)
     if not func:
-        return {"sent": False, "error": f"不支持的通知渠道: {req.channel}, 可选: {list(CHANNEL_MAP.keys()) + ['all']}"}
+        return {"sent": False, "error": f": {req.channel}, : {list(CHANNEL_MAP.keys()) + ['all']}"}
 
     return await func(req.message, req.level)
 
 @router.get("/config")
 async def notify_config(_=Depends(verify_token)):
-    await handle_risk("L1", "查看通知配置")
+    await handle_risk("L1", '')
     return {
         "telegram": {"configured": bool(TELEGRAM_BOT_TOKEN)},
         "email": {"configured": bool(SMTP_HOST)},

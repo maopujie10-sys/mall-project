@@ -1,5 +1,5 @@
-"""Multi-Model Router -- 多模型智能路由
-支持: Ollama本地(免费) / DeepSeek / Claude / GPT / Gemini"""
+''"Multi-Model Router -- 
+: Ollama() / DeepSeek / Claude / GPT / Gemini''"
 
 import os
 import httpx
@@ -24,7 +24,7 @@ class ModelConfig:
     api_base: str
     cost_per_1k: float
     max_tokens: int
-    is_local: bool = False  # 本地模型无需API Key
+    is_local: bool = False  # API Key
 
 
 import httpx as _httpx
@@ -39,16 +39,16 @@ def _get_model_client():
     return _model_client
 
 class ModelRouter:
-    """多模型智能路由器 -- 本地优先 + 云端降级"""
+    ''" --  + ''"
 
     OLLAMA_HOST = os.getenv("OLLAMA_HOST", "http://localhost:11434")
 
     MODELS = {
-        # 本地免费模型(优先级最高)
-        "ollama-qwen": ModelConfig("ollama", "qwen2.5:7b", "", OLLAMA_HOST + "/v1", 0.0, 32768, is_local=True),
-        "ollama-r1": ModelConfig("ollama", "deepseek-r1:7b", "", OLLAMA_HOST + "/v1", 0.0, 32768, is_local=True),
-        "ollama-llama": ModelConfig("ollama", "llama3:8b", "", OLLAMA_HOST + "/v1", 0.0, 32768, is_local=True),
-        # 云端模型(付费降级)
+        # ()
+        "ollama-qwen": ModelConfig("ollama", "qwen2.5:7b", '', OLLAMA_HOST + "/v1", 0.0, 32768, is_local=True),
+        "ollama-r1": ModelConfig("ollama", "deepseek-r1:7b", '', OLLAMA_HOST + "/v1", 0.0, 32768, is_local=True),
+        "ollama-llama": ModelConfig("ollama", "llama3:8b", '', OLLAMA_HOST + "/v1", 0.0, 32768, is_local=True),
+        # ()
         "deepseek-v3": ModelConfig("deepseek", "deepseek-chat", "DEEPSEEK_API_KEY", "https://api.deepseek.com/v1", 0.001, 65536),
         "deepseek-r1": ModelConfig("deepseek", "deepseek-reasoner", "DEEPSEEK_API_KEY", "https://api.deepseek.com/v1", 0.002, 65536),
         "claude-sonnet": ModelConfig("anthropic", "claude-3-5-sonnet-20241022", "CLAUDE_API_KEY", "https://api.anthropic.com", 0.015, 200000),
@@ -56,7 +56,7 @@ class ModelRouter:
         "gemini-flash": ModelConfig("google", "gemini-2.0-flash", "GEMINI_API_KEY", "https://generativelanguage.googleapis.com", 0.001, 1048576),
     }
 
-    # 路由策略:本地优先 -> 云端降级
+    # : -> 
     MODE_ROUTING = {
         ModelMode.QUALITY: ["ollama-qwen", "claude-sonnet", "gpt-4o"],
         ModelMode.FAST: ["ollama-qwen", "gemini-flash", "deepseek-v3"],
@@ -68,7 +68,7 @@ class ModelRouter:
 
     @staticmethod
     async def _check_ollama() -> bool:
-        """检测 Ollama 是否在线"""
+        ''" Ollama ''"
         try:
             client = _get_model_client()
             r = await client.get(ModelRouter.OLLAMA_HOST + "/api/tags")
@@ -78,7 +78,7 @@ class ModelRouter:
 
     @staticmethod
     def route(mode: ModelMode, preferred: str = None) -> ModelConfig:
-        """根据模式智能选择模型 -- 本地免费优先"""
+        ''" -- ''"
         if preferred and preferred in ModelRouter.MODELS:
             return ModelRouter.MODELS[preferred]
 
@@ -88,35 +88,35 @@ class ModelRouter:
             if c not in ModelRouter.MODELS:
                 continue
             cfg = ModelRouter.MODELS[c]
-            # 本地模型:无需 API Key,直接可用
+            # : API Key,
             if cfg.is_local:
                 return cfg
-            # 云端模型:需要配置 API Key
-            if os.getenv(cfg.api_key_env, ""):
+            # : API Key
+            if os.getenv(cfg.api_key_env, ''):
                 return cfg
 
-        # 兜底:返回第一个配置的模型
+        # :
         for name, config in ModelRouter.MODELS.items():
-            if config.is_local or os.getenv(config.api_key_env, ""):
+            if config.is_local or os.getenv(config.api_key_env, ''):
                 return config
 
         return ModelRouter.MODELS["ollama-qwen"]
 
     @staticmethod
     async def list_models() -> list:
-        """列出所有可用模型及状态"""
+        ''''''
         ollama_online = await ModelRouter._check_ollama()
         models = []
         for name, cfg in ModelRouter.MODELS.items():
             if cfg.is_local:
                 available = ollama_online
             else:
-                available = bool(os.getenv(cfg.api_key_env, ""))
+                available = bool(os.getenv(cfg.api_key_env, ''))
             models.append({
                 "id": name,
                 "provider": cfg.provider,
                 "model": cfg.model_name,
-                "cost": "免费" if cfg.is_local else f"/1K tokens",
+                "cost": '' if cfg.is_local else f"/1K tokens",
                 "local": cfg.is_local,
                 "available": available,
             })
@@ -124,19 +124,19 @@ class ModelRouter:
 
     @staticmethod
     async def chat(model_id: str = None, messages: list = None, **kwargs) -> dict:
-        """统一聊天接口 -- 支持 Ollama(OpenAI兼容) 和云端 API, model_id为None时自动选最佳模型"""
+        ''" --  Ollama(OpenAI)  API, model_idNone''"
         if model_id is None or messages is None:
             return await cls.smart_chat(messages or [], **kwargs)
         cfg = ModelRouter.MODELS.get(model_id)
         if not cfg:
-            return {"error": f"未知模型: {model_id}"}
+            return {"error": f": {model_id}"}
 
         headers = {"Content-Type": "application/json"}
         if not cfg.is_local:
             from tools.key_manager import key_manager
             api_key = key_manager.get_value(cfg.api_key_env) or os.getenv(cfg.api_key_env, '')
             if not api_key:
-                return {"error": f"{cfg.provider} API Key 未配置"}
+                return {"error": f"{cfg.provider} API Key "}
             headers["Authorization"] = f"Bearer {api_key}"
 
         payload = {
@@ -154,7 +154,7 @@ class ModelRouter:
                 headers=headers,
             )
             if r.status_code != 200:
-                return {"error": f"{cfg.provider} 返回 {r.status_code}: {r.text[:200]}"}
+                return {"error": f"{cfg.provider}  {r.status_code}: {r.text[:200]}"}
             data = r.json()
             return {
                 "model": model_id,
@@ -168,12 +168,12 @@ class ModelRouter:
 
 class FridayModes:
     MODES = {
-        "quality": {"desc": "高质量", "model": "ollama-qwen", "max_tokens": 4096},
-        "speed": {"desc": "超高速", "model": "ollama-qwen", "max_tokens": 512},
-        "cheap": {"desc": "省钱", "model": "ollama-qwen", "max_tokens": 256},
-        "dev": {"desc": "开发", "model": "ollama-r1", "max_tokens": 2048},
-        "ops": {"desc": "运维", "model": "ollama-qwen", "max_tokens": 1024},
-        "deep": {"desc": "深度推理", "model": "ollama-r1", "max_tokens": 8192},
+        "quality": {"desc": '', "model": "ollama-qwen", "max_tokens": 4096},
+        "speed": {"desc": '', "model": "ollama-qwen", "max_tokens": 512},
+        "cheap": {"desc": '', "model": "ollama-qwen", "max_tokens": 256},
+        "dev": {"desc": '', "model": "ollama-r1", "max_tokens": 2048},
+        "ops": {"desc": '', "model": "ollama-qwen", "max_tokens": 1024},
+        "deep": {"desc": '', "model": "ollama-r1", "max_tokens": 8192},
     }
 
     @classmethod
@@ -184,9 +184,9 @@ class FridayModes:
 
     @classmethod
     def judge_task_complexity(cls, prompt: str) -> str:
-        """判断任务复杂度"""
-        simple_kw = ["hello","hi","你好","谢谢","再见","简单"]
-        complex_kw = ["分析","报告","总结","编程","代码","架构","设计","debug"]
+        ''''''
+        simple_kw = ["hello","hi",'','','','']
+        complex_kw = ['','','','','','','',"debug"]
         lower = prompt.lower()
         if any(k in lower for k in complex_kw) or len(prompt) > 500: return "complex"
         if len(prompt) < 50 and any(k in lower for k in simple_kw): return "simple"
@@ -194,17 +194,17 @@ class FridayModes:
 
     @classmethod
     def smart_chat_with_fallback(cls, messages: list, mode: str = "smart") -> dict:
-        """智能路由+降级"""
-        prompt = " ".join([m.get("content","") for m in messages if m.get("role")=="user"])[:2000]
+        ''"+''"
+        prompt = ''.join([m.get("content",'') for m in messages if m.get("role")=="user"])[:2000]
         complexity = cls.judge_task_complexity(prompt)
         models = ["deepseek-chat"] if complexity == "simple" else (["openai/gpt-4o","claude-sonnet","deepseek-chat"] if complexity == "complex" else ["deepseek-chat","openai/gpt-4o-mini"])
         for model in models:
             try:
-                result = cls._call_model(model, messages) if hasattr(cls,"_call_model") else {"content":"","model":model}
+                result = cls._call_model(model, messages) if hasattr(cls,"_call_model") else {"content":'',"model":model}
                 if result and result.get("content"):
                     result["model_used"] = model; result["complexity"] = complexity; return result
             except: continue
-        return {"content":"","model_used":"none","complexity":complexity}
+        return {"content":'',"model_used":"none","complexity":complexity}
     @classmethod
     def list_modes(cls):
         return [{"id": k, **v} for k, v in cls.MODES.items()]
@@ -213,7 +213,7 @@ class FridayModes:
 
     @staticmethod
     async def vote(prompt, models=None):
-        """多模型投票: 3个模型同时回答, 取最优"""
+        ''": 3, ''"
         import asyncio, httpx, os
         candidates = models or ["deepseek-chat", "gpt-4o-mini"]
         async def ask(model):
@@ -235,5 +235,5 @@ class FridayModes:
             return {"model": model, "error": "failed"}
         results = await asyncio.gather(*[ask(m) for m in candidates[:3]])
         valid = [r for r in results if r.get("text")]
-        best = max(valid, key=lambda x: len(x.get("text", ""))) if valid else None
+        best = max(valid, key=lambda x: len(x.get("text", ''))) if valid else None
         return {"ok": bool(best), "results": results, "winner": best["model"] if best else None}

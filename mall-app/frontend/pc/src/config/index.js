@@ -17,7 +17,7 @@ if (process.env.NODE_ENV === "development"){
 }else{
     HOST_URL = 'https://' + pro_url
     BASE_URL =  ENV_PRO
-    WS_URL = `${location.protocol === 'https:' ? 'wss' : 'ws'}://${pro_url}/data/websocket`
+    WS_URL = `ws://localhost/data/websocket` // 演示环境
 }
 
 

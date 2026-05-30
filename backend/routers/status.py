@@ -1,4 +1,4 @@
-"""全站服务状态 -- 检查 mall-app 连通性"""
+''" --  mall-app ''"
 from fastapi import APIRouter, Depends
 from auth import verify_token
 from config import MALL_BASE_URL
@@ -9,7 +9,7 @@ router = APIRouter(prefix="/agent", tags=["Status"])
 
 @router.get("/status")
 async def all_status(_=Depends(verify_token)):
-    await handle_risk("L1", "查看全站状态")
+    await handle_risk("L1", '')
     mall_ok = False
     mall_detail = "unknown"
     try:
@@ -29,7 +29,7 @@ async def all_status(_=Depends(verify_token)):
 
 @router.get("/status/full")
 async def full_status(_=Depends(verify_token)):
-    await handle_risk("L1", "查看全站状态(详细)")
+    await handle_risk("L1", "()")
     try:
         async with httpx.AsyncClient(timeout=5) as c:
             r = await c.get(f"{MALL_BASE_URL}/agent/health")

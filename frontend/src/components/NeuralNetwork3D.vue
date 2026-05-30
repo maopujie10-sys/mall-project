@@ -1,8 +1,8 @@
 <template>
   <div ref="container" class="nn3d-container" @dblclick="openChat">
     <div class="nn-overlay">
-      <div class="nn-status">🧬 数字生命体 · {{ statusText }}</div>
-      <div class="nn-info" v-if="speaking">正在回应...</div>
+      <div class="nn-status">   {{ statusText }}</div>
+      <div class="nn-info" v-if="speaking">...</div>
     </div>
   </div>
 </template>
@@ -16,7 +16,7 @@ import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPa
 
 const container = ref(null)
 const speaking = ref(false)
-const statusText = computed(() => speaking.value ? '对话中' : '运行中')
+const statusText = computed(() => speaking.value ? '' : '')
 
 let scene, camera, renderer, composer, animFrameId, clock
 let headFrame, headGlow, leftEye, rightEye, leftPupil, rightPupil
@@ -25,13 +25,13 @@ let haloRings = [], neuralLines = [], ambientParticles = []
 let raycaster, mouse, mouseTarget = new THREE.Vector2()
 
 function emit(event, detail) { window.dispatchEvent(new CustomEvent(event, { detail })) }
-function openChat() { emit('brain:openChat') }
+function sendBrainEvent(type, data) { window.dispatchEvent(new CustomEvent("brain:send", {detail: {type, ...data}})) }`nfunction openChat() { emit('brain:openChat') }
 
-// ===== 创建全息人脸 =====
+// =====  =====
 function createHolographicFace() {
   const group = new THREE.Group()
 
-  // --- 头部轮廓光环 ---
+  // ---  ---
   const headGeo = new THREE.SphereGeometry(2.2, 64, 48)
   const headMat = new THREE.MeshBasicMaterial({
     color: 0x4488ff,
@@ -43,7 +43,7 @@ function createHolographicFace() {
   headFrame = new THREE.Mesh(headGeo, headMat)
   group.add(headFrame)
 
-  // 头部外侧光晕
+  
   const glowGeo = new THREE.SphereGeometry(2.4, 64, 48)
   const glowMat = new THREE.ShaderMaterial({
     uniforms: {
@@ -72,7 +72,7 @@ function createHolographicFace() {
   headGlow = new THREE.Mesh(glowGeo, glowMat)
   group.add(headGlow)
 
-  // --- 神经网络光环（3个绕头部旋转的环）---
+  // --- 3---
   for (let i = 0; i < 3; i++) {
     const ringGeo = new THREE.TorusGeometry(2.6 + i * 0.15, 0.015, 16, 80)
     const ringMat = new THREE.MeshBasicMaterial({
@@ -89,7 +89,7 @@ function createHolographicFace() {
     haloRings.push(ring)
   }
 
-  // --- 左眼 ---
+  // ---  ---
   const eyeGeo = new THREE.SphereGeometry(0.35, 32, 32)
   const eyeMat = new THREE.MeshBasicMaterial({
     color: 0xffffff,
@@ -101,20 +101,20 @@ function createHolographicFace() {
   leftEye.position.set(-0.6, 0.3, 1.8)
   group.add(leftEye)
 
-  // 左眼瞳孔
+  
   const pupilGeo = new THREE.SphereGeometry(0.18, 16, 16)
   const pupilMat = new THREE.MeshBasicMaterial({ color: 0x112244 })
   leftPupil = new THREE.Mesh(pupilGeo, pupilMat)
   leftPupil.position.z = 0.22
   leftEye.add(leftPupil)
 
-  // 左眼光环
+  
   const eyeRingGeo = new THREE.TorusGeometry(0.38, 0.02, 16, 32)
   const eyeRingMat = new THREE.MeshBasicMaterial({ color: 0x88bbff, transparent: true, opacity: 0.7, depthWrite: false })
   const leftEyeRing = new THREE.Mesh(eyeRingGeo, eyeRingMat)
   leftEye.add(leftEyeRing)
 
-  // --- 右眼 ---
+  // ---  ---
   rightEye = new THREE.Mesh(eyeGeo.clone(), eyeMat.clone())
   rightEye.position.set(0.6, 0.3, 1.8)
   group.add(rightEye)
@@ -126,17 +126,17 @@ function createHolographicFace() {
   const rightEyeRing = new THREE.Mesh(eyeRingGeo.clone(), eyeRingMat.clone())
   rightEye.add(rightEyeRing)
 
-  // --- 嘴巴 ---
+  // ---  ---
   mouthGroup = new THREE.Group()
   mouthGroup.position.set(0, -0.5, 2.0)
 
-  // 上唇
+  
   const mouthTopGeo = new THREE.TorusGeometry(0.5, 0.03, 8, 32, Math.PI)
   const mouthMat = new THREE.MeshBasicMaterial({ color: 0x88ccff, transparent: true, opacity: 0.8, depthWrite: false })
   mouthTop = new THREE.Mesh(mouthTopGeo, mouthMat)
   mouthGroup.add(mouthTop)
 
-  // 下唇
+  
   const mouthBottomGeo = new THREE.TorusGeometry(0.5, 0.03, 8, 32, Math.PI)
   mouthBottom = new THREE.Mesh(mouthBottomGeo, mouthMat.clone())
   mouthBottom.rotation.z = Math.PI
@@ -144,7 +144,7 @@ function createHolographicFace() {
 
   group.add(mouthGroup)
 
-  // --- 面部神经网络线 ---
+  // ---  ---
   for (let i = 0; i < 12; i++) {
     const pts = []
     const segments = 30
@@ -177,7 +177,7 @@ function createHolographicFace() {
   return group
 }
 
-// ===== 初始化场景 =====
+// =====  =====
 function initScene() {
   const isMobile = window.innerWidth < 768
   const el = container.value
@@ -196,13 +196,13 @@ function initScene() {
   renderer.toneMappingExposure = 1.3
   el.appendChild(renderer.domElement)
 
-  // 后期处理
+  
   composer = new EffectComposer(renderer)
   composer.addPass(new RenderPass(scene, camera))
   const bloomPass = new UnrealBloomPass(new THREE.Vector2(w, h), 0.5, 0.3, 0.2)
   composer.addPass(bloomPass)
 
-  // 星空背景
+  
   const starsGeo = new THREE.BufferGeometry()
   const starCount = 3000
   const positions = new Float32Array(starCount * 3)
@@ -231,14 +231,14 @@ function initScene() {
   })
   scene.add(new THREE.Points(starsGeo, starsMat))
 
-  // 环境光
+  
   scene.add(new THREE.AmbientLight(0x222244, 0.5))
 
-  // 全息人脸
+  
   const face = createHolographicFace()
   scene.add(face)
 
-  // 漂浮粒子
+  
   const pGeo = new THREE.SphereGeometry(0.04, 4, 4)
   for (let i = 0; i < 60; i++) {
     const pMat = new THREE.MeshBasicMaterial({
@@ -265,32 +265,32 @@ function initScene() {
     ambientParticles.push(p)
   }
 
-  // 鼠标追踪
+  
   raycaster = new THREE.Raycaster()
   mouse = new THREE.Vector2()
 }
 
-// ===== 动画循环 =====
+// =====  =====
 function animate() {
   animFrameId = requestAnimationFrame(animate)
 
   const t = clock.getElapsedTime()
   const speakingBoost = speaking.value ? 2.5 : 1
 
-  // 更新全息着色器时间
+  
   if (headGlow?.material?.uniforms) {
     headGlow.material.uniforms.uTime.value = t
   }
 
-  // 头部缓慢旋转
+  
   headFrame.rotation.y += 0.002
   headFrame.rotation.x = Math.sin(t * 0.3) * 0.05
 
-  // 光晕跟随
+  
   headGlow.rotation.y = headFrame.rotation.y
   headGlow.rotation.x = headFrame.rotation.x
 
-  // 光环旋转
+  
   haloRings.forEach(ring => {
     const s = ring.userData.speed * speakingBoost
     if (ring.userData.axis === 'y') ring.rotation.y += s * 0.01
@@ -298,7 +298,7 @@ function animate() {
     ring.material.opacity = ring.userData.baseOpacity + Math.sin(t * s) * 0.15
   })
 
-  // 眼睛追踪鼠标
+  
   const eyeTargetX = mouseTarget.x * 0.15
   const eyeTargetY = mouseTarget.y * 0.1
   leftPupil.position.x += (eyeTargetX - leftPupil.position.x) * 0.1
@@ -306,13 +306,13 @@ function animate() {
   rightPupil.position.x += (eyeTargetX - rightPupil.position.x) * 0.1
   rightPupil.position.y += (eyeTargetY - rightPupil.position.y) * 0.1
 
-  // 眨眼
+  
   const blinkCycle = Math.sin(t * 0.3)
   const blink = blinkCycle > 0.95 ? (blinkCycle - 0.95) * 20 : 1
   leftEye.scale.y = blink
   rightEye.scale.y = blink
 
-  // 嘴巴动画（说话时开合）
+  
   if (speaking.value) {
     const mouthOpen = 0.1 + Math.abs(Math.sin(t * 8)) * 0.25 + Math.abs(Math.sin(t * 13)) * 0.15
     mouthTop.position.y = mouthOpen
@@ -326,12 +326,12 @@ function animate() {
     mouthBottom.position.y += (-breathe - mouthBottom.position.y) * 0.1
   }
 
-  // 神经网络线脉冲
+  
   neuralLines.forEach((line, i) => {
     line.material.opacity = 0.15 + Math.sin(t * line.userData.speed + line.userData.phase) * 0.15 + (speaking.value ? 0.2 : 0)
   })
 
-  // 漂浮粒子
+  
   ambientParticles.forEach(p => {
     p.userData.life += p.userData.speed * 0.005
     if (p.userData.life > 1) p.userData.life = 0
@@ -342,7 +342,7 @@ function animate() {
     p.position.z = p.userData.baseZ + Math.sin(t * 0.6 + l * 2) * p.userData.amplitude * 0.5
   })
 
-  // 相机微动
+  
   camera.position.x = Math.sin(t * 0.15) * 0.3 + mouseTarget.x * 0.4
   camera.position.y = Math.cos(t * 0.2) * 0.2 - mouseTarget.y * 0.3
   camera.lookAt(0, 0, 0)
@@ -350,14 +350,14 @@ function animate() {
   composer.render()
 }
 
-// ===== 鼠标事件 =====
+// =====  =====
 function onMouseMove(e) {
   const rect = container.value.getBoundingClientRect()
   mouseTarget.x = ((e.clientX - rect.left) / rect.width) * 2 - 1
   mouseTarget.y = -((e.clientY - rect.top) / rect.height) * 2 + 1
 }
 
-// ===== 响应式 =====
+// =====  =====
 function resize() {
   if (!container.value) return
   const w = container.value.clientWidth
@@ -368,10 +368,15 @@ function resize() {
   composer.setSize(w, h)
 }
 
-// ===== 全局事件监听 =====
+// =====  =====
 function onBrainSpeaking() { speaking.value = true; setTimeout(() => { speaking.value = false }, 2500) }
 
 onMounted(() => {
+  window.addEventListener("brain:active", (e) => { speaking.value = e.detail !== false })
+  window.addEventListener("brain:thinking", (e) => { speaking.value = e.detail !== false })
+  window.addEventListener("brain:speaking", () => { speaking.value = true; setTimeout(() => { speaking.value = false }, 2000) })
+  window.addEventListener("brain:pulse", () => { speaking.value = true; setTimeout(() => { speaking.value = false }, 600) })
+  window.addEventListener("brain:agent_call", () => { speaking.value = true; setTimeout(() => { speaking.value = false }, 3000) })
   clock = new THREE.Clock()
   initScene()
   animate()

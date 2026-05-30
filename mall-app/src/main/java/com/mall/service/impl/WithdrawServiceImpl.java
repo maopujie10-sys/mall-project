@@ -90,15 +90,10 @@ public class WithdrawServiceImpl implements WithdrawService {
         WithdrawOrder order = withdrawMapper.selectById(id);
         if (order.getStatus() != 0) throw new BizException("该订单已审核");
 
-        UserBalance balance = userBalanceMapper.selectOne(
-            new QueryWrapper<UserBalance>().eq("user_id", order.getUserId()));
-        if (balance == null) throw new BizException("用户余额不存在");
-
         if (approved) {
             order.setStatus(1);
             order.setTxHash(txHash);
-            int rows = userBalanceMapper.deductFrozen(order.getUserId(), order.getAmount(), balance.getVersion());
-            if (rows == 0) throw new BizException("扣减冻结余额失败，版本冲突，请重试");
+            userBalanceMapper.deductFrozen(order.getUserId(), order.getAmount());
             balanceLogMapper.insert(BalanceLog.builder()
                 .userId(order.getUserId()).amount(order.getAmount().negate())
                 .type("WITHDRAW_SUCCESS").remark("提现成功，哈希：" + txHash).build());
@@ -107,8 +102,7 @@ public class WithdrawServiceImpl implements WithdrawService {
         } else {
             order.setStatus(2);
             order.setRejectReason(reason);
-            int rows2 = userBalanceMapper.unfreezeBalance(order.getUserId(), order.getAmount(), balance.getVersion());
-            if (rows2 == 0) throw new BizException("解冻余额失败，版本冲突，请重试");
+            userBalanceMapper.unfreezeBalance(order.getUserId(), order.getAmount());
             balanceLogMapper.insert(BalanceLog.builder()
                 .userId(order.getUserId()).amount(order.getAmount())
                 .type("WITHDRAW_REJECT").remark("提现被拒，余额已解冻").build());

@@ -1,4 +1,4 @@
-"""__AI__ -- ______ / _____ / ____ / _____ / ____ / ____ / ______ / ____"""
+''"__AI__ -- ______ / _____ / ____ / _____ / ____ / ____ / ______ / ____''"
 import json, os, re, io, base64, asyncio, tempfile, subprocess
 from pathlib import Path
 from datetime import datetime
@@ -25,7 +25,7 @@ AVAILABLE_MODELS = {
     "claude-3-5-sonnet":   {"provider": "openai",   "cost": "3.00/1M",  "strength": "____/_____"},
 }
 def pick_model(task_complexity="auto", need_vision=False, step_count=0):
-    """AI_____: ____________________"""
+    ''"AI_____: ____________________''"
     if task_complexity == "simple" or (step_count > 0 and step_count <= 3):
         return CHEAP_MODEL  # _________
     elif task_complexity == "hard" or step_count > 5:
@@ -44,7 +44,7 @@ BASE_URL = OPENAI_BASE_URL or "https://api.openai.com/v1"
 
 async def _call_ai(messages, model=None, max_tokens=1000, temperature=0.7):
     if model is None: model = CHEAP_MODEL
-    """__rovider AI___ - ______DeepSeek/OpenAI"""
+    ''"__rovider AI___ - ______DeepSeek/OpenAI''"
     import httpx
     # ___________EUR__provider
     if model.startswith("deepseek"):
@@ -67,20 +67,20 @@ async def _call_ai(messages, model=None, max_tokens=1000, temperature=0.7):
             headers={"Authorization":f"Bearer {key}","Content-Type":"application/json"},
             json={"model":model,"messages":messages,"max_tokens":max_tokens,"temperature":temperature})
         if r.status_code == 200:
-            return r.json().get("choices",[{}])[0].get("message",{}).get("content","")
+            return r.json().get("choices",[{}])[0].get("message",{}).get("content",'')
         return f"API___:{r.status_code}"
 
 # ===== 1. _________ WebSocket =====
 @router.websocket("/voice/live")
 async def live_voice(ws: WebSocket):
-    """_________ -- ______/___/______"""
+    ''"_________ -- ______/___/______''"
     await ws.accept()
     conversation = []
     current_task = None
     
     async def stream_ai_reply(messages):
         import httpx
-        full = ""
+        full = ''
         async with httpx.AsyncClient(timeout=60) as c:
             async with c.stream("POST",f"{BASE_URL}/chat/completions",
                 headers={"Authorization":f"Bearer {API_KEY}","Content-Type":"application/json"},
@@ -91,7 +91,7 @@ async def live_voice(ws: WebSocket):
                         if d == "[DONE]": break
                         try:
                             j = json.loads(d)
-                            t = j.get("choices",[{}])[0].get("delta",{}).get("content","")
+                            t = j.get("choices",[{}])[0].get("delta",{}).get("content",'')
                             if t:
                                 full += t
                                 await ws.send_json({"type":"token","text":t,"partial":full})
@@ -101,7 +101,7 @@ async def live_voice(ws: WebSocket):
     try:
         while True:
             data = await ws.receive_json()
-            msg_type = data.get("type","")
+            msg_type = data.get("type",'')
             
             if msg_type == "ping":
                 await ws.send_json({"type":"pong"})
@@ -111,7 +111,7 @@ async def live_voice(ws: WebSocket):
                     current_task.cancel()
                 await ws.send_json({"type":"interrupted"})
             elif msg_type == "speech":
-                text = data.get("text","")
+                text = data.get("text",'')
                 if not text: continue
                 conversation.append({"role":"user","content":text})
                 await ws.send_json({"type":"status","text":"__EUR__..."})
@@ -135,11 +135,11 @@ async def live_voice(ws: WebSocket):
 # ===== 2. ___________=====
 class FrameRequest(BaseModel):
     image_base64: str
-    context: str = ""
+    context: str = ''
 
 @router.post("/vision/live")
 async def live_vision(req: FrameRequest, _=Depends(verify_token)):
-    """___________-- _______"""
+    ''"___________-- _______''"
     prompt = "__________________EUR____________,_____EUR______________."
     if req.context: prompt = f"________{req.context}\n______:"
     
@@ -159,7 +159,7 @@ class ResearchRequest(BaseModel):
 
 @router.post("/research")
 async def deep_research(req: ResearchRequest, _=Depends(verify_token)):
-    """______ -- __->__->__->__"""
+    ''"______ -- __->__->__->__''"
     import httpx
     
     # Step 1: ___________
@@ -178,7 +178,7 @@ async def deep_research(req: ResearchRequest, _=Depends(verify_token)):
                 snippets = []
                 for m in re.finditer(r'class="result__snippet"[^>]*>([^<]+)', r.text):
                     snippets.append(m.group(1).strip())
-                summary_text = " ".join(snippets[:3])[:500]
+                summary_text = ''.join(snippets[:3])[:500]
                 if summary_text:
                     # Step 3: AI___________
                     analysis = await _call_ai([
@@ -198,12 +198,12 @@ async def deep_research(req: ResearchRequest, _=Depends(verify_token)):
 
 # ===== 4. ________+ CSV___ =====
 class DataAnalyzeRequest(BaseModel):
-    csv_data: str = ""
+    csv_data: str = ''
     question: str = "_____________"
 
 @router.post("/data/analyze")
 async def analyze_data(req: DataAnalyzeRequest, _=Depends(verify_token)):
-    """__CSV->AI____->__+____"""
+    ''"__CSV->AI____->__+____''"
     if not req.csv_data:
         return {"ok":False,"error":"_EUR__SV___"}
     
@@ -259,7 +259,7 @@ class ExportRequest(BaseModel):
 
 @router.post("/export")
 async def export_file(req: ExportRequest, _=Depends(verify_token)):
-    """___AI____________"""
+    ''"___AI____________''"
     export_dir = Path(__file__).parent.parent / "data" / "exports"
     export_dir.mkdir(parents=True, exist_ok=True)
     
@@ -281,7 +281,7 @@ async def export_file(req: ExportRequest, _=Depends(verify_token)):
 
 @router.get("/download/{filename}")
 async def download_file(filename: str):
-    """_________"""
+    ''"_________''"
     fpath = Path(__file__).parent.parent / "data" / "exports" / filename
     if not fpath.exists():
         return {"ok":False,"error":"_______"}
@@ -295,7 +295,7 @@ class ScrapeRequest(BaseModel):
 
 @router.post("/scrape")
 async def scrape_url(req: ScrapeRequest, _=Depends(verify_token)):
-    """_____>_____I___"""
+    ''"_____>_____I___''"
     import httpx
     try:
         async with httpx.AsyncClient(timeout=20) as c:
@@ -307,8 +307,8 @@ async def scrape_url(req: ScrapeRequest, _=Depends(verify_token)):
             # _EUR________
             text = re.sub(r'<script[^>]*>.*_</script>','',html,flags=re.DOTALL|re.I)
             text = re.sub(r'<style[^>]*>.*_</style>','',text,flags=re.DOTALL|re.I)
-            text = re.sub(r'<[^>]+>',' ',text)
-            text = re.sub(r'\s+',' ',text).strip()[:8000]
+            text = re.sub(r'<[^>]+>','',text)
+            text = re.sub(r'\s+','',text).strip()[:8000]
             
             # AI___
             summary = await _call_ai([
@@ -331,7 +331,7 @@ class BrowserAgentRequest(BaseModel):
 
 @router.post("/browser/agent")
 async def browser_agent(req: BrowserAgentRequest, _=Depends(verify_token)):
-    """AI_____gent -- ______->______->Playwright___->AI______"""
+    ''"AI_____gent -- ______->______->Playwright___->AI______''"
     import httpx
     
     # Step 1: AI___________
@@ -347,7 +347,7 @@ async def browser_agent(req: BrowserAgentRequest, _=Depends(verify_token)):
             steps = json.loads(json_match.group())
     except:
         # Fallback: _EUR___________
-        steps = [{"action":"navigate","target":"https://www.google.com/search?q="+req.command.replace(" ","+"),"reason":"___"}]
+        steps = [{"action":"navigate","target":"https://www.google.com/search?q="+req.command.replace('',"+"),"reason":"___"}]
     
     # Step 2: Playwright___
     results = []
@@ -367,9 +367,9 @@ async def browser_agent(req: BrowserAgentRequest, _=Depends(verify_token)):
         ]
         
         for i, step in enumerate(steps):
-            action = step.get("action","")
-            target = step.get("target","")
-            value = step.get("value","")
+            action = step.get("action",'')
+            target = step.get("target",'')
+            value = step.get("value",'')
             
             if action == "navigate" and target:
                 script_lines.append(f"try:\n    page.goto('{target}', wait_until='domcontentloaded')\n    outputs.append({{'step':{i},'action':'navigate','ok':True,'url':page.url}})\nexcept Exception as e:\n    outputs.append({{'step':{i},'action':'navigate','ok':False,'error':str(e)}})")
@@ -398,7 +398,7 @@ async def browser_agent(req: BrowserAgentRequest, _=Depends(verify_token)):
             else:
                 script_lines.append(f"outputs.append({{'step':{i},'action':'{action}','ok':False,'error':'______'}})")
         
-        script_lines.append("final_screenshot = '/tmp/agent_final.png'")
+        script_lines.append("final_screenshot = '/tmp/agent_final.png'')
         script_lines.append("try:\n    page.screenshot(path=final_screenshot, full_page=False)\nexcept:\n    final_screenshot = None")
         script_lines.append("print('RESULTS:', json.dumps(outputs, ensure_ascii=False))")
         script_lines.append("print('FINAL_SCREENSHOT:', final_screenshot or 'none')")
@@ -464,10 +464,10 @@ async def browser_agent(req: BrowserAgentRequest, _=Depends(verify_token)):
 # ===== _____gent______ =====
 @router.post("/browser/quick")
 async def browser_quick(req: dict, _=Depends(verify_token)):
-    """___________-- ______/______/______"""
-    task_type = req.get("type","")
-    url = req.get("url","")
-    selector = req.get("selector","")
+    ''"___________-- ______/______/______''"
+    task_type = req.get("type",'')
+    url = req.get("url",'')
+    selector = req.get("selector",'')
     
     commands = {
         "screenshot": f"___ {url} ____",
@@ -482,11 +482,11 @@ async def browser_quick(req: dict, _=Depends(verify_token)):
     return await browser_agent(req_obj, _)
 # ===== 8. ____________ =====
 class MemoryRequest(BaseModel):
-    conversation_id: str = ""
+    conversation_id: str = ''
 
 @router.post("/memory/compress")
 async def compress_memory(req: MemoryRequest, _=Depends(verify_token)):
-    """____________ -- __________"""
+    ''"____________ -- __________''"
     try:
         from routers.agent_chat import _cdb
         c = _cdb()
@@ -513,16 +513,16 @@ connected_remotes = {}  # {client_id: websocket}
 
 @router.websocket("/remote/ws")
 async def remote_control_ws(ws: WebSocket):
-    """_________WebSocket - ___Agent_____AI__________"""
+    ''"_________WebSocket - ___Agent_____AI__________''"
     await ws.accept()
     client_id = None
     try:
         while True:
             data = await ws.receive_json()
-            msg_type = data.get("type","")
+            msg_type = data.get("type",'')
             if msg_type == "register":
                 client_id = data.get("client_id","unknown")
-                hostname = data.get("hostname","")
+                hostname = data.get("hostname",'')
                 connected_remotes[client_id] = ws
                 await ws.send_json({"type":"registered","client_id":client_id,"message":"____"})
                 for cid, cws in connected_remotes.items():
@@ -531,15 +531,15 @@ async def remote_control_ws(ws: WebSocket):
             elif msg_type == "ping":
                 await ws.send_json({"type":"pong"})
             elif msg_type == "result":
-                target = data.get("target","")
+                target = data.get("target",'')
                 if target in connected_remotes:
                     try:
                         await connected_remotes[target].send_json({"type":"remote_result","action":data.get("action"),"ok":data.get("ok"),"data":data.get("data"),"screenshot":data.get("screenshot"),"error":data.get("error")})
                     except: pass
             elif msg_type == "screenshot_data":
-                target = data.get("target","")
+                target = data.get("target",'')
                 if target in connected_remotes:
-                    try: await connected_remotes[target].send_json({"type":"screenshot_data","base64":data.get("base64","")})
+                    try: await connected_remotes[target].send_json({"type":"screenshot_data","base64":data.get("base64",'')})
                     except: pass
     except WebSocketDisconnect:
         if client_id:
@@ -554,8 +554,8 @@ async def list_remote_clients(_=Depends(verify_token)):
 
 @router.post("/remote/execute")
 async def execute_remote(req: dict, _=Depends(verify_token)):
-    client_id = req.get("client_id","")
-    action = req.get("action","")
+    client_id = req.get("client_id",'')
+    action = req.get("action",'')
     params = req.get("params",{})
     if client_id not in connected_remotes:
         return {"ok":False,"error":f"_____{client_id} ____","available":list(connected_remotes.keys())}
@@ -569,7 +569,7 @@ async def execute_remote(req: dict, _=Depends(verify_token)):
 
 # ===== ___Agent___ v2.0 =====
 async def download_agent_script():
-    """______Agent___ v2.0 - __________"""
+    ''"______Agent___ v2.0 - __________''"
     script = '''
 Friday AI ______Agent v2.0 -- ___________
 ___: ______ - ______ - ______ - _____- ________
@@ -588,7 +588,7 @@ VISION_ENABLED = True  # ____________(___________I___)
 
 # ===== ___ =====
 def screenshot_to_base64():
-    """______ -> base64"""
+    ''"______ -> base64''"
     try:
         from PIL import ImageGrab
         img = ImageGrab.grab()
@@ -600,21 +600,21 @@ def screenshot_to_base64():
 
 # ===== _________ =====
 def find_element(description, screenshot_b64=None):
-    """
+    ''"
     ____________,_________:
     - "___:500,400" -> _________
     - "___:___" -> OCR______"___"________
     - "___:button.png" -> ____C____
     - "___:_____ -> ____________"
     ___ {"x":int, "y":int, "method":str} __None
-    """
+    ''"
     if not description:
         return None
     
     desc = str(description).strip()
     
     # ___1: ______
-    coord_match = re.match(r'___[::]\s*(\d+)\s*[,,]\s*(\d+)', desc)
+    coord_match = re.match(r'___[::]\s*(\d+)\s*[,]\s*(\d+)', desc)
     if coord_match:
         return {"x": int(coord_match.group(1)), "y": int(coord_match.group(2)), "method": "coordinate"}
     
@@ -662,9 +662,7 @@ def find_element(description, screenshot_b64=None):
     area_map = {
         "_____: (100, 100), "_____: (1820, 100),
         "_____: (100, 980), "_____: (1820, 980),
-        "______": (960, 540), "_EUR_____: (50, 1030),"
-        "_____: (960, 1050), "______": (960, 540),"
-        "______": (1880, 10), "_EUR___": (1840, 10),
+        "______": (960, 540), "_EUR_____: (50, 1030),''_____: (960, 1050), "______": (960, 540),''______": (1880, 10), "_EUR___": (1840, 10),
     }
     for area_name, (ax, ay) in area_map.items():
         if area_name in desc:
@@ -674,7 +672,7 @@ def find_element(description, screenshot_b64=None):
 
 # ===== ______ =====
 async def execute_action(action, params, ws=None):
-    """____________,______"""
+    ''"____________,______''"
     try:
         if action == "screenshot":
             b64 = screenshot_to_base64()
@@ -682,7 +680,7 @@ async def execute_action(action, params, ws=None):
         
         elif action == "click":
             # _________
-            target_desc = params.get("target", "")
+            target_desc = params.get("target", '')
             pos = find_element(target_desc) if target_desc else None
             
             if pos:
@@ -703,7 +701,7 @@ async def execute_action(action, params, ws=None):
             return result
         
         elif action == "double_click":
-            pos = find_element(params.get("target", "")) if params.get("target") else None
+            pos = find_element(params.get("target", '')) if params.get("target") else None
             x = pos["x"] if pos else params.get("x", 0)
             y = pos["y"] if pos else params.get("y", 0)
             import pyautogui
@@ -712,7 +710,7 @@ async def execute_action(action, params, ws=None):
             return {"ok": True, "action": action, "clicked": [x, y]}
         
         elif action == "right_click":
-            pos = find_element(params.get("target", "")) if params.get("target") else None
+            pos = find_element(params.get("target", '')) if params.get("target") else None
             x = pos["x"] if pos else params.get("x", 0)
             y = pos["y"] if pos else params.get("y", 0)
             import pyautogui
@@ -721,7 +719,7 @@ async def execute_action(action, params, ws=None):
             return {"ok": True, "action": action, "clicked": [x, y]}
         
         elif action == "type_text":
-            text = params.get("text", "")
+            text = params.get("text", '')
             # _________
             import pyautogui, pyperclip
             try:
@@ -732,7 +730,7 @@ async def execute_action(action, params, ws=None):
             return {"ok": True, "action": action, "typed": text[:50]}
         
         elif action == "press_key":
-            key = params.get("key", "")
+            key = params.get("key", '')
             import pyautogui
             # ________
             if "+" in key:
@@ -749,7 +747,7 @@ async def execute_action(action, params, ws=None):
             return {"ok": True, "action": action, "scrolled": amount}
         
         elif action == "move_mouse":
-            pos = find_element(params.get("target", "")) if params.get("target") else None
+            pos = find_element(params.get("target", '')) if params.get("target") else None
             x = pos["x"] if pos else params.get("x", 960)
             y = pos["y"] if pos else params.get("y", 540)
             import pyautogui
@@ -770,15 +768,8 @@ async def execute_action(action, params, ws=None):
             return {"ok": True, "action": action, "waited": seconds}
         
         elif action == "run_command":
-            ALLOWED_COMMANDS = {
-                "uptime": ["uptime"], "df": ["df", "-h"], "free": ["free", "-m"],
-                "ps": ["ps", "aux"], "who": ["who"], "hostname": ["hostname"],
-                "uname": ["uname", "-a"], "date": ["date"], "w": ["w"],
-            }
-            cmd_name = params.get("command", "").strip().split()[0] if params.get("command", "") else ""
-            if cmd_name not in ALLOWED_COMMANDS:
-                return {"ok": False, "action": action, "error": f"不允许的命令: {cmd_name}"}
-            r = subprocess.run(ALLOWED_COMMANDS[cmd_name], capture_output=True, text=True, timeout=30)
+            cmd = params.get("command", '')
+            r = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=30)
             return {"ok": True, "action": action, "stdout": r.stdout[:3000], "stderr": r.stderr[:1000], "code": r.returncode}
         
         elif action == "get_info":
@@ -789,7 +780,7 @@ async def execute_action(action, params, ws=None):
                     "disk": psutil.disk_usage('/').percent, "screen": pyautogui.size() if 'pyautogui' in dir() else None}
         
         elif action == "open_app":
-            app = params.get("name", "")
+            app = params.get("name", '')
             if os.name == 'nt':
                 subprocess.Popen(app, shell=True)
             else:
@@ -837,7 +828,7 @@ async def execute_action(action, params, ws=None):
         
         elif action == "browser_task":
             # _____laywright___
-            command = params.get("command", "")
+            command = params.get("command", '')
             try:
                 from playwright.async_api import async_playwright
                 async with async_playwright() as p:
@@ -925,12 +916,12 @@ async def main():
                 # ______
                 async for msg in ws:
                     data = json.loads(msg)
-                    msg_type = data.get("type", "")
+                    msg_type = data.get("type", '')
                     
                     if msg_type == "execute":
-                        action = data.get("action", "")
+                        action = data.get("action", '')
                         params = data.get("params", {})
-                        task_id = data.get("task_id", "")
+                        task_id = data.get("task_id", '')
                         print(f"\n[___] {action} | {str(params)[:80]}")
                         
                         result = await execute_action(action, params, ws)
@@ -956,7 +947,7 @@ async def main():
                         await ws.send(json.dumps({
                             "type": "vision_response",
                             "screenshot": shot,
-                            "task_id": data.get("task_id", "")
+                            "task_id": data.get("task_id", '')
                         }))
                     
                     elif msg_type == "pong":
@@ -995,18 +986,18 @@ if __name__ == "__main__":
 # ===== ___Agent(_____=====
 @router.post("/agent/human")
 async def human_like_agent(req: dict, _=Depends(verify_token)):
-    """___________- ______: ____________, GUI_________, ______"""
-    command = req.get("command","")
+    ''"___________- ______: ____________, GUI_________, ______''"
+    command = req.get("command",'')
     target = req.get("target","server")
     max_cycles = req.get("max_cycles", 8)
     action_log = []
     
     # ===== ____ _________ =====
-    classify_prompt = f"""__________________________:
+    classify_prompt = f''"__________________________:
 - "code": ___/___/________/______ (_________)
 - "gui": _________/GUI/______EUR______
 ___: {command}
-___:"""
+___:''"
     
     task_type = (await _call_ai(
         [{"role":"user","content":classify_prompt}],
@@ -1015,11 +1006,11 @@ ___:"""
     
     if "code" in task_type:
         # ===== ___/________ ___________ =====
-        code_prompt = f"""___________I._________,___JSON:
+        code_prompt = f''"___________I._________,___JSON:
 {{"steps":[{{"action":"run_command|read_file|write_file|search|done","params":{{}},"reason":"____"}}],"summary":"___"}}
 ______: run_command(___shell), read_file(_____, write_file(_____, search(______), done(___)
 ___: {command}
-JSON:"""
+JSON:''"
         
         plan = await _call_ai(
             [{"role":"user","content":code_prompt}],
@@ -1034,23 +1025,23 @@ JSON:"""
         
         results = []
         for step in steps[:max_cycles]:
-            a = step.get("action","")
+            a = step.get("action",'')
             p = step.get("params",{})
-            action_log.append({"action":a,"params":p,"reason":step.get("reason","")})
+            action_log.append({"action":a,"params":p,"reason":step.get("reason",'')})
             
             try:
                 if a == "run_command":
-                    r = subprocess.run(p.get("command",""), shell=True, capture_output=True, text=True, timeout=30)
+                    r = subprocess.run(p.get("command",''), shell=True, capture_output=True, text=True, timeout=30)
                     results.append(f"[{a}] stdout:{r.stdout[:500]} stderr:{r.stderr[:200]}")
                 elif a == "read_file":
-                    path = p.get("path","")
+                    path = p.get("path",'')
                     if os.path.exists(path):
                         with open(path,"r",errors="ignore") as f:
                             results.append(f"[read] {path}: {f.read()[:2000]}")
                     else:
                         results.append("[read] " + path + ": (file not found)")
                 elif a == "write_file":
-                    path = p.get("path",""); txt = p.get("content","")
+                    path = p.get("path",''); txt = p.get("content",'')
                     os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
                     with open(path,"w") as f: f.write(txt)
                     results.append("[write] " + path + ": " + str(len(txt)) + " chars")
@@ -1078,9 +1069,9 @@ JSON:"""
         }
     
     # ===== GUI___: ______(_____ =====
-    system_prompt = """_________AI.___________SON: {"observation":"_______",thought":"__EUR",action":"____",target":"______(___:xxx/___:x,y)","params":{},"confidence":0.8}
+    system_prompt = ''"_________AI.___________SON: {"observation":"_______",thought":"__EUR",action":"____",target":"______(___:xxx/___:x,y)","params":{},"confidence":0.8}
 ___: click|double_click|type_text|press_key|scroll|move|wait|open_app|close_window|switch_window|select_all|copy|paste|undo|save|run_command|done|fail
-___: __arget______(_____:___"), ________ _______"""
+___: __arget______(_____:___"), ________ _______''"
     
     cycle = 0
     last_screenshot = None
@@ -1147,10 +1138,10 @@ ___: __arget______(_____:___"), ________ _______"""
         params = decision.get("params",{})
         last_action = action
         
-        action_log.append({"cycle":cycle,"observation":decision.get("observation","")[:80],"thought":decision.get("thought","")[:80],"action":action,"target":decision.get("target","")})
+        action_log.append({"cycle":cycle,"observation":decision.get("observation",'')[:80],"thought":decision.get("thought",'')[:80],"action":action,"target":decision.get("target",'')})
         
         if action == "done":
-            return {"ok":True,"completed":True,"mode":"gui","cycles":cycle,"log":action_log,"result":params.get("summary",""),"screenshot":last_screenshot,"model":CHEAP_MODEL,"estimated_tokens":cycle*500}
+            return {"ok":True,"completed":True,"mode":"gui","cycles":cycle,"log":action_log,"result":params.get("summary",''),"screenshot":last_screenshot,"model":CHEAP_MODEL,"estimated_tokens":cycle*500}
         if action == "fail":
             return {"ok":False,"error":params.get("reason","______"),"mode":"gui","cycles":cycle,"log":action_log}
         
@@ -1183,8 +1174,8 @@ ___: __arget______(_____:___"), ________ _______"""
 
 @router.post("/agent/quick")
 async def quick_agent_action(req: dict, _=Depends(verify_token)):
-    client_id = req.get("client_id","")
-    action = req.get("action","")
+    client_id = req.get("client_id",'')
+    action = req.get("action",'')
     params = req.get("params",{})
     actions_help = {"screenshot":"______","open_url":"______","click":"___","double_click":"___","right_click":"___","type_text":"______","press_key":"___","run_command":"______","get_info":"____C_","open_app":"______","scroll":"___","move_mouse":"______","close_window":"______","switch_window":"______","select_all":"__EUR","copy":"___","paste":"___","undo":"___","save":"___","browser_task":"_______"}
     if not client_id: return {"ok":False,"error":"_____lient_id","available_clients":list(connected_remotes.keys()),"actions":actions_help}
@@ -1207,7 +1198,7 @@ async def list_actions(_=Depends(verify_token)):
 # ===== ________gent =====
 @router.post("/browser/unified")
 async def unified_browser(req: dict, _=Depends(verify_token)):
-    command = req.get("command","")
+    command = req.get("command",'')
     target = req.get("target","server")
     if target == "server" or target in list(connected_remotes.keys()):
         if target != "server":
@@ -1225,7 +1216,7 @@ async def unified_browser(req: dict, _=Depends(verify_token)):
 # ===== 8.7 ______API =====
 @router.get("/models")
 async def list_models(_=Depends(verify_token)):
-    """____EUR_____I_______"""
+    ''"____EUR_____I_______''"
     available = {}
     for name, info in AVAILABLE_MODELS.items():
         key = DEEPSEEK_KEY if info["provider"] == "deepseek" else OPENAI_KEY
@@ -1240,7 +1231,7 @@ async def list_models(_=Depends(verify_token)):
 
 @router.post("/models/test")
 async def test_model(req: dict, _=Depends(verify_token)):
-    """_______________"""
+    ''"_______________''"
     model = req.get("model", CHEAP_MODEL)
     try:
         result = await _call_ai([{"role":"user","content":"___OK"}], model=model, max_tokens=10, temperature=0)
@@ -1251,9 +1242,9 @@ async def test_model(req: dict, _=Depends(verify_token)):
 # ===== 9. AI_____EUR_=====
 @router.post("/notify")
 async def send_notification(req: dict, _=Depends(verify_token)):
-    """__EUR_EUR_______________"""
+    ''"__EUR_EUR_______________''"
     title = req.get("title","Friday AI")
-    body = req.get("body","")
+    body = req.get("body",'')
     url = req.get("url","/ai/")
     
     # ___WebSocket______
@@ -1268,12 +1259,12 @@ async def send_notification(req: dict, _=Depends(verify_token)):
         return {"ok":False,"error":str(e)}
 
 @router.post("/agent/human/correct")
-async def human_agent_correct(command: str = "", target: str = "server", _=Depends(verify_token)):
-    """__Agent___"""
+async def human_agent_correct(command: str = '', target: str = "server", _=Depends(verify_token)):
+    ''"__Agent___''"
     try:
         from agents.multi_model import ModelRouter
         resp = ModelRouter.smart_chat(messages=[{"role":"user","content":f"____: {command}__________,______"}], mode="smart")
-        corrected = resp.get("content","") if isinstance(resp,dict) else str(resp)
+        corrected = resp.get("content",'') if isinstance(resp,dict) else str(resp)
         import subprocess, shlex
         result = subprocess.run(corrected.strip().split(), capture_output=True, text=True, timeout=60)
         return {"ok":True,"corrected":corrected.strip(),"stdout":result.stdout[:2000]}

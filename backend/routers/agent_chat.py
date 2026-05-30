@@ -1,4 +1,3 @@
-"""Agent Chat API v3 -- __Function Calling + ____+_____"""
 import asyncio, httpx, json, re, os
 from datetime import datetime
 from fastapi import APIRouter, Depends, Query, UploadFile, File
@@ -10,6 +9,8 @@ from risk import handle_risk
 from tools.registry import registry
 from digital_lifeform import DigitalLifeform
 from tools.vector_memory import VectorMemory
+from agents.master_agent import MasterAgent
+from agents.multi_model import ModelRouter
 from config import CLAUDE_API_KEY, CLAUDE_MODEL, OPENAI_BASE_URL, DEEPSEEK_API_KEY, OPENAI_API_KEY
 import sqlite3, hashlib, base64, uuid
 from pathlib import Path
@@ -17,7 +18,7 @@ from fastapi import UploadFile, File, Form
 import os
 _cheap_model = os.getenv("CHEAP_MODEL", "deepseek-chat")
 
-# ===== ______(SQLite) =====
+# ===== Conversation DB (SQLite) =====
 CONV_DB = Path(__file__).parent.parent / "data" / "conversations.db"
 
 def _get_conv_db():
@@ -29,102 +30,105 @@ def _get_conv_db():
         id INTEGER PRIMARY KEY AUTOINCREMENT, conv_id TEXT, role TEXT, content TEXT,
         tool_name TEXT, tool_result TEXT, created_at TEXT,
         FOREIGN KEY(conv_id) REFERENCES conversations(id))""")
-    conn.commit(); return conn
+    conn.commit()
+    return conn
 
-def save_message(conv_id: str, role: str, content: str, tool_name: str = None, tool_result: str = None):
-    conn = _get_conv_db()
-    conn.execute("INSERT INTO messages (conv_id,role,content,tool_name,tool_result,created_at) VALUES (_,_,_,_,_,datetime('now'))",
-                 (conv_id, role, content, tool_name, tool_result))
-    conn.execute("UPDATE conversations SET updated_at=datetime('now') WHERE id=", (conv_id,))
-    conn.commit(); conn.close()
+router = APIRouter(prefix="/agent/chat", tags=["Agent Chat"])
 
-def load_history(conv_id: str, limit: int = 50) -> list:
-    conn = _get_conv_db()
-    rows = conn.execute("SELECT role,content FROM messages WHERE conv_id=_ ORDER BY id ASC LIMIT ", (conv_id, limit)).fetchall()
-    conn.close()
-    return [{"role": r[0], "content": r[1]} for r in rows]
+SYSTEM_PROMPT = """You are Friday AI OS, a full-stack AI assistant with access to:
+- Server management (CPU/memory/disk/process monitoring)
+- Mall operations (products, orders, users, categories, KYC, logistics)
+- DevOps (Docker, Nginx, domain rotation, backup/rollback)
+- Data analysis (trends, predictions, recommendations, A/B testing)
+- Security (scanning, alerts, self-healing, emergency response)
+- Ecommerce AI (product selection, pricing, marketing, inventory)
+- Code execution (sandbox Python/SQL, code deployment)
+- Knowledge base (RAG search, document Q&A)
 
-def list_conversations(limit: int = 30) -> list:
-    conn = _get_conv_db()
-    rows = conn.execute("SELECT id,title,model,created_at,updated_at FROM conversations ORDER BY updated_at DESC LIMIT ", (limit,)).fetchall()
-    conn.close()
-    return [{"id": r[0], "title": r[1], "model": r[2], "created_at": r[3], "updated_at": r[4]} for r in rows]
+Rules:
+1. Always use tools when needed - never guess data
+2. Risk levels: L1=info L2=warning L3=danger L4=critical
+3. For mall operations, always verify before executing
+4. For server commands, confirm critical actions
+5. Respond in user language, be concise and helpful
+6. When using Function Calling, explain what you are doing"""
 
-def create_conversation(title: str = "___", model: str = "") -> str:
-    cid = uuid.uuid4().hex[:12]
-    conn = _get_conv_db()
-    conn.execute("INSERT INTO conversations (id,title,model,created_at,updated_at) VALUES (_,_,_,datetime('now'),datetime('now'))", (cid, title, model))
-    conn.commit(); conn.close()
-    return cid
+# ===== Agent Routing =====
+AGENT_CAPABILITIES = {
+    "server": ["server", "cpu", "memory", "disk", "process", "system", "uptime", "load"],
+    "mall": ["product", "order", "user", "category", "mall", "shop", "price", "inventory", "kyc", "logistics", "refund", "wallet"],
+    "devops": ["docker", "nginx", "deploy", "domain", "backup", "rollback", "restart", "ssl", "certificate"],
+    "data": ["analyze", "trend", "predict", "recommend", "report", "statistics", "chart", "abtest", "weekly"],
+    "security": ["scan", "vulnerability", "firewall", "alert", "threat", "attack", "audit", "security"],
+    "ecommerce": ["product selection", "pricing strategy", "marketing", "competitor", "content factory", "seo", "listing", "inventory forecast", "sales forecast"],
+    "code": ["code", "python", "sql", "script", "debug", "fix", "generate", "deploy"],
+}
 
-# ===== __SSE__ =====
-async def stream_ai_response(messages: list, model: str = ""):
-    """__Token__, __AI API"""
-    api_key = OPENAI_API_KEY or DEEPSEEK_API_KEY
-    base_url = OPENAI_BASE_URL or "https://api.openai.com/v1"
-    model_name = model or "gpt-3.5-turbo"
+async def _route_to_agent(message, user="admin"):
+    """Route message to appropriate agent based on keyword matching"""
+    msg_lower = message.lower()
+    matched = []
+    for agent_name, keywords in AGENT_CAPABILITIES.items():
+        score = sum(1 for kw in keywords if kw in msg_lower)
+        if score > 0:
+            matched.append((agent_name, score))
+    matched.sort(key=lambda x: x[1], reverse=True)
     
-    async with httpx.AsyncClient(timeout=120.0) as client:
-        async with client.stream("POST", f"{base_url}/chat/completions",
-            headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
-            json={"model": model_name, "messages": messages, "stream": True, "temperature": 0.7}
-        ) as response:
-            full_text = ""
-            async for line in response.aiter_lines():
-                if line.startswith("data: "):
-                    data = line[6:]
-                    if data == "[DONE]":
-                        break
-                    try:
-                        chunk = json.loads(data)
-                        delta = chunk.get("choices", [{}])[0].get("delta", {})
-                        token = delta.get("content", "")
-                        if token:
-                            full_text += token
-                            yield f"data: {json.dumps({'token': token, 'full': full_text})}\n\n"
-                    except:
-                        pass
-            yield f"data: {json.dumps({'done': True, 'full': full_text})}\n\n"
+    if not matched:
+        return None
+    
+    top_agent = matched[0][0]
+    print(f"[AgentRouter] Routing to {top_agent} (matched: {matched[:3]})")
+    
+    try:
+        result = await MasterAgent.execute(top_agent, message, user)
+        # Broadcast brain event
+        DigitalLifeform.record_interaction("agent_call", {"agent": top_agent, "message": message[:100]})
+        return {"agent": top_agent, "result": result}
+    except Exception as e:
+        print(f"[AgentRouter] {top_agent} failed: {e}")
+        DigitalLifeform.record_interaction("agent_error", {"agent": top_agent, "error": str(e)})
+        return {"agent": top_agent, "error": str(e)}
 
-# ===== _________=====
-async def analyze_image(image_base64: str, question: str = "______") -> str:
-    """___________EUR_EUR____EUR_____"""
-    api_key = OPENAI_API_KEY
-    if not api_key:
-        return "________EUR______EUR_____ENAI_API_KEY"
-    base_url = OPENAI_BASE_URL or "https://api.openai.com/v1"
-    async with httpx.AsyncClient(timeout=60.0) as client:
-        resp = await client.post(f"{base_url}/chat/completions",
-            headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
-            json={"model": "gpt-4o-mini", "messages": [{"role": "user", "content": [
-                {"type": "text", "text": question},
-                {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{image_base64}"}}
-            ]}]})
-        if resp.status_code == 200:
-            data = resp.json()
-        return data.get("choices", [{}])[0].get("message", {}).get("content", "分析失败")
-
-router = APIRouter(prefix="/agent", tags=["Agent"])
+# ===== Direct Mall Query (Chat <-> Mall bidirectional) =====
+async def _direct_mall_query(message):
+    try:
+        import httpx
+        from config import MALL_BASE_URL
+        msg_lower = message.lower()
+        async with httpx.AsyncClient(timeout=10) as client:
+            if any(kw in msg_lower for kw in ['product', 'item', 'goods']):
+                resp = await client.get(f"{MALL_BASE_URL}/api/products", params={"search": message})
+                return {"ok": True, "products": resp.json()[:5] if resp.status_code == 200 else []}
+            elif any(kw in msg_lower for kw in ['order', 'purchase']):
+                resp = await client.get(f"{MALL_BASE_URL}/api/orders/stats")
+                return {"ok": True, "orders": resp.json() if resp.status_code == 200 else {}}
+            elif any(kw in msg_lower for kw in ['user', 'customer']):
+                resp = await client.get(f"{MALL_BASE_URL}/api/users/stats")
+                return {"ok": True, "users": resp.json() if resp.status_code == 200 else {}}
+            return None
+    except:
+        return None
 
 class ChatRequest(BaseModel):
     message: str
     history: list[dict] = []  # _________ [{role,content}]
-    model: str = ""            # ________EUR_
+    model: str = ''            # ________EUR_
 
 class ConfirmRequest(BaseModel):
     taskId: str
     approved: bool
 
 class HandoverRequest(BaseModel):
-    reason: str = ""
+    reason: str = ''
 
 OLLAMA_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
 OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "qwen2.5:7b")
-DEEPSEEK_KEY = os.getenv("DEEPSEEK_API_KEY", "")
-OPENAI_KEY = os.getenv("OPENAI_API_KEY", "")
+DEEPSEEK_KEY = os.getenv("DEEPSEEK_API_KEY", '')
+OPENAI_KEY = os.getenv("OPENAI_API_KEY", '')
 _API_URL = OPENAI_BASE_URL or "https://api.openai.com/v1"
 
-SYSTEM_PROMPT = """_____Friday AI OS -- _______________________________________________EUR________________________________________
+SYSTEM_PROMPT = ''"_____Friday AI OS -- _______________________________________________EUR________________________________________
 
 _________:
 - ______________CPU/____________________
@@ -139,11 +143,11 @@ _________:
 4. ___________________________
 5. __________________,________________
 
-__________D___________Neural Network),____________________________________"""
+__________D___________Neural Network),____________________________________''"
 
 # ===== _____EUR____(OpenAI Function Calling_____ =====
 def _build_tools():
-    """_________schema"""
+    ''"_________schema''"
     tools_list = registry.list_all()[:50]
     return [{
         "type": "function",
@@ -161,8 +165,8 @@ def _build_tools():
     } for t in tools_list]
 
 # ===== __EUR_EUR_____ =====
-async def call_ai_with_tools(messages, model=""):
-    """_____I__EUR_EUR__EUR________unction Calling"""
+async def call_ai_with_tools(messages, model=''):
+    ''"_____I__EUR_EUR__EUR________unction Calling''"
     tools = _build_tools()
     
     # _____eepSeek(_____penAI_____
@@ -216,7 +220,7 @@ async def call_ai_with_tools(messages, model=""):
 
 # ===== _________=====
 async def execute_tool(name: str, params: dict) -> dict:
-    """___________________"""
+    ''"___________________''"
     try:
         if name == "system_status":
             import psutil
@@ -251,19 +255,19 @@ async def execute_tool(name: str, params: dict) -> dict:
 
 # ===== RAG_______=====
 async def _get_context(message: str) -> str:
-    """_____________ """""
+    ''"_____________ ''''"
     try:
         ctx = await VectorMemory.search(message, top_k=3)
         if ctx:
-            return "_________:\n" + "\n".join([c.get("text","")[:200] for c in ctx])
+            return "_________:\n" + "\n".join([c.get("text",'')[:200] for c in ctx])
     except Exception:
         pass
-    return ""
+    return ''
 
 # ===== ___hat_____(Function Calling) =====
 @router.post("/chat")
 async def agent_chat(req: ChatRequest, _=Depends(verify_token)):
-    """AI____ - _____unction Calling"""
+    ''"AI____ - _____unction Calling''"
     rag_ctx = await _get_context(req.message)
     system_content = SYSTEM_PROMPT
     if rag_ctx:
@@ -286,7 +290,7 @@ async def agent_chat(req: ChatRequest, _=Depends(verify_token)):
             # AI___________
             tc = tool_calls[0]
             func = tc.get("function", {})
-            tool_name = func.get("name", "")
+            tool_name = func.get("name", '')
             tool_args = json.loads(func.get("arguments", "{}"))
             
             risk = "L1"
@@ -302,7 +306,7 @@ async def agent_chat(req: ChatRequest, _=Depends(verify_token)):
             
             # ______________I__________________
             messages.append({"role": "assistant", "content": None, "tool_calls": tool_calls})
-            messages.append({"role": "tool", "tool_call_id": tc.get("id",""), "content": json.dumps(exec_result, ensure_ascii=False)})
+            messages.append({"role": "tool", "tool_call_id": tc.get("id",''), "content": json.dumps(exec_result, ensure_ascii=False)})
             
             final = await call_ai_with_tools(messages, req.model)
             ai_text = final.get("choices",[{}])[0].get("message",{}).get("content", "_________")
@@ -323,7 +327,7 @@ async def agent_chat(req: ChatRequest, _=Depends(verify_token)):
             }
         else:
             # AI______________
-            ai_text = msg.get("content", "")
+            ai_text = msg.get("content", '')
             try:
                 DigitalLifeform.remember_conversation(req.message, ai_text[:300])
             except Exception:
@@ -331,7 +335,7 @@ async def agent_chat(req: ChatRequest, _=Depends(verify_token)):
             return {"response": ai_text, "tool": None, "risk": "L1", "mode": state.mode}
     
     # Fallback: ______
-    ai_text = result.get("choices",[{}])[0].get("message",{}).get("content","")
+    ai_text = result.get("choices",[{}])[0].get("message",{}).get("content",'')
     m = re.search(r'\{[^}]+\}', ai_text.strip())
     tool_name = None
     if m:
@@ -353,7 +357,7 @@ _chat_histories = {}  # user_id -> [messages]
 
 @router.post("/chat/history")
 async def save_chat_history(req: dict, _=Depends(verify_token)):
-    """_____EUR________"""
+    ''"_____EUR________''"
     uid = req.get("user_id", "default")
     _chat_histories[uid] = req.get("messages", [])[-100:]
     state._data[f"chat_history_{uid}"] = _chat_histories[uid]
@@ -362,12 +366,12 @@ async def save_chat_history(req: dict, _=Depends(verify_token)):
 
 @router.get("/chat/history")
 async def load_chat_history(user_id: str = Query("default"), _=Depends(verify_token)):
-    """_____EUR________"""
+    ''"_____EUR________''"
     return {"messages": state._data.get(f"chat_history_{user_id}", [])[-50:]}
 
 @router.delete("/chat/history")
 async def clear_chat_history(user_id: str = Query("default"), _=Depends(verify_token)):
-    """_____EUR________"""
+    ''"_____EUR________''"
     state._data.pop(f"chat_history_{user_id}", None)
     state._save()
     return {"ok": True}
@@ -391,9 +395,11 @@ async def confirm_task(req: ConfirmRequest, _=Depends(verify_token)):
             state.pending_approvals.remove(a)
             return {"ok": True, "status": a["status"]}
     return {"ok": False, "error": "_____________"}
-# CONV_DB defined at top of file
 
 
+
+
+CONV_DB = Path(__file__).parent.parent / "data" / "conversations.db"
 def _cdb():
     CONV_DB.parent.mkdir(parents=True,exist_ok=True)
     c=sqlite3.connect(str(CONV_DB))
@@ -403,7 +409,7 @@ def _cdb():
 
 @router.post("/chat/stream")
 async def chat_stream(req: ChatRequest, _=Depends(verify_token)):
-    """SSE___oken____C____"""
+    ''"SSE___oken____C____''"
     key=OPENAI_API_KEY or DEEPSEEK_API_KEY; url=OPENAI_BASE_URL or "https://api.openai.com/v1"
     m=req.model or _cheap_model
     ctx=await _get_context(req.message);sc=SYSTEM_PROMPT
@@ -420,7 +426,7 @@ async def chat_stream(req: ChatRequest, _=Depends(verify_token)):
     if req.history:msgs.extend(req.history[-20:])
     msgs.append({"role":"user","content":req.message})
     async def gen():
-        f=""
+        f=''
         try:
             async with httpx.AsyncClient(timeout=120) as cl:
                 async with cl.stream("POST",f"{url}/chat/completions",
@@ -432,13 +438,26 @@ async def chat_stream(req: ChatRequest, _=Depends(verify_token)):
                             if d=="[DONE]":break
                             try:
                                 j=json.loads(d)
-                                t=j.get("choices",[{}])[0].get("delta",{}).get("content","")
+                                t=j.get("choices",[{}])[0].get("delta",{}).get("content",'')
                                 if t:f+=t;yield f"data: {json.dumps({'t':t},ensure_ascii=False)}\n\n"
                             except:pass
                     yield f"data: {json.dumps({'done':True,'full':f},ensure_ascii=False)}\n\n"
         except Exception as e:
             yield f"data: {json.dumps({'error':str(e)},ensure_ascii=False)}\n\n"
     return StreamingResponse(gen(),media_type="text/event-stream",headers={"Cache-Control":"no-cache","X-Accel-Buffering":"no"})
+
+@router.post("/chat/vision")
+async def cv(img:str=Form(...),q:str=Form("_________"),_=Depends(verify_token)):
+    k=OPENAI_API_KEY;u=OPENAI_BASE_URL or "https://api.openai.com/v1"
+    if not k:return{"ok":False,"error":"______PENAI_API_KEY"}
+    try:
+        async with httpx.AsyncClient(timeout=60)as c:
+            r=await c.post(f"{u}/chat/completions",headers={"Authorization":f"Bearer {k}","Content-Type":"application/json"},
+                json={"model":"gpt-4o-mini" if OPENAI_API_KEY else "gpt-4o","messages":[{"role":"user","content":[{"type":"text","text":q},{"type":"image_url","image_url":{"url":f"data:image/jpeg;base64,{img}"}}]}]})
+            if r.status_code==200:
+                d=r.json();return{"ok":True,"reply":d.get("choices",[{}])[0].get("message",{}).get("content","(no content)")}
+            return{"ok":False,"error":f"API:{r.status_code}"}
+    except Exception as e:return{"ok":False,"error":str(e)}
 
 PROMPTS={}
 for n,p in[("default","{input}")]:
@@ -471,8 +490,8 @@ async def dc(cid:str,_=Depends(verify_token)):
 # ===== RAG_________ =====
 @router.post("/rag/upload")
 async def rag_upload_file(file: UploadFile = File(...), _=Depends(verify_token)):
-    raw=await file.read();ext=(file.filename or "").rsplit(".",1)[-1].lower()if"."in(file.filename or "")else""
-    text=""
+    raw=await file.read();ext=(file.filename or '').rsplit(".",1)[-1].lower()if"."in(file.filename or '')else''
+    text=''
     if ext in("txt","md","csv","json","py","js","html","yml","yaml"):
         try:text=raw.decode("utf-8")
         except:text=raw.decode("latin-1","ignore")
@@ -493,7 +512,7 @@ async def rag_upload_file(file: UploadFile = File(...), _=Depends(verify_token))
 # ===== __EUR_EUR_EUR____=====
 @router.post("/chat/compare")
 async def chat_compare(req: ChatRequest, _=Depends(verify_token)):
-    """_______EUR______________EUR_EUR______EUR_"""
+    ''"_______EUR______________EUR_EUR______EUR_''"
     models=[("gpt-3.5-turbo","GPT-3.5"),("deepseek-chat","DeepSeek")]
     results=[]
     for mid,mname in models:
@@ -504,7 +523,7 @@ async def chat_compare(req: ChatRequest, _=Depends(verify_token)):
                 r=await c.post(f"{url}/chat/completions",headers={"Authorization":f"Bearer {key}","Content-Type":"application/json"},
                     json={"model":mid,"messages":[{"role":"user","content":req.message}],"temperature":0.7,"max_tokens":500})
                 if r.status_code==200:
-                    d=r.json();results.append({"model":mname,"reply":d.get("choices",[{}])[0].get("message",{}).get("content","")})
+                    d=r.json();results.append({"model":mname,"reply":d.get("choices",[{}])[0].get("message",{}).get("content",'')})
                 else:results.append({"model":mname,"error":f"HTTP {r.status_code}"})
         except Exception as e:results.append({"model":mname,"error":str(e)})
     return{"ok":True,"results":results}
@@ -512,7 +531,7 @@ async def chat_compare(req: ChatRequest, _=Depends(verify_token)):
 # ===== _________AI =====
 @router.get("/dashboard/ask")
 async def dashboard_ask(q: str = Query(...), _=Depends(verify_token)):
-    """______________________"""
+    ''"______________________''"
     try:
         import psutil,os
         cpu=psutil.cpu_percent();mem=psutil.virtual_memory();disk=psutil.disk_usage("/")
@@ -525,7 +544,7 @@ async def dashboard_ask(q: str = Query(...), _=Depends(verify_token)):
                     {"role":"user","content":q}
                 ],"temperature":0.5,"max_tokens":400})
             if r.status_code==200:
-                d=r.json();return{"ok":True,"answer":d.get("choices",[{}])[0].get("message",{}).get("content","")}
+                d=r.json();return{"ok":True,"answer":d.get("choices",[{}])[0].get("message",{}).get("content",'')}
         return{"ok":False,"error":f"API:{r.status_code}"}
     except Exception as e:return{"ok":False,"error":str(e)}
 
@@ -533,7 +552,7 @@ async def dashboard_ask(q: str = Query(...), _=Depends(verify_token)):
 # ===== ______________dmin) =====
 @router.get("/admin/tenants")
 async def list_tenants(_=Depends(verify_token)):
-    """___________________________"""
+    ''"___________________________''"
     c = _cdb()
     rows = c.execute("SELECT owner,COUNT(*) as convs FROM convs GROUP BY owner").fetchall()
     msgs = c.execute("SELECT owner,COUNT(*) as msgs FROM msgs GROUP BY owner").fetchall()
@@ -558,7 +577,7 @@ async def list_tenants(_=Depends(verify_token)):
 # ===== ______________=====
 @router.post("/conversations/{cid}/summarize")
 async def summarize_conversation(cid: str, _=Depends(verify_token)):
-    """__________EUR_____+ _________"""
+    ''"__________EUR_____+ _________''"
     msgs = load_history(cid, 100)
     if len(msgs) < 10:
         return {"ok": True, "original_count": len(msgs), "summary": "_________,_________"}
@@ -582,8 +601,8 @@ async def summarize_conversation(cid: str, _=Depends(verify_token)):
         return {"ok": False, "error": str(e)}
 
 @router.get("/conversations/{cid}/context")
-async def get_conversation_context(cid: str, query: str = "", _=Depends(verify_token)):
-    """_____EUR__________-- _________ __________+ RAG + ____"""
+async def get_conversation_context(cid: str, query: str = '', _=Depends(verify_token)):
+    ''"_____EUR__________-- _________ __________+ RAG + ____''"
     msgs = load_history(cid, 30)
     result = {"messages": msgs, "count": len(msgs)}
     
@@ -608,7 +627,7 @@ def _udb():
 
 @router.post("/chat/vision")
 async def chat_vision(file: UploadFile = File(...), question: str = "______", _=Depends(verify_token)):
-    """_______"""
+    ''"_______''"
     try:
         import base64
         content = await file.read()
@@ -619,28 +638,28 @@ async def chat_vision(file: UploadFile = File(...), question: str = "______", _=
             {"type":"text","text":question},
             {"type":"image_url","image_url":{"url":f"data:{mime};base64,{b64}"}}
         ]}], mode="smart")
-        return {"ok":True,"analysis":resp.get("content","") if isinstance(resp,dict) else str(resp)}
+        return {"ok":True,"analysis":resp.get("content",'') if isinstance(resp,dict) else str(resp)}
     except Exception as e: return {"ok":False,"error":str(e)}
 
 @router.post("/chat/file")
 async def chat_file_analysis(file: UploadFile = File(...), question: str = "______", _=Depends(verify_token)):
-    """____(__/PDF/___)"""
+    ''"____(__/PDF/___)''"
     try:
         content = await file.read()
-        text = ""
+        text = ''
         if file.content_type and "video" in file.content_type:
             text = f"[____: {file.filename}, {len(content)} bytes, __: {file.content_type}]"
         elif file.content_type and "pdf" in file.content_type:
             try:
                 import io, PyPDF2
                 reader = PyPDF2.PdfReader(io.BytesIO(content))
-                text = " ".join([p.extract_text() or "" for p in reader.pages[:5]])
+                text = ''.join([p.extract_text() or '' for p in reader.pages[:5]])
             except: text = content.decode("utf-8","ignore")[:3000]
         else:
             text = content.decode("utf-8","ignore")[:5000]
         from agents.multi_model import ModelRouter
         resp = ModelRouter.smart_chat(messages=[{"role":"user","content":f"__: {file.filename}\n__: {text}\n\n__: {question}"}], mode="smart")
-        return {"ok":True,"analysis":resp.get("content","") if isinstance(resp,dict) else str(resp),"text_length":len(text)}
+        return {"ok":True,"analysis":resp.get("content",'') if isinstance(resp,dict) else str(resp),"text_length":len(text)}
     except Exception as e: return {"ok":False,"error":str(e)}
 
 @router.post("/handover")

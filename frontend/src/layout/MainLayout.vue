@@ -64,7 +64,7 @@ function openFloatingChat() {
   const btn = document.querySelector('.ai-float-btn')
   if (btn) btn.click()
 }
-// 鐩戝惉璺敱鍙樺寲锛屾湁鍐呭鏃舵樉绀哄彔灞?let contentTimer = null
+// ?let contentTimer = null
 function showContent() {
   const overlay = document.querySelector('.content-overlay')
   if (overlay) overlay.classList.add('has-content')
@@ -72,7 +72,7 @@ function showContent() {
 function hideContent() {
   const overlay = document.querySelector('.content-overlay')
   if (overlay && window.location.hash === '' && window.location.pathname === '/ai/' || window.location.pathname === '/ai/friday') {
-    // 首页涓嶆樉绀哄唴瀹?  } else if (overlay) {
+    // ?  } else if (overlay) {
     overlay.classList.add('has-content')
   }
 }
@@ -88,7 +88,7 @@ onMounted(async () => {
 })
 </script>
 <style>
-/* ===== 绉戝够鍏ㄥ睆甯冨眬 ===== */
+/* =====  ===== */
 .sci-fi-shell {
   width: 100vw; height: 100vh;
   overflow: hidden;
@@ -111,7 +111,7 @@ onMounted(async () => {
   pointer-events: all;
 }
 
-/* 椤甸潰鍒囨崲鍔ㄧ敾 */
+/*  */
 .page-fade-enter-active { transition: opacity 0.3s, transform 0.3s; }
 .page-fade-leave-active { transition: opacity 0.15s, transform 0.15s; }
 .page-fade-enter-from { opacity: 0; transform: translateY(10px); }
@@ -121,7 +121,7 @@ onMounted(async () => {
 
 
 
-/* 3D澶ц剳鑱斿姩鑴夊啿 */
+/* 3D */
 .neural-bg.brain-active {
   filter: brightness(1.15) saturate(1.2);
   transition: filter 0.5s ease;

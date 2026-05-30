@@ -1,4 +1,4 @@
-"""内容工厂 API"""
+''" API''"
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from tools.content_factory import content_factory
@@ -7,13 +7,13 @@ from auth import verify_token
 router = APIRouter(prefix="/agent/content", tags=["Content"])
 
 class DescRequest(BaseModel):
-    name: str = ""; category: str = ""; price: str = ""; features: str = ""
+    name: str = ''; category: str = ''; price: str = ''; features: str = ''
 
 class CampaignRequest(BaseModel):
-    name: str = ""; discount: str = ""; audience: str = ""; platform: str = ""
+    name: str = ''; discount: str = ''; audience: str = ''; platform: str = ''
 
 class SocialRequest(BaseModel):
-    theme: str = ""; style: str = "轻松活泼"; include: str = ""
+    theme: str = ''; style: str = ''; include: str = ''
 
 class TranslateRequest(BaseModel):
     text: str; target_lang: str = "en"

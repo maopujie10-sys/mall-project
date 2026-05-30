@@ -1,45 +1,45 @@
 <template>
   <div class="audit-page">
     <div class="page-header">
-      <h2>馃搵 瀹¤鏃ュ織</h2>
-      <p>鍏ㄩ噺操作杩借釜 路 瀹屾暣鍘嗗彶璁板綍</p>
+      -
+      -
       <div class="header-stats">
-        <el-tag>鎬昏 {{ stats.total || 0 }} 鏉</el-tag>
-        <el-tag type="success">今日 {{ stats.today || 0 }} 鏉</el-tag>
+        <el-tag> {{ stats.total || 0 }} ?/el-tag>
+        <el-tag type="success"> {{ stats.today || 0 }} ?/el-tag>
       </div>
     </div>
 
     <div class="filters">
-      <el-input v-model="filters.action" placeholder="搜索操作..." clearable size="small" style="width:200px" />
-      <el-select v-model="filters.risk" placeholder="风险等级" clearable size="small" style="width:120px">
-        <el-option label="..." value="L1" />
-        <el-option label="..." value="L2" />
-        <el-option label="..." value="L3" />
-        <el-option label="L4 涓ラ噸" value="L4" />
+      <el-input v-model="filters.action" placeholder="..." clearable size="small" style="width:200px" />
+      <el-select v-model="filters.risk" placeholder='' clearable size="small" style="width:120px">
+        <el-option label="L1 ? value="L1" />
+        <el-option label="L2 ? value="L2" />
+        <el-option label="L3 ? value="L3" />
+        <el-option label="L4 " value="L4" />
       </el-select>
-      <el-button @click="fetchLogs" type="primary" size="small">馃攳 鏌ヨ</el-button>
-      <el-button @click="fetchLogs" size="small">馃攧 刷新</el-button>
+      
+      <el-button @click="fetchLogs" size="small">OK</el-button>
     </div>
 
     <el-table :data="logs" stripe size="small" v-loading="loading" max-height="600">
-      <el-table-column label="时间" width="170">
+      <el-table-column label='' width="170">
         <template #default="{row}">{{ formatTime(row.time) }}</template>
       </el-table-column>
-      <el-table-column label="操作" width="160">
+      <el-table-column label='' width="160">
         <template #default="{row}"><el-tag size="small">{{ row.action }}</el-tag></template>
       </el-table-column>
-      <el-table-column label="鐩爣" width="200" show-overflow-tooltip>
+      <el-table-column :label="\('audit.title')" width="200" show-overflow-tooltip>
         <template #default="{row}">{{ row.target }}</template>
       </el-table-column>
-      <el-table-column label="璇︽儏" min-width="250" show-overflow-tooltip>
+      <el-table-column :label="\('audit.title')" min-width="250" show-overflow-tooltip>
         <template #default="{row}">{{ row.detail }}</template>
       </el-table-column>
-      <el-table-column label="椋庨櫓" width="80">
+      <el-table-column label='' width="80">
         <template #default="{row}">
           <el-tag :type="riskType(row.risk)" size="small">{{ row.risk }}</el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="..." width="80">
+      <el-table-column label="? width="80">
         <template #default="{row}">{{ row.user }}</template>
       </el-table-column>
     </el-table>
@@ -47,7 +47,7 @@
     <div v-if="pages > 1" style="display:flex;justify-content:center;margin-top:16px">
       <el-pagination background layout="prev,pager,next" :total="total" :page-size="50" @current-change="changePage" />
     </div>
-    <el-empty v-if="!loading && logs.length===0" description="鏆傛棤瀹¤鏃ュ織" />
+    <el-empty v-if="!loading && logs.length===0" description="" />
   </div>
 </template>
 
@@ -61,7 +61,7 @@ const total = ref(0)
 const pages = ref(0)
 const page = ref(1)
 const stats = ref({})
-const filters = ref({ action: "", risk: "" })
+const filters = ref({ action: '', risk: '' })
 
 function riskType(r) {
   return { L1: "success", L2: "warning", L3: "danger", L4: "danger" }[r] || "info"
@@ -69,7 +69,7 @@ function riskType(r) {
 
 function formatTime(t) {
   if (!t) return "-"
-  return t.replace("T", " ").substring(0, 19)
+  return t.replace("T", '').substring(0, 19)
 }
 
 async function fetchLogs() {

@@ -163,9 +163,7 @@ public class OrderServiceImpl implements OrderService {
 
         UserBalance balance = userBalanceMapper.selectOne(
             new QueryWrapper<UserBalance>().eq("user_id", userId));
-        if (balance == null) throw new BizException("用户余额不存在");
-        int rows = userBalanceMapper.addBalanceWithVersion(userId, order.getPayAmount(), balance.getVersion());
-        if (rows == 0) throw new BizException("退款失败，余额版本冲突，请重试");
+        userBalanceMapper.addBalance(userId, order.getPayAmount());
         balanceLogMapper.insert(BalanceLog.builder()
             .userId(userId).amount(order.getPayAmount())
             .type("REFUND").remark("订单取消退款：" + order.getOrderNo()).build());

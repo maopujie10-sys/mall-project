@@ -26,7 +26,7 @@ self.addEventListener("activate", (e) => {
 
 self.addEventListener("fetch", (e) => {
   if (e.request.url.indexOf("/ai/api/") > -1) {
-    return; // API请求不缓存
+    return; // API
   }
   e.respondWith(
     caches.match(e.request).then((r) => r || fetch(e.request).catch(() => caches.match("/landing/pwa/offline.html")))

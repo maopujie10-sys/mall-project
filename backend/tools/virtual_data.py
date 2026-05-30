@@ -1,4 +1,4 @@
-"""企业级虚拟数据引擎 -- 让商城像真实大平台一样活起来"""
+''" -- ''"
 import random
 import hashlib
 import json
@@ -7,63 +7,57 @@ from datetime import datetime, timedelta
 from dataclasses import dataclass, field
 from typing import Optional
 
-# ═══════════════════════════════════════
-#  中文真实数据素材库
-# ═══════════════════════════════════════
 
-FAMILY_NAMES = ["王","李","张","刘","陈","杨","赵","黄","周","吴","徐","孙","胡","朱","高","林","何","郭","马","罗","梁","宋","郑","谢","韩","唐","冯","于","董","萧"]
-GIVEN_NAMES_MALE = ["伟","强","磊","军","勇","杰","涛","明","超","辉","鹏","浩","亮","飞","刚","平","斌","宇","鑫","晨","睿","轩","昊","然","博","文","豪","志","宏","毅"]
-GIVEN_NAMES_FEMALE = ["芳","敏","静","丽","婷","雪","玲","艳","娟","霞","秀","英","红","萍","梅","兰","琴","云","花","娜","琳","欣","悦","佳","慧","怡","婉","诗","涵","雅"]
+FAMILY_NAMES = ['','','','','','','','','','','','','','','','','','','','','','','','','','','','','','']
+GIVEN_NAMES_MALE = ['','','','','','','','','','','','','','','','','','','','','','','','','','','','','','']
+GIVEN_NAMES_FEMALE = ['','','','','','','','','','','','','','','','','','','','','','','','','','','','','','']
 
-CITIES = ["北京","上海","广州","深圳","杭州","成都","武汉","南京","重庆","苏州","西安","长沙","天津","郑州","东莞","青岛","合肥","佛山","宁波","昆明","沈阳","大连","厦门","福州","温州","南宁","长春","泉州","石家庄","贵阳"]
-PROVINCES = ["广东","浙江","江苏","山东","河南","四川","湖北","湖南","福建","安徽","北京","上海","重庆","河北","辽宁","陕西","云南","贵州","广西","山西"]
+CITIES = ['','','','','','','','','','','','','','','','','','','','','','','','','','','','','','']
+PROVINCES = ['','','','','','','','','','','','','','','','','','','','']
 
 PRODUCT_CATEGORIES = {
-    "手机数码": {
-        "品牌": ["Apple","华为","小米","OPPO","vivo","三星","一加","荣耀","realme","魅族"],
-        "产品": [{"name":"iPhone 15 Pro Max","price":8999.00},{"name":"华为Mate 60 Pro","price":6999.00},{"name":"小米14 Ultra","price":5999.00},{"name":"OPPO Find X7","price":4599.00},{"name":"vivo X100 Pro","price":4999.00},{"name":"三星S24 Ultra","price":9699.00},{"name":"iPhone 15","price":5999.00},{"name":"荣耀Magic6 Pro","price":5699.00},{"name":"红米K70 Pro","price":3299.00},{"name":"一加12","price":4299.00}]
+    '': {
+        '': ["Apple",'','',"OPPO","vivo",'','','',"realme",''],
+        '': [{"name":"iPhone 15 Pro Max","price":8999.00},{"name":"Mate 60 Pro","price":6999.00},{"name":"14 Ultra","price":5999.00},{"name":"OPPO Find X7","price":4599.00},{"name":"vivo X100 Pro","price":4999.00},{"name":"S24 Ultra","price":9699.00},{"name":"iPhone 15","price":5999.00},{"name":"Magic6 Pro","price":5699.00},{"name":"K70 Pro","price":3299.00},{"name":"12","price":4299.00}]
     },
-    "电脑办公": {
-        "品牌": ["Apple","联想","华为","戴尔","华硕","惠普","小米","ThinkPad","宏碁","微软"],
-        "产品": [{"name":"MacBook Pro 16 M3","price":19999.00},{"name":"ThinkPad X1 Carbon","price":10999.00},{"name":"华为MateBook X Pro","price":8999.00},{"name":"戴尔XPS 15","price":12999.00},{"name":"小米笔记本Pro 16","price":6499.00},{"name":"华硕灵耀14","price":5999.00}]
+    '': {
+        '': ["Apple",'','','','','','',"ThinkPad",'',''],
+        '': [{"name":"MacBook Pro 16 M3","price":19999.00},{"name":"ThinkPad X1 Carbon","price":10999.00},{"name":"MateBook X Pro","price":8999.00},{"name":"XPS 15","price":12999.00},{"name":"Pro 16","price":6499.00},{"name":"14","price":5999.00}]
     },
-    "服饰鞋包": {
-        "品牌": ["Nike","Adidas","优衣库","ZARA","H&M","李宁","安踏","UR","太平鸟","波司登"],
-        "产品": [{"name":"Nike Air Force 1","price":899.00},{"name":"Adidas Ultraboost","price":1299.00},{"name":"优衣库羽绒服","price":599.00},{"name":"李宁篮球鞋","price":699.00},{"name":"ZARA西装外套","price":799.00}]
+    '': {
+        '': ["Nike","Adidas",'',"ZARA","H&M",'','',"UR",'',''],
+        '': [{"name":"Nike Air Force 1","price":899.00},{"name":"Adidas Ultraboost","price":1299.00},{"name":'',"price":599.00},{"name":'',"price":699.00},{"name":"ZARA","price":799.00}]
     },
-    "家居电器": {
-        "品牌": ["美的","格力","海尔","小米","戴森","松下","飞利浦","苏泊尔","九阳","科沃斯"],
-        "产品": [{"name":"戴森V15吸尘器","price":4999.00},{"name":"小米扫地机器人","price":1999.00},{"name":"格力空调1.5匹","price":3499.00},{"name":"美的电饭煲","price":399.00},{"name":"科沃斯擦窗机器人","price":2599.00}]
+    '': {
+        '': ['','','','','','','','','',''],
+        '': [{"name":"V15","price":4999.00},{"name":'',"price":1999.00},{"name":"1.5","price":3499.00},{"name":'',"price":399.00},{"name":'',"price":2599.00}]
     },
-    "美妆个护": {
-        "品牌": ["兰蔻","雅诗兰黛","SK-II","欧莱雅","完美日记","花西子","珀莱雅","自然堂","薇诺娜","资生堂"],
-        "产品": [{"name":"兰蔻小黑瓶精华","price":1080.00},{"name":"SK-II神仙水","price":1590.00},{"name":"雅诗兰黛DW粉底液","price":420.00},{"name":"完美日记唇釉","price":59.90},{"name":"花西子散粉","price":149.00}]
+    '': {
+        '': ['','',"SK-II",'','','','','','',''],
+        '': [{"name":'',"price":1080.00},{"name":"SK-II","price":1590.00},{"name":"DW","price":420.00},{"name":'',"price":59.90},{"name":'',"price":149.00}]
     }
 }
 
-ORDER_STATUSES = [("已完成","completed"),("待发货","pending"),("已发货","shipped"),("已取消","cancelled"),("退款中","refunding")]
-PAY_METHODS = ["微信支付","支付宝","银行卡","USDT","余额支付"]
+ORDER_STATUSES = [('',"completed"),('',"pending"),('',"shipped"),('',"cancelled"),('',"refunding")]
+PAY_METHODS = ['','','',"USDT",'']
 
-ACTIVITY_TYPES = ["登录","浏览商品","搜索","加入购物车","下单","支付","充值","提现","签到","分享","评价","收藏","关注商家","领取优惠券","参与活动"]
-COMPLAINT_REASONS = ["物流太慢","商品与描述不符","质量问题","发错货","客服态度差","不想要了","重复下单","地址填错"]
+ACTIVITY_TYPES = ['','','','','','','','','','','','','','','']
+COMPLAINT_REASONS = ['','','','','','','','']
 CUSTOMER_MESSAGES = [
-    ("你好,这个什么时候发货?","发货咨询"),
-    ("我已经付款了,能改地址吗?","订单修改"),
-    ("收到的商品有划痕,我要退货","质量问题"),
-    ("优惠券怎么用不了?","优惠券问题"),
-    ("退款什么时候到账?","退款咨询"),
-    ("这个能便宜点吗?","价格咨询"),
-    ("帮我查下物流到哪了","物流查询"),
-    ("颜色和图片不一样啊","商品问题"),
-    ("怎么注册不了账号?","账户问题"),
-    ("有没有免息分期","支付问题"),
-    ("好评返现有吗?","活动咨询"),
-    ("可以开发票吗?","发票问题"),
+    (",?",''),
+    (",?",''),
+    (",",''),
+    ("?",''),
+    ("?",''),
+    ("?",''),
+    ('',''),
+    ('',''),
+    ("?",''),
+    ('',''),
+    ("?",''),
+    ("?",''),
 ]
 
-# ═══════════════════════════════════════
-#  生成器函数
-# ═══════════════════════════════════════
 
 def random_chinese_name():
     surname = random.choice(FAMILY_NAMES)
@@ -74,14 +68,14 @@ def random_chinese_name():
 
 def random_phone():
     prefixes = ["138","139","137","136","135","158","159","186","187","188","176","177","150","151","152"]
-    return random.choice(prefixes) + "".join([str(random.randint(0,9)) for _ in range(8)])
+    return random.choice(prefixes) + ''.join([str(random.randint(0,9)) for _ in range(8)])
 
 def random_email(name="user"):
     domains = ["qq.com","163.com","gmail.com","outlook.com","icloud.com","foxmail.com"]
     return f"{name}{random.randint(100,99999)}@{random.choice(domains)}"
 
 def random_address():
-    return f"{random.choice(PROVINCES)}省{random.choice(CITIES)}市{random.choice(['朝阳区','海淀区','天河区','浦东新区','福田区','南山区','鼓楼区','西湖区','锦江区','武侯区','雁塔区','洪山区'])}{random.choice(['建设路','中山路','人民路','解放路','和平路','长安街'])}{random.randint(1,300)}号"
+    return f"{random.choice(PROVINCES)}{random.choice(CITIES)}{random.choice(['','','','','','','','','','','',''])}{random.choice(['','','','','',''])}{random.randint(1,300)}"
 
 def random_date(start_days=365, end_days=0):
     start = datetime.now() - timedelta(days=start_days)
@@ -93,14 +87,11 @@ def random_price(base=1000, spread=0.5):
     return round(random.uniform(base * (1-spread), base * (1+spread)), 2)
 
 def gen_uuid():
-    return str(uuid.uuid4()).replace("-","")[:32]
+    return str(uuid.uuid4()).replace("-",'')[:32]
 
-# ═══════════════════════════════════════
-#  数据生成器
-# ═══════════════════════════════════════
 
 class UserGenerator:
-    """用户数据生成 -- 真实中文用户"""
+    ''" -- ''"
 
     @staticmethod
     def generate(count=1000) -> list[dict]:
@@ -118,7 +109,7 @@ class UserGenerator:
                 "username": f"user_{phone[-8:]}",
                 "real_name": name,
                 "phone": phone,
-                "email": random_email(name.lower().replace(" ","")),
+                "email": random_email(name.lower().replace('','')),
                 "password": hashlib.sha256(f"Test@{phone[-4:]}".encode()).hexdigest(),
                 "balance": balance,
                 "status": 1 if random.random() < 0.95 else 0,
@@ -128,13 +119,13 @@ class UserGenerator:
                 "last_login": (created + timedelta(hours=random.randint(1,48))).strftime("%Y-%m-%d %H:%M:%S"),
                 "login_count": login_days,
                 "invite_code": hashlib.md5(uid.encode()).hexdigest()[:8],
-                "recom_code": f"REC{random.randint(10000,99999)}" if random.random() < 0.2 else "",
+                "recom_code": f"REC{random.randint(10000,99999)}" if random.random() < 0.2 else '',
                 "source": random.choice(["web","h5","android","ios","invite"]),
             })
         return users
 
 class ProductGenerator:
-    """商品数据生成 -- 多品类真实商品"""
+    ''" -- ''"
 
     @staticmethod
     def generate(count=500) -> list[dict]:
@@ -142,15 +133,15 @@ class ProductGenerator:
         for i in range(count):
             cat_name = random.choice(list(PRODUCT_CATEGORIES.keys()))
             cat = PRODUCT_CATEGORIES[cat_name]
-            brand = random.choice(cat["品牌"])
-            base = random.choice(cat["产品"])
+            brand = random.choice(cat[''])
+            base = random.choice(cat[''])
             pid = gen_uuid()
             price = base["price"]
             stock = random.choices([0,random.randint(1,50),random.randint(50,500),random.randint(500,5000)], weights=[5,30,45,20])[0]
             sales = random.randint(stock//2 if stock < 100 else 0, stock * 5) if stock > 0 else 0
             products.append({
                 "uuid": pid,
-                "title": f"[{brand}] {base['name']} {random.choice(['旗舰版','Pro','Max','Plus','标准版','尊享版'])}",
+                "title": f"[{brand}] {base['name']} {random.choice(['','Pro','Max','Plus','',''])}",
                 "brand": brand,
                 "category": cat_name,
                 "price": price + random.uniform(-200, 200),
@@ -160,7 +151,7 @@ class ProductGenerator:
                 "rating": round(random.uniform(3.5, 5.0), 1),
                 "rating_count": random.randint(10, sales//2) if sales > 20 else random.randint(1, 10),
                 "images": [f"https://picsum.photos/seed/{pid}{j}/800/800" for j in range(1,random.randint(3,6))],
-                "description": f"<p>{brand}正品{base['name']},品质保证,全国联保.</p><p>支持7天无理由退换,免费包邮.</p>",
+                "description": f"<p>{brand}{base['name']},.</p><p>7,.</p>",
                 "status": 1 if stock > 0 and random.random() < 0.9 else 0,
                 "is_hot": sales > 500,
                 "is_new": random.random() < 0.15,
@@ -169,7 +160,7 @@ class ProductGenerator:
         return products
 
 class OrderGenerator:
-    """订单/交易数据生成"""
+    ''"/''"
 
     @staticmethod
     def generate(users: list, products: list, count=2000) -> list[dict]:
@@ -193,22 +184,22 @@ class OrderGenerator:
                 "status": status_en,
                 "status_cn": status,
                 "created_at": created.strftime("%Y-%m-%d %H:%M:%S"),
-                "paid_at": (created + timedelta(minutes=random.randint(1,30))).strftime("%Y-%m-%d %H:%M:%S") if status_en != "cancelled" else "",
+                "paid_at": (created + timedelta(minutes=random.randint(1,30))).strftime("%Y-%m-%d %H:%M:%S") if status_en != "cancelled" else '',
             })
         return orders
 
 class WalletActivityGenerator:
-    """钱包/资金流水生成"""
+    ''"/''"
 
     @staticmethod
     def generate(users: list, count=3000) -> list[dict]:
         txns = []
-        types = ["充值","提现","交易买入","交易卖出","退款","奖励","手续费","转账收款","转账付款","平台赠送","签到奖励","返佣"]
+        types = ['','','','','','','','','','','','']
         for i in range(count):
             user = random.choice(users)
             txn_type = random.choice(types)
             created = random_date(90, 0)
-            amount = round(random.uniform(10, 50000), 2) if txn_type in ("充值","提现","交易买入") else round(random.uniform(0.1, 500), 2)
+            amount = round(random.uniform(10, 50000), 2) if txn_type in ('','','') else round(random.uniform(0.1, 500), 2)
             txns.append({
                 "uuid": gen_uuid(),
                 "user_id": user["uuid"],
@@ -217,12 +208,12 @@ class WalletActivityGenerator:
                 "balance_after": round(random.uniform(100, 100000), 2),
                 "status": "success" if random.random() < 0.95 else "failed",
                 "created_at": created.strftime("%Y-%m-%d %H:%M:%S"),
-                "remark": f"{user['real_name']} {txn_type} {amount}元",
+                "remark": f"{user['real_name']} {txn_type} {amount}",
             })
         return txns
 
 class KlineGenerator:
-    """K线行情数据生成 -- 让交易图表有真实波动"""
+    ''"K -- ''"
 
     @staticmethod
     def generate(symbols=None, days=90) -> dict:
@@ -252,7 +243,7 @@ class KlineGenerator:
         return result
 
 class CustomerServiceGenerator:
-    """客服消息生成"""
+    ''''''
 
     @staticmethod
     def generate(users: list, count=500) -> list[dict]:
@@ -270,14 +261,14 @@ class CustomerServiceGenerator:
                 "category": msg_pair[1],
                 "is_read": random.random() < 0.8,
                 "replied": random.random() < 0.7,
-                "reply": f"您好,{msg_pair[1]}已收到,我们会尽快处理." if random.random() < 0.7 else "",
+                "reply": f",{msg_pair[1]},." if random.random() < 0.7 else '',
                 "created_at": created.strftime("%Y-%m-%d %H:%M:%S"),
                 "replied_at": reply_time.strftime("%Y-%m-%d %H:%M:%S"),
             })
         return messages
 
 class SigninGenerator:
-    """签到记录生成"""
+    ''''''
 
     @staticmethod
     def generate(users: list, count=3000) -> list[dict]:
@@ -295,23 +286,23 @@ class SigninGenerator:
         return records
 
 class ContentGenerator:
-    """Banner/公告/资讯生成"""
+    ''"Banner//''"
 
     @staticmethod
     def generate(count=30) -> list[dict]:
         titles = [
-            "🎉 平台周年庆,全场8折起!",
-            "🔥 新用户注册即送100元体验金",
-            "📢 系统升级维护公告",
-            "💎 VIP会员权益全新升级",
-            "🎁 邀请好友,双方各得50元",
-            "🏆 交易大赛火热进行中",
-            "📱 APP新版本已上线",
-            "🛡️ 关于账户安全的温馨提示",
-            "🚀 新币上线:SHIB/USDT交易对开放",
-            "💹 行情分析:BTC突破关键阻力位",
-            "🎊 国庆特惠,全场满减",
-            "📊 2025年度交易报告已生成",
+            " ,8!",
+            " 100",
+            " ",
+            " VIP",
+            " ,50",
+            " ",
+            " APP",
+            " ",
+            " :SHIB/USDT",
+            " :BTC",
+            " ,",
+            " 2025",
         ]
         contents = []
         for i in range(min(count, len(titles))):
@@ -326,19 +317,16 @@ class ContentGenerator:
             })
         return contents
 
-# ═══════════════════════════════════════
-#  虚拟数据主引擎
-# ═══════════════════════════════════════
 
 class VirtualDataEngine:
-    """统一虚拟数据引擎"""
+    ''''''
 
     @staticmethod
     def generate_all(scale="small") -> dict:
-        """一键生成全平台虚拟数据
+        ''"
 
-        scale: small(1000用户/500商品), medium(5000/2000), large(20000/5000)
-        """
+        scale: small(1000/500), medium(5000/2000), large(20000/5000)
+        ''"
         configs = {
             "small": {"users": 1000, "products": 500, "orders": 2000, "txns": 3000, "msgs": 500, "signins": 3000},
             "medium": {"users": 5000, "products": 2000, "orders": 8000, "txns": 12000, "msgs": 2000, "signins": 12000},
@@ -349,33 +337,33 @@ class VirtualDataEngine:
         cfg = configs.get(scale, configs["small"])
         result = {"scale": scale, "generated_at": datetime.now().isoformat(), "data": {}}
 
-        # 用户
+        
         users = UserGenerator.generate(cfg["users"])
         result["data"]["users"] = users
 
-        # 商品
+        
         products = ProductGenerator.generate(cfg["products"])
         result["data"]["products"] = products
 
-        # 订单
+        
         result["data"]["orders"] = OrderGenerator.generate(users, products, cfg["orders"])
 
-        # 钱包流水
+        
         result["data"]["wallet_txns"] = WalletActivityGenerator.generate(users, cfg["txns"])
 
-        # K线数据
+        # K
         result["data"]["klines"] = KlineGenerator.generate(days=90)
 
-        # 客服消息
+        
         result["data"]["customer_messages"] = CustomerServiceGenerator.generate(users, cfg["msgs"])
 
-        # 签到记录
+        
         result["data"]["signin_records"] = SigninGenerator.generate(users, cfg["signins"])
 
-        # 内容
+        
         result["data"]["content"] = ContentGenerator.generate(30)
 
-        # 统计
+        
         result["stats"] = {
             "total_users": len(users),
             "total_products": len(products),
@@ -391,7 +379,7 @@ class VirtualDataEngine:
 
     @staticmethod
     def generate_realtime_activity(count=20) -> list[dict]:
-        """生成实时活动日志 -- 模拟平台有人正在使用"""
+        ''" -- ''"
         users = random.sample(list(range(10001, 11001)), min(count, 1000))
         activities = []
         now = datetime.now()
@@ -410,7 +398,7 @@ class VirtualDataEngine:
 
     @staticmethod
     def get_dashboard_stats() -> dict:
-        """仪表盘实时统计数据"""
+        ''''''
         now = datetime.now()
         return {
             "today": {
@@ -436,7 +424,7 @@ def _save_virtual():
     import json
     try:
         data = {"users": getattr(VirtualDataGenerator,"_generated_users",0) if hasattr(VirtualDataGenerator,"_generated_users") else 0}
-        memory_store.set_knowledge("virtual_state", "", json.dumps(data))
+        memory_store.set_knowledge("virtual_state", '', json.dumps(data))
     except: pass
 def _load_virtual():
     from tools.memory_store import memory_store

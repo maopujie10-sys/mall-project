@@ -1,4 +1,4 @@
-"""网站访问检测 -- 域名解析/HTTPS/页面访问/SSL证书"""
+''" -- /HTTPS//SSL''"
 import httpx
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
@@ -16,9 +16,9 @@ class DomainRequest(BaseModel):
 
 @router.post("/check")
 async def site_check(req: CheckRequest, _=Depends(verify_token)):
-    await handle_risk("L1", "网站访问检测", req.url)
+    await handle_risk("L1", '', req.url)
     url = req.url if req.url.startswith("http") else f"https://{req.url}"
-    result = {"url": url, "accessible": False, "status_code": 0, "latency_ms": 0, "error": ""}
+    result = {"url": url, "accessible": False, "status_code": 0, "latency_ms": 0, "error": ''}
     try:
         async with httpx.AsyncClient(timeout=10, follow_redirects=True) as c:
             start = __import__("time").time()
@@ -35,18 +35,18 @@ async def site_check(req: CheckRequest, _=Depends(verify_token)):
 
 @router.post("/dns")
 async def dns_check(req: DomainRequest, _=Depends(verify_token)):
-    await handle_risk("L1", "DNS检测", req.domain)
+    await handle_risk("L1", "DNS", req.domain)
     result = await execute(f"dig +short {req.domain}")
     if not result["success"]:
-        result = await execute(f"nslookup {req.domain} 2>/dev/null || echo 'nslookup not available'")
+        result = await execute(f"nslookup {req.domain} 2>/dev/null || echo 'nslookup not available'')
     return {"domain": req.domain, "records": result["stdout"][:500]}
 
 @router.post("/ssl")
 async def ssl_check(req: DomainRequest, _=Depends(verify_token)):
-    await handle_risk("L1", "SSL证书检测", req.domain)
+    await handle_risk("L1", "SSL", req.domain)
     result = await execute(f"openssl s_client -connect {req.domain}:443 -servername {req.domain} </dev/null 2>/dev/null | openssl x509 -noout -dates -subject 2>/dev/null")
     if not result["success"] or not result["stdout"].strip():
-        return {"domain": req.domain, "error": "无法获取SSL证书信息,请确认域名和443端口可访问"}
+        return {"domain": req.domain, "error": "SSL,443"}
     lines = [l.strip() for l in result["stdout"].split("\n") if l.strip()]
     info = {}
     for l in lines:

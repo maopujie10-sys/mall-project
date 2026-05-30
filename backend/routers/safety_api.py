@@ -1,4 +1,4 @@
-"""熔断机制 + 防循环 API"""
+''" +  API''"
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from auth import verify_token
@@ -9,13 +9,13 @@ router = APIRouter(prefix="/safety", tags=["Safety"])
 
 @router.get("/circuit")
 async def circuit_status(_=Depends(verify_token)):
-    await handle_risk("L1", "查看熔断状态")
+    await handle_risk("L1", '')
     return circuit_breaker.status()
 
 @router.post("/circuit/reset")
-async def circuit_reset(action: str = "", _=Depends(verify_token)):
-    """重置指定操作的熔断器,留空则重置全部"""
-    await handle_risk("L1", "重置熔断器", action or "全部")
+async def circuit_reset(action: str = '', _=Depends(verify_token)):
+    ''",''"
+    await handle_risk("L1", '', action or '')
     from safety import CircuitBreaker
     if action:
         circuit_breaker._failures[action].clear()
@@ -27,7 +27,7 @@ async def circuit_reset(action: str = "", _=Depends(verify_token)):
 
 @router.get("/anti-loop")
 async def antiloop_status(_=Depends(verify_token)):
-    await handle_risk("L1", "查看防循环状态")
+    await handle_risk("L1", '')
     return {"records": dict(anti_loop._records)}
 
 @router.post("/anti-loop/check")
@@ -41,7 +41,7 @@ async def antiloop_record(action_key: str, _=Depends(verify_token)):
     return {"action_key": action_key, "recorded": True}
 
 @router.post("/anti-loop/reset")
-async def antiloop_reset(action_key: str = "", _=Depends(verify_token)):
+async def antiloop_reset(action_key: str = '', _=Depends(verify_token)):
     if action_key:
         anti_loop.reset(action_key)
     else:

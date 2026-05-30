@@ -1,24 +1,24 @@
 <template>
   <div class="weekly-report-panel">
     <div class="page-header">
-      <h1>馃搳 AI杩愯惀鍛ㄦ姤</h1>
-      <p>姣忓懆鑷姩姹囨€?路 璁㈠崟/商品/用户 路 绯荤粺鍋ュ悍 路 鍛婅寮傚父 路 閲囬泦绔炲搧</p>
+      <h1> AI</h1>
+      <p>? //      </p>
     </div>
 
     <el-row :gutter="16" style="margin-bottom:20px">
       <el-col :span="24">
         <el-card shadow="never">
           <el-space>
-            <el-button type="primary" :loading="genLoading" @click="doGenerate">馃 AI鐢熸垚鍛ㄦ姤</el-button>
-            <el-button @click="loadReports">馃攧 刷新</el-button>
+            <el-button type="primary" :loading="genLoading" @click="doGenerate"> AI</el-button>
+            <el-button @click="loadReports">OK</el-button>
           </el-space>
         </el-card>
       </el-col>
     </el-row>
 
-    <!-- 鏈€鏂板懆鎶?-->
+    <!-- ?-->
     <el-card v-if="latestReport" shadow="never" style="margin-bottom:20px">
-      <template #header>馃搵 鏈€鏂板懆鎶鈥?绗瑊{ latestReport.week }}鍛?({{ latestReport.date }})</template>
+      <template #header> ??{ latestReport.week }}?({{ latestReport.date }})</template>
       
       <el-row :gutter="16" style="margin-bottom:20px">
         <el-col :span="4" v-for="m in metrics" :key="m.label">
@@ -34,17 +34,17 @@
       </el-card>
     </el-card>
 
-    <!-- 鍘嗗彶鍛ㄦ姤 -->
+    
     <el-card shadow="never">
-      <template #header>馃摎 鍘嗗彶鍛ㄦ姤 (鏈€杩?2鍛?</template>
+      <template #header>  (?2?</template>
       <el-timeline v-if="reports.length">
-        <el-timeline-item v-for="r in reports" :key="r.id" :timestamp="'第'+r.week+'周· '+r.date" placement="top">
+        <el-timeline-item v-for="r in reports" :key="r.id" :timestamp=''?+r.week+'? '+r.date" placement="top">
           <el-card shadow="never">
             <pre class="summary-text" style="font-size:12px">{{ r.summary }}</pre>
           </el-card>
         </el-timeline-item>
       </el-timeline>
-      <el-empty v-else description="暂无周报，点击上方按钮生成" />
+      <el-empty v-else description="?/>
     </el-card>
   </div>
 </template>
@@ -62,12 +62,12 @@ const metrics = computed(() => {
   if (!latestReport.value) return []
   const d = latestReport.value.data || {}
   return [
-    { label: '璁㈠崟鎬绘暟', value: d.orders_total || 0 },
-    { label: '商品鎬绘暟', value: d.products_total || 0 },
-    { label: '用户鎬绘暟', value: d.users_total || 0 },
-    { label: 'TODO', value: d.alerts_this_week || 0 },
-    { label: '瀹㈡湇娑堟伅', value: d.customer_messages || 0 },
-    { label: '健康分', value: d.avg_health_score || 0 },
+    { label: '', value: d.orders_total || 0 },
+    { label: '', value: d.products_total || 0 },
+    { label: '', value: d.users_total || 0 },
+    { label: '', value: d.alerts_this_week || 0 },
+    { label: '', value: d.customer_messages || 0 },
+    { label: '?, value: d.avg_health_score || 0 },
   ]
 })
 
@@ -76,9 +76,9 @@ async function doGenerate() {
   try {
     const { data } = await generateWeeklyReport()
     latestReport.value = data.report
-    ElMessage.success('周报已生成')
+    ElMessage.success('?)
     loadReports()
-  } catch (e) { ElMessage.error('鐢熸垚澶辫触') }
+  } catch (e) { ElMessage.error('Error') }
   finally { genLoading.value = false }
 }
 

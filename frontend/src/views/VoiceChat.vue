@@ -1,49 +1,49 @@
 <template>
   <div class="voice-chat-page">
     <div class="vc-header">
-      <h2>🎙️ 实时语音对话</h2>
-      <p>WebSocket流式 · STT→LLM→TTS · 像打电话一样自然</p>
+      -
+      <p>WebSocket  STTLLMTTS  </p>
       <div class="vc-status">
-        <span class="status-dot" :class="{ connected: wsConnected }"></span>
-        {{ wsConnected ? '已连接' : '未连接' }}
+        -
+        {{ wsConnected ? '' : '' }}
       </div>
     </div>
 
     <div class="vc-main">
-      <!-- 对话记录 -->
+      
       <div class="vc-messages" ref="msgList">
         <div v-if="messages.length === 0" class="vc-empty">
-          <div class="empty-icon">🎤</div>
-          <p>点击下方按钮开始语音对话</p>
-          <p class="empty-sub">实时识别→AI回复→语音播报</p>
+          -
+          <p>{{ \('voice.title') }}</p>
+          <p class="empty-sub">AI</p>
         </div>
         <div v-for="(msg, i) in messages" :key="i" class="vc-msg" :class="msg.role">
-          <div class="vc-avatar">{{ msg.role === 'user' ? '👤' : '🤖' }}</div>
+          <div class="vc-avatar">{{ msg.role === 'user' ? '' : '' }}</div>
           <div class="vc-bubble">
             <div class="vc-text">{{ msg.text }}</div>
             <div class="vc-meta">
               {{ msg.time }}
-              <button v-if="msg.role === 'assistant' && msg.audio" class="vc-replay" @click="playAudio(msg.audio)">🔊 重播</button>
+              <button v-if="msg.role === 'assistant' && msg.audio" class="vc-replay" @click="playAudio(msg.audio)"> </button>
             </div>
           </div>
         </div>
         <div v-if="listening" class="vc-msg assistant">
-          <div class="vc-avatar">🤖</div>
+          -
           <div class="vc-bubble listening">
             <span class="step-text">{{ currentStep }}</span>
-            <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+            <span class="dot">{{ \('voice.title') }}</span><span class="dot">{{ \('voice.title') }}</span><span class="dot">{{ \('voice.title') }}</span>
           </div>
         </div>
       </div>
 
-      <!-- 控制区 -->
+      
       <div class="vc-controls">
         <button class="vc-record-btn" :class="{ recording: isRecording }" @click="toggleRecording" :disabled="!wsConnected">
-          <span class="btn-icon">{{ isRecording ? '⏹️' : '🎤' }}</span>
-          <span class="btn-label">{{ isRecording ? '停止' : '按住说话' }}</span>
+          <span class="btn-icon">{{ isRecording ? '' : '' }}</span>
+          <span class="btn-label">{{ isRecording ? '' : '' }}</span>
         </button>
         <div v-if="isRecording" class="recording-indicator">
-          <div class="wave-bar" v-for="i in 5" :key="i" :style="{ animationDelay: i * 0.1 + 's' }"></div>
+          -
         </div>
       </div>
     </div>
@@ -63,13 +63,9 @@ const wsConnected = ref(false)
 let ws = null
 let mediaRecorder = null
 let audioChunks = []
-let heartbeatTimer = null
-let reconnectTimer = null
-let destroyed = false
 const msgList = ref(null)
 
 function connectWS() {
-  if (destroyed) return
   const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:'
   const wsUrl = `${protocol}//${location.host}/agent/voice/ws`
 
@@ -77,16 +73,16 @@ function connectWS() {
 
   ws.onopen = () => {
     wsConnected.value = true
-    ElMessage.success('语音服务已连接')
-    heartbeatTimer = setInterval(() => {
-      if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: 'ping' }))
+    ElMessage.success('OK')
+    
+    setInterval(() => {
+      if (ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: 'ping' }))
     }, 30000)
   }
 
   ws.onclose = () => {
     wsConnected.value = false
-    if (heartbeatTimer) { clearInterval(heartbeatTimer); heartbeatTimer = null }
-    if (!destroyed) reconnectTimer = setTimeout(connectWS, 3000)
+    setTimeout(connectWS, 3000)
   }
 
   ws.onmessage = (event) => {
@@ -138,7 +134,7 @@ async function startRecording() {
     }
 
     let sttText = ''
-// 同时启动浏览器语音识别获取文本
+
 let sttRecognition = null
 try {
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition
@@ -163,7 +159,7 @@ mediaRecorder.onstop = async () => {
         const b64 = reader.result.split(',')[1]
         if (ws && ws.readyState === WebSocket.OPEN) {
           listening.value = true
-          currentStep.value = '正在发送...'
+          currentStep.value = '...'
           ws.send(JSON.stringify({ type: 'voice', audio_b64: b64, fmt: 'webm', text: sttText }))
         }
       }
@@ -173,7 +169,7 @@ mediaRecorder.onstop = async () => {
     mediaRecorder.start()
     isRecording.value = true
   } catch (e) {
-    ElMessage.error('麦克风权限未开启: ' + e.message)
+    ElMessage.error(': ' + e.message)
   }
 }
 
@@ -196,12 +192,9 @@ function scrollDown() {
   })
 }
 
-onMounted(() => { destroyed = false; connectWS() })
+onMounted(() => connectWS())
 onUnmounted(() => {
-  destroyed = true
-  if (heartbeatTimer) { clearInterval(heartbeatTimer); heartbeatTimer = null }
-  if (reconnectTimer) { clearTimeout(reconnectTimer); reconnectTimer = null }
-  if (ws) { ws.onclose = null; ws.close(); ws = null }
+  if (ws) ws.close()
   if (mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop()
 })
 </script>

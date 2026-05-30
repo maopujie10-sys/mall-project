@@ -1,29 +1,5 @@
 # 操作日志
 
-## 2026-05-30 13:45 — 修复商城全栈连通性：Data Dubbo提供者恢复 + 落地页路由修复
-
-**问题1：** Data webapp 启动失败，导致 Dubbo 提供者（LogService、UserDataService、SysLogService等）未注册到ZK，管理员后台仪表盘无法加载。
-
-**根因：** 前期 Redis RDB持久化故障时，data webapp启动过程中 `PartyLoadCacheService` 调用 Redis 连接池获取资源失败（`JedisConnectionException: Could not get a resource from the pool`），导致 Spring Context 初始化中断。
-
-**修复：** Redis 恢复后(`stop-writes-on-bgsave-error=no`)，`touch /opt/tomcat8/webapps/data/WEB-INF/web.xml` 触发 Tomcat 自动重部署。验证 ZK 中 Dubbo 提供者已注册（`dubbo://172.18.0.1:20880/...`），管理员登录+仪表盘恢复正常。
-
-**问题2：** 落地页 `ROOT/index.html` 中所有 CTA 按钮使用 `/api/r?flag=xxx` 跳转，该端点不存在返回404。
-
-**修复：** 在 Nginx `landing.conf` 中添加 `location = /api/r` 规则：
-- `flag=pc` → 302 `/pc/`（买家商城）
-- `flag=spc` → 302 `/seller/`（卖家中心）
-- `flag=ldy` → 302 `/promote/`（合作伙伴）
-- 无匹配 → 302 `/`（首页）
-
-涉及3个server块：主域名(tiktook.eu.cc)、泛域名(*.chxhx.eu.cc等)、裸域名。
-
-**Git提交：** f4dcb77 — deploy/landing.conf
-
-**采集状态：** 4个shard正常运行中 (shard 0/1/2/3)，Shard 2使用modulo 5分摊剩余类目。
-
----
-
 ## 2026-05-30 09:27 — 修复8个文件中文编码污染 + Docker重建
 
 **原因：** 电脑端compact格式转换导致UTF-8中文双重编码(mojibake)，4个Python文件语法错误阻塞Agent启动。

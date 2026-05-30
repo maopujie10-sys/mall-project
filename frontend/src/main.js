@@ -16,11 +16,12 @@ for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
 
 app.use(createPinia())
 app.use(router)
+app.use(i18n)
 app.use(ElementPlus, { size: 'default' })
 app.mount('#app')
 
 
-// 注册 PWA ServiceWorker
+//  PWA ServiceWorker
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
     navigator.serviceWorker.register("/ai/service-worker.js")

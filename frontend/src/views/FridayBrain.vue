@@ -2,10 +2,10 @@
   <div class="lifeform-glass">
     <div class="glass-inner">
       <div class="glass-row">
-        <span class="glass-icon">🧠</span>
+        -
         <div class="glass-info">
           <span class="glass-name">Friday AI OS</span>
-          <span class="glass-cycle">周期 {{ status.cycle }} · {{ status.status === 'active' ? '运行中' : '休眠' }}</span>
+          <span class="glass-cycle"> {{ status.cycle }}  {{ status.status === 'active' ? '' : '' }}</span>
         </div>
         <div class="glass-mood" :style="{borderColor: status.mood?.color}">
           <span>{{ status.mood?.emoji }}</span>
@@ -21,27 +21,29 @@
   </div>
 </template>
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from "vue"
+import { ref, onMounted, onUnmounted } from "vue"
 import { agentApi } from "@/api"
 
-const status = ref({ traits:{}, insights:[], dreams:[], mood:{}, reflection:"" })
+const status = ref({ traits:{}, insights:[], dreams:[], mood:{}, reflection:'' })
 let timer = null
 
 const topStats = computed(() => [
-  {key:'health',icon:'❤️',label:'生命',value:status.value.health||0},
-  {key:'intelligence',icon:'🧠',label:'智力',value:status.value.intelligence||0},
-  {key:'energy',icon:'⚡',label:'能量',value:status.value.energy||0},
-  {key:'mood_score',icon:'😊',label:'情绪',value:Math.round((status.value.mood?.score||0.75)*100)},
+  {key:'health',icon:'',label:'',value:status.value.health||0},
+  {key:'intelligence',icon:'',label:'',value:status.value.intelligence||0},
+  {key:'energy',icon:'',label:'',value:status.value.energy||0},
+  {key:'mood_score',icon:'',label:'',value:Math.round((status.value.mood?.score||0.75)*100)},
 ])
 const stats = computed(() => [
-  {key:"health",icon:"❤️",label:"生命值",value:status.value.health||0,color:"red",gradient:"linear-gradient(90deg,#ff4d4f,#ff7a45)"},
-  {key:"intelligence",icon:"🧠",label:"智力",value:status.value.intelligence||0,color:"blue",gradient:"linear-gradient(90deg,#1890ff,#667eea)"},
-  {key:"energy",icon:"⚡",label:"能量",value:status.value.energy||0,color:"green",gradient:"linear-gradient(90deg,#52c41a,#13c2c2)"},
-  {key:"experience",icon:"⭐",label:"经验",value:status.value.experience||0,color:"purple",gradient:"linear-gradient(90deg,#7c3aed,#8b5cf6)"},
-  {key:"mood_score",icon:"😊",label:"情绪",value:Math.round((status.value.mood?.score||0.75)*100),color:"orange",gradient:"linear-gradient(90deg,#faad14,#f59e0b)"},
-  {key:"success_rate",icon:"🏆",label:"成功率",value:status.value.success_rate||0,color:"cyan",gradient:"linear-gradient(90deg,#06b6d4,#22d3ee)"},
-  {key:"memory_count",icon:"💾",label:"记忆",value:Math.min(100,(status.value.memory_count||0)),color:"pink",gradient:"linear-gradient(90deg,#ec4899,#f472b6)"},
+  {key:"health",icon:"",label:'',value:status.value.health||0,color:"red",gradient:"linear-gradient(90deg,#ff4d4f,#ff7a45)"},
+  {key:"intelligence",icon:"",label:'',value:status.value.intelligence||0,color:"blue",gradient:"linear-gradient(90deg,#1890ff,#667eea)"},
+  {key:"energy",icon:"",label:'',value:status.value.energy||0,color:"green",gradient:"linear-gradient(90deg,#52c41a,#13c2c2)"},
+  {key:"experience",icon:"",label:'',value:status.value.experience||0,color:"purple",gradient:"linear-gradient(90deg,#7c3aed,#8b5cf6)"},
+  {key:"mood_score",icon:"",label:'',value:Math.round((status.value.mood?.score||0.75)*100),color:"orange",gradient:"linear-gradient(90deg,#faad14,#f59e0b)"},
+  {key:"success_rate",icon:"",label:'',value:status.value.success_rate||0,color:"cyan",gradient:"linear-gradient(90deg,#06b6d4,#22d3ee)"},
+  {key:"memory_count",icon:"",label:'',value:Math.min(100,(status.value.memory_count||0)),color:"pink",gradient:"linear-gradient(90deg,#ec4899,#f472b6)"},
 ])
+
+function computed(fn) { return fn() }
 
 async function refresh() {
   try { status.value = (await agentApi.get("/agent/lifeform/status")).data || {} } catch {}

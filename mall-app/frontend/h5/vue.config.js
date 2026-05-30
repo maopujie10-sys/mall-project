@@ -15,7 +15,7 @@ module.exports = defineConfig({
   // publicPath: process.env.NODE_ENV === 'production' ? '././' : '/',
    publicPath: '/wap/',
     // assetsDir: 'assets',
-    outputDir: process.env.VUE_APP_ITEM_NAME == 'EShop' ? 'dist' : (process.env.VUE_APP_ITEM_NAME || 'mall') + ' - 用户商城H5',
+    outputDir: process.env.VUE_APP_ITEM_NAME == 'EShop' ? 'dist' : process.env.VUE_APP_ITEM_NAME + ' - 用户商城H5',
     devServer: {
         port: 8081,
         host: '0.0.0.0',

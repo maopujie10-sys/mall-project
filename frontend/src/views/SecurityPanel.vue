@@ -1,39 +1,39 @@
 <template>
   <div class="page-container">
     <div class="page-header">
-      <h2>瀹夊叏璁剧疆</h2>
-      <p>Google 楠岃瘉鍣路 涓ゆ楠岃瘉</p>
+      <h2>{{ \('security.title') }}</h2>
+      <p>Google ? </p>
     </div>
 
     <el-row :gutter="16">
       <el-col :span="12">
         <el-card shadow="never">
-          <div class="card-title">Google 楠岃瘉鍣?(TOTP)</div>
+          <div class="card-title">Google ?(TOTP)</div>
           <div style="padding:20px 0;text-align:center;">
             <template v-if="!setupDone">
               <el-button type="primary" size="large" @click="doSetup" :loading="settingUp">
-                寮€鍚袱姝ラ獙璇?              </el-button>
-              <p style="margin-top:12px;color:#999;font-size:13px;">浣跨敤 Google Authenticator 鎴?Authy 淇濇姢鎮ㄧ殑璐︽埛</p>
+                ?              </el-button>
+              <p style="margin-top:12px;color:#999;font-size:13px;"> Google Authenticator ?Authy </p>
             </template>
             <template v-else>
               <div v-if="qrCode" style="margin-bottom:20px;">
                 <img :src="qrCode" style="width:200px;height:200px;" />
-                <p style="margin:12px 0;font-size:13px;color:#666;">鎵嬪姩杈撳叆瀵嗛挜: <code>{{ secret }}</code></p>
+                <p style="margin:12px 0;font-size:13px;color:#666;">: <code>{{ secret }}</code></p>
               </div>
               <el-form inline style="justify-content:center;">
-                <el-form-item><el-input v-model="code" placeholder="6浣嶉獙璇佺爜" maxlength="6" style="width:140px;" /></el-form-item>
-                <el-form-item><el-button type="primary" @click="doVerify" :loading="verifying">楠岃瘉</el-button></el-form-item>
+                <el-form-item><el-input v-model="code" placeholder="6" maxlength="6" style="width:140px;" /></el-form-item>
+                <el-form-item><el-button type="primary" @click="doVerify" :loading="verifying">OK</el-button></el-form-item>
               </el-form>
-              <el-button type="danger" text @click="doReset">閲嶇疆楠岃瘉鍣</el-button>
+              <el-button type="danger" text @click="doReset">?/el-button>
             </template>
           </div>
         </el-card>
       </el-col>
       <el-col :span="12">
         <el-card shadow="never">
-          <div class="card-title">鐘舵€</div>
+          <div class="card-title">?/div>
           <div style="padding:20px 0;">
-            <el-result :icon="verified?'success':'warning'" :title="verified?'宸插惎鐢':'未启用'" :sub-title="verified?'两步验证已开启，登录时需要输入验证码':'账户未开启两步验证保护'" />
+            <el-result :icon="verified?'success':'warning'' :title="verified?'?:'?" :sub-title="verified?'':'?" />
           </div>
         </el-card>
       </el-col>
@@ -69,20 +69,20 @@ async function doSetup() {
     secret.value = data.secret
     setupDone.value = true
   } catch (e) {
-    ElMessage.error(e.response?.data?.detail || '设置失败')
+    ElMessage.error(e.response?.data?.detail || '')
   } finally { settingUp.value = false }
 }
 
 async function doVerify() {
-  if (!code.value || code.value.length !== 6) { ElMessage.warning('请输入6位验证码'); return }
+  if (!code.value || code.value.length !== 6) { ElMessage.warning('?'); return }
   verifying.value = true
   try {
     await agentApi.post(`/2fa/verify?code=${code.value}`)
     verified.value = true
-    ElMessage.success('验证成功')
+    ElMessage.success('?)
     code.value = ''
   } catch (e) {
-    ElMessage.error(e.response?.data?.detail || '验证码无效')
+    ElMessage.error(e.response?.data?.detail || '?)
   } finally { verifying.value = false }
 }
 
@@ -90,8 +90,8 @@ async function doReset() {
   try {
     await agentApi.delete('/2fa/reset')
     verified.value = false; setupDone.value = false; qrCode.value = ''; secret.value = ''
-    ElMessage.success('已重置')
-  } catch (e) { ElMessage.error('重置失败') }
+    ElMessage.success('?)
+  } catch (e) { ElMessage.error('Error') }
 }
 
 onMounted(checkStatus)

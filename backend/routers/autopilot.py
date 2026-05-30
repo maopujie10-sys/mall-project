@@ -1,4 +1,4 @@
-"""自动巡检 -- 站点监控/SEO/性能检测 + 定时自愈"""
+''" -- /SEO/ + ''"
 import httpx
 import asyncio
 from datetime import datetime
@@ -12,10 +12,10 @@ from state import state
 router = APIRouter(prefix="/autopilot", tags=["Autopilot"])
 
 PAGES = ["/", "/api/products", "/api/categories", "/api/banners"]
-SITEMAP_TEMPLATE = """<?xml version="1.0" encoding="UTF-8"?>
+SITEMAP_TEMPLATE = ''"<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 {urls}
-</urlset>"""
+</urlset>''"
 
 def _get_logs():
     return state._data.setdefault("autopilot_logs", [])
@@ -25,8 +25,8 @@ def _get_schedule():
 
 @router.post("/visit")
 async def visit_pages(_=Depends(verify_token)):
-    """自动巡检 -- 站点监控/SEO/性能检测 + 定时自愈"""
-    await handle_risk("L2", "自动巡检-页面访问")
+    ''" -- /SEO/ + ''"
+    await handle_risk("L2", "-")
     logs = _get_logs()
     results = []
     async with httpx.AsyncClient(timeout=10) as c:
@@ -44,49 +44,49 @@ async def visit_pages(_=Depends(verify_token)):
 
 @router.post("/sitemap-gen")
 async def generate_sitemap(_=Depends(verify_token)):
-    """自动巡检 -- 站点监控/SEO/性能检测 + 定时自愈"""
-    await handle_risk("L1", "生成SEO Sitemap")
+    ''" -- /SEO/ + ''"
+    await handle_risk("L1", "SEO Sitemap")
     async with httpx.AsyncClient(timeout=10) as c:
         try:
             r = await c.get(f"{MALL_BASE_URL}/api/products", params={"page": 1, "size": 100})
             products = r.json().get("list", r.json().get("records", [])) if r.status_code == 200 else []
         except Exception:
             products = []
-    urls = "\n".join([f'  <url><loc>{MALL_BASE_URL}/product/{p.get("id", "")}</loc></url>' for p in products])
+    urls = "\n".join([f'  <url><loc>{MALL_BASE_URL}/product/{p.get("id", '')}</loc></url>' for p in products])
     sitemap = SITEMAP_TEMPLATE.format(urls=urls or f'  <url><loc>{MALL_BASE_URL}</loc></url>')
     return {"sitemap": sitemap, "product_count": len(products)}
 
 @router.get("/logs")
 async def autopilot_logs(_=Depends(verify_token)):
-    """自动巡检 -- 站点监控/SEO/性能检测 + 定时自愈"""
-    await handle_risk("L1", "查看巡检日志")
+    ''" -- /SEO/ + ''"
+    await handle_risk("L1", '')
     return {"logs": _get_logs()[:20]}
 
 @router.get("/schedule")
 async def get_schedule(_=Depends(verify_token)):
-    """自动巡检 -- 站点监控/SEO/性能检测 + 定时自愈"""
-    await handle_risk("L1", "查看定时任务")
+    ''" -- /SEO/ + ''"
+    await handle_risk("L1", '')
     sched = _get_schedule()
     return sched
 
 @router.post("/schedule")
 async def set_schedule(_=Depends(verify_token), enabled: bool = True, interval: int = 30):
-    """自动巡检 -- 站点监控/SEO/性能检测 + 定时自愈"""
-    await handle_risk("L2", "设置定时巡检", f"enabled={enabled} interval={interval}min")
+    ''" -- /SEO/ + ''"
+    await handle_risk("L2", '', f"enabled={enabled} interval={interval}min")
     sched = _get_schedule()
     sched["enabled"] = enabled
     sched["interval_minutes"] = interval
     sched["updated_at"] = datetime.now().isoformat()
     state._save()
-    return {"enabled": enabled, "interval_minutes": interval, "message": "定时巡检已设置，重启后生效"}
+    return {"enabled": enabled, "interval_minutes": interval, "message": ''}
 
 @router.post("/full-auto")
 async def full_auto_pilot(_=Depends(verify_token)):
-    """自动巡检 -- 站点监控/SEO/性能检测 + 定时自愈"""
-    await handle_risk("L2", "一键自动巡检")
+    ''" -- /SEO/ + ''"
+    await handle_risk("L2", '')
     logs = _get_logs()
 
-    # 1. 访问页面
+    # 1. 
     visit_results = []
     async with httpx.AsyncClient(timeout=10) as c:
         for path in PAGES:
@@ -99,11 +99,11 @@ async def full_auto_pilot(_=Depends(verify_token)):
     ok_visits = sum(1 for r in visit_results if r["ok"])
     total_visits = len(visit_results)
 
-    # 2. 生成Sitemap
+    # 2. Sitemap
     try:
-        sitemap_result = "已生成"
+        sitemap_result = ''
     except Exception:
-        sitemap_result = "失败"
+        sitemap_result = ''
 
     record = {
         "time": datetime.now().strftime("%H:%M:%S"),
@@ -118,5 +118,5 @@ async def full_auto_pilot(_=Depends(verify_token)):
     return {
         "visit": {"ok": ok_visits, "total": total_visits, "results": visit_results},
         "sitemap": sitemap_result,
-        "status": "正常" if ok_visits == total_visits else "部分异常",
+        "status": '' if ok_visits == total_visits else '',
     }

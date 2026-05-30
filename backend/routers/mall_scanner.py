@@ -1,4 +1,4 @@
-"""商城结构认知 -- 扫描商城结构/接口/数据库/业务流程"""
+''" -- ///''"
 import httpx
 from datetime import datetime
 from fastapi import APIRouter, Depends
@@ -14,20 +14,20 @@ def _get_maps():
 
 @router.post("/structure")
 async def scan_structure(_=Depends(verify_token)):
-    """扫描商城项目目录结构和路由"""
-    await handle_risk("L1", "扫描商城结构")
+    ''''''
+    await handle_risk("L1", '')
     results = {
         "time": datetime.now().isoformat(),
         "status": {},
         "routes": [],
     }
-    # 检测各接口连通性
+    
     endpoints = [
-        ("首页", "/"),
-        ("API文档", "/doc.html"),
-        ("登录", "/api/login"),
-        ("商品列表", "/api/products"),
-        ("分类", "/api/categories"),
+        ('', "/"),
+        ("API", "/doc.html"),
+        ('', "/api/login"),
+        ('', "/api/products"),
+        ('', "/api/categories"),
     ]
     async with httpx.AsyncClient(timeout=5) as c:
         for name, path in endpoints:
@@ -39,9 +39,9 @@ async def scan_structure(_=Depends(verify_token)):
 
     ok_count = sum(1 for v in results["status"].values() if v["ok"])
     total = len(results["status"])
-    results["summary"] = f"检测 {total} 个端点,{ok_count} 个正常,{total - ok_count} 个异常"
+    results["summary"] = f" {total} ,{ok_count} ,{total - ok_count} "
 
-    # 保存扫描记录
+    
     maps = _get_maps()
     maps.insert(0, results)
     if len(maps) > 20:
@@ -52,14 +52,14 @@ async def scan_structure(_=Depends(verify_token)):
 
 @router.get("/history")
 async def scan_history(_=Depends(verify_token)):
-    """查看扫码历史"""
-    await handle_risk("L1", "查看扫描历史")
+    ''''''
+    await handle_risk("L1", '')
     return {"maps": _get_maps()}
 
 @router.post("/products")
 async def check_products(_=Depends(verify_token)):
-    """检测商品系统是否正常"""
-    await handle_risk("L1", "检测商品系统")
+    ''''''
+    await handle_risk("L1", '')
     async with httpx.AsyncClient(timeout=10) as c:
         try:
             r = await c.get(f"{MALL_BASE_URL}/api/products", params={"page": 1, "size": 5})
@@ -72,8 +72,8 @@ async def check_products(_=Depends(verify_token)):
 
 @router.post("/orders")
 async def check_orders(_=Depends(verify_token)):
-    """检测订单系统是否正常"""
-    await handle_risk("L1", "检测订单系统")
+    ''''''
+    await handle_risk("L1", '')
     async with httpx.AsyncClient(timeout=10) as c:
         try:
             r = await c.get(f"{MALL_BASE_URL}/api/orders", params={"page": 1, "size": 5})

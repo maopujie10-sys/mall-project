@@ -1,56 +1,56 @@
 <template>
   <div class="page-container">
     <div class="page-header">
-      <h2>瀹℃壒涓績</h2>
-      <p>任务审批 · 风险控制 · 变更审核</p>
+      -
+      -
     </div>
 
-    <!-- 閿欒鎻愮ず -->
+    
     <el-alert v-if="error" :title="error" type="error" show-icon closable @close="error=null" style="margin-bottom:16px" />
 
-    <!-- 缁熻姒傝 -->
+    
     <el-row :gutter="16" style="margin-bottom: 20px;">
       <el-col :span="6">
         <div class="metric-card">
-          <div class="metric-label">寰呭鎵逛换鍔</div>
+          <div class="metric-label">?/div>
           <div class="metric-value" style="color: var(--color-warning);">{{ loading ? '...' : pendingTasks.length }}</div>
-          <div class="metric-sub">闇€瑕佷汉宸ョ‘璁</div>
+          <div class="metric-sub">?/div>
         </div>
       </el-col>
       <el-col :span="6">
         <div class="metric-card">
-          <div class="metric-label">今日宸插鎵</div>
+          <div class="metric-label">?/div>
           <div class="metric-value">{{ loading ? '...' : historyTasks.length }}</div>
-          <div class="metric-sub">通过 {{ approvedCount }} 路 拒绝 {{ rejectedCount }}</div>
+          <div class="metric-sub"> {{ approvedCount }}   {{ rejectedCount }}</div>
         </div>
       </el-col>
       <el-col :span="6">
         <div class="metric-card">
-          <div class="metric-label">瓒呮椂鑷姩拒绝</div>
+          -
           <div class="metric-value" style="color: var(--color-danger);">0</div>
-          <div class="metric-sub">超过 30 分钟</div>
+          <div class="metric-sub"> 30 </div>
         </div>
       </el-col>
       <el-col :span="6">
         <div class="metric-card">
-          <div class="metric-label">骞冲潎瀹℃壒时间</div>
+          -
           <div class="metric-value">--</div>
-          <div class="metric-sub">近 24 小时</div>
+          <div class="metric-sub">?24 </div>
         </div>
       </el-col>
     </el-row>
 
-    <!-- 寰呭鎵逛换鍔″崱鐗?-->
+    <!-- ?-->
     <el-row :gutter="16">
       <el-col :span="24">
         <div v-if="pendingTasks.length === 0" style="padding: 60px 0;">
-          <el-empty description="暂无待审批任务" />
+          <el-empty description="? />
         </div>
         <div
           v-for="task in pendingTasks"
           :key="task.id"
           class="approval-card"
-          :class="'risk-' + task.risk.toLowerCase()"
+          :class=''risk-' + task.risk.toLowerCase()"
         >
           <div class="card-body">
             <div class="card-main">
@@ -63,13 +63,13 @@
               </div>
               <p class="card-desc">{{ task.description }}</p>
               <div class="card-preview" v-if="task.preview">
-                <div class="preview-label">变更预览</div>
+                -
                 <div class="code-block" style="font-size: 11px; max-height: 100px;">{{ task.preview }}</div>
               </div>
               <div class="card-meta">
-                <span>发起人:  {{ task.creator }}</span>
-                <span>影响范围: {{ task.scope }}</span>
-                <span>棰勮鑰楁椂: {{ task.estimated }}</span>
+                <span>? {{ task.creator }}</span>
+                <span>: {{ task.scope }}</span>
+                <span>: {{ task.estimated }}</span>
               </div>
             </div>
             <div class="card-actions">
@@ -78,14 +78,14 @@
                 @click="approveTask(task)"
                 :loading="task.approving"
               >
-                <el-icon><Check /></el-icon> 确认鎵ц
+                <el-icon><Check /></el-icon> 
               </el-button>
               <el-button
                 type="danger"
                 @click="rejectTask(task)"
                 :loading="task.rejecting"
               >
-                <el-icon><Close /></el-icon> 拒绝
+                <el-icon><Close /></el-icon> 
               </el-button>
             </div>
           </div>
@@ -93,28 +93,28 @@
       </el-col>
     </el-row>
 
-    <!-- 宸插鐞嗕换鍔″巻鍙?-->
+    <!-- ?-->
     <el-card shadow="never" style="margin-top: 20px;">
       <template #header>
-        <span style="font-weight: 600;">审批历史</span>
+        -
       </template>
       <el-table :data="historyTasks" style="width: 100%;" size="small" stripe>
-        <el-table-column prop="name" label="浠诲姟名称" min-width="160" />
-        <el-table-column prop="risk" label="风险等级" width="90">
+        <el-table-column prop="name" :label="\('approval.title')" min-width="160" />
+        <el-table-column prop="risk" label='' width="90">
           <template #default="{ row }">
             <span class="risk-badge" :class="row.risk.toLowerCase()">{{ row.risk }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="creator" label="..." width="100" />
-        <el-table-column prop="result" label="结果" width="90">
+        <el-table-column prop="creator" label="? width="100" />
+        <el-table-column prop="result" label='' width="90">
           <template #default="{ row }">
-            <el-tag :type="row.result === '通过' ? 'success' : 'danger'" size="small" effect="light">
+            <el-tag :type="row.result === '' ? 'success' : 'danger'' size="small" effect="light">
               {{ row.result }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="reviewer" label="..." width="100" />
-        <el-table-column prop="time" label="时间" width="100" />
+        <el-table-column prop="reviewer" label="? width="100" />
+        <el-table-column prop="time" label='' width="100" />
       </el-table>
     </el-card>
   </div>
@@ -133,8 +133,8 @@ const error = ref(null)
 const pendingTasks = reactive([])
 const historyTasks = reactive([])
 
-const approvedCount = computed(() => historyTasks.filter((t) => t.result === '通过').length)
-const rejectedCount = computed(() => historyTasks.filter((t) => t.result === '拒绝').length)
+const approvedCount = computed(() => historyTasks.filter((t) => t.result === '').length)
+const rejectedCount = computed(() => historyTasks.filter((t) => t.result === '').length)
 
 async function fetchApprovals() {
   try {
@@ -147,7 +147,7 @@ async function fetchApprovals() {
       pendingTasks.splice(0, pendingTasks.length, ...pending.map((t) => ({
         id: t.id || t.taskId || Date.now(),
         risk: t.risk || 'L1',
-        name: t.name || t.task || 'TODO',
+        name: t.name || t.task || '',
         time: t.time || '-',
         description: t.description || '',
         preview: t.preview || '',
@@ -180,9 +180,9 @@ async function fetchApprovals() {
 
 const approveTask = async (task) => {
   try {
-    await ElMessageBox.confirm(`确认执行「${task.name}」吗？此操作不可撤销。`, 'TODO', {
-      confirmButtonText: 'TODO',
-      cancelButtonText: '取消',
+    await ElMessageBox.confirm(`?{task.name}, '', {
+      confirmButtonText: '',
+      cancelButtonText: '',
       type: 'warning',
     })
     task.approving = true
@@ -193,10 +193,10 @@ const approveTask = async (task) => {
         pendingTasks.splice(idx, 1)
         historyTasks.unshift({
           name: task.name, risk: task.risk, creator: task.creator,
-          result: '通过', reviewer: 'Admin', time: new Date().toTimeString().slice(0, 5),
+          result: '', reviewer: 'Admin', time: new Date().toTimeString().slice(0, 5),
         })
       }
-      ElMessage.success(`已批准「${task.name}」`)
+      ElMessage.success(`?{task.name})
     } else {
       task.approving = false
     }
@@ -207,9 +207,9 @@ const approveTask = async (task) => {
 
 const rejectTask = async (task) => {
   try {
-    await ElMessageBox.confirm(`确认拒绝「${task.name}」吗？`, 'TODO', {
-      confirmButtonText: 'TODO',
-      cancelButtonText: '取消',
+    await ElMessageBox.confirm(`?{task.name}, '', {
+      confirmButtonText: '',
+      cancelButtonText: '',
       type: 'warning',
     })
     task.rejecting = true
@@ -220,10 +220,10 @@ const rejectTask = async (task) => {
         pendingTasks.splice(idx, 1)
         historyTasks.unshift({
           name: task.name, risk: task.risk, creator: task.creator,
-          result: '拒绝', reviewer: 'Admin', time: new Date().toTimeString().slice(0, 5),
+          result: '', reviewer: 'Admin', time: new Date().toTimeString().slice(0, 5),
         })
       }
-      ElMessage.warning(`已拒绝「${task.name}」`)
+      ElMessage.warning(`?{task.name})
     } else {
       task.rejecting = false
     }

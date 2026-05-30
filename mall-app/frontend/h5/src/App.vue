@@ -5,6 +5,7 @@
                 <keep-alive :include="keepaliveData">
                     <component :is="Component" />
                 </keep-alive>
+                <component :is="Component" />
             </router-view>
         </transition>
     </div>

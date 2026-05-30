@@ -1,4 +1,4 @@
-"""情感分析 API"""
+''" API''"
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from tools.sentiment_analyzer import sentiment_analyzer

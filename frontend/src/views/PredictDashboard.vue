@@ -1,32 +1,32 @@
 <template>
   <div class="page-shell">
     <div class="page-header">
-      <h2>📈 预测分析</h2>
-      <p>时序预测 — 销量/流量/库存/异常 趋势预测</p>
+      -
+      <p>  /// </p>
       <div class="header-stats">
-        <el-statistic title="监控指标" :value="stats.metrics?.length||0"/>
-        <el-statistic title="数据点" :value="stats.total_points||0"/>
+        <el-statistic title='' :value="stats.metrics?.length||0"/>
+        <el-statistic title='' :value="stats.total_points||0"/>
       </div>
     </div>
     <el-row :gutter="16">
       <el-col :span="12">
-        <el-card><template #header>📊 记录数据</template>
-          <el-input v-model="metric" placeholder="指标名(sales/orders/visits)"/>
+        <el-card><template #header> </template>
+          <el-input v-model="metric" placeholder="(sales/orders/visits)"/>
           <el-input-number v-model="value" :min="0" style="margin-top:8px;width:100%"/>
-          <el-button type="primary" style="margin-top:8px" @click="record">记录</el-button>
+          <el-button type="primary" style="margin-top:8px" @click="record">OK</el-button>
         </el-card>
       </el-col>
       <el-col :span="12">
-        <el-card><template #header>🔮 预测</template>
-          <el-input v-model="forecastMetric" placeholder="指标名"/>
+        <el-card><template #header> </template>
+          <el-input v-model="forecastMetric" placeholder=''/>
           <el-input-number v-model="horizon" :min="1" :max="30" style="margin-top:8px;width:100%"/>
-          <el-button type="primary" style="margin-top:8px" @click="doForecast">预测未来{{ horizon }}期</el-button>
+          <el-button type="primary" style="margin-top:8px" @click="doForecast">{{ horizon }}</el-button>
           <div v-if="result" class="predict-result">
             <div class="pr-trend" :class="result.direction">
-              {{ result.direction === "up" ? "📈上升" : result.direction === "down" ? "📉下降" : "➡️平稳" }} ({{ result.trend_pct }}%)
+              {{ result.direction === "up" ? "" : result.direction === "down" ? "" : "" }} ({{ result.trend_pct }}%)
             </div>
-            <div class="pr-values">预测: {{ result.predictions?.join(", ") || "—" }}</div>
-            <div class="pr-conf">置信度: {{ result.confidence }}</div>
+            <div class="pr-values">: {{ result.predictions?.join(", ") || "" }}</div>
+            <div class="pr-conf">: {{ result.confidence }}</div>
           </div>
         </el-card>
       </el-col>
@@ -37,15 +37,15 @@
 import { ref, onMounted } from "vue"
 import { ElMessage } from "element-plus"
 import { agentApi } from "@/api"
-const metric = ref("")
+const metric = ref('')
 const value = ref(0)
-const forecastMetric = ref("")
+const forecastMetric = ref('')
 const horizon = ref(7)
 const result = ref(null)
 const stats = ref({})
 async function record() {
   if (!metric.value) return
-  try { await agentApi.post("/agent/predict/record", { metric: metric.value, value: value.value }); ElMessage.success("已记录"); fetchStats() } catch (e) { ElMessage.error(e.message) }
+  try { await agentApi.post("/agent/predict/record", { metric: metric.value, value: value.value }); ElMessage.success('OK'); fetchStats() } catch (e) { ElMessage.error(e.message) }
 }
 async function doForecast() {
   if (!forecastMetric.value) return

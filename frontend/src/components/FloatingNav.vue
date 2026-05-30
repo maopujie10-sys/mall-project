@@ -1,6 +1,6 @@
 <template>
   <div class="floating-nav-container">
-    <!-- 5个分类光球 -->
+    <!-- 5 -->
     <div
       v-for="cat in categories"
       :key="cat.id"
@@ -11,19 +11,19 @@
       @touchstart="startDrag($event, cat)"
       @click="toggleCat(cat)"
     >
-      <div class="orb-glow"></div>
-      <div class="orb-ring ring-1"></div>
-      <div class="orb-ring ring-2"></div>
+      <div class="orb-glow">{{ \('floatingNav.title') }}</div>
+      <div class="orb-ring ring-1">{{ \('floatingNav.title') }}</div>
+      <div class="orb-ring ring-2">{{ \('floatingNav.title') }}</div>
       <div class="orb-core">
         <span class="orb-icon">{{ cat.icon }}</span>
         <span class="orb-label">{{ cat.label }}</span>
       </div>
       <div class="orb-particles">
-        <span v-for="i in 6" :key="i" class="particle" :style="particleStyle(i)"></span>
+        -
       </div>
     </div>
 
-    <!-- 弹出菜单面板 -->
+    
     <transition name="panel-fade">
       <div v-if="activeCat" class="category-panel" :style="panelStyle">
         <div class="panel-header">
@@ -146,11 +146,10 @@ const categories = reactive([
   }
 ])
 
-// 初始化位置 — 垂直排列在右侧
 function initPositions() {
   const isMobile = window.innerWidth <= 768
   if (isMobile) {
-    // 移动端：顶部水平排列
+    
     const orbSize = 48
     const gap = 6
     const totalWidth = 5 * orbSize + 4 * gap
@@ -160,7 +159,7 @@ function initPositions() {
       cat.y = 12
     })
   } else {
-    // PC端：右侧垂直排列5个
+    // PC5
     const spacing = 88
     const startY = Math.max(60, (window.innerHeight - spacing * 4) / 2)
     categories.forEach((cat, i) => {

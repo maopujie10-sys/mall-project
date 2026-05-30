@@ -1,4 +1,4 @@
-"""RAG知识库 -- 文档管理+向量化+检索增强"""
+''"RAG -- ++''"
 import json, os, hashlib
 from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Query
@@ -12,17 +12,17 @@ def _get_kb():
     return state._data.setdefault("knowledge_base", [])
 
 @router.post("/documents")
-async def add_document(title: str = Query(...), content: str = Query(...), category: str = "general", tags: str = "",
+async def add_document(title: str = Query(...), content: str = Query(...), category: str = "general", tags: str = '',
                        _=Depends(verify_token)):
-    """添加知识文档"""
-    await handle_risk("L1", f"添加知识: {title}")
+    ''''''
+    await handle_risk("L1", f": {title}")
     kb = _get_kb()
     doc_id = hashlib.md5(title.encode()).hexdigest()[:12]
     doc = {"id": doc_id, "title": title, "content": content, "category": category,
            "tags": [t.strip() for t in tags.split(",") if t.strip()],
            "created_at": datetime.now().isoformat(), "updated_at": datetime.now().isoformat(),
            "chunks": [], "embedding": []}
-    # 分块
+    
     chunk_size = 500; overlap = 50
     for i in range(0, len(content), chunk_size - overlap):
         chunk = content[i:i+chunk_size]
@@ -32,25 +32,25 @@ async def add_document(title: str = Query(...), content: str = Query(...), categ
     return {"ok": True, "document": {"id": doc_id, "title": title, "chunks": len(doc["chunks"])}}
 
 @router.get("/documents")
-async def list_documents(category: str = "", _=Depends(verify_token)):
-    """知识文档列表"""
+async def list_documents(category: str = '', _=Depends(verify_token)):
+    ''''''
     kb = _get_kb()
     if category: kb = [d for d in kb if d.get("category") == category]
     summary = [{"id": d["id"], "title": d["title"], "category": d.get("category", "general"),
-                "chunks": len(d.get("chunks", [])), "updated_at": d.get("updated_at", "")} for d in kb]
+                "chunks": len(d.get("chunks", [])), "updated_at": d.get("updated_at", '')} for d in kb]
     return {"ok": True, "documents": summary, "count": len(summary)}
 
 @router.get("/documents/{doc_id}")
 async def get_document(doc_id: str, _=Depends(verify_token)):
-    """获取文档详情"""
+    ''''''
     kb = _get_kb()
     doc = next((d for d in kb if d["id"] == doc_id), None)
-    if not doc: raise HTTPException(404, "文档不存在")
+    if not doc: raise HTTPException(404, '')
     return {"ok": True, "document": doc}
 
 @router.delete("/documents/{doc_id}")
 async def delete_document(doc_id: str, _=Depends(verify_token)):
-    """删除文档"""
+    ''''''
     kb = _get_kb()
     state._data["knowledge_base"] = [d for d in kb if d["id"] != doc_id]
     state._save()
@@ -58,8 +58,8 @@ async def delete_document(doc_id: str, _=Depends(verify_token)):
 
 @router.get("/search")
 async def search_knowledge(q: str = Query(...), _=Depends(verify_token)):
-    """搜索知识库(关键词+分块匹配)"""
-    await handle_risk("L1", f"搜索知识: {q}")
+    ''"(+)''"
+    await handle_risk("L1", f": {q}")
     kb = _get_kb()
     results = []
     q_lower = q.lower()
@@ -78,7 +78,7 @@ async def search_knowledge(q: str = Query(...), _=Depends(verify_token)):
 
 @router.get("/categories")
 async def list_categories(_=Depends(verify_token)):
-    """知识分类"""
+    ''''''
     kb = _get_kb()
     cats = {}
     for d in kb:
@@ -88,9 +88,9 @@ async def list_categories(_=Depends(verify_token)):
 
 @router.get("/rag/context")
 async def get_rag_context(q: str = Query(...), max_chars: int = 2000, _=Depends(verify_token)):
-    """获取RAG上下文(供AI对话注入)"""
+    ''"RAG(AI)''"
     kb = _get_kb()
-    if not kb: return {"ok": True, "context": "", "sources": []}
+    if not kb: return {"ok": True, "context": '', "sources": []}
     q_lower = q.lower()
     scored = []
     for doc in kb:

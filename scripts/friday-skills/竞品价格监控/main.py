@@ -1,4 +1,4 @@
-"""竞品价格监控 — 自动采集+价格变动预警"""
+""" — +"""
 import json
 from datetime import datetime
 
@@ -11,10 +11,10 @@ async def execute(params: dict) -> dict:
         "result": {
             "keyword": keyword,
             "competitors": [
-                {"name": "商家A", "price": 99.0, "change": -5},
-                {"name": "商家B", "price": 108.0, "change": 0}
+                {"name": "A", "price": 99.0, "change": -5},
+                {"name": "B", "price": 108.0, "change": 0}
             ],
-            "alert": "商家A降价5元，建议跟进",
+            "alert": "A5",
             "time": datetime.now().isoformat()
         }
     }

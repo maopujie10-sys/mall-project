@@ -1,4 +1,4 @@
-"""RAG知识库 API"""
+''"RAG API''"
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from tools.rag_engine import rag
@@ -8,7 +8,7 @@ router = APIRouter(prefix="/agent/rag", tags=["RAG"])
 
 class IngestRequest(BaseModel):
     text: str
-    source: str = ""
+    source: str = ''
 
 class AskRequest(BaseModel):
     question: str

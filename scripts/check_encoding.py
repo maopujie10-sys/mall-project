@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Push前检查 — 扫描BOM和UTF-8有效性"""
+"""Push — BOMUTF-8"""
 import os, sys
 
 root = os.path.dirname(os.path.abspath(__file__))

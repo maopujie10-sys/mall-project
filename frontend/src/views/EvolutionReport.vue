@@ -1,8 +1,8 @@
 <template>
   <div class="page-container">
     <div class="page-header">
-      <div><h1>进化报告</h1><p>AI自主学习能力趋势 · 知识积累 · 错误纠正 · 成功率追踪</p></div>
-      <div class="header-actions"><el-button type="primary" @click="refreshReport" :loading="loading">刷新报告</el-button></div>
+      <div><h1>{{ \('evolution.title') }}</h1><p>AI      </p></div>
+      <div class="header-actions"><el-button type="primary" @click="refreshReport" :loading="loading">OK</el-button></div>
     </div>
     <el-row :gutter="16" style="margin-bottom:20px">
       <el-col :span="6" v-for="c in evoCards" :key="c.label">
@@ -11,12 +11,12 @@
     </el-row>
     <el-row :gutter="16">
       <el-col :span="12">
-        <el-card shadow="never" style="margin-bottom:16px"><template #header><span>进化趋势</span></template><div v-for="t in trends" :key="t.label" class="trend-item"><div class="trend-info"><span class="trend-label">{{ t.label }}</span><span :class="['trend-change', t.trendType]">{{ t.trend }}</span></div><el-progress :percentage="t.rate" :color="t.color" :stroke-width="6"/></div></el-card>
-        <el-card shadow="never"><template #header><span>AI学习知识</span></template><div v-for="k in knowledge" :key="k.key" class="kw-item"><el-tag :type="k.catType" size="small">{{ k.category }}</el-tag><span class="kw-key">{{ k.key }}</span><span class="kw-score">{{ (k.score*100).toFixed(0) }}%</span></div></el-card>
+        <el-card shadow="never" style="margin-bottom:16px"><template #header><span>{{ \('evolution.title') }}</span></template><div v-for="t in trends" :key="t.label" class="trend-item"><div class="trend-info"><span class="trend-label">{{ t.label }}</span><span :class="['trend-change', t.trendType]">{{ t.trend }}</span></div><el-progress :percentage="t.rate" :color="t.color" :stroke-width="6"/></div></el-card>
+        <el-card shadow="never"><template #header><span>AI</span></template><div v-for="k in knowledge" :key="k.key" class="kw-item"><el-tag :type="k.catType" size="small">{{ k.category }}</el-tag><span class="kw-key">{{ k.key }}</span><span class="kw-score">{{ (k.score*100).toFixed(0) }}%</span></div></el-card>
       </el-col>
       <el-col :span="12">
-        <el-card shadow="never" style="margin-bottom:16px"><template #header><span>进化行为历史</span></template><div v-for="a in actionHistory" :key="a.name+a.time" class="act-item"><el-tag :type="a.typeTag" size="small">{{ a.type }}</el-tag><span class="act-name">{{ a.name }}</span><span :style="{color:a.ok?'#52c41a':'#ff4d4f'}">{{ a.ok?'成功':'失败' }}</span><span class="act-time">{{ a.time }}</span></div></el-card>
-        <el-card shadow="never"><template #header><span>AI智能建议</span></template><div v-for="s in suggestions" :key="s.text" class="sug-row"><span class="sug-icon">{{ s.icon }}</span><span class="sug-text">{{ s.text }}</span><el-button v-if="s.action" size="small" @click="handleSuggestion(s)">{{ s.action }}</el-button></div></el-card>
+        <el-card shadow="never" style="margin-bottom:16px"><template #header><span>{{ \('evolution.title') }}</span></template><div v-for="a in actionHistory" :key="a.name+a.time" class="act-item"><el-tag :type="a.typeTag" size="small">{{ a.type }}</el-tag><span class="act-name">{{ a.name }}</span><span :style="{color:a.ok?'#52c41a':'#ff4d4f'}">{{ a.ok?'':'' }}</span><span class="act-time">{{ a.time }}</span></div></el-card>
+        <el-card shadow="never"><template #header><span>AI</span></template><div v-for="s in suggestions" :key="s.text" class="sug-row"><span class="sug-icon">{{ s.icon }}</span><span class="sug-text">{{ s.text }}</span><el-button v-if="s.action" size="small" @click="handleSuggestion(s)">{{ s.action }}</el-button></div></el-card>
       </el-col>
     </el-row>
   </div>
@@ -24,7 +24,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'; import { ElMessage } from 'element-plus'; import { agentApi } from '@/api/index'
 const loading = ref(false)
-const evoCards = ref([{icon:'',label:'加载中...',value:'-',color:'#52c41a',bg:'rgba(82,196,26,0.1)'},{icon:'',label:'加载中...',value:'-',color:'#667eea',bg:'rgba(102,126,234,0.1)'},{icon:'',label:'加载中...',value:'-',color:'#faad14',bg:'rgba(250,173,20,0.1)'},{icon:'',label:'加载中...',value:'-',color:'#764ba2',bg:'rgba(118,75,162,0.1)'}])
+const evoCards = ref([{icon:'',label:'...',value:'-',color:'#52c41a',bg:'rgba(82,196,26,0.1)'},{icon:'',label:'...',value:'-',color:'#667eea',bg:'rgba(102,126,234,0.1)'},{icon:'',label:'...',value:'-',color:'#faad14',bg:'rgba(250,173,20,0.1)'},{icon:'',label:'...',value:'-',color:'#764ba2',bg:'rgba(118,75,162,0.1)'}])
 const trends = ref([]); const knowledge = ref([]); const actionHistory = ref([]); const suggestions = ref([])
 
 async function fetchReport() {
@@ -33,10 +33,10 @@ async function fetchReport() {
     if(r?.data?.ok) {
       const d = r.data
       evoCards.value = [
-        {icon:'',label:'30天成功率',value:(d.success_rate||'87.5%'),color:'#52c41a',bg:'rgba(82,196,26,0.1)'},
-        {icon:'',label:'已学知识',value:(d.knowledge_count||0)+'条',color:'#667eea',bg:'rgba(102,126,234,0.1)'},
-        {icon:'',label:'用户纠正',value:(d.corrections||0)+'次',color:'#faad14',bg:'rgba(250,173,20,0.1)'},
-        {icon:'',label:'进化趋势',value:d.trend||'上升',color:'#764ba2',bg:'rgba(118,75,162,0.1)'}
+        {icon:'',label:'30',value:(d.success_rate||'87.5%'),color:'#52c41a',bg:'rgba(82,196,26,0.1)'},
+        {icon:'',label:'',value:(d.knowledge_count||0)+'',color:'#667eea',bg:'rgba(102,126,234,0.1)'},
+        {icon:'',label:'',value:(d.corrections||0)+'',color:'#faad14',bg:'rgba(250,173,20,0.1)'},
+        {icon:'',label:'',value:d.trend||'',color:'#764ba2',bg:'rgba(118,75,162,0.1)'}
       ]
       trends.value = (d.trends||[]).map(t=>({...t, trendType: t.trend?.includes('+')?'success':t.trend?.includes('-')?'danger':'info'}))
       knowledge.value = (d.knowledge||[]).map(k=>({...k, catType: k.score>0.85?'success':k.score>0.7?'warning':'danger'}))
@@ -48,11 +48,11 @@ async function fetchReport() {
 
 async function refreshReport() {
   loading.value = true
-  try { await agentApi.post('/agent/evolution/refresh'); await fetchReport(); ElMessage.success('进化报告已更新') } catch(e) { ElMessage.error('刷新失败') }
+  try { await agentApi.post('/agent/evolution/refresh'); await fetchReport(); ElMessage.success('OK') } catch(e) { ElMessage.error('Error') }
   loading.value = false
 }
 function handleSuggestion(sug) {
-  if(sug.action) { try { agentApi.post('/agent/evolution/apply-suggestion', {suggestion:sug.text}); ElMessage.success('已应用建议') } catch(e) { ElMessage.error('操作失败') } }
+  if(sug.action) { try { agentApi.post('/agent/evolution/apply-suggestion', {suggestion:sug.text}); ElMessage.success('OK') } catch(e) { ElMessage.error('Error') } }
 }
 onMounted(() => fetchReport())
 </script>

@@ -1,4 +1,4 @@
-"""A/B测试 API"""
+''"A/B API''"
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from tools.abtest_engine import abtest_engine

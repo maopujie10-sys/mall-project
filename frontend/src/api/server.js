@@ -11,7 +11,7 @@ export function uploadServerFile(path, file) {
 }
 export function deleteServerFile(path) { return agentApi.delete("/server/files", { params: { path } }) }
 export function killServerProcess(pid) { return agentApi.post("/server/kill-process", { pid }) }
-// 新增
+
 export function getMemoryTop(limit) { return agentApi.get("/server/memory/top", { params: { limit } }) }
 export function getMemoryTrend(hours) { return agentApi.get("/server/memory/trend", { params: { hours } }) }
 export function getMemoryLeaks() { return agentApi.get("/server/memory/leaks") }

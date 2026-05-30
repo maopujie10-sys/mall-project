@@ -1,9 +1,9 @@
 <template>
   <div class="page-shell">
-    <div class="page-header"><h2>🗄️ 自然语言查数据</h2><p>用中文问 → AI生成SQL → 返回结果</p></div>
-    <el-card><template #header>💬 输入查询</template>
-      <el-input v-model="question" placeholder="如：今天有多少新订单？昨天销量最高的商品是什么？" type="textarea" :rows="2"/>
-      <el-button type="primary" style="margin-top:10px" @click="query" :loading="loading">🔍 查询</el-button>
+    <div class="page-header">-<p>  AISQL  </p></div>
+    <el-card><template #header> </template>
+      <el-input v-model="question" placeholder='' type="textarea" :rows="2"/>
+      
       <div v-if="result" class="sql-result">
         <div class="sql-explain">{{ result.explanation }}</div>
         <pre class="sql-code">{{ result.sql }}</pre>
@@ -13,10 +13,10 @@
 </template>
 <script setup>
 import { ref } from "vue"; import { ElMessage } from "element-plus"; import { agentApi } from "@/api"
-const question = ref(""); const result = ref(null); const loading = ref(false)
+const question = ref(''); const result = ref(null); const loading = ref(false)
 async function query() {
   if (!question.value) return; loading.value = true
-  try { const r = await agentApi.post("/agent/text2sql/query", { question: question.value }); if (r?.data?.ok) result.value = r.data; else { ElMessage.warning(r?.data?.error || "查询失败"); result.value = r.data } } catch (e) { ElMessage.error(e.message) }
+  try { const r = await agentApi.post("/agent/text2sql/query", { question: question.value }); if (r?.data?.ok) result.value = r.data; else { ElMessage.warning(r?.data?.error || ''); result.value = r.data } } catch (e) { ElMessage.error(e.message) }
   loading.value = false
 }
 </script>

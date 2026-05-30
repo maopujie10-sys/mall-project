@@ -1,70 +1,70 @@
 <template>
   <div class="net-tools">
-    <div class="page-header"><h2>馃寪 缃戠粶宸ュ叿</h2><p>Ping 路 DNS 路 绔彛鎵弿 路 HTTP妫€鏌路 璺敱杩借釜</p></div>
+    <div class="page-header">-<p>Ping  DNS    HTTP? </p></div>
 
     <el-row :gutter="16">
       <el-col :span="12">
         <el-card shadow="never" style="margin-bottom:16px">
-          <template #header><span>馃彄 Ping</span></template>
+          <template #header><span> Ping</span></template>
           <div style="display:flex;gap:8px">
-            <el-input v-model="pingHost" placeholder="鍩熷悕鎴朓P" size="small" @keyup.enter="runPing" />
+            <el-input v-model="pingHost" placeholder="P" size="small" @keyup.enter="runPing" />
             <el-button @click="runPing" size="small" type="primary" :loading="pingLoading">Ping</el-button>
           </div>
-          <pre v-if="pingResult" class="result-box">{{ pingResult.stdout || pingResult.error || "无结果" }}</pre>
+          <pre v-if="pingResult" class="result-box">{{ pingResult.stdout || pingResult.error || "? }}</pre>
         </el-card>
 
         <el-card shadow="never" style="margin-bottom:16px">
-          <template #header><span>馃攳 DNS 鏌ヨ</span></template>
+          <template #header><span> DNS </span></template>
           <div style="display:flex;gap:8px">
-            <el-input v-model="dnsDomain" placeholder="鍩熷悕" size="small" @keyup.enter="runDns" />
-            <el-button @click="runDns" size="small" type="primary" :loading="dnsLoading">鏌ヨ</el-button>
+            <el-input v-model="dnsDomain" placeholder='' size="small" @keyup.enter="runDns" />
+            <el-button @click="runDns" size="small" type="primary" :loading="dnsLoading"></el-button>
           </div>
           <div v-if="dnsResult" class="result-box">
-            <div v-if="dnsResult.ips">IP地址：<code v-for="ip in dnsResult.ips" :key="ip" style="display:block">{{ ip }}</code></div>
+            <div v-if="dnsResult.ips">IP?code v-for="ip in dnsResult.ips" :key="ip" style="display:block">{{ ip }}</code></div>
             <div v-else style="color:#ff4d4f">{{ dnsResult.error }}</div>
           </div>
         </el-card>
 
         <el-card shadow="never">
-          <template #header><span>馃攲 HTTP 鐘舵€佹鏌</span></template>
+          <template #header><span> HTTP ?/span></template>
           <div style="display:flex;gap:8px">
             <el-input v-model="httpUrl" placeholder="https://example.com" size="small" @keyup.enter="runHttp" />
-            <el-button @click="runHttp" size="small" type="primary" :loading="httpLoading">妫€鏌</el-button>
+            <el-button @click="runHttp" size="small" type="primary" :loading="httpLoading">?/el-button>
           </div>
           <div v-if="httpResult" class="result-box">
-            <div>状态码：<el-tag :type="httpResult.status < 400 ? 'success' : 'danger'">{{ httpResult.status }}</el-tag></div>
-            <div>鍝嶅簲时间锛歿{ httpResult.elapsed_ms }}ms</div>
-            <div>澶у皬锛歿{ httpResult.size }} bytes</div>
+            <div>?el-tag :type="httpResult.status < 400 ? 'success' : 'danger''>{{ httpResult.status }}</el-tag></div>
+            <div>{ httpResult.elapsed_ms }}ms</div>
+            <div>{ httpResult.size }} bytes</div>
           </div>
         </el-card>
       </el-col>
 
       <el-col :span="12">
         <el-card shadow="never" style="margin-bottom:16px">
-          <template #header><span>馃敁 绔彛鎵弿</span></template>
+          <template #header>-</template>
           <div style="display:flex;gap:8px;margin-bottom:8px">
-            <el-input v-model="scanHost" placeholder="鍩熷悕鎴朓P" size="small" style="width:200px" />
+            <el-input v-model="scanHost" placeholder="P" size="small" style="width:200px" />
             <el-input v-model="scanPorts" placeholder="22,80,443,3306..." size="small" style="width:250px" />
-            <el-button @click="runPortScan" size="small" type="primary" :loading="scanLoading">鎵弿</el-button>
+            <el-button @click="runPortScan" size="small" type="primary" :loading="scanLoading"></el-button>
           </div>
           <div v-if="scanResult" class="result-box">
-            <div style="margin-bottom:8px">寮€鏀剧鍙ｏ細{{ scanResult.open_count }}/{{ scanResult.results?.length || 0 }}</div>
+            <div style="margin-bottom:8px">{{ scanResult.open_count }}/{{ scanResult.results?.length || 0 }}</div>
             <div v-for="r in scanResult.results" :key="r.port" style="display:flex;align-items:center;gap:8px;padding:2px 0">
-              <span :style="{color:r.open?'#52c41a':'#999'}">{{ r.open ? '馃煝' : '鈿' }}</span>
-              <span style="font-family:monospace">绔彛 {{ r.port }}</span>
-              <el-tag v-if="r.open" size="small" type="success">寮€鏀</el-tag>
-              <el-tag v-else size="small">鍏抽棴</el-tag>
+              <span :style="{color:r.open?'#52c41a':'#999'}">{{ r.open ? '' : '? }}</span>
+              <span style="font-family:monospace"> {{ r.port }}</span>
+              <el-tag v-if="r.open" size="small" type="success">?/el-tag>
+              -
             </div>
           </div>
         </el-card>
 
         <el-card shadow="never">
-          <template #header><span>馃洡锔璺敱杩借釜</span></template>
+          <template #header><span>?</span></template>
           <div style="display:flex;gap:8px">
-            <el-input v-model="traceHost" placeholder="鍩熷悕鎴朓P" size="small" @keyup.enter="runTrace" />
-            <el-button @click="runTrace" size="small" type="primary" :loading="traceLoading">杩借釜</el-button>
+            <el-input v-model="traceHost" placeholder="P" size="small" @keyup.enter="runTrace" />
+            <el-button @click="runTrace" size="small" type="primary" :loading="traceLoading">OK</el-button>
           </div>
-          <pre v-if="traceResult" class="result-box">{{ traceResult.stdout || traceResult.error || "无结果" }}</pre>
+          <pre v-if="traceResult" class="result-box">{{ traceResult.stdout || traceResult.error || "? }}</pre>
         </el-card>
       </el-col>
     </el-row>
@@ -75,20 +75,20 @@
 import { ref } from "vue"
 import { agentApi } from "@/api"
 
-const pingHost = ref("")
+const pingHost = ref('')
 const pingResult = ref(null)
 const pingLoading = ref(false)
-const dnsDomain = ref("")
+const dnsDomain = ref('')
 const dnsResult = ref(null)
 const dnsLoading = ref(false)
-const httpUrl = ref("")
+const httpUrl = ref('')
 const httpResult = ref(null)
 const httpLoading = ref(false)
-const scanHost = ref("")
+const scanHost = ref('')
 const scanPorts = ref("22,80,443,3306,6379,8080,9000")
 const scanResult = ref(null)
 const scanLoading = ref(false)
-const traceHost = ref("")
+const traceHost = ref('')
 const traceResult = ref(null)
 const traceLoading = ref(false)
 

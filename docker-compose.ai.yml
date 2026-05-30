@@ -10,11 +10,10 @@ services:
     container_name: mall-ai-agent
     network_mode: host
     env_file: .env
-    environment:
-      - BACKUP_DIR=/app/backups
     volumes:
       - ./backups:/app/backups
       - ./logs:/app/logs
+      - /var/run/docker.sock:/var/run/docker.sock:ro
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:9000/agent/health/simple')"]
       interval: 30s
