@@ -20,7 +20,7 @@
   - **前端UI：** Dashboard.vue完全重写（全息玻璃态卡片+粒子背景+发光进度条+暗色ECharts），FloatingNav.vue增强3D全息（三层旋转环+粒子轨道+扫描线）
   - **后端修复：** 9个Python文件语法错误全部修复（security/advanced_ai/autopilot/db_router/docker_panel/code_agent/trend_agent/description_generator/evolution）
   - **验证：** 前端vite build ✅，后端全部py_compile ✅
-  - **Git：** (待提交)
+  - **Git：** eaf89f6
 - 2026-05-30 23:00: [前端全量修复] 30+ Vue 文件编码损坏，前端构建成功（565模块），Docker部署完成
   - **问题：** 电脑端 compact 格式转换导致 UTF-8 中文被替换为 `?`，破坏大量 Vue 模板引号匹配和字符串闭合
   - **修复：** 缺失引号(~30处)、`\(`→`$t(`(8文件)、换行符`}\`nfunction`修复、未闭合字符串/标签损坏/三元表达式
