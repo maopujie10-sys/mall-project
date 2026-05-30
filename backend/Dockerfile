@@ -1,36 +1,40 @@
 FROM python:3.11-slim
+
 LABEL maintainer="Friday AI OS"
+
 WORKDIR /app
 
-# 安装系统依赖
+# Install system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
     nginx \
+    curl \
     openssl \
     && rm -rf /var/lib/apt/lists/*
 
-# 安装 Python 依赖
+# Install Python dependencies
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# 安装 Playwright + Chromium（用于浏览器自动化）
+# Install Playwright + Chromium (browser automation)
 RUN pip install --no-cache-dir playwright && \
-    python -m playwright install chromium 2>/dev/null || echo "playwright chromium 安装跳过"
+    python -m playwright install chromium 2>/dev/null || echo "playwright chromium install skipped"
 
-# 复制代码
+# Copy app code
 COPY . .
 
-# 创建持久化目录
+# Create required directories
 RUN mkdir -p /app/data/screenshots /app/memory /app/state /app/backups /app/logs
 
-# Docker管理需挂载宿主docker.sock: volumes: - /var/run/docker.sock:/var/run/docker.sock
+# Docker socket: mount via volumes: - /var/run/docker.sock:/var/run/docker.sock
 EXPOSE 9000
 ENV TZ=Asia/Shanghai
 
-# 健康检查
+# Health check
 HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
   CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:9000/agent/health')" || exit 1
 
-# 清除 BOM
-RUN find /app -name "*.py" -exec sed -i "1s/^\xEF\xBB\xBF//" {} \;
+# Clean BOM from Python files
+RUN find /app -name "*.py" -exec sed -i "1s/^\\xEF\\xBB\\xBF//" {} \;
+
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "9000", "--workers", "2"]

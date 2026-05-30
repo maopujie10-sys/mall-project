@@ -1,4 +1,4 @@
-﻿"""高级AI引擎 -- 实时语音打断 / 视频流分析 / 深度研究 / 数据可视化 / 文件导出 / 网页抓取 / 浏览器自动化 / 长上下文"""
+"""高级AI引擎 -- 实时语音打断 / 视频流分析 / 深度研究 / 数据可视化 / 文件导出 / 网页抓取 / 浏览器自动化 / 长上下文"""
 import json, os, re, io, base64, asyncio, tempfile, subprocess
 from pathlib import Path
 from datetime import datetime
