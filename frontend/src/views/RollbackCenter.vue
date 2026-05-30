@@ -21,7 +21,7 @@
         <div class="metric-card">
           <div class="metric-label">鏈€杩戝浠</div>
           <div class="metric-value" style="font-size: 16px;">{{ latestBackup }}</div>
-          <div class="metric-sub">鑷姩澶囦唤姝ｅ父</div>
+          <div class="metric-sub">鑷姩澶囦唤正常</div>
         </div>
       </el-col>
       <el-col :span="6">
@@ -50,7 +50,7 @@
               <el-icon><Plus /></el-icon> 鎵嬪姩澶囦唤
             </el-button>
             <el-button text size="small" type="primary" @click="refreshBackups" :loading="loading">
-              <el-icon><Refresh /></el-icon> 鍒锋柊
+              <el-icon><Refresh /></el-icon> 刷新
             </el-button>
           </div>
         </div>
@@ -58,7 +58,7 @@
       <el-empty v-if="backups.length === 0 && !loading" description="鏆傛棤澶囦唤璁板綍" :image-size="80" style="padding:40px 0;" />
       <el-table v-else :data="backups" style="width: 100%;" size="small" stripe>
         <el-table-column prop="id" label="澶囦唤 ID" width="180" />
-        <el-table-column prop="type" label="绫诲瀷" width="100">
+        <el-table-column prop="type" label="类型" width="100">
           <template #default="{ row }">
             <el-tag :type="row.type === '鍏ㄩ噺' ? 'primary' : 'info'" size="small" effect="light">
               {{ row.type }}
@@ -66,7 +66,7 @@
           </template>
         </el-table-column>
         <el-table-column prop="target" label="澶囦唤鐩爣" min-width="140" />
-        <el-table-column prop="time" label="澶囦唤鏃堕棿" width="150" />
+        <el-table-column prop="time" label="澶囦唤时间" width="150" />
         <el-table-column prop="size" label="澶у皬" width="100" />
         <el-table-column prop="status" label="..." width="90">
           <template #default="{ row }">
@@ -75,7 +75,7 @@
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="鎿嶄綔" width="160">
+        <el-table-column label="操作" width="160">
           <template #default="{ row }">
             <el-button
               v-if="row.status === '鎴愬姛'"
@@ -94,16 +94,16 @@
       </el-table>
     </el-card>
 
-    <!-- 鍥炴粴纭寮圭獥 -->
+    <!-- 鍥炴粴确认寮圭獥 -->
     <el-dialog
       v-model="rollbackDialogVisible"
-      title="鍥炴粴纭"
+      title="鍥炴粴确认"
       width="480px"
       :close-on-click-modal="false"
     >
       <div v-if="rollbackTarget" style="padding: 8px 0;">
         <el-alert
-          title="姝ゆ搷浣滃皢瑕嗙洊褰撳墠杩愯鐗堟湰锛岃浠旂粏纭"
+          title="姝ゆ搷浣滃皢瑕嗙洊褰撳墠杩愯鐗堟湰锛岃浠旂粏确认"
           type="warning"
           :closable="false"
           show-icon
@@ -119,7 +119,7 @@
             <span class="info-value">{{ rollbackTarget.target }}</span>
           </div>
           <div class="info-row">
-            <span class="info-label">澶囦唤鏃堕棿</span>
+            <span class="info-label">澶囦唤时间</span>
             <span class="info-value">{{ rollbackTarget.time }}</span>
           </div>
           <div class="info-row">
@@ -128,23 +128,23 @@
           </div>
         </div>
         <p style="font-size: 13px; color: var(--text-secondary); margin-top: 12px;">
-          璇疯緭鍏?"{{ rollbackTarget.id }}" 纭鍥炴粴鎿嶄綔
+          璇疯緭鍏?"{{ rollbackTarget.id }}" 确认鍥炴粴操作
         </p>
         <el-input
           v-model="rollbackConfirmText"
-          placeholder="璇疯緭鍏ュ浠?ID 纭"
+          placeholder="璇疯緭鍏ュ浠?ID 确认"
           style="margin-top: 8px;"
         />
       </div>
       <template #footer>
-        <el-button @click="rollbackDialogVisible = false">鍙栨秷</el-button>
+        <el-button @click="rollbackDialogVisible = false">取消</el-button>
         <el-button
           type="danger"
           @click="handleExecuteRollback"
           :disabled="rollbackConfirmText !== rollbackTarget?.id"
           :loading="rollingBack"
         >
-          纭鍥炴粴
+          确认鍥炴粴
         </el-button>
       </template>
     </el-dialog>

@@ -2,6 +2,9 @@
 import hashlib
 import time
 import gc
+import os
+import re
+import json
 import pymysql
 from datetime import datetime
 from typing import Optional
@@ -36,6 +39,62 @@ def _is_ad_tracking_url(url: str) -> bool:
     if not url:
         return False
     return any(d in url for d in _AD_TRACKING_DOMAINS)
+
+
+def _detect_lang(text: str) -> str:
+    """检测文本语言, 返回 'en'/'zh'/'mixed'"""
+    if not text:
+        return "en"
+    has_cn = bool(re.search(r'[一-鿿]', text))
+    has_en = bool(re.search(r'[a-zA-Z]{3,}', text))
+    if has_cn and has_en:
+        return "mixed"
+    return "zh" if has_cn else "en"
+
+
+def _translate(text: str, target: str = "cn") -> str:
+    """用DeepSeek翻译产品标题, 失败时返回原文"""
+    if not text or not text.strip():
+        return text
+
+    lang = _detect_lang(text)
+    if target == "cn" and lang == "zh":
+        return text
+    if target == "en" and lang == "en":
+        return text
+
+    api_key = os.getenv("DEEPSEEK_API_KEY", "")
+    if not api_key:
+        return text
+
+    direction = "to Simplified Chinese" if target == "cn" else "to English"
+    prompt = (
+        f"Translate this e-commerce product title {direction}. "
+        "Keep brand names, model numbers, sizes and specs in original form. "
+        "Return ONLY the translation, no explanations.\n\n"
+        f"Text: {text[:300]}"
+    )
+
+    try:
+        import httpx
+        r = httpx.post(
+            "https://api.deepseek.com/v1/chat/completions",
+            headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
+            json={
+                "model": "deepseek-chat",
+                "messages": [{"role": "user", "content": prompt}],
+                "max_tokens": 200,
+                "temperature": 0.3,
+            },
+            timeout=20,
+        )
+        if r.status_code == 200:
+            result = r.json().get("choices", [{}])[0].get("message", {}).get("content", "")
+            if result and len(result.strip()) > 1:
+                return result.strip()
+    except Exception:
+        pass
+    return text
 
 
 def _conn():
@@ -235,21 +294,28 @@ def import_product(product: dict, seller_id: str = DEFAULT_SELLER_ID, subcat_nam
             VALUES (%s, %s, %s, 1, %s, %s, %s, {', '.join(['%s']*len(img_values))})
         """, [goods_id, price, category_id, now_dt, now_ts, source_url] + img_values)
 
-        # 2. T_MALL_SYSTEM_GOODS_LANG -- 标题+描述(中英文)
-        lang_id = _uuid(f"{goods_id}_cn")
-        desc_text = description[:8000]
-        cur.execute("""INSERT INTO T_MALL_SYSTEM_GOODS_LANG
-            (UUID, GOODS_ID, LANG, NAME, DES)
-            VALUES (%s, %s, 'cn', %s, %s)
-            ON DUPLICATE KEY UPDATE NAME=%s, DES=%s""",
-            (lang_id, goods_id, title, desc_text, title, desc_text))
+        # 2. T_MALL_SYSTEM_GOODS_LANG -- 统一存英文(平台前端自动多语言适配)
+        desc_text = description[:8000] if description else title
+
+        # 标题含中文则清理为纯英文
+        en_title = title
+        lang = _detect_lang(title)
+        if lang in ("zh", "mixed"):
+            en_title = _translate(title, "en")
 
         lang_id_en = _uuid(f"{goods_id}_en")
         cur.execute("""INSERT INTO T_MALL_SYSTEM_GOODS_LANG
             (UUID, GOODS_ID, LANG, NAME, DES)
             VALUES (%s, %s, 'en', %s, %s)
             ON DUPLICATE KEY UPDATE NAME=%s, DES=%s""",
-            (lang_id_en, goods_id, title, desc_text, title, desc_text))
+            (lang_id_en, goods_id, en_title, desc_text, en_title, desc_text))
+
+        lang_id = _uuid(f"{goods_id}_cn")
+        cur.execute("""INSERT INTO T_MALL_SYSTEM_GOODS_LANG
+            (UUID, GOODS_ID, LANG, NAME, DES)
+            VALUES (%s, %s, 'cn', %s, %s)
+            ON DUPLICATE KEY UPDATE NAME=%s, DES=%s""",
+            (lang_id, goods_id, en_title, desc_text, en_title, desc_text))
 
         # 3. T_MALL_SELLER_GOODS -- 直接上架
         sg_id = _uuid(f"{goods_id}_seller")

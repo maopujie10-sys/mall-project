@@ -33,7 +33,7 @@
           </div>
           <div v-if="httpResult" class="result-box">
             <div>状态码：<el-tag :type="httpResult.status < 400 ? 'success' : 'danger'">{{ httpResult.status }}</el-tag></div>
-            <div>鍝嶅簲鏃堕棿锛歿{ httpResult.elapsed_ms }}ms</div>
+            <div>鍝嶅簲时间锛歿{ httpResult.elapsed_ms }}ms</div>
             <div>澶у皬锛歿{ httpResult.size }} bytes</div>
           </div>
         </el-card>

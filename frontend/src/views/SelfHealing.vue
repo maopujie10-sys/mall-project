@@ -5,7 +5,7 @@
       <p>7脳24鑷姩宸℃ 路 鏅鸿兘璇婃柇 路 鑷姩淇 路 鏁板瓧鍏嶇柅绯荤粺</p>
     </div>
 
-    <!-- 鎿嶄綔鏍?-->
+    <!-- 操作鏍?-->
     <el-row :gutter="16" style="margin-bottom:20px">
       <el-col :span="24">
         <el-card shadow="never">
@@ -17,7 +17,7 @@
               <el-option :value="7" label="最近7天" />
               <el-option :value="30" label="最近30天" />
             </el-select>
-            <el-button @click="loadHistory">馃攧 鍒锋柊</el-button>
+            <el-button @click="loadHistory">馃攧 刷新</el-button>
           </el-space>
         </el-card>
       </el-col>
@@ -33,12 +33,12 @@
       </el-col>
     </el-row>
 
-    <!-- 宸℃缁撴灉 -->
+    <!-- 宸℃结果 -->
     <el-card v-if="patrolResult" shadow="never" style="margin-bottom:20px">
-      <template #header>馃搵 鏈€鏂板贰妫€缁撴灉</template>
+      <template #header>馃搵 鏈€鏂板贰妫€结果</template>
       <el-descriptions :column="3" border size="small">
         <el-descriptions-item label="妫€鏌ラ」">{{ patrolResult.total_checks || 0 }}</el-descriptions-item>
-        <el-descriptions-item label="閫氳繃">{{ patrolResult.checks_passed || 0 }}</el-descriptions-item>
+        <el-descriptions-item label="通过">{{ patrolResult.checks_passed || 0 }}</el-descriptions-item>
         <el-descriptions-item label="鍙戠幇闂">{{ (patrolResult.issues || []).length }}</el-descriptions-item>
       </el-descriptions>
       <el-table v-if="patrolResult.issues && patrolResult.issues.length" :data="patrolResult.issues" size="small" style="margin-top:12px">
@@ -51,9 +51,9 @@
       <el-empty v-else description="一切正常，未发现异常" :image-size="60"/>
     </el-card>
 
-    <!-- 淇缁撴灉 -->
+    <!-- 淇结果 -->
     <el-card v-if="fixResult" shadow="never" style="margin-bottom:20px">
-      <template #header>馃敡 淇缁撴灉</template>
+      <template #header>馃敡 淇结果</template>
       <el-descriptions :column="3" border size="small">
         <el-descriptions-item label="灏濊瘯淇">{{ fixResult.attempted || 0 }}</el-descriptions-item>
         <el-descriptions-item label="已修复">{{ fixResult.fixed || 0 }}</el-descriptions-item>
@@ -61,7 +61,7 @@
       </el-descriptions>
       <el-table v-if="fixResult.results && fixResult.results.length" :data="fixResult.results" size="small" style="margin-top:12px">
         <el-table-column prop="id" label="寮傚父ID" width="120"/>
-        <el-table-column prop="result.action" label="鎿嶄綔"/>
+        <el-table-column prop="result.action" label="操作"/>
         <el-table-column label="..." width="100">
           <template #default="{row}"><el-tag :type="row.result.fixed ? 'success' : 'danger'" size="small">{{ row.result.fixed ? '宸蹭慨澶' : '澶辫触' }}</el-tag></template>
         </el-table-column>
@@ -86,7 +86,7 @@
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="鎿嶄綔" width="120">
+        <el-table-column label="操作" width="120">
           <template #default="{row}">
             <el-button v-if="row.status !== 'resolved'" type="primary" size="small" link @click="doResolve(row.id)">鏍囪瑙ｅ喅</el-button>
           </template>
@@ -161,7 +161,7 @@ async function doResolve(id) {
     ElMessage.success('已标记解决')
     loadHistory()
   } catch (e) {
-    ElMessage.error('鎿嶄綔澶辫触')
+    ElMessage.error('操作澶辫触')
   }
 }
 

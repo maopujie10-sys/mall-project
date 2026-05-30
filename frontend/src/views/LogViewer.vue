@@ -22,7 +22,7 @@
           </el-select>
         </el-col>
         <el-col :span="6">
-          <el-input v-model="filterText" placeholder="鎼滅储鍏抽敭璇?.." clearable @keyup.enter="loadLogs"/>
+          <el-input v-model="filterText" placeholder="搜索鍏抽敭璇?.." clearable @keyup.enter="loadLogs"/>
         </el-col>
         <el-col :span="4">
           <el-select v-model="logLines" style="width:100%">
@@ -32,7 +32,7 @@
         </el-col>
         <el-col :span="4">
           <el-button type="primary" @click="loadLogs">馃攳 鏌ヨ</el-button>
-          <el-button @click="loadSources">馃攧 鍒锋柊</el-button>
+          <el-button @click="loadSources">馃攧 刷新</el-button>
         </el-col>
         <el-col :span="6">
           <el-space>

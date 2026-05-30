@@ -72,7 +72,7 @@ function showContent() {
 function hideContent() {
   const overlay = document.querySelector('.content-overlay')
   if (overlay && window.location.hash === '' && window.location.pathname === '/ai/' || window.location.pathname === '/ai/friday') {
-    // 棣栭〉涓嶆樉绀哄唴瀹?  } else if (overlay) {
+    // 首页涓嶆樉绀哄唴瀹?  } else if (overlay) {
     overlay.classList.add('has-content')
   }
 }

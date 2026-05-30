@@ -34,11 +34,11 @@
 
     <el-card shadow="never">
       <template #header>
-        <el-space><span>馃搵 浠诲姟娓呭崟</span><el-button size="small" @click="loadTasks">馃攧 鍒锋柊</el-button></el-space>
+        <el-space><span>馃搵 浠诲姟娓呭崟</span><el-button size="small" @click="loadTasks">馃攧 刷新</el-button></el-space>
       </template>
       <el-table :data="tasks" size="small" v-loading="loading">
         <el-table-column prop="id" label="ID" width="120"/>
-        <el-table-column prop="name" label="浠诲姟鍚嶇О" width="140"/>
+        <el-table-column prop="name" label="浠诲姟名称" width="140"/>
         <el-table-column prop="desc" label="鎻忚堪" min-width="200"/>
         <el-table-column prop="trigger" label="瑙﹀彂瑙勫垯" width="130"/>
         <el-table-column prop="next_run" label="涓嬫鎵ц" width="170">
@@ -51,7 +51,7 @@
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="鎿嶄綔" width="180">
+        <el-table-column label="操作" width="180">
           <template #default="{row}">
             <el-button size="small" type="primary" link @click="doTrigger(row.id)">鈻绔嬪嵆鎵ц</el-button>
             <el-button v-if="row.status==='running'" size="small" type="warning" link @click="doPause(row.id)">鈴鏆傚仠</el-button>

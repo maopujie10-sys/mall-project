@@ -2,7 +2,7 @@
   <div class="page-container">
     <div class="page-header">
       <h2>瀹℃壒涓績</h2>
-      <p>浠诲姟瀹℃壒 路 椋庨櫓鎺у埗 路 鍙樻洿瀹℃牳</p>
+      <p>任务审批 · 风险控制 · 变更审核</p>
     </div>
 
     <!-- 閿欒鎻愮ず -->
@@ -19,23 +19,23 @@
       </el-col>
       <el-col :span="6">
         <div class="metric-card">
-          <div class="metric-label">浠婃棩宸插鎵</div>
+          <div class="metric-label">今日宸插鎵</div>
           <div class="metric-value">{{ loading ? '...' : historyTasks.length }}</div>
-          <div class="metric-sub">閫氳繃 {{ approvedCount }} 路 鎷掔粷 {{ rejectedCount }}</div>
+          <div class="metric-sub">通过 {{ approvedCount }} 路 拒绝 {{ rejectedCount }}</div>
         </div>
       </el-col>
       <el-col :span="6">
         <div class="metric-card">
-          <div class="metric-label">瓒呮椂鑷姩鎷掔粷</div>
+          <div class="metric-label">瓒呮椂鑷姩拒绝</div>
           <div class="metric-value" style="color: var(--color-danger);">0</div>
-          <div class="metric-sub">瓒呰繃 30 鍒嗛挓</div>
+          <div class="metric-sub">超过 30 分钟</div>
         </div>
       </el-col>
       <el-col :span="6">
         <div class="metric-card">
-          <div class="metric-label">骞冲潎瀹℃壒鏃堕棿</div>
+          <div class="metric-label">骞冲潎瀹℃壒时间</div>
           <div class="metric-value">--</div>
-          <div class="metric-sub">杩?24 灏忔椂</div>
+          <div class="metric-sub">近 24 小时</div>
         </div>
       </el-col>
     </el-row>
@@ -63,12 +63,12 @@
               </div>
               <p class="card-desc">{{ task.description }}</p>
               <div class="card-preview" v-if="task.preview">
-                <div class="preview-label">鍙樻洿棰勮</div>
+                <div class="preview-label">变更预览</div>
                 <div class="code-block" style="font-size: 11px; max-height: 100px;">{{ task.preview }}</div>
               </div>
               <div class="card-meta">
-                <span>鍙戣捣浜? {{ task.creator }}</span>
-                <span>褰卞搷鑼冨洿: {{ task.scope }}</span>
+                <span>发起人:  {{ task.creator }}</span>
+                <span>影响范围: {{ task.scope }}</span>
                 <span>棰勮鑰楁椂: {{ task.estimated }}</span>
               </div>
             </div>
@@ -78,14 +78,14 @@
                 @click="approveTask(task)"
                 :loading="task.approving"
               >
-                <el-icon><Check /></el-icon> 纭鎵ц
+                <el-icon><Check /></el-icon> 确认鎵ц
               </el-button>
               <el-button
                 type="danger"
                 @click="rejectTask(task)"
                 :loading="task.rejecting"
               >
-                <el-icon><Close /></el-icon> 鎷掔粷
+                <el-icon><Close /></el-icon> 拒绝
               </el-button>
             </div>
           </div>
@@ -96,25 +96,25 @@
     <!-- 宸插鐞嗕换鍔″巻鍙?-->
     <el-card shadow="never" style="margin-top: 20px;">
       <template #header>
-        <span style="font-weight: 600;">瀹℃壒鍘嗗彶</span>
+        <span style="font-weight: 600;">审批历史</span>
       </template>
       <el-table :data="historyTasks" style="width: 100%;" size="small" stripe>
-        <el-table-column prop="name" label="浠诲姟鍚嶇О" min-width="160" />
-        <el-table-column prop="risk" label="椋庨櫓绛夌骇" width="90">
+        <el-table-column prop="name" label="浠诲姟名称" min-width="160" />
+        <el-table-column prop="risk" label="风险等级" width="90">
           <template #default="{ row }">
             <span class="risk-badge" :class="row.risk.toLowerCase()">{{ row.risk }}</span>
           </template>
         </el-table-column>
         <el-table-column prop="creator" label="..." width="100" />
-        <el-table-column prop="result" label="缁撴灉" width="90">
+        <el-table-column prop="result" label="结果" width="90">
           <template #default="{ row }">
-            <el-tag :type="row.result === '閫氳繃' ? 'success' : 'danger'" size="small" effect="light">
+            <el-tag :type="row.result === '通过' ? 'success' : 'danger'" size="small" effect="light">
               {{ row.result }}
             </el-tag>
           </template>
         </el-table-column>
         <el-table-column prop="reviewer" label="..." width="100" />
-        <el-table-column prop="time" label="鏃堕棿" width="100" />
+        <el-table-column prop="time" label="时间" width="100" />
       </el-table>
     </el-card>
   </div>
@@ -133,8 +133,8 @@ const error = ref(null)
 const pendingTasks = reactive([])
 const historyTasks = reactive([])
 
-const approvedCount = computed(() => historyTasks.filter((t) => t.result === '閫氳繃').length)
-const rejectedCount = computed(() => historyTasks.filter((t) => t.result === '鎷掔粷').length)
+const approvedCount = computed(() => historyTasks.filter((t) => t.result === '通过').length)
+const rejectedCount = computed(() => historyTasks.filter((t) => t.result === '拒绝').length)
 
 async function fetchApprovals() {
   try {
@@ -182,7 +182,7 @@ const approveTask = async (task) => {
   try {
     await ElMessageBox.confirm(`确认执行「${task.name}」吗？此操作不可撤销。`, 'TODO', {
       confirmButtonText: 'TODO',
-      cancelButtonText: '鍙栨秷',
+      cancelButtonText: '取消',
       type: 'warning',
     })
     task.approving = true
@@ -193,7 +193,7 @@ const approveTask = async (task) => {
         pendingTasks.splice(idx, 1)
         historyTasks.unshift({
           name: task.name, risk: task.risk, creator: task.creator,
-          result: '閫氳繃', reviewer: 'Admin', time: new Date().toTimeString().slice(0, 5),
+          result: '通过', reviewer: 'Admin', time: new Date().toTimeString().slice(0, 5),
         })
       }
       ElMessage.success(`已批准「${task.name}」`)
@@ -209,7 +209,7 @@ const rejectTask = async (task) => {
   try {
     await ElMessageBox.confirm(`确认拒绝「${task.name}」吗？`, 'TODO', {
       confirmButtonText: 'TODO',
-      cancelButtonText: '鍙栨秷',
+      cancelButtonText: '取消',
       type: 'warning',
     })
     task.rejecting = true
@@ -220,7 +220,7 @@ const rejectTask = async (task) => {
         pendingTasks.splice(idx, 1)
         historyTasks.unshift({
           name: task.name, risk: task.risk, creator: task.creator,
-          result: '鎷掔粷', reviewer: 'Admin', time: new Date().toTimeString().slice(0, 5),
+          result: '拒绝', reviewer: 'Admin', time: new Date().toTimeString().slice(0, 5),
         })
       }
       ElMessage.warning(`已拒绝「${task.name}」`)

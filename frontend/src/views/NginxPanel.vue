@@ -14,9 +14,9 @@
         <div style="font-size:28px;font-weight:700;color:var(--color-primary)">{{ sites.length }}</div>
         <div style="font-size:12px;color:var(--text-muted)">宸插惎鐢ㄧ珯鐐</div>
       </el-card></el-col>
-      <el-col :span="6"><el-card shadow="never"><template #header>鎿嶄綔</template>
+      <el-col :span="6"><el-card shadow="never"><template #header>操作</template>
         <el-button type="warning" @click="doReload" :loading="rlLoading" size="small">閲嶈浇 Nginx</el-button>
-        <el-button @click="fetchAll" :loading="loading" size="small" style="margin-left:8px">鍒锋柊</el-button>
+        <el-button @click="fetchAll" :loading="loading" size="small" style="margin-left:8px">刷新</el-button>
       </el-card></el-col>
     </el-row>
     <el-row :gutter="16">
@@ -42,8 +42,8 @@
         <el-card shadow="never"><template #header>馃寪 绔欑偣鍒楄〃</template>
           <el-table :data="sites" stripe size="small" max-height="300">
             <el-table-column prop="name" label="..." min-width="140" />
-            <el-table-column prop="type" label="绫诲瀷" width="80"><template #default="{row}"><el-tag size="small">{{ row.type }}</el-tag></template></el-table-column>
-            <el-table-column prop="date" label="淇敼鏃堕棿" width="100" />
+            <el-table-column prop="type" label="类型" width="80"><template #default="{row}"><el-tag size="small">{{ row.type }}</el-tag></template></el-table-column>
+            <el-table-column prop="date" label="淇敼时间" width="100" />
           </el-table>
           <el-empty v-if="!sites.length" description="鏆傛棤绔欑偣" />
         </el-card>
@@ -55,9 +55,9 @@
             <el-option label="閿欒鏃ュ織" value="error" /><el-option label="璁块棶鏃ュ織" value="access" />
           </el-select>
           <el-input v-model="logKeyword" placeholder="..." size="small" style="width:150px;margin-left:8px" clearable />
-          <el-button size="small" @click="fetchLogs" style="margin-left:8px">鎼滅储</el-button>
+          <el-button size="small" @click="fetchLogs" style="margin-left:8px">搜索</el-button>
         </template>
-        <pre class="code-box" style="max-height:350px">{{ logs || "鐐瑰嚮鎼滅储鏌ョ湅鏃ュ織" }}</pre>
+        <pre class="code-box" style="max-height:350px">{{ logs || "鐐瑰嚮搜索鏌ョ湅鏃ュ織" }}</pre>
         </el-card>
       </el-col>
     </el-row>
