@@ -112,7 +112,7 @@
               v-model="inputText"
               @keydown.enter.exact.prevent="sendMessage"
               @keydown.enter.shift.exact="inputText += '\n'"
-              :placeholder="voiceActive ? '璇煶璇嗗埆涓?..' : '杈撳叆娑堟伅... (Enter鍙戦€?'"
+              :placeholder="voiceActive ? '语音识别中...' : '输入消息... (Enter发送)'"
               rows="1"
               ref="inputBox"
               :disabled="loading || voiceActive"
@@ -607,40 +607,40 @@ minimizeChat = function() { stopMatrixRain(); origMin() }
 function detectTask(msg) {
   const m = msg.toLowerCase();
   processingSteps.value = [];
-  if (m.includes('鏈嶅姟')||m.includes('server')||m.includes('状态')||m.includes('cpu')||m.includes('鍐呭瓨')) {
-    processingSteps.value = ['杩炴帴鏈嶅姟鍣?..', 'CPU ?..', '璇诲彇鍐呭瓨鏁版嵁...', '鍒嗘瀽璐熻浇鎯呭喌...', '鐢熸垚鎶ュ憡...'];
-    return '绯荤粺璇婃柇';
+  if (m.includes('服务')||m.includes('server')||m.includes('状态')||m.includes('cpu')||m.includes('内存')) {
+    processingSteps.value = ['连接服务器...', 'CPU检测...', '读取内存数据...', '分析负载情况...', '生成报告...'];
+    return '系统诊断';
   }
-  if (m.includes('璁㈠崟')||m.includes('order')) {
-    processingSteps.value = ['?..', '...', '鐢熸垚姹囨€?..'];
-    return 'TODO';
+  if (m.includes('订单')||m.includes('order')) {
+    processingSteps.value = ['查询中...', '统计中...', '生成汇总...'];
+    return '订单查询';
   }
-  if (m.includes('鎶ュ憡')||m.includes('report')||m.includes('鍛ㄦ姤')) {
-    processingSteps.value = ['...', '鍒嗘瀽瓒嬪娍...', 'AI ...', '鎺掔増杈撳嚭...'];
-    return '鎶ュ憡鐢熸垚';
+  if (m.includes('报告')||m.includes('report')||m.includes('周报')) {
+    processingSteps.value = ['数据采集...', '分析趋势...', 'AI生成中...', '排版输出...'];
+    return '报告生成';
   }
-  if (m.includes('寮傚父')||m.includes('TODO')||m.includes('TODO')||m.includes('鏁呴殰')) {
-    processingSteps.value = ['?..', '鍏宠仈鍒嗘瀽...', 'AI璇婃柇...', '...'];
-    return '寮傚父鎺掓煡';
+  if (m.includes('异常')||m.includes('告警')||m.includes('alert')||m.includes('故障')) {
+    processingSteps.value = ['扫描中...', '关联分析...', 'AI诊断...', '输出结果...'];
+    return '异常排查';
   }
-  if (m.includes('瀹氫环')||m.includes('浠锋牸')||m.includes('price')) {
-    processingSteps.value = ['鑾峰彇甯傚満鏁版嵁...', '绔炲搧鍒嗘瀽...', 'AI ...'];
-    return '鏅鸿兘瀹氫环';
+  if (m.includes('定价')||m.includes('价格')||m.includes('price')) {
+    processingSteps.value = ['获取市场数据...', '竞品分析...', 'AI定价中...'];
+    return '智能定价';
   }
-  if (m.includes('缂栫▼')||m.includes('浠ｇ爜')||m.includes('开发')) {
-    processingSteps.value = ['鍒嗘瀽闇€姹?..', 'AI鐢熸垚浠ｇ爜...', '楠岃瘉娴嬭瘯...'];
-    return 'AI缂栫▼';
+  if (m.includes('编程')||m.includes('代码')||m.includes('开发')) {
+    processingSteps.value = ['分析需求...', 'AI生成代码...', '验证测试...'];
+    return 'AI编程';
   }
-  if (m.includes('澶囦唤')||m.includes('backup')) {
-    processingSteps.value = ['蹇収鐘舵€?..', '鎵撳寘鏁版嵁...', '瀹夊叏瀛樺偍...'];
-    return '澶囦唤鍥炴粴';
+  if (m.includes('备份')||m.includes('backup')) {
+    processingSteps.value = ['快照状态...', '打包数据...', '安全存储...'];
+    return '备份回滚';
   }
-  if (m.includes('閲囬泦')||m.includes('爬')||m.includes('scrape')) {
-    processingSteps.value = ['杩炴帴鏁版嵁婧?..', '...', '娓呮礂鍘婚噸...', '鍏ュ簱瀛樺偍...'];
-    return '鏁版嵁閲囬泦';
+  if (m.includes('采集')||m.includes('爬')||m.includes('scrape')) {
+    processingSteps.value = ['连接数据源...', '抓取中...', '清洗去重...', '入库存储...'];
+    return '数据采集';
   }
-  processingSteps.value = ['鍒嗘瀽涓?..', '澶勭悊涓?..', 'AI鎬濊€?..'];
-  return 'AI 澶勭悊';
+  processingSteps.value = ['分析中...', '处理中...', 'AI思考中...'];
+  return 'AI 处理';
 }
 function startStepAnimation() {
   if (stepTimer) clearInterval(stepTimer);
