@@ -1,4 +1,6 @@
-""" -- +,"""
+"""
+日志工具模块 — 支持控制台+文件双输出，自动轮转
+"""
 import os
 import sys
 import logging

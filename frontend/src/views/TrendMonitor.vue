@@ -1,7 +1,7 @@
 <template>
   <div class="trend-page">
     <div class="page-header">
-      <div><h1>{{ \('trends.title') }}</h1>-</div>
+      <div><h1>{{ $t('trends.title') }}</h1>-</div>
       <el-button type="primary" @click="showAddDialog = true">+ </el-button>
     </div>
 
@@ -16,23 +16,23 @@
     <el-card shadow="never" style="margin-bottom:20px">
       <template #header>  ({{ tracks.length }})</template>
       <el-table :data="tracks" size="small">
-        <el-table-column prop="product" label="? min-width="150"/>
+        <el-table-column prop="product" label="状态" min-width="150"/>
         <el-table-column prop="platform" label='Status' width="100"/>
-        <el-table-column label="? width="120">
+        <el-table-column label="状态" width="120">
           <template #default="{row}">
             <span v-if="row.price_history && row.price_history.length">
               {{ row.price_history[row.price_history.length-1].price }} {{ row.price_history[row.price_history.length-1].currency || 'USD' }}
             </span>
-            <span v-else>{{ \('trends.title') }}</span>
+            <span v-else>{{ $t('trends.title') }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="? width="100"><template #default="{row}">{{ row.target_price || '-' }}</template></el-table-column>
+        <el-table-column label="状态" width="100"><template #default="{row}">{{ row.target_price || '-' }}</template></el-table-column>
         <el-table-column label='Status' width="80">
           <template #default="{row}">
-            <el-tag v-if="row.lastChange" :type="row.lastChange>0?'danger':'success'' size="small">{{ row.lastChange }}%</el-tag>
+            <el-tag v-if="row.lastChange" :type="row.lastChange>0?'danger':'success'" size="small">{{ row.lastChange }}%</el-tag>
           </template>
         </el-table-column>
-        <el-table-column :label="\('trends.title')" width="80"><template #default="{row}">{{ (row.alerts||[]).length }}</template></el-table-column>
+        <el-table-column :label="$t('trends.title')" width="80"><template #default="{row}">{{ (row.alerts||[]).length }}</template></el-table-column>
         <el-table-column label='Status' width="80"><template #default="{row}">{{ (row.promotions||[]).length }}</template></el-table-column>
         <el-table-column label='Status' width="200">
           <template #default="{row}">
@@ -50,8 +50,8 @@
       <el-table :data="trends" size="small">
         <el-table-column prop="product" label='OK'/>
         <el-table-column prop="platform" label='Status' width="100"/>
-        <el-table-column prop="first_price" label="? width="100"/>
-        <el-table-column prop="last_price" :label="\('trends.title')" width="100"/>
+        <el-table-column prop="first_price" label="状态" width="100"/>
+        <el-table-column prop="last_price" :label="$t('trends.title')" width="100"/>
         <el-table-column label='Status' width="100">
           <template #default="{row}">
             <el-tag :type="row.trend==='up'?'danger':row.trend==='down'?'success':''" size="small">{{ row.change_pct }}%</el-tag>
@@ -69,11 +69,11 @@
         <el-card shadow="never">
           <template #header>  (??</template>
           <el-timeline v-if="alerts.length">
-            <el-timeline-item v-for="a in alerts.slice(-10).reverse()" :key="a.time" :timestamp="a.time?.substr(0,16)" :type="a.severity==='P1'?'danger':'warning''>
-              {{ a.product }}: {{ a.from }}{ a.to }} ({{ a.change_pct }}%)
+            <el-timeline-item v-for="a in alerts.slice(-10).reverse()" :key="a.time" :timestamp="a.time?.substr(0,16)" :type="a.severity==='P1'?'danger':'warning'">
+              {{ a.product }}: {{ a.from }} → {{ a.to }} ({{ a.change_pct }}%)
             </el-timeline-item>
           </el-timeline>
-          <el-empty v-else description="?/>
+          <el-empty v-else description="暂无告警" />
         </el-card>
       </el-col>
       <el-col :span="12">
@@ -92,33 +92,33 @@
     <!-- ?-->
     <el-dialog v-model="showAddDialog" title='' width="450px">
       <el-form label-width="80px">
-        <el-form-item :label="\('trends.title')"><el-input v-model="addForm.product_name"/></el-form-item>
+        <el-form-item :label="$t('trends.title')"><el-input v-model="addForm.product_name"/></el-form-item>
         <el-form-item label=''><el-select v-model="addForm.platform" style="width:100%">
           <el-option label="eBay" value="ebay"/><el-option label="Amazon" value="amazon"/>
           <el-option label="AliExpress" value="aliexpress"/><el-option label="Shopee" value="shopee"/>
           <el-option label='Status' value="taobao"/><el-option label="1688" value="alibaba1688"/>
         </el-select></el-form-item>
         <el-form-item label=''><el-input v-model="addForm.url"/></el-form-item>
-        <el-form-item :label="\('trends.title')"><el-input-number v-model="addForm.target_price" :min="0"/></el-form-item>
+        <el-form-item :label="$t('trends.title')"><el-input-number v-model="addForm.target_price" :min="0"/></el-form-item>
         <el-form-item label=''><el-input v-model="addForm.category"/></el-form-item>
       </el-form>
       <template #footer><el-button @click="showAddDialog=false">OK</el-button><el-button type="primary" @click="doAdd">OK</el-button></template>
     </el-dialog>
 
     <!-- ?-->
-    <el-dialog v-model="showPriceDlg" :title='': '+priceForm.product" width="350px">
+    <el-dialog v-model="showPriceDlg" :title="'编辑价格: '+priceForm.product" width="350px">
       <el-form label-width="80px">
         <el-form-item label=''><el-input-number v-model="priceForm.price" :min="0" :precision="2"/></el-form-item>
-        <el-form-item :label="\('trends.title')"><el-select v-model="priceForm.currency"><el-option label="USD" value="USD"/><el-option label="CNY" value="CNY"/></el-select></el-form-item>
+        <el-form-item :label="$t('trends.title')"><el-select v-model="priceForm.currency"><el-option label="USD" value="USD"/><el-option label="CNY" value="CNY"/></el-select></el-form-item>
       </el-form>
       <template #footer><el-button @click="showPriceDlg=false">OK</el-button><el-button type="primary" @click="doRecordPrice">OK</el-button></template>
     </el-dialog>
 
     <!-- ?-->
-    <el-dialog v-model="showPromoDlg" :title='': '+promoForm.product" width="400px">
+    <el-dialog v-model="showPromoDlg" :title="'编辑促销: '+promoForm.product" width="400px">
       <el-form label-width="80px">
-        <el-form-item :label="\('trends.title')"><el-input v-model="promoForm.title"/></el-form-item>
-        <el-form-item label=''><el-input v-model="promoForm.discount" placeholder="? 30% OFF"/></el-form-item>
+        <el-form-item :label="$t('trends.title')"><el-input v-model="promoForm.title"/></el-form-item>
+        <el-form-item label=''><el-input v-model="promoForm.discount" placeholder="搜索折扣，如 30% OFF"/></el-form-item>
       </el-form>
       <template #footer><el-button @click="showPromoDlg=false">OK</el-button><el-button type="primary" @click="doRecordPromo">OK</el-button></template>
     </el-dialog>
@@ -147,9 +147,9 @@ const summaryCards = computed(() => [
   { label:'', value: summary.value.total_tracks || 0 },
   { label:'', value: summary.value.active_tracks || 0 },
   { label:'(7d)', value: summary.value.price_changes_7d || 0 },
-  { label:'?, value: summary.value.total_alerts || 0 },
+  { label:'状态', value: summary.value.total_alerts || 0 },
   { label:'', value: summary.value.total_promotions || 0 },
-  { label:'?, value: Object.keys(summary.value.by_platform||{}).length || 0 },
+  { label:'状态', value: Object.keys(summary.value.by_platform||{}).length || 0 },
 ])
 
 async function loadAll() {
@@ -173,7 +173,7 @@ async function loadAll() {
 async function doAdd() {
   try {
     await addTrack(addForm.value.product_name, addForm.value.platform, addForm.value.url, addForm.value.target_price, addForm.value.category)
-    ElMessage.success('?)
+    ElMessage.success('成功')
     showAddDialog.value = false
     addForm.value = { product_name:'', platform:'ebay', url:'', target_price:0, category:'' }
     loadAll()
@@ -181,18 +181,18 @@ async function doAdd() {
 }
 
 async function doRemove(id) {
-  try { await removeTrack(id); ElMessage.success('?); loadAll() } catch(e) { ElMessage.error('Error') }
+  try { await removeTrack(id); ElMessage.success('成功'); loadAll() } catch(e) { ElMessage.error('Error') }
 }
 
 function showPriceDialog(row) { priceForm.value = { trackId: row.id, product: row.product, price: 0, currency: 'USD' }; showPriceDlg.value = true }
 function showPromoDialog(row) { promoForm.value = { trackId: row.id, product: row.product, title: '', discount: '' }; showPromoDlg.value = true }
 
 async function doRecordPrice() {
-  try { await recordPrice(priceForm.value.trackId, priceForm.value.price, priceForm.value.currency); ElMessage.success('?); showPriceDlg.value = false; loadAll() } catch(e) { ElMessage.error('Error') }
+  try { await recordPrice(priceForm.value.trackId, priceForm.value.price, priceForm.value.currency); ElMessage.success('成功'); showPriceDlg.value = false; loadAll() } catch(e) { ElMessage.error('Error') }
 }
 
 async function doRecordPromo() {
-  try { await recordPromotion(promoForm.value.trackId, promoForm.value.title, promoForm.value.discount); ElMessage.success('?); showPromoDlg.value = false; loadAll() } catch(e) { ElMessage.error('Error') }
+  try { await recordPromotion(promoForm.value.trackId, promoForm.value.title, promoForm.value.discount); ElMessage.success('成功'); showPromoDlg.value = false; loadAll() } catch(e) { ElMessage.error('Error') }
 }
 
 onMounted(() => loadAll())

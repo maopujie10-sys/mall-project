@@ -1,7 +1,7 @@
 <template>
   <div class="page-container customer-panel">
     <div class="page-header">
-      <h2>{{ \('customer.title') }}</h2>
+      <h2>{{ $t('customer.title') }}</h2>
       -
     </div>
 
@@ -9,28 +9,28 @@
     <el-row :gutter="16" style="margin-bottom: 20px;">
       <el-col :span="6">
         <div class="metric-card">
-          <div class="metric-label">{{ \('customer.title') }}</div>
+          <div class="metric-label">{{ $t('customer.title') }}</div>
           <div class="metric-value">{{ stats.totalMessages }}</div>
           <div class="metric-sub"> {{ stats.messageTrend }}</div>
         </div>
       </el-col>
       <el-col :span="6">
         <div class="metric-card">
-          <div class="metric-label">{{ \('customer.title') }}</div>
+          <div class="metric-label">{{ $t('customer.title') }}</div>
           <div class="metric-value" style="color: var(--color-primary);">{{ stats.activeConversations }}</div>
           <div class="metric-sub"> {{ stats.unreadCount }} </div>
         </div>
       </el-col>
       <el-col :span="6">
         <div class="metric-card">
-          <div class="metric-label">{{ \('customer.title') }}</div>
+          <div class="metric-label">{{ $t('customer.title') }}</div>
           <div class="metric-value" style="color: var(--color-success);">{{ stats.avgResponseTime }}</div>
           <div class="metric-sub">: &lt; 3 </div>
         </div>
       </el-col>
       <el-col :span="6">
         <div class="metric-card">
-          <div class="metric-label">{{ \('customer.title') }}</div>
+          <div class="metric-label">{{ $t('customer.title') }}</div>
           <div class="metric-value" style="color: var(--color-warning);">{{ stats.satisfaction }}%</div>
           <div class="metric-sub"> {{ stats.satisfactionCount }} </div>
         </div>
@@ -110,7 +110,7 @@
             </div>
           </div>
           <div v-if="filteredCustomers.length === 0 && !loading" class="empty-list">
-            <p>{{ \('customer.title') }}</p>
+            <p>{{ $t('customer.title') }}</p>
           </div>
         </div>
       </div>
@@ -127,8 +127,8 @@
               <div class="conv-user-detail">
                 <span class="conv-user-name">{{ activeCustomer.sender }}</span>
                 <span class="conv-user-status">
-                  <span class="status-dot online"><span class="dot">{{ \('customer.title') }}</span></span>
-                  <span v-if="activeCustomer.type === 'complaint'' class="complaint-flag">
+                  <span class="status-dot online"><span class="dot">{{ $t('customer.title') }}</span></span>
+                  <span v-if="activeCustomer.type === 'complaint'" class="complaint-flag">
                     <el-icon color="#ff4d4f" :size="14"><WarningFilled /></el-icon> 
                   </span>
                   -
@@ -137,7 +137,7 @@
             </div>
             <div class="conv-actions">
               <el-button
-                v-if="activeCustomer.type === 'complaint''
+                v-if="activeCustomer.type === 'complaint'"
                 type="danger" size="small" plain
                 @click="flagComplaint(activeCustomer)"
               >
@@ -167,9 +167,9 @@
 
             
             <template v-for="msg in conversationMessages[activeCustomer.id]" :key="msg.id">
-              <div v-if="msg.from === 'system'' class="system-message">{{ msg.text }}</div>
-              <div v-else class="message-row" :class="msg.from === 'customer' ? 'msg-left' : 'msg-right''>
-                <template v-if="msg.from === 'customer''>
+              <div v-if="msg.from === 'system'" class="system-message">{{ msg.text }}</div>
+              <div v-else class="message-row" :class="msg.from === 'customer' ? 'msg-left' : 'msg-right'">
+                <template v-if="msg.from === 'customer'">
                   <el-avatar :size="32" :style="{ background: activeCustomer.avatarColor }" class="msg-avatar">
                     {{ activeCustomer.avatar }}
                   </el-avatar>
@@ -206,7 +206,7 @@
           <div class="input-area">
             
             <div class="quick-templates">
-              <span class="template-label">{{ \('customer.title') }}</span>
+              <span class="template-label">{{ $t('customer.title') }}</span>
               <template v-for="tpl in quickReplies" :key="tpl.title">
                 <el-popover placement="top" :width="280" trigger="hover" :content="tpl.content">
                   <template #reference>
@@ -239,9 +239,9 @@
               <circle cx="60" cy="60" r="50" stroke="#d9d9d9" stroke-width="2" stroke-dasharray="8 4"/>
               <path d="M35 45 L55 45 M35 55 L65 55 M35 65 L50 65" stroke="#d9d9d9" stroke-width="2.5" stroke-linecap="round"/>
               <circle cx="85" cy="45" r="18" fill="#1552F0" opacity="0.1"/>
-              <path d="M78 45 L85 52 L92 38" stroke="#1552F0" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>{{ \('customer.title') }}</svg>
-            <h3>{{ \('customer.title') }}</h3>
-            <p>{{ \('customer.title') }}</p>
+              <path d="M78 45 L85 52 L92 38" stroke="#1552F0" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>{{ $t('customer.title') }}</svg>
+            <h3>{{ $t('customer.title') }}</h3>
+            <p>{{ $t('customer.title') }}</p>
           </div>
         </template>
       </div>

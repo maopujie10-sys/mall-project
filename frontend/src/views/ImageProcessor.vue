@@ -2,7 +2,7 @@
   <div class="img-processor"><div class="page-header"><h2> AI</h2>-</div>
     <el-tabs v-model="tab">
       <el-tab-pane label=" " name="bg">
-        <el-upload drag :auto-upload="false" :on-change="h=>{imgFile=h.raw}" accept="image/*"><el-icon><Plus /></el-icon><div>{{ \('ecommerce.title') }}</div></el-upload>
+        <el-upload drag :auto-upload="false" :on-change="h=>{imgFile=h.raw}" accept="image/*"><el-icon><Plus /></el-icon><div>{{ $t('ecommerce.title') }}</div></el-upload>
         <div style="margin-top:12px;display:flex;gap:8px"><el-input v-model="imgUrl" placeholder="URL" /></div>
         <div v-if="bgResult" style="margin-top:12px"><el-alert :title="bgResult.note||''" type="success" :closable="false" /></div>
       </el-tab-pane>

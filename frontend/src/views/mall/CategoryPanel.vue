@@ -1,13 +1,13 @@
 <template>
   <el-card shadow="never">
     <template #header>
-      <div class="dt-header"><span>{{ \('mallSub.title') }}</span><el-button size="small" type="primary" @click="showForm(null)">OK</el-button></div>
+      <div class="dt-header"><span>{{ $t('mallSub.title') }}</span><el-button size="small" type="primary" @click="showForm(null)">OK</el-button></div>
     </template>
     <el-table :data="list" stripe size="small" v-loading="loading">
       <el-table-column prop="uuid" label="UUID" width="200" />
       <el-table-column prop="name" label='' width="150" />
       <el-table-column prop="status" label='' width="80">
-        <template #default="{row}"><el-tag :type="row.status===1?'success':'info'' size="small">{{ row.status===1?'':'' }}</el-tag></template>
+        <template #default="{row}"><el-tag :type="row.status===1?'success':'info'" size="small">{{ row.status===1?'':'' }}</el-tag></template>
       </el-table-column>
       <el-table-column label='' width="240">
         <template #default="{row}">

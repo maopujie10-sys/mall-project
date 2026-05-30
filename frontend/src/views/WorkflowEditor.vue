@@ -1,7 +1,7 @@
 <template>
   <div class="workflow-editor">
     <div class="wf-header">
-      <h2>{{ \('workflow.title') }}</h2>
+      <h2>{{ $t('workflow.title') }}</h2>
       <div class="wf-actions">
         <input v-model="workflowName" placeholder='Enter...' class="wf-name-input" />
         <button @click="saveWorkflow" class="btn btn-primary"></button>
@@ -11,7 +11,7 @@
     </div>
     <div class="wf-body">
       <div class="wf-sidebar">
-        <h4>{{ \('workflow.title') }}</h4>
+        <h4>{{ $t('workflow.title') }}</h4>
         <div v-for="(info, type) in nodeTypes" :key="type" class="wf-node-item" :style="{ borderLeftColor: info.color }" draggable="true" @dragstart="onDragStart($event, type)">
           -{{ info.label }}
         </div>
@@ -19,7 +19,7 @@
       <div class="wf-canvas" ref="canvasRef" @drop="onDrop" @dragover.prevent @mousedown="onCanvasMouseDown" @mousemove="onCanvasMouseMove" @mouseup="onCanvasMouseUp">
         <svg class="wf-edges" v-if="edges.length">
           <line v-for="(edge, i) in edges" :key="i" :x1="getNodeCenter(edge.from).x" :y1="getNodeCenter(edge.from).y" :x2="getNodeCenter(edge.to).x" :y2="getNodeCenter(edge.to).y" stroke="#666" stroke-width="2" marker-end="url(#arrowhead)"/>
-          <defs><marker id="arrowhead" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#666"/>{{ \('workflow.title') }}</marker></defs>
+          <defs><marker id="arrowhead" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#666"/>{{ $t('workflow.title') }}</marker></defs>
         </svg>
         <div v-for="node in nodes" :key="node.id" class="wf-node" :style="{ left: node.x + 'px', top: node.y + 'px', borderColor: getNodeColor(node.type) }" @mousedown.stop="onNodeMouseDown($event, node.id)" @dblclick="startConnection(node.id)">
           <div class="wf-node-header" :style="{ background: getNodeColor(node.type) }">{{ node.label || node.type }}</div>

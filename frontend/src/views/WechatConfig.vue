@@ -1,6 +1,6 @@
 <template>
   <div class="page-container">
-    <div class="page-header"><h1>{{ \('wechat.title') }}</h1><p>(/)  (WeCom)    </p></div>
+    <div class="page-header"><h1>{{ $t('wechat.title') }}</h1><p>(/)  (WeCom)    </p></div>
     
     <el-tabs v-model="activeTab">
       
@@ -26,7 +26,7 @@
       
       <el-tab-pane label='Status' name="wecom">
         <el-card>
-          <template #header><span>{{ \('wechat.title') }}</span><el-button size="small" @click="testWecom" :loading="testingWecom" style="float:right">OK</el-button></template>
+          <template #header><span>{{ $t('wechat.title') }}</span><el-button size="small" @click="testWecom" :loading="testingWecom" style="float:right">OK</el-button></template>
           <el-form :model="wecomForm" label-width="100px">
             <el-form-item label="ID"><el-input v-model="wecomForm.corp_id" placeholder="ww..."/></el-form-item>
             <el-form-item label="AgentId"><el-input v-model="wecomForm.agent_id" placeholder="1000001"/></el-form-item>
@@ -41,11 +41,11 @@
       
       <el-tab-pane label='Status' name="license">
         <el-card>
-          <template #header><span>{{ \('wechat.title') }}</span>-</template>
+          <template #header><span>{{ $t('wechat.title') }}</span>-</template>
           <el-row :gutter="20">
             <el-col :span="12">
               <el-upload class="license-upload" drag :auto-upload="false" :on-change="handleLicenseFile" accept="image/*" :limit="1">
-                <el-icon :size="48"><svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/>{{ \('wechat.title') }}</svg></el-icon>
+                <el-icon :size="48"><svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/>{{ $t('wechat.title') }}</svg></el-icon>
                 <div class="el-upload__text">-</div>
               </el-upload>
               <div v-if="licenseFile" style="margin-top:10px;color:#52c41a">: {{ licenseFile.name }}</div>
@@ -66,7 +66,7 @@
       
       <el-tab-pane label='Status' name="menu">
         <el-card>
-          <template #header><span>{{ \('wechat.title') }}</span><el-button size="small" @click="pushMenu" :loading="pushing" style="float:right">OK</el-button></template>
+          <template #header><span>{{ $t('wechat.title') }}</span><el-button size="small" @click="pushMenu" :loading="pushing" style="float:right">OK</el-button></template>
           <el-alert title="35" type="info" :closable="false" style="margin-bottom:16px"/>
           <div v-for="(btn, i) in menuButtons" :key="i" class="menu-item-card">
             <div class="menu-item-header">
@@ -81,11 +81,11 @@
             <el-input v-model="btn.url" v-if="btn.type==='view' && !btn.sub_buttons.length" placeholder="URL" style="margin-bottom:8px"/>
             <div v-if="btn.sub_buttons.length" style="margin-left:16px;margin-top:8px">
               <div v-for="(sub, j) in btn.sub_buttons" :key="j" style="display:flex;gap:8px;margin-bottom:6px;align-items:center">
-                <el-input v-model="sub.name" placeholder='Enter...' size="small" style="flex:1"/><el-select v-model="sub.type" size="small" style="width:90px"><el-option label='Status' value="click"/><el-option label='Status' value="view"/></el-select><el-input v-model="sub.key" v-if="sub.type==='click'' size="small" placeholder="Key" style="width:100px"/><el-input v-model="sub.url" v-if="sub.type==='view'' size="small" placeholder="URL" style="width:120px"/><el-button link type="danger" size="small" @click="btn.sub_buttons.splice(j,1)">x</el-button>
+                <el-input v-model="sub.name" placeholder='Enter...' size="small" style="flex:1"/><el-select v-model="sub.type" size="small" style="width:90px"><el-option label='Status' value="click"/><el-option label='Status' value="view"/></el-select><el-input v-model="sub.key" v-if="sub.type==='click'" size="small" placeholder="Key" style="width:100px"/><el-input v-model="sub.url" v-if="sub.type==='view'" size="small" placeholder="URL" style="width:120px"/><el-button link type="danger" size="small" @click="btn.sub_buttons.splice(j,1)">x</el-button>
               </div>
               <el-button size="small" @click="btn.sub_buttons.push({name:'',type:'click',key:'',url:''})" :disabled="btn.sub_buttons.length>=5">+</el-button>
             </div>
-            <el-button size="small" @click="btn.sub_buttons=[]" v-if="!btn.sub_buttons.length && btn.type!=='view'' style="margin-top:4px">OK</el-button>
+            <el-button size="small" @click="btn.sub_buttons=[]" v-if="!btn.sub_buttons.length && btn.type!=='view'" style="margin-top:4px">OK</el-button>
           </div>
           <el-button @click="menuButtons.push({name:'',type:'click',key:'',url:'',sub_buttons:[]})" :disabled="menuButtons.length>=3" style="margin-top:12px">+</el-button>
         </el-card>
@@ -95,10 +95,10 @@
       <el-tab-pane label='Status' name="stats">
         <el-card>
           <el-row :gutter="16">
-            <el-col :span="6"><div class="stat-box"><div class="stat-num">{{ stats.total_messages }}</div><div class="stat-label">{{ \('wechat.title') }}</div></div></el-col>
-            <el-col :span="6"><div class="stat-box"><div class="stat-num">{{ stats.total_users }}</div><div class="stat-label">{{ \('wechat.title') }}</div></div></el-col>
-            <el-col :span="6"><div class="stat-box"><div class="stat-num">{{ stats.today_messages }}</div><div class="stat-label">{{ \('wechat.title') }}</div></div></el-col>
-            <el-col :span="6"><div class="stat-box"><div class="stat-num">{{ stats.today_users }}</div><div class="stat-label">{{ \('wechat.title') }}</div></div></el-col>
+            <el-col :span="6"><div class="stat-box"><div class="stat-num">{{ stats.total_messages }}</div><div class="stat-label">{{ $t('wechat.title') }}</div></div></el-col>
+            <el-col :span="6"><div class="stat-box"><div class="stat-num">{{ stats.total_users }}</div><div class="stat-label">{{ $t('wechat.title') }}</div></div></el-col>
+            <el-col :span="6"><div class="stat-box"><div class="stat-num">{{ stats.today_messages }}</div><div class="stat-label">{{ $t('wechat.title') }}</div></div></el-col>
+            <el-col :span="6"><div class="stat-box"><div class="stat-num">{{ stats.today_users }}</div><div class="stat-label">{{ $t('wechat.title') }}</div></div></el-col>
           </el-row>
         </el-card>
       </el-tab-pane>

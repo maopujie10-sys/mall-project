@@ -9,7 +9,7 @@
         </el-card>
         <el-card v-if="task" style="margin-top:16px"><template #header> </template>
           <el-timeline>
-            <el-timeline-item v-for="s in task.steps" :key="s.id" :timestamp="s.role" :type="s.status === 'done' ? 'success' : s.status === 'running' ? 'warning' : 'info''>
+            <el-timeline-item v-for="s in task.steps" :key="s.id" :timestamp="s.role" :type="s.status === 'done' ? 'success' : s.status === 'running' ? 'warning' : 'info'">
               {{ s.action }}
               -
               -
@@ -21,8 +21,8 @@
       <el-col :span="10">
         <el-card><template #header> </template>
           <div class="stat-grid">
-            <div class="stat-item"><span class="stat-val">{{ status.active_tasks }}</span><span class="stat-label">{{ \('agent.title') }}</span></div>
-            <div class="stat-item"><span class="stat-val">{{ status.completed_tasks }}</span><span class="stat-label">{{ \('agent.title') }}</span></div>
+            <div class="stat-item"><span class="stat-val">{{ status.active_tasks }}</span><span class="stat-label">{{ $t('agent.title') }}</span></div>
+            <div class="stat-item"><span class="stat-val">{{ status.completed_tasks }}</span><span class="stat-label">{{ $t('agent.title') }}</span></div>
           </div>
         </el-card>
       </el-col>

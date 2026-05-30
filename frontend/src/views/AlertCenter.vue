@@ -13,7 +13,7 @@
     <el-card shadow="never" style="margin-top:16px">
       <template #header>
         -
-        <el-select v-model="filterLevel" size="small" clearable placeholder="? style="width:120px;margin-left:12px">
+        <el-select v-model="filterLevel" size="small" clearable placeholder="搜索" style="width:120px;margin-left:12px">
           <el-option v-for="(n, k) in levelMap" :key="k" :label="`${k} - ${n}`" :value="k" />
         </el-select>
         <el-button size="small" @click="fetchAlerts" style="margin-left:8px">OK</el-button>
@@ -25,12 +25,12 @@
           </template>
         </el-table-column>
         <el-table-column prop="time" label='Status' width="80" />
-        <el-table-column prop="title" :label="\('alert.title')" min-width="200" />
-        <el-table-column prop="detail" :label="\('alert.title')" min-width="200" show-overflow-tooltip />
-        <el-table-column prop="source" :label="\('alert.title')" width="80" />
-        <el-table-column label="? width="80">
+        <el-table-column prop="title" :label="$t('alert.title')" min-width="200" />
+        <el-table-column prop="detail" :label="$t('alert.title')" min-width="200" show-overflow-tooltip />
+        <el-table-column prop="source" :label="$t('alert.title')" width="80" />
+        <el-table-column label="状态" width="80">
           <template #default="{row}">
-            <el-tag :type="row.resolved ? 'info' : 'danger'' size="small">{{ row.resolved ? '? : '? }}</el-tag>
+            <el-tag :type="row.resolved ? 'info' : 'danger'" size="small">{{ row.resolved ? '已解决' : '未处理' }}</el-tag>
           </template>
         </el-table-column>
         <el-table-column label='Status' width="100">
@@ -48,7 +48,7 @@ import { ref, computed, onMounted } from 'vue'
 import { getAlertList, getAlertStats, resolveAlert } from '@/api/alert'
 import { ElMessage } from 'element-plus'
 
-const levelMap = { P1: '?, P2: '', P3: '?, P4: '' }
+const levelMap = { P1: '状态', P2: '', P3: '状态', P4: '' }
 const alerts = ref([])
 const stats = ref({})
 const filterLevel = ref('')
@@ -76,7 +76,7 @@ async function fetchStats() {
   try { const r = await getAlertStats(); stats.value = r.stats || {} } catch {}
 }
 async function doResolve(id) {
-  try { await resolveAlert(id); ElMessage.success('?); fetchAlerts(); fetchStats() } catch { ElMessage.error('OK') }
+  try { await resolveAlert(id); ElMessage.success('成功'); fetchAlerts(); fetchStats() } catch { ElMessage.error('OK') }
 }
 onMounted(() => { fetchAlerts(); fetchStats() })
 </script>

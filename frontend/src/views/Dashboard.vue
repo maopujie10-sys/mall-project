@@ -5,11 +5,11 @@
       <p>   </p>
     </div>
 
-    <!-- ?-->
+    <!-- 健康概览 -->
     <el-row :gutter="16" style="margin-bottom:20px">
       <el-col :span="6">
         <div class="health-card" :class="healthLevel">
-          <div class="health-label">?/div>
+          <div class="health-label">系统健康度</div>
           <div class="health-value">{{ health.score || 0 }}</div>
           <div class="health-level">{{ healthLevelText }}</div>
         </div>
@@ -18,22 +18,22 @@
         <div class="metric-card">
           <div class="metric-label">CPU</div>
           <div class="metric-value" :style="{color: metrics.cpu > 80 ? '#ff4d4f' : metrics.cpu > 60 ? '#faad14' : '#52c41a'}">{{ metrics.cpu }}%</div>
-          <el-progress :percentage="metrics.cpu" :stroke-width="6" :color="metrics.cpu > 80 ? '#ff4d4f' : metrics.cpu > 60 ? '#faad14' : '#52c41a'' :show-text="false" />
+          <el-progress :percentage="metrics.cpu" :stroke-width="6" :color="metrics.cpu > 80 ? '#ff4d4f' : metrics.cpu > 60 ? '#faad14' : '#52c41a'" :show-text="false" />
         </div>
       </el-col>
       <el-col :span="6">
         <div class="metric-card">
-          <div class="metric-label">{{ \('dashboard.title') }}</div>
+          <div class="metric-label">{{ $t('dashboard.memory') }}</div>
           <div class="metric-value" :style="{color: metrics.memory_percent > 80 ? '#ff4d4f' : metrics.memory_percent > 60 ? '#faad14' : '#52c41a'}">{{ metrics.memory_percent }}%</div>
-          <el-progress :percentage="metrics.memory_percent" :stroke-width="6" :color="metrics.memory_percent > 80 ? '#ff4d4f' : metrics.memory_percent > 60 ? '#faad14' : '#52c41a'' :show-text="false" />
+          <el-progress :percentage="metrics.memory_percent" :stroke-width="6" :color="metrics.memory_percent > 80 ? '#ff4d4f' : metrics.memory_percent > 60 ? '#faad14' : '#52c41a'" :show-text="false" />
           <div class="metric-sub">{{ metrics.memory_used_gb }} / {{ metrics.memory_total_gb }} GB</div>
         </div>
       </el-col>
       <el-col :span="6">
         <div class="metric-card">
-          <div class="metric-label">{{ \('dashboard.title') }}</div>
+          <div class="metric-label">{{ $t('dashboard.memory') }}</div>
           <div class="metric-value" :style="{color: metrics.disk_percent > 80 ? '#ff4d4f' : metrics.disk_percent > 60 ? '#faad14' : '#52c41a'}">{{ metrics.disk_percent }}%</div>
-          <el-progress :percentage="metrics.disk_percent" :stroke-width="6" :color="metrics.disk_percent > 80 ? '#ff4d4f' : metrics.disk_percent > 60 ? '#faad14' : '#52c41a'' :show-text="false" />
+          <el-progress :percentage="metrics.disk_percent" :stroke-width="6" :color="metrics.disk_percent > 80 ? '#ff4d4f' : metrics.disk_percent > 60 ? '#faad14' : '#52c41a'" :show-text="false" />
           <div class="metric-sub">{{ metrics.disk_used_gb }} / {{ metrics.disk_total_gb }} GB</div>
         </div>
       </el-col>
@@ -43,7 +43,7 @@
     <el-row :gutter="16" style="margin-bottom:20px">
       <el-col :span="12">
         <el-card shadow="never">
-          <template #header> CPU /  ?0?/template>
+          <template #header> CPU / 内存趋势</template>
           -
         </el-card>
       </el-col>
@@ -57,11 +57,11 @@
 
     
     <el-card shadow="never">
-      <template #header>?</template>
+      <template #header>快捷入口</template>
       <div style="display:flex;gap:10px;flex-wrap:wrap">
         <el-button @click="goTo('/chat')" type="primary"> AI </el-button>
-        <el-button @click="goTo('/server')"> ?/el-button>
-        <el-button @click="goTo('/rotation')"> ?/el-button>
+        <el-button @click="goTo('/server')"> 服务器 </el-button>
+        <el-button @click="goTo('/rotation')"> 域名轮值 </el-button>
         
         
         <el-button @click="recordMetrics" :loading="recording">OK</el-button>
@@ -116,7 +116,7 @@ export default {
       recording.value = true
       try {
         await agentApi.post("/dashboard/record")
-        ElMessage.success("?)
+        ElMessage.success("记录成功")
         await fetchHistory()
       } catch { ElMessage.error('Error') }
       recording.value = false
@@ -147,7 +147,7 @@ export default {
         yAxis: { type: "value", max: 100, axisLabel: { fontSize: 10, formatter: "{value}%" } },
         series: [
           { name: "CPU", type: "line", data: h.map(p => p.cpu), smooth: true, lineStyle: { width: 2 }, itemStyle: { color: "#1890ff" }, areaStyle: { color: "rgba(24,144,255,0.1)" } },
-          { name: '', type: "line", data: h.map(p => p.memory_percent), smooth: true, lineStyle: { width: 2 }, itemStyle: { color: "#52c41a" }, areaStyle: { color: "rgba(82,196,26,0.1)" } },
+          { name: "内存", type: "line", data: h.map(p => p.memory_percent), smooth: true, lineStyle: { width: 2 }, itemStyle: { color: "#52c41a" }, areaStyle: { color: "rgba(82,196,26,0.1)" } },
         ],
         legend: { bottom: 0, textStyle: { fontSize: 11 } },
       })
@@ -166,7 +166,7 @@ export default {
     }
 
     const healthLevel = computed(() => health.value.level || "unknown")
-    const healthLevelText = computed(() => ({ excellent: " ", good: " ", warning: " ", critical: '' }[healthLevel.value] || ""))
+    const healthLevelText = computed(() => ({ excellent: "优秀", good: "良好", warning: "警告", critical: "危险" }[healthLevel.value] || ""))
 
     async function refreshAll() {
       loading.value = true

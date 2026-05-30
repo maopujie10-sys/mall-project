@@ -13,7 +13,7 @@
       <el-col :span="6">
         <el-card shadow="hover">
           <div class="stat-value">{{ stats.running ?? "-" }}</div>
-          <div class="stat-label">?/div>
+          <div class="stat-label"></div>
         </el-card>
       </el-col>
       <el-col :span="6">
@@ -25,32 +25,32 @@
       <el-col :span="6">
         <el-card shadow="hover">
           <div class="stat-value">{{ containers.length }}</div>
-          <div class="stat-label">{{ \('docker.title') }}</div>
+          <div class="stat-label">{{ $t('docker.title') }}</div>
         </el-card>
       </el-col>
       <el-col :span="6">
         <el-card shadow="hover">
           <div class="stat-value">{{ images.length }}</div>
-          <div class="stat-label">?/div>
+          <div class="stat-label"></div>
         </el-card>
       </el-col>
     </el-row>
 
     <el-card class="section-card">
       <template #header>
-        <span>{{ \('docker.title') }}</span>
+        <span>{{ $t('docker.title') }}</span>
       </template>
       <el-table :data="containers" stripe v-loading="loading" max-height="400">
-        <el-table-column prop="name" :label="\('docker.title')" min-width="160" />
+        <el-table-column prop="name" :label="$t('docker.title')" min-width="160" />
         <el-table-column prop="image" label='Status' min-width="200" />
-        <el-table-column prop="status" label="? min-width="180">
+        <el-table-column prop="status" label="状态" min-width="180">
           <template #default="{ row }">
-            <el-tag :type="row.status?.includes('Up') ? 'success' : 'danger'' size="small">
+            <el-tag :type="row.status?.includes('Up') ? 'success' : 'danger'" size="small">
               {{ row.status?.substring(0, 30) }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="ports" :label="\('docker.title')" min-width="120" />
+        <el-table-column prop="ports" :label="$t('docker.title')" min-width="120" />
         <el-table-column label='Status' width="100" fixed="right">
           <template #default="{ row }">
             <el-button size="small" type="warning" @click="restartContainer(row.name)" :loading="restarting === row.name">OK</el-button>
@@ -62,19 +62,19 @@
     <el-row :gutter="16">
       <el-col :span="12">
         <el-card class="section-card">
-          <template #header><span>{{ \('docker.title') }}</span></template>
+          <template #header><span>{{ $t('docker.title') }}</span></template>
           <el-table :data="images" stripe v-loading="loading" max-height="300">
             <el-table-column prop="repo" label='Status' min-width="200" />
-            <el-table-column prop="tag" :label="\('docker.title')" width="100" />
-            <el-table-column prop="size" :label="\('docker.title')" width="100" />
+            <el-table-column prop="tag" :label="$t('docker.title')" width="100" />
+            <el-table-column prop="size" :label="$t('docker.title')" width="100" />
           </el-table>
         </el-card>
       </el-col>
       <el-col :span="12">
         <el-card class="section-card">
-          <template #header><span>{{ \('docker.title') }}</span></template>
+          <template #header><span>{{ $t('docker.title') }}</span></template>
           <el-table :data="networks" stripe v-loading="loading" max-height="300">
-            <el-table-column prop="name" :label="\('docker.title')" min-width="160" />
+            <el-table-column prop="name" :label="$t('docker.title')" min-width="160" />
             <el-table-column prop="driver" label='Status' width="100" />
             <el-table-column prop="scope" label='Status' width="80" />
           </el-table>
@@ -127,10 +127,10 @@ async function fetchAll() {
 }
 
 async function fetchLogs() {
-  if (!logContainer.value) return ElMessage.warning("?)
+  if (!logContainer.value) return ElMessage.warning("请选择容器")
   try {
     const r = await agentApi.get("/docker/logs", { params: { container: logContainer.value, lines: 100 } })
-    logs.value = r.content || "?
+    logs.value = r.content || ""
   } catch (e) {
     logs.value = ": " + (e.response?.data?.detail || e.message)
   }
@@ -140,7 +140,7 @@ async function restartContainer(name) {
   restarting.value = name
   try {
     const r = await agentApi.post("/docker/restart", { container_id: name, action: "restart" })
-    ElMessage.success(r.ok ? ` ${name}  : (r.error || "?))
+    ElMessage.success(r.ok ? `已重启 ${name}` : (r.error || ""))
   } catch (e) {
     ElMessage.error(": " + (e.response?.data?.detail || e.message))
   }

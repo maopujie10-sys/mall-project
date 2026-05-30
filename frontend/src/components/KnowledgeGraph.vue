@@ -1,5 +1,5 @@
 <template>
-  <div ref="chart" class="kg-container">{{ \('knowledgeGraph.title') }}</div>
+  <div ref="chart" class="kg-container">{{ $t('knowledgeGraph.title') }}</div>
 </template>
 <script setup>
 import { ref, onMounted, onBeforeUnmount } from 'vue'

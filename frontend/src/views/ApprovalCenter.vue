@@ -12,14 +12,14 @@
     <el-row :gutter="16" style="margin-bottom: 20px;">
       <el-col :span="6">
         <div class="metric-card">
-          <div class="metric-label">?/div>
+          <div class="metric-label"></div>
           <div class="metric-value" style="color: var(--color-warning);">{{ loading ? '...' : pendingTasks.length }}</div>
-          <div class="metric-sub">?/div>
+          <div class="metric-sub"></div>
         </div>
       </el-col>
       <el-col :span="6">
         <div class="metric-card">
-          <div class="metric-label">?/div>
+          <div class="metric-label"></div>
           <div class="metric-value">{{ loading ? '...' : historyTasks.length }}</div>
           <div class="metric-sub"> {{ approvedCount }}   {{ rejectedCount }}</div>
         </div>
@@ -44,13 +44,13 @@
     <el-row :gutter="16">
       <el-col :span="24">
         <div v-if="pendingTasks.length === 0" style="padding: 60px 0;">
-          <el-empty description="? />
+          <el-empty description="暂无数据" />
         </div>
         <div
           v-for="task in pendingTasks"
           :key="task.id"
           class="approval-card"
-          :class=''risk-' + task.risk.toLowerCase()"
+          :class="'risk-' + task.risk.toLowerCase()"
         >
           <div class="card-body">
             <div class="card-main">
@@ -99,21 +99,21 @@
         -
       </template>
       <el-table :data="historyTasks" style="width: 100%;" size="small" stripe>
-        <el-table-column prop="name" :label="\('approval.title')" min-width="160" />
+        <el-table-column prop="name" :label="$t('approval.title')" min-width="160" />
         <el-table-column prop="risk" label='Status' width="90">
           <template #default="{ row }">
             <span class="risk-badge" :class="row.risk.toLowerCase()">{{ row.risk }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="creator" label="? width="100" />
+        <el-table-column prop="creator" label="状态" width="100" />
         <el-table-column prop="result" label='Status' width="90">
           <template #default="{ row }">
-            <el-tag :type="row.result === '' ? 'success' : 'danger'' size="small" effect="light">
+            <el-tag :type="row.result === '' ? 'success' : 'danger'" size="small" effect="light">
               {{ row.result }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="reviewer" label="? width="100" />
+        <el-table-column prop="reviewer" label="状态" width="100" />
         <el-table-column prop="time" label='Status' width="100" />
       </el-table>
     </el-card>
@@ -180,7 +180,7 @@ async function fetchApprovals() {
 
 const approveTask = async (task) => {
   try {
-    await ElMessageBox.confirm(`?{task.name}, '', {
+    await ElMessageBox.confirm(`确认审批 {task.name}?`,'',{
       confirmButtonText: '',
       cancelButtonText: '',
       type: 'warning',
@@ -196,7 +196,7 @@ const approveTask = async (task) => {
           result: '', reviewer: 'Admin', time: new Date().toTimeString().slice(0, 5),
         })
       }
-      ElMessage.success(`?{task.name})
+      ElMessage.success(`已审批 {task.name}`)
     } else {
       task.approving = false
     }
@@ -207,7 +207,7 @@ const approveTask = async (task) => {
 
 const rejectTask = async (task) => {
   try {
-    await ElMessageBox.confirm(`?{task.name}, '', {
+    await ElMessageBox.confirm(`确认审批 {task.name}?`,'',{
       confirmButtonText: '',
       cancelButtonText: '',
       type: 'warning',
@@ -223,7 +223,7 @@ const rejectTask = async (task) => {
           result: '', reviewer: 'Admin', time: new Date().toTimeString().slice(0, 5),
         })
       }
-      ElMessage.warning(`?{task.name})
+      ElMessage.warning(`已审批 {task.name}`)
     } else {
       task.rejecting = false
     }

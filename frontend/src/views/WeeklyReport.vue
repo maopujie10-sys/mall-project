@@ -18,7 +18,7 @@
 
     <!-- ?-->
     <el-card v-if="latestReport" shadow="never" style="margin-bottom:20px">
-      <template #header> ??{ latestReport.week }}?({{ latestReport.date }})</template>
+      <template #header> 第{{ latestReport.week }}周 ({{ latestReport.date }})</template>
       
       <el-row :gutter="16" style="margin-bottom:20px">
         <el-col :span="4" v-for="m in metrics" :key="m.label">
@@ -36,15 +36,15 @@
 
     
     <el-card shadow="never">
-      <template #header>  (?2?</template>
+      <template #header>本周报告 (共2篇)</template>
       <el-timeline v-if="reports.length">
-        <el-timeline-item v-for="r in reports" :key="r.id" :timestamp=''?+r.week+'? '+r.date" placement="top">
+        <el-timeline-item v-for="r in reports" :key="r.id" :timestamp="'第' + r.week + '周 ' + r.date" placement="top">
           <el-card shadow="never">
             <pre class="summary-text" style="font-size:12px">{{ r.summary }}</pre>
           </el-card>
         </el-timeline-item>
       </el-timeline>
-      <el-empty v-else description="?/>
+      <el-empty v-else description="暂无报告" />
     </el-card>
   </div>
 </template>
@@ -67,7 +67,7 @@ const metrics = computed(() => {
     { label: '', value: d.users_total || 0 },
     { label: '', value: d.alerts_this_week || 0 },
     { label: '', value: d.customer_messages || 0 },
-    { label: '?, value: d.avg_health_score || 0 },
+    { label: '状态', value: d.avg_health_score || 0 },
   ]
 })
 
@@ -76,7 +76,7 @@ async function doGenerate() {
   try {
     const { data } = await generateWeeklyReport()
     latestReport.value = data.report
-    ElMessage.success('?)
+    ElMessage.success('成功')
     loadReports()
   } catch (e) { ElMessage.error('Error') }
   finally { genLoading.value = false }

@@ -1,6 +1,6 @@
 <template>
   <div class="page-shell">
-    <div class="page-header"><h2>{{ \('competitor.title') }}</h2><p>++</p></div>
+    <div class="page-header"><h2>{{ $t('competitor.title') }}</h2><p>++</p></div>
     <el-card><template #header></template>
       <el-input v-model="targetUrl" placeholder="URL"/>
       <el-input v-model="targetName" placeholder='Enter...' style="margin-top:8px"/>
@@ -10,7 +10,7 @@
       <el-empty v-if="!reports.length" description=''/>
       <div v-for="r in reports" :key="r.url||r.id" class="comp-item">
         <div><span class="comp-name">{{ r.name }}</span><span class="comp-url">{{ r.url?.slice(0,40) }}</span></div>
-        <div><el-tag size="small" :type="r.status===''?'warning':'success''>{{ r.status }}</el-tag>
+        <div><el-tag size="small" :type="r.status==='异常'?'warning':'success'">{{ r.status }}</el-tag>
         <span class="comp-price" v-if="r.price">${{ r.price }}</span></div>
       </div>
     </el-card>

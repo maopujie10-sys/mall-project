@@ -1,16 +1,16 @@
 <template>
   <div class="page-container video-panel">
-    <div class="page-header"><h2>{{ \('video.title') }}</h2>-</div>
+    <div class="page-header"><h2>{{ $t('video.title') }}</h2>-</div>
     <el-row :gutter="16" style="margin-bottom:20px">
       <el-col :span="16">
         <el-card shadow="never">
-          <template #header><span>{{ \('video.title') }}</span></template>
+          <template #header><span>{{ $t('video.title') }}</span></template>
           <el-input v-model="videoUrl" placeholder="URL..." clearable>
             <template #append><el-button type="primary" @click="analyze" :loading="analyzing">OK</el-button></template>
           </el-input>
         </el-card>
         <el-card shadow="never" style="margin-top:16px" v-if="result">
-          <template #header><span>{{ \('video.title') }}</span></template>
+          <template #header><span>{{ $t('video.title') }}</span></template>
           <el-descriptions :column="2" border>
             <el-descriptions-item label=''>{{ result.duration || '-' }}</el-descriptions-item>
             <el-descriptions-item label=''>{{ result.resolution || '-' }}</el-descriptions-item>
@@ -19,20 +19,20 @@
             <el-descriptions-item label=''>{{ result.hasAudio ? '' : '' }}</el-descriptions-item>
             <el-descriptions-item label=''>{{ result.language || '-' }}</el-descriptions-item>
             <el-descriptions-item label='Status' :span="2">{{ result.summary || '-' }}</el-descriptions-item>
-            <el-descriptions-item label='Status' :span="2"><el-progress :percentage="result.hotScore||0" :color="(result.hotScore||0)>70?'#ff4d4f':(result.hotScore||0)>40?'#faad14':'#52c41a'' :stroke-width="8" /></el-descriptions-item>
+            <el-descriptions-item label='Status' :span="2"><el-progress :percentage="result.hotScore||0" :color="(result.hotScore||0)>70?'#ff4d4f':(result.hotScore||0)>40?'#faad14':'#52c41a'" :stroke-width="8" /></el-descriptions-item>
           </el-descriptions>
         </el-card>
       </el-col>
       <el-col :span="8">
         <el-card shadow="never">
-          <template #header><span>{{ \('video.title') }}</span></template>
+          <template #header><span>{{ $t('video.title') }}</span></template>
           <div v-if="subtitles.length" class="subtitle-box">
             <div v-for="s in subtitles" :key="s.time" class="sub-line"><span class="sub-time">{{ s.time }}</span><span class="sub-text">{{ s.text }}</span></div>
           </div>
           <el-empty v-else description='' />
         </el-card>
         <el-card shadow="never" style="margin-top:16px">
-          <template #header><span>{{ \('video.title') }}</span></template>
+          <template #header><span>{{ $t('video.title') }}</span></template>
           <div v-if="history.length" class="history-list">
             <div v-for="h in history.slice(0,8)" :key="h.id" class="history-item" @click="videoUrl=h.url;analyze()"><span class="hist-title">{{ h.title }}</span><span class="hist-date">{{ h.date }}</span></div>
           </div>

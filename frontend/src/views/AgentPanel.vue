@@ -3,7 +3,7 @@
     <div class="page-header">
       <div>
         <h1> Agent </h1>
-        <p>7gent  ? </p>
+        <p>Agent 集群状态监控</p>
       </div>
     </div>
 
@@ -19,18 +19,18 @@
         <div class="agent-stats">
           <div class="astat">
             <span class="astat-num">{{ agent.tasks }}</span>
-            <span class="astat-label">{{ \('agent.title') }}</span>
+            <span class="astat-label">{{ $t('agent.title') }}</span>
           </div>
           <div class="astat">
             <span class="astat-num" style="color:#52c41a">{{ agent.successRate }}%</span>
-            <span class="astat-label">?/span>
+            <span class="astat-label">成功率</span>
           </div>
         </div>
         <div class="agent-bar">
           -
         </div>
-        <el-button size="small" :type="agent.status === 'active' ? 'success' : 'default'' style="width:100%;margin-top:12px" @click="toggleAgent(agent.id)">
-          {{ agent.status === 'active' ? '? : '? }}
+        <el-button size="small" :type="agent.status === 'active' ? 'success' : 'default'" style="width:100%;margin-top:12px" @click="toggleAgent(agent.id)">
+          {{ agent.status === 'active' ? '停用' : '启用' }}
         </el-button>
       </div>
     </div>
@@ -41,23 +41,23 @@
 import { ref } from 'vue'
 
 const agentDescriptions = {
-  master: '    Agent',
-  code: '  Bug  ',
-  devops: '? Docker  Nginx  ',
-  vision: '    OCR',
-  trend: '',
-  memory: '  ? ',
-  heal: '?   ',
+  master: '主控 Agent',
+  code: '代码 Bug 修复',
+  devops: 'Docker / Nginx 运维',
+  vision: '图像 / OCR',
+  trend: '趋势分析',
+  memory: '记忆管理',
+  heal: '自愈修复',
 }
 
 const agents = ref([
   { id:'master', name:'Master Agent', icon:'', status:'active', tasks:156, successRate:98.2, color:'#667eea' },
   { id:'code', name:'Code Agent', icon:'', status:'active', tasks:89, successRate:94.5, color:'#52c41a' },
   { id:'devops', name:'DevOps Agent', icon:'', status:'active', tasks:234, successRate:99.1, color:'#1890ff' },
-  { id:'vision', name:'Vision Agent', icon:'?, status:'idle', tasks:45, successRate:91.3, color:'#faad14' },
-  { id:'trend', name:'Trend Agent', icon:'', status:'active', tasks:312, successRate:96.7, color:'#ff4d4f' },
-  { id:'memory', name:'Memory Agent', icon:'', status:'active', tasks:567, successRate:99.8, color:'#764ba2' },
-  { id:'heal', name:'Self-Healing', icon:'?, status:'idle', tasks:23, successRate:100, color:'#13c2c2' },
+  { id:'vision', name:'Vision Agent', icon:'👁️', status:'idle', tasks:45, successRate:91.3, color:'#faad14' },
+  { id:'trend', name:'Trend Agent', icon:'📈', status:'active', tasks:312, successRate:96.7, color:'#ff4d4f' },
+  { id:'memory', name:'Memory Agent', icon:'🧠', status:'active', tasks:567, successRate:99.8, color:'#764ba2' },
+  { id:'heal', name:'Self-Healing', icon:'🩹', status:'idle', tasks:23, successRate:100, color:'#13c2c2' },
 ])
 
 function toggleAgent(id) {

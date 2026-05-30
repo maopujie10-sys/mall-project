@@ -6,7 +6,7 @@
     <div v-if="files.length" class="file-pills">
       <span v-for="(f, i) in files" :key="i" class="file-pill">{{ f.type === 'image' ? '' : f.type === 'video' ? '' : '' }} {{ f.name }} <button class="pill-remove" @click="files.splice(i, 1)">x</button></span>
     </div>
-    <Transition name="fade"><div v-if="isDragging" class="drop-hint"><div class="drop-icon">drop</div><div>{{ \('common.title') }}</div></div></Transition>
+    <Transition name="fade"><div v-if="isDragging" class="drop-hint"><div class="drop-icon">drop</div><div>{{ $t('common.title') }}</div></div></Transition>
 
     <Transition name="fade">
       <div v-if="showCamera" class="camera-preview">
@@ -21,7 +21,7 @@
 
     <Transition name="fade">
       <div v-if="isListening" class="voice-indicator">
-        <span class="voice-pulse">{{ \('common.title') }}</span>
+        <span class="voice-pulse">{{ $t('common.title') }}</span>
         <span>... </span>
       </div>
     </Transition>

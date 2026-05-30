@@ -15,7 +15,7 @@
     <el-row :gutter="16" style="margin-bottom:20px">
       <el-col :span="12">
         <el-card shadow="never">
-          <template #header><div class="panel-header"><span>{{ \('aiBrain.title') }}</span><el-select v-model="filterStatus" size="small" style="width:120px"><el-option label='Status' value="all"/><el-option label='Status' value="hot"/><el-option label='Status' value="normal"/><el-option label='Status' value="cold"/><el-option label='Status' value="dead"/></el-select></div></template>
+          <template #header><div class="panel-header"><span>{{ $t('aiBrain.title') }}</span><el-select v-model="filterStatus" size="small" style="width:120px"><el-option label='Status' value="all"/><el-option label='Status' value="hot"/><el-option label='Status' value="normal"/><el-option label='Status' value="cold"/><el-option label='Status' value="dead"/></el-select></div></template>
           <el-table :data="filteredProducts" stripe size="small" max-height="280">
             <el-table-column prop="icon" label='Status' width="40"/><el-table-column prop="name" label='Status' min-width="180"/><el-table-column prop="category" label='Status' width="110"/><el-table-column prop="price" label='Status' width="100"/><el-table-column prop="sales" label='Status' width="80"/>
             <el-table-column prop="stock" label='Status' width="80"/><el-table-column prop="status" label='Status' width="90"><template #default="{row}"><el-tag :type="row.statusType" size="small">{{ row.status }}</el-tag></template></el-table-column>
@@ -24,7 +24,7 @@
         </el-card>
       </el-col>
       <el-col :span="12">
-        <el-card shadow="never" style="margin-bottom:16px"><template #header><span>{{ \('aiBrain.title') }}</span></template><div class="gap-list"><div v-for="g in gaps" :key="g.name" class="gap-item"><div class="gap-info"><div class="gap-name">{{ g.name }}</div><div class="gap-bar-wrap"><div class="gap-bar">-</div><span class="gap-num">{{ g.current }}/{{ g.target }}</span></div></div></div></div></el-card>
+        <el-card shadow="never" style="margin-bottom:16px"><template #header><span>{{ $t('aiBrain.title') }}</span></template><div class="gap-list"><div v-for="g in gaps" :key="g.name" class="gap-item"><div class="gap-info"><div class="gap-name">{{ g.name }}</div><div class="gap-bar-wrap"><div class="gap-bar">-</div><span class="gap-num">{{ g.current }}/{{ g.target }}</span></div></div></div></div></el-card>
         <el-card shadow="never"><template #header><span>AI </span></template><div class="ai-suggestions"><div v-for="(s,i) in suggestions" :key="i" class="sug-item"><span>{{ i+1 }}.</span><span>{{ s }}</span></div></div></el-card>
       </el-col>
     </el-row>
@@ -33,12 +33,12 @@
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'; import { ElMessage, ElMessageBox } from 'element-plus'; import { agentApi } from '@/api/index'
 const scanning = ref(false); const autoRunning = ref(false); const filterStatus = ref('all')
-const summaryCards = ref([{ label:'...', value:'-', sub:'', color:'blue' },{ label:'...', value:'-', sub:'', color:'red' },{ label:'...', value:'-', sub:'', color:'gray' },{ label:'...', value:'-', sub:'', color:'orange' }])
+const summaryCards = ref([{ label:'总商品数', value:'-', sub:'', color:'blue' },{ label:'热销商品', value:'-', sub:'', color:'red' },{ label:'滞销商品', value:'-', sub:'', color:'gray' },{ label:'品类缺口', value:'-', sub:'', color:'orange' }])
 const products = ref([]); const gaps = ref([]); const suggestions = ref([])
 
 const filteredProducts = computed(() => {
   if(filterStatus.value==='all') return products.value
-  const map = { hot:'', normal:'', cold:'', dead:'' }
+  const map = { hot:'热销', normal:'正常', cold:'滞销', dead:'停售' }
   return products.value.filter(p => p.status === map[filterStatus.value])
 })
 
@@ -48,12 +48,12 @@ async function fetchBrain() {
     if(r?.data?.ok) {
       const d = r.data
       summaryCards.value = [
-        { label:'', value: d.total_products||0, sub: (d.online_products||0)+'', color:'blue' },
-        { label:'', value: d.hot_products||0, sub: '', color:'red' },
-        { label:'', value: d.dead_products||0, sub: '', color:'gray' },
-        { label:'', value: d.gap_categories||0, sub: '', color:'orange' }
+        { label:'总商品', value: d.total_products||0, sub: (d.online_products||0)+'个在线', color:'blue' },
+        { label:'热销', value: d.hot_products||0, sub: '需补货', color:'red' },
+        { label:'滞销', value: d.dead_products||0, sub: '待处理', color:'gray' },
+        { label:'品类缺口', value: d.gap_categories||0, sub: '待填补', color:'orange' }
       ]
-      products.value = (d.products||[]).map(p=>({...p, statusType: p.status===''?'danger':p.status===''?'success':p.status===''?'warning':'info'}))
+      products.value = (d.products||[]).map(p=>({...p, statusType: p.status==='热销'?'danger':p.status==='正常'?'success':p.status==='滞销'?'warning':'info'}))
       gaps.value = (d.gaps||[]).map(g=>({...g, level: g.percent<30?'low':g.percent<60?'mid':'ok'}))
       suggestions.value = d.suggestions || []
     }
@@ -71,7 +71,7 @@ async function runAutoOps() {
   autoRunning.value = false; fetchBrain()
 }
 function handleReplace(row) {
-  ElMessageBox.confirm('''+row.name+'' ', '', { confirmButtonText:'', cancelButtonText:'', type:'warning' })
+  ElMessageBox.confirm('确认替换 ' + row.name + ' 吗？', '提示', { confirmButtonText:'确定', cancelButtonText:'取消', type:'warning' })
   .then(async () => { try { await agentApi.post('/mall-brain/replace', {product_id:row.id}); ElMessage.success('OK'); fetchBrain() } catch(e) { ElMessage.error('Error') } }).catch(()=>{})
 }
 onMounted(() => fetchBrain())

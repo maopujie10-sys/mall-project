@@ -1,7 +1,7 @@
 <template>
   <div class="page-container">
     <div class="page-header">
-      <div><h1>{{ \('evolution.title') }}</h1><p>AI      </p></div>
+      <div><h1>{{ $t('evolution.title') }}</h1><p>AI      </p></div>
       <div class="header-actions"><el-button type="primary" @click="refreshReport" :loading="loading">OK</el-button></div>
     </div>
     <el-row :gutter="16" style="margin-bottom:20px">
@@ -11,11 +11,11 @@
     </el-row>
     <el-row :gutter="16">
       <el-col :span="12">
-        <el-card shadow="never" style="margin-bottom:16px"><template #header><span>{{ \('evolution.title') }}</span></template><div v-for="t in trends" :key="t.label" class="trend-item"><div class="trend-info"><span class="trend-label">{{ t.label }}</span><span :class="['trend-change', t.trendType]">{{ t.trend }}</span></div><el-progress :percentage="t.rate" :color="t.color" :stroke-width="6"/></div></el-card>
+        <el-card shadow="never" style="margin-bottom:16px"><template #header><span>{{ $t('evolution.title') }}</span></template><div v-for="t in trends" :key="t.label" class="trend-item"><div class="trend-info"><span class="trend-label">{{ t.label }}</span><span :class="['trend-change', t.trendType]">{{ t.trend }}</span></div><el-progress :percentage="t.rate" :color="t.color" :stroke-width="6"/></div></el-card>
         <el-card shadow="never"><template #header><span>AI</span></template><div v-for="k in knowledge" :key="k.key" class="kw-item"><el-tag :type="k.catType" size="small">{{ k.category }}</el-tag><span class="kw-key">{{ k.key }}</span><span class="kw-score">{{ (k.score*100).toFixed(0) }}%</span></div></el-card>
       </el-col>
       <el-col :span="12">
-        <el-card shadow="never" style="margin-bottom:16px"><template #header><span>{{ \('evolution.title') }}</span></template><div v-for="a in actionHistory" :key="a.name+a.time" class="act-item"><el-tag :type="a.typeTag" size="small">{{ a.type }}</el-tag><span class="act-name">{{ a.name }}</span><span :style="{color:a.ok?'#52c41a':'#ff4d4f'}">{{ a.ok?'':'' }}</span><span class="act-time">{{ a.time }}</span></div></el-card>
+        <el-card shadow="never" style="margin-bottom:16px"><template #header><span>{{ $t('evolution.title') }}</span></template><div v-for="a in actionHistory" :key="a.name+a.time" class="act-item"><el-tag :type="a.typeTag" size="small">{{ a.type }}</el-tag><span class="act-name">{{ a.name }}</span><span :style="{color:a.ok?'#52c41a':'#ff4d4f'}">{{ a.ok?'':'' }}</span><span class="act-time">{{ a.time }}</span></div></el-card>
         <el-card shadow="never"><template #header><span>AI</span></template><div v-for="s in suggestions" :key="s.text" class="sug-row"><span class="sug-icon">{{ s.icon }}</span><span class="sug-text">{{ s.text }}</span><el-button v-if="s.action" size="small" @click="handleSuggestion(s)">{{ s.action }}</el-button></div></el-card>
       </el-col>
     </el-row>

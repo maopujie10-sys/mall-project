@@ -4,7 +4,7 @@
 <div class="scan-stats"><el-tag type="danger">: {{result.critical}}</el-tag><el-tag type="warning">: {{result.high}}</el-tag>
 <el-tag type="info">: {{result.medium}}</el-tag><el-tag>: {{result.low}}</el-tag></div>
 <div class="scan-checks"><div v-for="c in result.checks" :key="c.name" class="check-item">
-<span :class="c.pass?'pass':'fail''>{{c.pass?'':''}} {{c.name}}</span><span class="check-detail">{{c.detail}}</span></div></div></div></div></template>
+<span :class="c.pass?'pass':'fail'">{{c.pass?'':''}} {{c.name}}</span><span class="check-detail">{{c.detail}}</span></div></div></div></div></template>
 <script setup>import {ref} from "vue";import {ElMessage} from "element-plus";import {agentApi} from "@/api";
 const scanning=ref(false);const result=ref(null);
 async function runScan(){scanning.value=true;result.value=null;

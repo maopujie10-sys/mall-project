@@ -25,7 +25,8 @@ let haloRings = [], neuralLines = [], ambientParticles = []
 let raycaster, mouse, mouseTarget = new THREE.Vector2()
 
 function emit(event, detail) { window.dispatchEvent(new CustomEvent(event, { detail })) }
-function sendBrainEvent(type, data) { window.dispatchEvent(new CustomEvent("brain:send", {detail: {type, ...data}})) }`nfunction openChat() { emit('brain:openChat') }
+function sendBrainEvent(type, data) { window.dispatchEvent(new CustomEvent("brain:send", {detail: {type, ...data}})) }
+function openChat() { emit('brain:openChat') }
 
 // =====  =====
 function createHolographicFace() {

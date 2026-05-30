@@ -7,9 +7,9 @@
         <el-card shadow="hover" class="db-card" :class="{active: activeDb===db.id}" @click="selectDb(db.id)">
           <div class="db-icon">{{ db.icon }}</div>
           <h3>{{ db.name }}</h3>
-          <el-tag :type="db.type==='MySQL'?'':db.type==='PostgreSQL'?'success':'warning'' size="small">{{ db.type }}</el-tag>
+          <el-tag :type="db.type==='MySQL'?'':db.type==='PostgreSQL'?'success':'warning'" size="small">{{ db.type }}</el-tag>
           <p>{{ db.host }}:{{ db.port }}</p>
-          <div class="db-meta"><span :class="{online:db.online}">?{{ db.online?'':'' }}</span><span>{{ db.tables }}?/span></div>
+          <div class="db-meta"><span :class="{online:db.online}">?{{ db.online?'':'' }}</span><span>{{ db.tables }}</span></div>
         </el-card>
       </el-col>
     </el-row>
@@ -24,7 +24,7 @@
       <el-row :gutter="12">
         <el-col :span="6">
           <el-card shadow="never">
-            <template #header><span>?/span></template>
+            <template #header><span></span></template>
             <el-menu :default-active="activeTable" @select="selectTable">
               <el-menu-item v-for="t in tables" :key="t" :index="t">{{ t }}</el-menu-item>
             </el-menu>
@@ -32,12 +32,12 @@
         </el-col>
         <el-col :span="18">
           <el-card shadow="never" v-if="activeTable">
-            <template #header><span>{{ activeTable }} ?{{ tableRowCount }} ?/span></template>
+            <template #header><span>{{ activeTable }} ?{{ tableRowCount }} </span></template>
             <el-table :data="tableData" stripe max-height="calc(100vh - 420px)" border size="small">
               <el-table-column v-for="col in tableColumns" :key="col" :prop="col" :label="col" min-width="130" show-overflow-tooltip />
             </el-table>
           </el-card>
-          <el-empty v-else description="? />
+          <el-empty v-else description="暂无数据" />
         </el-col>
       </el-row>
     </div>

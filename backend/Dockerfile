@@ -8,21 +8,7 @@ WORKDIR /app
 COPY . .
 
 # 彻底清理所有Python文件的UTF-8 BOM（在pip安装前）
-RUN python3 -c "
-import os, glob
-count = 0
-for f in glob.glob('/app/**/*.py', recursive=True):
-    try:
-        with open(f, 'rb') as fh:
-            data = fh.read()
-        if data[:3] == b'\xef\xbb\xbf':
-            with open(f, 'wb') as fh:
-                fh.write(data[3:])
-            count += 1
-    except:
-        pass
-print(f'BOM cleaned: {count} files')
-"
+RUN echo 'import os, glob; c=0' > /tmp/bom.py && echo 'for f in glob.glob("/app/**/*.py", recursive=True):' >> /tmp/bom.py && echo ' try:' >> /tmp/bom.py && echo '  d=open(f,"rb").read()' >> /tmp/bom.py && echo '  if d[:3]==b"\xef\xbb\xbf":open(f,"wb").write(d[3:]);c+=1' >> /tmp/bom.py && echo ' except: pass' >> /tmp/bom.py && echo 'print(f"BOM: {c}")' >> /tmp/bom.py && python3 /tmp/bom.py && rm /tmp/bom.py
 
 # 安装系统依赖
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -40,7 +26,7 @@ RUN pip install --no-cache-dir playwright && \
     python -m playwright install chromium 2>/dev/null || echo "playwright chromium install skipped"
 
 # 创建必要目录
-RUN mkdir -p /app/data/screenshots /app/memory /app/state /app/backups /app/logs
+RUN mkdir -p /app/data/screenshots /app/memory /app/state /app/backups /app/logs && chmod -R 777 /app/logs /app/data
 
 # Docker socket挂载
 EXPOSE 9000

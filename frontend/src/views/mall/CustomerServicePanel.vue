@@ -3,16 +3,16 @@
     <el-tabs type="card">
       <el-tab-pane label=" (AI Agent)">
         <el-row :gutter="12" style="margin-bottom:12px">
-          <el-col :span="8"><div class="metric-card"><div class="metric-label">{{ \('mallSub.title') }}</div><div class="metric-value">{{ csStats.totalMessages }}</div></div></el-col>
-          <el-col :span="8"><div class="metric-card" style="background:#e6f7ff"><div class="metric-label">{{ \('mallSub.title') }}</div><div class="metric-value">{{ csStats.activeConversations }}</div></div></el-col>
-          <el-col :span="8"><div class="metric-card" style="background:#f6ffed"><div class="metric-label">{{ \('mallSub.title') }}</div><div class="metric-value">{{ csStats.satisfaction }}%</div></div></el-col>
+          <el-col :span="8"><div class="metric-card"><div class="metric-label">{{ $t('mallSub.title') }}</div><div class="metric-value">{{ csStats.totalMessages }}</div></div></el-col>
+          <el-col :span="8"><div class="metric-card" style="background:#e6f7ff"><div class="metric-label">{{ $t('mallSub.title') }}</div><div class="metric-value">{{ csStats.activeConversations }}</div></div></el-col>
+          <el-col :span="8"><div class="metric-card" style="background:#f6ffed"><div class="metric-label">{{ $t('mallSub.title') }}</div><div class="metric-value">{{ csStats.satisfaction }}%</div></div></el-col>
         </el-row>
         <el-button size="small" type="primary" @click="loadCsMessages" :loading="csmLoading">OK</el-button>
         <el-table :data="csMessages" stripe size="small" v-loading="csmLoading" style="margin-top:12px">
           <el-table-column prop="id" label="ID" width="80" />
           <el-table-column prop="content" label='' show-overflow-tooltip />
           <el-table-column prop="replied" label='' width="80">
-            <template #default="{row}"><el-tag :type="row.replied?'success':'warning'' size="small">{{ row.replied?'':'' }}</el-tag></template>
+            <template #default="{row}"><el-tag :type="row.replied?'success':'warning'" size="small">{{ row.replied?'':'' }}</el-tag></template>
           </el-table-column>
         </el-table>
       </el-tab-pane>

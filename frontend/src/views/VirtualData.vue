@@ -1,6 +1,6 @@
 <template>
   <div class="page-container">
-    <div class="page-header"><div><h1>{{ \('virtual.title') }}</h1><p>    ///</p></div><div class="header-actions"><el-button type="primary" @click="generateAll" :loading="allRunning">OK</el-button><el-button type="danger" @click="clearAll">OK</el-button></div></div>
+    <div class="page-header"><div><h1>{{ $t('virtual.title') }}</h1><p>    ///</p></div><div class="header-actions"><el-button type="primary" @click="generateAll" :loading="allRunning">OK</el-button><el-button type="danger" @click="clearAll">OK</el-button></div></div>
     <el-row :gutter="16" style="margin-bottom:20px">
       <el-col :span="6" v-for="s in dataStats" :key="s.label"><el-card shadow="never" class="stat-card"><div class="stat-num">{{ s.value }}</div><div class="stat-label">{{ s.label }}</div></el-card></el-col>
     </el-row>
@@ -11,10 +11,10 @@
         </el-row>
       </el-col>
       <el-col :span="8">
-        <el-card shadow="never" style="margin-bottom:16px"><template #header><span>{{ \('virtual.title') }}</span><el-switch v-model="realtimeRunning" size="small" style="margin-left:10px"/></template>
-          <div class="rt-grid"><div class="rt-item"><span class="rt-label">{{ \('virtual.title') }}</span><span class="rt-val">{{ rtStats.onlineUsers }}</span></div><div class="rt-item"><span class="rt-label">{{ \('virtual.title') }}</span><span class="rt-val">{{ rtStats.todayOrders }}</span></div><div class="rt-item"><span class="rt-label">{{ \('virtual.title') }}</span><span class="rt-val">{{ rtStats.activeProducts }}</span></div><div class="rt-item"><span class="rt-label">{{ \('virtual.title') }}</span><span class="rt-val">${{ rtStats.todayRevenue }}</span></div></div>
+        <el-card shadow="never" style="margin-bottom:16px"><template #header><span>{{ $t('virtual.title') }}</span><el-switch v-model="realtimeRunning" size="small" style="margin-left:10px"/></template>
+          <div class="rt-grid"><div class="rt-item"><span class="rt-label">{{ $t('virtual.title') }}</span><span class="rt-val">{{ rtStats.onlineUsers }}</span></div><div class="rt-item"><span class="rt-label">{{ $t('virtual.title') }}</span><span class="rt-val">{{ rtStats.todayOrders }}</span></div><div class="rt-item"><span class="rt-label">{{ $t('virtual.title') }}</span><span class="rt-val">{{ rtStats.activeProducts }}</span></div><div class="rt-item"><span class="rt-label">{{ $t('virtual.title') }}</span><span class="rt-val">${{ rtStats.todayRevenue }}</span></div></div>
         </el-card>
-        <el-card shadow="never"><template #header><span>{{ \('virtual.title') }}</span></template><div v-for="(item,i) in liveFeed" :key="i" class="feed-item"><span>{{ item.icon }}</span><span>{{ item.text }}</span><span class="feed-time">{{ item.time }}</span></div><el-empty v-if="!liveFeed.length" description=''/></el-card>
+        <el-card shadow="never"><template #header><span>{{ $t('virtual.title') }}</span></template><div v-for="(item,i) in liveFeed" :key="i" class="feed-item"><span>{{ item.icon }}</span><span>{{ item.text }}</span><span class="feed-time">{{ item.time }}</span></div><el-empty v-if="!liveFeed.length" description=''/></el-card>
       </el-col>
     </el-row>
   </div>

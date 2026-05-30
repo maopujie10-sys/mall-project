@@ -3,7 +3,7 @@
     <el-tabs v-model="activeTab" type="border-card" class="mall-tabs">
       <!-- ========== ?========== -->
       <el-tab-pane name="dashboard">
-        <template #label><el-icon><DataAnalysis /></el-icon> ?/template>
+        <template #label><el-icon><DataAnalysis /></el-icon> </template>
 
         <el-row :gutter="16" class="kpi-row">
           <el-col :xs="12" :sm="6" v-for="k in kpis" :key="k.label">
@@ -18,9 +18,9 @@
           <el-col :span="16">
             <el-card shadow="never">
               <div class="card-hd">
-                <span class="card-tt">?/span>
+                <span class="card-tt"></span>
                 <span class="chart-tabs">
-                  <span v-for="(t,i) in ['','??,'?0?]" :key="i"
+                  <span v-for="(t,i) in ['总览','已安装','未安装']" :key="i"
                     class="ctab" :class="{on:chartR===i}" @click="switchChart(i)">{{t}}</span>
                 </span>
               </div>
@@ -44,11 +44,11 @@
           <div class="card-tt"> Top10</div>
           <el-table :data="topGoods" stripe size="small" height="380">
             <el-table-column type="index" label="#" width="50" align="center" />
-            <el-table-column prop="name" :label="\('mall.title')" min-width="200" />
+            <el-table-column prop="name" :label="$t('mall.title')" min-width="200" />
             <el-table-column label='Status' width="120" align="center">
               <template #default="{row}">{{ fmt(row.prizes||row.price) }}</template>
             </el-table-column>
-            <el-table-column label="? width="100" align="center">
+            <el-table-column label="状态" width="100" align="center">
               <template #default="{row}">{{ fmt(row.sellCount) }}</template>
             </el-table-column>
           </el-table>
@@ -59,21 +59,21 @@
       <el-tab-pane name="users">
         <template #label><el-icon><User /></el-icon> </template>
         <div class="tb-bar">
-          <el-input v-model="userKw" :placeholder="\('mall.search')" style="width:220px" clearable @clear="fetchUsers" @keyup.enter="fetchUsers" />
+          <el-input v-model="userKw" :placeholder="$t('mall.search')" style="width:220px" clearable @clear="fetchUsers" @keyup.enter="fetchUsers" />
           <el-button type="primary" @click="fetchUsers">OK</el-button>
         </div>
         <el-table :data="users" stripe size="small" height="520">
           <el-table-column prop="id" label="ID" width="70" />
-          <el-table-column prop="username" label="? width="120" />
-          <el-table-column prop="phone" label="? width="130" />
-          <el-table-column prop="balance" :label="\('mall.title')" width="110" />
-          <el-table-column prop="status" label="? width="90">
-            <template #default="{row}"><el-tag :type="row.status===1?'success':'danger' size="small">{{ row.status===1?'':'' }}</el-tag></template>
+          <el-table-column prop="username" label="状态" width="120" />
+          <el-table-column prop="phone" label="状态" width="130" />
+          <el-table-column prop="balance" :label="$t('mall.title')" width="110" />
+          <el-table-column prop="status" label="状态" width="90">
+            <template #default="{row}"><el-tag :type="row.status===1?'success':'danger'" size="small">{{ row.status===1?'':'' }}</el-tag></template>
           </el-table-column>
           <el-table-column label='Status' width="200">
             <template #default="{row}">
               <el-button size="small" @click="toggleUser(row)">{{ row.status===1?'':'' }}</el-button>
-              <el-button size="small" type="warning" @click="showBalDlg(row)">?/el-button>
+              <el-button size="small" type="warning" @click="showBalDlg(row)"></el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -84,16 +84,16 @@
       <el-tab-pane name="merchants">
         <template #label><el-icon><Shop /></el-icon> </template>
         <div class="tb-bar">
-          <el-input v-model="merKw" :placeholder="\('mall.search')" style="width:220px" clearable @clear="fetchMerchants" @keyup.enter="fetchMerchants" />
+          <el-input v-model="merKw" :placeholder="$t('mall.search')" style="width:220px" clearable @clear="fetchMerchants" @keyup.enter="fetchMerchants" />
           <el-button type="primary" @click="fetchMerchants">OK</el-button>
           <el-button @click="fetchMerApplies"></el-button>
         </div>
         <el-table :data="merchants" stripe size="small" height="520">
           <el-table-column prop="id" label="ID" width="70" />
-          <el-table-column prop="name" :label="\('mall.title')" min-width="150" />
-          <el-table-column prop="phone" label="? width="130" />
-          <el-table-column prop="status" label="? width="90">
-            <template #default="{row}"><el-tag :type="row.status===1?'success':'danger' size="small">{{ row.status===1?'':'' }}</el-tag></template>
+          <el-table-column prop="name" :label="$t('mall.title')" min-width="150" />
+          <el-table-column prop="phone" label="状态" width="130" />
+          <el-table-column prop="status" label="状态" width="90">
+            <template #default="{row}"><el-tag :type="row.status===1?'success':'danger'" size="small">{{ row.status===1?'':'' }}</el-tag></template>
           </el-table-column>
           <el-table-column label='Status' width="120">
             <template #default="{row}">
@@ -113,10 +113,10 @@
         </div>
         <el-table :data="products" stripe size="small" height="520">
           <el-table-column prop="id" label="ID" width="70" />
-          <el-table-column prop="name" :label="\('mall.title')" min-width="180" />
+          <el-table-column prop="name" :label="$t('mall.title')" min-width="180" />
           <el-table-column prop="price" label='Status' width="100" />
-          <el-table-column prop="status" label="? width="90">
-            <template #default="{row}"><el-tag :type="row.status===1?'success':row.status===0?'warning':'info' size="small">{{ statTxt(row.status) }}</el-tag></template>
+          <el-table-column prop="status" label="状态" width="90">
+            <template #default="{row}"><el-tag :type="row.status===1?'success':row.status===0?'warning':'info'" size="small">{{ statTxt(row.status) }}</el-tag></template>
           </el-table-column>
           <el-table-column label='Status' width="160">
             <template #default="{row}">
@@ -132,20 +132,20 @@
       <el-tab-pane name="orders">
         <template #label><el-icon><Document /></el-icon> </template>
         <div class="tb-bar">
-          <el-input v-model="orderKw" :placeholder="\('mall.search')" style="width:220px" clearable @clear="fetchOrders" @keyup.enter="fetchOrders" />
+          <el-input v-model="orderKw" :placeholder="$t('mall.search')" style="width:220px" clearable @clear="fetchOrders" @keyup.enter="fetchOrders" />
           <el-button type="primary" @click="fetchOrders">OK</el-button>
         </div>
         <el-table :data="orders" stripe size="small" height="520">
           <el-table-column prop="id" label="ID" width="70" />
-          <el-table-column prop="orderNo" label="? width="180" />
-          <el-table-column prop="amount" :label="\('mall.title')" width="100" />
-          <el-table-column prop="status" label="? width="90">
+          <el-table-column prop="orderNo" label="状态" width="180" />
+          <el-table-column prop="amount" :label="$t('mall.title')" width="100" />
+          <el-table-column prop="status" label="状态" width="90">
             <template #default="{row}"><el-tag size="small">{{ row.status }}</el-tag></template>
           </el-table-column>
           <el-table-column prop="createTime" label='Status' width="160" />
           <el-table-column label='Status' width="100">
             <template #default="{row}">
-              <el-button size="small" type="danger" @click="doRefund(row)">?/el-button>
+              <el-button size="small" type="danger" @click="doRefund(row)"></el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -157,8 +157,8 @@
         <template #label><el-icon><Wallet /></el-icon> ?<el-badge :value="recPending" :hidden="!recPending" /></template>
         <el-table :data="recharges" stripe size="small" height="560">
           <el-table-column prop="id" label="ID" width="70" />
-          <el-table-column prop="orderNo" label="? width="180" />
-          <el-table-column prop="amount" :label="\('mall.title')" width="100" />
+          <el-table-column prop="orderNo" label="状态" width="180" />
+          <el-table-column prop="amount" :label="$t('mall.title')" width="100" />
           <el-table-column prop="userId" label="ID" width="80" />
           <el-table-column prop="createTime" label='Status' width="160" />
           <el-table-column label='Status' width="160">
@@ -175,8 +175,8 @@
         <template #label><el-icon><Money /></el-icon>  <el-badge :value="witPending" :hidden="!witPending" /></template>
         <el-table :data="withdraws" stripe size="small" height="560">
           <el-table-column prop="id" label="ID" width="70" />
-          <el-table-column prop="orderNo" label="? width="180" />
-          <el-table-column prop="amount" :label="\('mall.title')" width="100" />
+          <el-table-column prop="orderNo" label="状态" width="180" />
+          <el-table-column prop="amount" :label="$t('mall.title')" width="100" />
           <el-table-column prop="userId" label="ID" width="80" />
           <el-table-column prop="createTime" label='Status' width="160" />
           <el-table-column label='Status' width="220">
@@ -193,14 +193,14 @@
         <template #label><el-icon><Picture /></el-icon> </template>
         <div class="tb-bar">
           <el-select v-model="bannerType" placeholder='Enter...' style="width:120px" clearable @change="fetchBanners">
-            <el-option :label="\('mall.title')" value="home" /><el-option label='Status' value="activity" />
+            <el-option :label="$t('mall.title')" value="home" /><el-option label='Status' value="activity" />
           </el-select>
           <el-button type="primary" @click="fetchBanners">OK</el-button>
           <el-button type="success" @click="showBannerDlg()"></el-button>
         </div>
         <el-table :data="banners" stripe size="small" height="480">
           <el-table-column prop="uuid" label="UUID" width="120" />
-          <el-table-column prop="title" :label="\('mall.title')" min-width="150" />
+          <el-table-column prop="title" :label="$t('mall.title')" min-width="150" />
           <el-table-column prop="type" label='Status' width="100" />
           <el-table-column prop="sort" label='Status' width="70" />
           <el-table-column prop="imgUrl" label="URL" min-width="200" />
@@ -219,23 +219,23 @@
         <template #label><el-icon><Grid /></el-icon> </template>
         <div class="tb-bar">
           <el-select v-model="catLevel" placeholder='Enter...' style="width:100px" clearable @change="fetchCategories">
-            <el-option label="? :value="1" /><el-option label='Status' :value="2" />
+            <el-option label="状态" :value="1" /><el-option label='Status' :value="2" />
           </el-select>
           <el-button type="primary" @click="fetchCategories">OK</el-button>
           <el-button type="success" @click="showCatDlg()"></el-button>
         </div>
         <el-table :data="categories" stripe size="small" height="480">
           <el-table-column prop="uuid" label="UUID" width="120" />
-          <el-table-column prop="name" :label="\('mall.title')" min-width="150" />
+          <el-table-column prop="name" :label="$t('mall.title')" min-width="150" />
           <el-table-column prop="sort" label='Status' width="70" />
           <el-table-column prop="level" label='Status' width="70" />
-          <el-table-column prop="status" label="? width="80">
-            <template #default="{row}"><el-tag :type="row.status===1?'success':'danger' size="small">{{ row.status===1?'':'' }}</el-tag></template>
+          <el-table-column prop="status" label="状态" width="80">
+            <template #default="{row}"><el-tag :type="row.status===1?'success':'danger'" size="small">{{ row.status===1?'':'' }}</el-tag></template>
           </el-table-column>
           <el-table-column label='Status' width="220">
             <template #default="{row}">
               <el-button size="small" @click="showCatDlg(row)">OK</el-button>
-              <el-button size="small" :type="row.status===1?'warning':'success'' @click="toggleCatStatus(row)">{{ row.status===1?'':'' }}</el-button>
+              <el-button size="small" :type="row.status===1?'warning':'success'" @click="toggleCatStatus(row)">{{ row.status===1?'':'' }}</el-button>
               <el-button size="small" type="danger" @click="delCat(row)">OK</el-button>
             </template>
           </el-table-column>
@@ -248,25 +248,25 @@
         <template #label><el-icon><Star /></el-icon> </template>
         <div class="tb-bar">
           <el-input v-model="evalKw" placeholder='Enter...' style="width:220px" clearable @clear="fetchEvaluations" @keyup.enter="fetchEvaluations" />
-          <el-select v-model="evalStatus" placeholder="? style="width:100px" clearable @change="fetchEvaluations">
-            <el-option :label="\('mall.title')" :value="1" /><el-option label='Status' :value="0" />
+          <el-select v-model="evalStatus" placeholder="搜索" style="width:100px" clearable @change="fetchEvaluations">
+            <el-option :label="$t('mall.title')" :value="1" /><el-option label='Status' :value="0" />
           </el-select>
           <el-button type="primary" @click="fetchEvaluations">OK</el-button>
         </div>
         <el-table :data="evaluations" stripe size="small" height="480">
           <el-table-column prop="uuid" label="UUID" width="100" />
-          <el-table-column prop="userName" :label="\('mall.title')" width="100" />
-          <el-table-column prop="content" :label="\('mall.title')" min-width="200" show-overflow-tooltip />
+          <el-table-column prop="userName" :label="$t('mall.title')" width="100" />
+          <el-table-column prop="content" :label="$t('mall.title')" min-width="200" show-overflow-tooltip />
           <el-table-column prop="rating" label='Status' width="70">
-            <template #default="{row}">{{ '?.repeat(row.rating||0) }}</template>
+            <template #default="{row}">{{ '★'.repeat(row.rating||0) }}</template>
           </el-table-column>
-          <el-table-column prop="status" label="? width="80">
-            <template #default="{row}"><el-tag :type="row.status===1?'success':'info' size="small">{{ row.status===1?'':'' }}</el-tag></template>
+          <el-table-column prop="status" label="状态" width="80">
+            <template #default="{row}"><el-tag :type="row.status===1?'success':'info'" size="small">{{ row.status===1?'':'' }}</el-tag></template>
           </el-table-column>
           <el-table-column prop="createTime" label='Status' width="160" />
           <el-table-column label='Status' width="160">
             <template #default="{row}">
-              <el-button size="small" :type="row.status===1?'warning':'success'' @click="toggleEval(row)">{{ row.status===1?'':'' }}</el-button>
+              <el-button size="small" :type="row.status===1?'warning':'success'" @click="toggleEval(row)">{{ row.status===1?'':'' }}</el-button>
               <el-button size="small" type="danger" @click="delEval(row)">OK</el-button>
             </template>
           </el-table-column>
@@ -276,7 +276,7 @@
 
       <!-- ========== ?========== -->
       <el-tab-pane name="attrCats">
-        <template #label><el-icon><Collection /></el-icon> ?/template>
+        <template #label><el-icon><Collection /></el-icon> </template>
         <div class="tb-bar">
           <el-input v-model="attrCatKw" placeholder='Enter...' style="width:220px" clearable @clear="fetchAttrCats" @keyup.enter="fetchAttrCats" />
           <el-button type="primary" @click="fetchAttrCats">OK</el-button>
@@ -284,7 +284,7 @@
         </div>
         <el-table :data="attrCats" stripe size="small" height="480">
           <el-table-column prop="id" label="ID" width="200" />
-          <el-table-column prop="name" :label="\('mall.title')" min-width="150" />
+          <el-table-column prop="name" :label="$t('mall.title')" min-width="150" />
           <el-table-column prop="sort" label='Status' width="80" />
           <el-table-column label='Status' width="160">
             <template #default="{row}">
@@ -298,11 +298,11 @@
 
       <!-- ========== ?========== -->
       <el-tab-pane name="attrs">
-        <template #label><el-icon><SetUp /></el-icon> ?/template>
+        <template #label><el-icon><SetUp /></el-icon> </template>
         <div class="tb-bar">
           <el-input v-model="attrCatFilter" placeholder="D" style="width:220px" clearable @clear="fetchAttrs" @keyup.enter="fetchAttrs" />
           <el-button type="primary" @click="fetchAttrs">OK</el-button>
-          <el-button type="success" @click="showAttrDlg()">?/el-button>
+          <el-button type="success" @click="showAttrDlg()"></el-button>
         </div>
         <el-table :data="attrs" stripe size="small" height="480">
           <el-table-column prop="id" label="ID" width="200" />
@@ -320,21 +320,21 @@
     </el-tabs>
 
     <!-- ?-->
-    <el-dialog v-model="balDlg.show" :title="\('mall.title')" width="400px">
+    <el-dialog v-model="balDlg.show" :title="$t('mall.title')" width="400px">
       <el-form label-width="80px">
-        <el-form-item :label="\('mall.title')">{{ balDlg.user }}</el-form-item>
-        <el-form-item :label="\('mall.title')"><el-input v-model="balDlg.amount" placeholder="," /></el-form-item>
+        <el-form-item :label="$t('mall.title')">{{ balDlg.user }}</el-form-item>
+        <el-form-item :label="$t('mall.title')"><el-input v-model="balDlg.amount" placeholder="," /></el-form-item>
         <el-form-item label=''><el-input v-model="balDlg.remark" /></el-form-item>
       </el-form>
       <template #footer><el-button @click="balDlg.show=false">OK</el-button><el-button type="primary" @click="doAdjust"></el-button></template>
     </el-dialog>
 
     
-    <el-dialog v-model="applyDlg.show" :title="\('mall.title')" width="500px">
+    <el-dialog v-model="applyDlg.show" :title="$t('mall.title')" width="500px">
       <el-table :data="applies" stripe size="small" height="400">
         <el-table-column prop="id" label="ID" width="60" />
-        <el-table-column prop="name" label="? width="120" />
-        <el-table-column prop="phone" label="? width="130" />
+        <el-table-column prop="name" label="状态" width="120" />
+        <el-table-column prop="phone" label="状态" width="130" />
         <el-table-column label='Status' width="140">
           <template #default="{row}">
             <el-button size="small" type="success" @click="auditApply(row,true)">OK</el-button>
@@ -345,10 +345,10 @@
     </el-dialog>
 
     
-    <el-dialog v-model="bannerDlg.show" :title="bannerDlg.uuid?'':''' width="500px">
+    <el-dialog v-model="bannerDlg.show" :title="bannerDlg.uuid?'编辑Banner':'添加Banner'" width="500px">
       <el-form label-width="80px">
-        <el-form-item :label="\('mall.title')"><el-input v-model="bannerDlg.title" /></el-form-item>
-        <el-form-item label=''><el-select v-model="bannerDlg.type" style="width:100%"><el-option :label="\('mall.title')" value="home" /><el-option label='Status' value="activity" /></el-select></el-form-item>
+        <el-form-item :label="$t('mall.title')"><el-input v-model="bannerDlg.title" /></el-form-item>
+        <el-form-item label=''><el-select v-model="bannerDlg.type" style="width:100%"><el-option :label="$t('mall.title')" value="home" /><el-option label='Status' value="activity" /></el-select></el-form-item>
         <el-form-item label="URL"><el-input v-model="bannerDlg.imgUrl" placeholder="https://..." /></el-form-item>
         <el-form-item label="URL"><el-input v-model="bannerDlg.linkUrl" /></el-form-item>
         <el-form-item label=''><el-input-number v-model="bannerDlg.sort" :min="0" /></el-form-item>
@@ -357,9 +357,9 @@
     </el-dialog>
 
     
-    <el-dialog v-model="catDlg.show" :title="catDlg.uuid?'':''' width="500px">
+    <el-dialog v-model="catDlg.show" :title="catDlg.uuid?'编辑分类':'添加分类'" width="500px">
       <el-form label-width="80px">
-        <el-form-item :label="\('mall.title')"><el-input v-model="catDlg.name" /></el-form-item>
+        <el-form-item :label="$t('mall.title')"><el-input v-model="catDlg.name" /></el-form-item>
         <el-form-item label=''><el-input-number v-model="catDlg.level" :min="1" :max="3" /></el-form-item>
         <el-form-item label="ID"><el-input v-model="catDlg.parentId" placeholder="0" /></el-form-item>
         <el-form-item label=''><el-input-number v-model="catDlg.type" :min="1" /></el-form-item>
@@ -370,16 +370,16 @@
     </el-dialog>
 
     <!-- ?-->
-    <el-dialog v-model="attrCatDlg.show" :title="attrCatDlg.uuid?'?:'?" width="400px">
+    <el-dialog v-model="attrCatDlg.show" :title="attrCatDlg.uuid?'编辑属性分类':'添加属性分类'" width="400px">
       <el-form label-width="80px">
-        <el-form-item :label="\('mall.title')"><el-input v-model="attrCatDlg.name" /></el-form-item>
+        <el-form-item :label="$t('mall.title')"><el-input v-model="attrCatDlg.name" /></el-form-item>
         <el-form-item label=''><el-input-number v-model="attrCatDlg.sort" :min="0" /></el-form-item>
       </el-form>
       <template #footer><el-button @click="attrCatDlg.show=false">OK</el-button><el-button type="primary" @click="saveAttrCatDlg">OK</el-button></template>
     </el-dialog>
 
     <!-- ?-->
-    <el-dialog v-model="attrDlg.show" :title="attrDlg.uuid?'?:'?" width="400px">
+    <el-dialog v-model="attrDlg.show" :title="attrDlg.uuid?'编辑属性':'添加属性'" width="400px">
       <el-form label-width="100px">
         <el-form-item label="D"><el-input v-model="attrDlg.categoryId" /></el-form-item>
         <el-form-item label=''><el-input-number v-model="attrDlg.sort" :min="0" /></el-form-item>
@@ -413,13 +413,13 @@ let chart = null, timer = null
 
 // ===== ?=====
 const kpis = reactive([
-  { label:'?, value:0, color:'c1', key:'total_users' },
+  { label:'状态', value:0, color:'c1', key:'total_users' },
   { label:'', value:0, color:'c2', key:'today_orders' },
-  { label:'?, value:0, color:'c3', key:'today_amount' },
-  { label:'?, value:0, color:'c4', key:'pending_recharge' },
+  { label:'状态', value:0, color:'c3', key:'today_amount' },
+  { label:'状态', value:0, color:'c4', key:'pending_recharge' },
 ])
 const orderStats = reactive([
-  { l:'?, v:0 },{ l:'?, v:0 },{ l:'?, v:0 },{ l:'?, v:0 },
+  { l:'状态', v:0 },{ l:'状态', v:0 },{ l:'状态', v:0 },{ l:'状态', v:0 },
 ])
 const topGoods = ref([])
 const chartData = reactive({ comm:[], s:[] })
@@ -491,11 +491,11 @@ function initChart() {
   if (chart) chart.dispose()
   chart = echarts.init(chartRef.value)
   chart.setOption({
-    tooltip:{trigger:'axis'}, legend:{data:['?],left:'left',top:0},
+    tooltip:{trigger:'axis'}, legend:{data:['状态'],left:'left',top:0},
     grid:{left:10,right:20,bottom:20,top:40,containLabel:true},
     xAxis:{type:'category',data:chartData.comm,boundaryGap:false},
     yAxis:{type:'value',minInterval:1},
-    series:[{name:'?,type:'line',smooth:false,data:chartData.s,
+    series:[{name:'状态',type:'line',smooth:false,data:chartData.s,
       lineStyle:{color:'#FF005A',width:2},itemStyle:{color:'#FF005A'}}],
   })
 }
@@ -512,14 +512,14 @@ async function fetchUsers() {
 async function toggleUser(row) {
   try {
     await updateUserStatus({userId:row.id,status:row.status===1?0:1})
-    ElMessage.success('?); fetchUsers()
+    ElMessage.success('成功'); fetchUsers()
   } catch(e) { ElMessage.error(e.message) }
 }
 function showBalDlg(row) { balDlg.user=row.username||row.phone; balDlg.userId=row.id; balDlg.amount=''; balDlg.remark=''; balDlg.show=true }
 async function doAdjust() {
   try {
     await adjustUserBalance({userId:balDlg.userId,amount:balDlg.amount,remark:balDlg.remark})
-    ElMessage.success('?); balDlg.show=false; fetchUsers()
+    ElMessage.success('成功'); balDlg.show=false; fetchUsers()
   } catch(e) { ElMessage.error(e.message) }
 }
 
@@ -534,7 +534,7 @@ async function fetchMerchants() {
 async function toggleMer(row) {
   try {
     await updateMerchantStatus({merchantId:row.id,status:row.status===1?0:1})
-    ElMessage.success('?); fetchMerchants()
+    ElMessage.success('成功'); fetchMerchants()
   } catch(e) { ElMessage.error(e.message) }
 }
 async function fetchMerApplies() {
@@ -547,7 +547,7 @@ async function fetchMerApplies() {
 async function auditApply(row, approved) {
   try {
     await auditMerchantApply({applyId:row.id,approved})
-    ElMessage.success(approved?'':'?)
+    ElMessage.success(approved?'':'成功')
     applies.value = applies.value.filter(x=>x.id!==row.id)
   } catch(e) { ElMessage.error(e.message) }
 }
@@ -563,7 +563,7 @@ async function fetchProducts() {
 async function auditProd(row, status) {
   try {
     await auditProduct({productId:row.id,status})
-    ElMessage.success(status===1?'?:'?); fetchProducts()
+    ElMessage.success(status===1?'审核通过':'已拒绝'); fetchProducts()
   } catch(e) { ElMessage.error(e.message) }
 }
 
@@ -577,9 +577,9 @@ async function fetchOrders() {
 }
 async function doRefund(row) {
   try {
-    await ElMessageBox.confirm(`?${row.orderNo||row.id},'?,{type:'warning'})
+    await ElMessageBox.confirm(`确认操作 ${row.orderNo||row.id}?`,'提示',{type:'warning'})
     await forceRefund(row.id)
-    ElMessage.success('?); fetchOrders()
+    ElMessage.success('成功'); fetchOrders()
   } catch(_){}
 }
 
@@ -594,7 +594,7 @@ async function fetchRecharges() {
 async function auditRec(row, approved) {
   try {
     await auditRecharge({id:row.id,approved,reason:''})
-    ElMessage.success(approved?'':'?); fetchRecharges()
+    ElMessage.success(approved?'':'成功'); fetchRecharges()
   } catch(e) { ElMessage.error(e.message) }
 }
 
@@ -609,7 +609,7 @@ async function fetchWithdraws() {
 async function auditWit(row, approved) {
   try {
     await auditWithdraw({id:row.id,approved,txHash:'',reason:''})
-    ElMessage.success(approved?'':'?); fetchWithdraws()
+    ElMessage.success(approved?'':'成功'); fetchWithdraws()
   } catch(e) { ElMessage.error(e.message) }
 }
 
@@ -638,13 +638,13 @@ async function saveBannerDlg() {
     const body = { title:bannerDlg.title, type:bannerDlg.type, imgUrl:bannerDlg.imgUrl, sort:bannerDlg.sort, linkUrl:bannerDlg.linkUrl }
     if (bannerDlg.uuid) await updateBanner(bannerDlg.uuid, body)
     else await saveBanner(body)
-    ElMessage.success('?); bannerDlg.show = false; fetchBanners()
+    ElMessage.success('成功'); bannerDlg.show = false; fetchBanners()
   } catch(e) { ElMessage.error(e.message) }
 }
 async function delBanner(row) {
   try {
     await ElMessageBox.confirm('','',{type:'warning'})
-    await deleteBanner(row.uuid); ElMessage.success('?); fetchBanners()
+    await deleteBanner(row.uuid); ElMessage.success('成功'); fetchBanners()
   } catch(_){}
 }
 
@@ -674,19 +674,19 @@ async function saveCatDlg() {
     const body = { name:catDlg.name, sort:catDlg.sort, level:catDlg.level, parentId:catDlg.parentId, type:catDlg.type, iconImg:catDlg.iconImg, status:catDlg.status }
     if (catDlg.uuid) await updateCategory(catDlg.uuid, body)
     else await saveCategory(body)
-    ElMessage.success('?); catDlg.show = false; fetchCategories()
+    ElMessage.success('成功'); catDlg.show = false; fetchCategories()
   } catch(e) { ElMessage.error(e.message) }
 }
 async function toggleCatStatus(row) {
   try {
     await updateCategoryStatus(row.uuid, {status: row.status===1?0:1})
-    ElMessage.success('?); fetchCategories()
+    ElMessage.success('成功'); fetchCategories()
   } catch(e) { ElMessage.error(e.message) }
 }
 async function delCat(row) {
   try {
     await ElMessageBox.confirm('','',{type:'warning'})
-    await deleteCategory(row.uuid); ElMessage.success('?); fetchCategories()
+    await deleteCategory(row.uuid); ElMessage.success('成功'); fetchCategories()
   } catch(_){}
 }
 
@@ -704,13 +704,13 @@ async function fetchEvaluations() {
 async function toggleEval(row) {
   try {
     await updateEvaluationStatus(row.uuid, {status: row.status===1?0:1})
-    ElMessage.success('?); fetchEvaluations()
+    ElMessage.success('成功'); fetchEvaluations()
   } catch(e) { ElMessage.error(e.message) }
 }
 async function delEval(row) {
   try {
     await ElMessageBox.confirm('','',{type:'warning'})
-    await deleteEvaluation(row.uuid); ElMessage.success('?); fetchEvaluations()
+    await deleteEvaluation(row.uuid); ElMessage.success('成功'); fetchEvaluations()
   } catch(_){}
 }
 
@@ -734,13 +734,13 @@ async function saveAttrCatDlg() {
     const body = { name: attrCatDlg.name, sort: attrCatDlg.sort }
     if (attrCatDlg.uuid) await updateAttrCategory(attrCatDlg.uuid, body)
     else await saveAttrCategory(body)
-    ElMessage.success('?); attrCatDlg.show = false; fetchAttrCats()
+    ElMessage.success('成功'); attrCatDlg.show = false; fetchAttrCats()
   } catch(e) { ElMessage.error(e.message) }
 }
 async function delAttrCat(row) {
   try {
     await ElMessageBox.confirm('','',{type:'warning'})
-    await deleteAttrCategory(row.uuid || row.id); ElMessage.success('?); fetchAttrCats()
+    await deleteAttrCategory(row.uuid || row.id); ElMessage.success('成功'); fetchAttrCats()
   } catch(_){}
 }
 
@@ -764,13 +764,13 @@ async function saveAttrDlg() {
     const body = { categoryId: attrDlg.categoryId, sort: attrDlg.sort }
     if (attrDlg.uuid) await updateAttr(attrDlg.uuid, body)
     else await saveAttr(body)
-    ElMessage.success('?); attrDlg.show = false; fetchAttrs()
+    ElMessage.success('成功'); attrDlg.show = false; fetchAttrs()
   } catch(e) { ElMessage.error(e.message) }
 }
 async function delAttr(row) {
   try {
     await ElMessageBox.confirm('','',{type:'warning'})
-    await deleteAttr(row.uuid || row.id); ElMessage.success('?); fetchAttrs()
+    await deleteAttr(row.uuid || row.id); ElMessage.success('成功'); fetchAttrs()
   } catch(_){}
 }
 

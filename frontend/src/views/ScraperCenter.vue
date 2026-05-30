@@ -1,7 +1,7 @@
 <template>
   <div class="page-container">
     <div class="page-header">
-      <div><h1>{{ \('scraper.title') }}</h1><p>    COS</p></div>
+      <div><h1>{{ $t('scraper.title') }}</h1><p>    COS</p></div>
       <div class="header-actions"><el-button type="primary" @click="showCreateDialog = true"><el-icon><Plus /></el-icon> </el-button></div>
     </div>
     <el-row :gutter="16" style="margin-bottom: 20px;">
@@ -14,7 +14,7 @@
     <el-row :gutter="16" style="margin-bottom: 20px;">
       <el-col :span="16">
         <el-card shadow="never">
-          <template #header><div class="panel-header"><span>{{ \('scraper.title') }}</span><el-button text size="small" @click="refreshJobs">OK</el-button></div></template>
+          <template #header><div class="panel-header"><span>{{ $t('scraper.title') }}</span><el-button text size="small" @click="refreshJobs">OK</el-button></div></template>
           <el-table :data="jobs" size="small" max-height="350">
             <el-table-column prop="keyword" label='Status' min-width="120"/><el-table-column prop="platform" label='Status' width="110"><template #default="{ row }"><el-tag size="small">{{ row.platform }}</el-tag></template></el-table-column>
             <el-table-column prop="collected" label='Status' width="80"/><el-table-column prop="imported" label='Status' width="80"/>

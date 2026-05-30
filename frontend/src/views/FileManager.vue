@@ -12,7 +12,7 @@
         </el-breadcrumb-item>
       </el-breadcrumb>
       <div style="display:flex;gap:8px;margin-left:auto">
-        <el-input v-model="currentPath" :placeholder="\('files.search')" size="small" style="width:300px" @keyup.enter="loadFiles" />
+        <el-input v-model="currentPath" :placeholder="$t('files.search')" size="small" style="width:300px" @keyup.enter="loadFiles" />
         
         <el-upload :http-request="handleUpload" :show-file-list="false" style="display:inline-block">
           <el-button type="success" size="small">OK</el-button>
@@ -21,7 +21,7 @@
     </div>
 
     <el-table :data="entries" stripe size="small" v-loading="loading">
-      <el-table-column :label="\('files.title')" min-width="300">
+      <el-table-column :label="$t('files.title')" min-width="300">
         <template #default="{row}">
           <span @click="row.is_dir ? navigateDir(row.name) : null"
                 style="cursor:pointer;display:flex;align-items:center;gap:6px">
@@ -34,7 +34,7 @@
 
     
     <el-divider/>
-    <div class="section-header"><h3>{{ \('files.title') }}</h3><el-button size="small" type="primary" @click="showArchiveDialog=true">+ </el-button></div>
+    <div class="section-header"><h3>{{ $t('files.title') }}</h3><el-button size="small" type="primary" @click="showArchiveDialog=true">+ </el-button></div>
     
     <el-row :gutter="16" style="margin-bottom:16px">
       <el-col :span="6" v-for="s in archiveStorage" :key="s.label">
@@ -44,30 +44,30 @@
 
     <el-table :data="archives" size="small" v-if="archives.length">
       <el-table-column prop="id" label="ID" width="140"/>
-      <el-table-column prop="name" label="? min-width="200"/>
+      <el-table-column prop="name" label="状态" min-width="200"/>
       <el-table-column prop="size_mb" label="(MB)" width="100"/>
       <el-table-column prop="created_at" label='Status' width="170"/>
-      <el-table-column label="? width="80"><template #default="{row}"><el-tag :type="row.file_exists?'success':'danger' size="small">{{ row.file_exists?'':'? }}</el-tag></template></el-table-column>
+      <el-table-column label="状态" width="80"><template #default="{row}"><el-tag :type="row.file_exists?'success':'danger'" size="small">{{ row.file_exists?'存在':'不存在' }}</el-tag></template></el-table-column>
       <el-table-column label='Status' width="100"><template #default="{row}"><el-button size="small" link type="danger" @click="doDeleteArchive(row.id)">OK</el-button></template></el-table-column>
     </el-table>
 
     <!-- ?-->
-    <el-dialog v-model="showArchiveDialog" :title="\('files.title')" width="500px">
+    <el-dialog v-model="showArchiveDialog" :title="$t('files.title')" width="500px">
       <el-form label-width="80px">
-        <el-form-item :label="\('files.title')"><el-checkbox-group v-model="archiveTargets">
+        <el-form-item :label="$t('files.title')"><el-checkbox-group v-model="archiveTargets">
           <el-checkbox v-for="t in archiveTargetList" :key="t.id" :value="t.id" :disabled="!t.exists">{{ t.name }} <small style="color:var(--text-muted)">({{ t.size }})</small></el-checkbox>
         </el-checkbox-group></el-form-item>
-        <el-form-item label=''><el-input v-model="archiveNote" :placeholder="\('files.search')"/></el-form-item>
+        <el-form-item label=''><el-input v-model="archiveNote" :placeholder="$t('files.search')"/></el-form-item>
         <el-form-item label="itHub"><el-switch v-model="archivePushGithub"/></el-form-item>
       </el-form>
       <template #footer><el-button @click="showArchiveDialog=false">OK</el-button><el-button type="primary" :loading="archiveLoading" @click="doCreateArchive">OK</el-button></template>
     </el-dialog>
 </template>
       </el-table-column>
-      <el-table-column prop="size" :label="\('files.title')" width="120">
+      <el-table-column prop="size" :label="$t('files.title')" width="120">
         <template #default="{row}">{{ row.is_dir ? "-" : formatSize(row.size) }}</template>
       </el-table-column>
-      <el-table-column prop="modified" :label="\('files.title')" width="160" />
+      <el-table-column prop="modified" :label="$t('files.title')" width="160" />
       <el-table-column prop="permissions" label='Status' width="80" />
       <el-table-column label='Status' width="100" fixed="right">
         <template #default="{row}">
@@ -76,7 +76,7 @@
         </template>
       </el-table-column>
     </el-table>
-    <el-empty v-if="!loading && entries.length===0" description="? />
+    <el-empty v-if="!loading && entries.length===0" description="暂无数据" />
   </div>
 </template>
 
@@ -101,7 +101,7 @@ const archiveStorage = ref([])
 
 const pathParts = computed(() => {
   const parts = currentPath.value.replace(/\\/g, "/").split("/").filter(Boolean)
-  const result = [{ name: "?/", path: "/" }]
+  const result = [{ name: "/", path: "/" }]
   let cum = ''
   for (const p of parts) {
     cum += "/" + p
@@ -153,10 +153,10 @@ async function handleUpload(options) {
 async function deleteFile(name) {
   const fp = currentPath.value.replace(/\/+$/, '') + "/" + name
   try {
-    await ElMessageBox.confirm(` ${name}, "", { type: "warning" })
+    await ElMessageBox.confirm(`确认删除 ${name}?`,'提示',{type:'warning'})
     const r = await agentApi.delete("/server/files", { params: { path: fp } })
     if (r.ok || r.deleted) {
-      ElMessage.success("?)
+      ElMessage.success('操作成功')
       loadFiles()
     }
   } catch (e) {

@@ -1,0 +1,2 @@
+[2026-05-30 22:05:49] [WARNING] [rag] RAG: ChromaDB不可用(No module named 'chromadb'), 使用内存模式
+[2026-05-30 22:16:52] [WARNING] [rag] RAG: ChromaDB不可用(No module named 'chromadb'), 使用内存模式

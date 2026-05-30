@@ -2,11 +2,11 @@
   <div class="gh-panel">
     <div class="page-header">
       <div><h2> GitHub MCP</h2><p> / Issues / PRs / Actions / </p></div>
-      <el-tag :type="configured ? 'success' : 'danger'' size="small">{{ configured ? '? : 'oken' }}</el-tag>
+      <el-tag :type="configured ? 'success' : 'danger'" size="small">{{ configured ? '已配置' : '未配置' }}</el-tag>
     </div>
 
     <el-tabs v-model="tab" type="border-card">
-      <el-tab-pane name="overview" :label="\('github.title')">
+      <el-tab-pane name="overview" :label="$t('github.title')">
         <el-row :gutter="16" v-if="repo">
           <el-col :span="6" v-for="s in stats" :key="s.label">
             <div class="metric-card"><div class="metric-label">{{ s.label }}</div><div class="metric-value">{{ s.value }}</div></div>
@@ -28,9 +28,9 @@
       <el-tab-pane name="commits" label=''>
         <el-table :data="commits" stripe size="small" height="500">
           <el-table-column prop="sha" label="SHA" width="90" />
-          <el-table-column prop="message" :label="\('github.title')" min-width="300" />
-          <el-table-column prop="author" label="? width="120" />
-          <el-table-column prop="date" :label="\('github.title')" width="100" />
+          <el-table-column prop="message" :label="$t('github.title')" min-width="300" />
+          <el-table-column prop="author" label="状态" width="120" />
+          <el-table-column prop="date" :label="$t('github.title')" width="100" />
         </el-table>
       </el-tab-pane>
 
@@ -38,45 +38,45 @@
         <div class="tb-bar"><el-button type="primary" size="small" @click="showCreateIssue=true">Issue</el-button></div>
         <el-table :data="issues" stripe size="small" height="500">
           <el-table-column type="index" label="#" width="50" />
-          <el-table-column prop="title" :label="\('github.title')" min-width="300" />
-          <el-table-column prop="state" label="? width="80">
-            <template #default="{row}"><el-tag :type="row.state==='open'?'success':'info' size="small">{{ row.state }}</el-tag></template>
+          <el-table-column prop="title" :label="$t('github.title')" min-width="300" />
+          <el-table-column prop="state" label="状态" width="80">
+            <template #default="{row}"><el-tag :type="row.state==='open'?'success':'info'" size="small">{{ row.state }}</el-tag></template>
           </el-table-column>
-          <el-table-column prop="user" label="? width="100" />
-          <el-table-column prop="created" :label="\('github.title')" width="100" />
+          <el-table-column prop="user" label="状态" width="100" />
+          <el-table-column prop="created" :label="$t('github.title')" width="100" />
         </el-table>
       </el-tab-pane>
 
       <el-tab-pane name="prs" label="PRs">
         <el-table :data="prs" stripe size="small" height="500">
           <el-table-column type="index" label="#" width="50" />
-          <el-table-column prop="title" :label="\('github.title')" min-width="300" />
-          <el-table-column prop="state" label="? width="80" />
-          <el-table-column prop="user" label="? width="100" />
-          <el-table-column prop="created" :label="\('github.title')" width="100" />
+          <el-table-column prop="title" :label="$t('github.title')" min-width="300" />
+          <el-table-column prop="state" label="状态" width="80" />
+          <el-table-column prop="user" label="状态" width="100" />
+          <el-table-column prop="created" :label="$t('github.title')" width="100" />
         </el-table>
       </el-tab-pane>
 
       <el-tab-pane name="workflows" label="Actions">
         <el-table :data="workflows" stripe size="small" height="500">
-          <el-table-column prop="name" label="? min-width="250" />
-          <el-table-column prop="state" label="? width="100" />
-          <el-table-column prop="path" :label="\('github.title')" min-width="200" />
+          <el-table-column prop="name" label="状态" min-width="250" />
+          <el-table-column prop="state" label="状态" width="100" />
+          <el-table-column prop="path" :label="$t('github.title')" min-width="200" />
         </el-table>
       </el-tab-pane>
 
       <el-tab-pane name="branches" label=''>
         <el-table :data="branches" stripe size="small" height="500">
-          <el-table-column prop="name" label="? min-width="200" />
-          <el-table-column prop="sha" label="? width="100" />
+          <el-table-column prop="name" label="状态" min-width="200" />
+          <el-table-column prop="sha" label="状态" width="100" />
         </el-table>
       </el-tab-pane>
     </el-tabs>
 
     <el-dialog v-model="showCreateIssue" title=" Issue" width="500">
       <el-form label-width="60">
-        <el-form-item :label="\('github.title')"><el-input v-model="issueTitle" placeholder="Issue " /></el-form-item>
-        <el-form-item :label="\('github.title')"><el-input v-model="issueBody" type="textarea" :rows="4" placeholder='Enter...' /></el-form-item>
+        <el-form-item :label="$t('github.title')"><el-input v-model="issueTitle" placeholder="Issue " /></el-form-item>
+        <el-form-item :label="$t('github.title')"><el-input v-model="issueBody" type="textarea" :rows="4" placeholder='Enter...' /></el-form-item>
       </el-form>
       <template #footer><el-button @click="showCreateIssue=false">OK</el-button><el-button type="primary" @click="doCreateIssue" :loading="creating">OK</el-button></template>
     </el-dialog>
@@ -104,10 +104,10 @@ const creating = ref(false)
 const stats = computed(() => {
   if (!repo.value) return []
   return [
-    { label: '?Stars', value: repo.value.stars },
-    { label: '?Forks', value: repo.value.forks },
-    { label: ' Issues', value: repo.value.issues },
-    { label: '', value: repo.value.size_mb + 'MB' },
+    { label: 'Stars', value: repo.value.stars },
+    { label: 'Forks', value: repo.value.forks },
+    { label: 'Issues', value: repo.value.issues },
+    { label: 'Size', value: repo.value.size_mb + 'MB' },
   ]
 })
 
@@ -132,7 +132,7 @@ async function doCreateIssue() {
   creating.value = true
   try {
     const res = await createIssue('maopujie10-sys/mall-project', issueTitle.value, issueBody.value)
-    if (res?.data?.ok) { ElMessage.success('Issue?); showCreateIssue.value = false; issueTitle.value = ''; issueBody.value = ''; listIssues().then(r=>issues.value=r?.data?.issues||[]) }
+    if (res?.data?.ok) { ElMessage.success('Issue 已创建'); showCreateIssue.value = false; issueTitle.value = ''; issueBody.value = ''; listIssues().then(r=>issues.value=r?.data?.issues||[]) }
     else ElMessage.error('Error')
   } catch { ElMessage.error('Error') }
   creating.value = false

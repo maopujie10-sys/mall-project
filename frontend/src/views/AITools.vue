@@ -3,7 +3,7 @@
 
 <el-tab-pane label=" " name="code">
 <el-radio-group v-model="lang" size="small" style="margin-bottom:8px"><el-radio-button value="python">Python</el-radio-button><el-radio-button value="sql">SQL</el-radio-button></el-radio-group>
-<el-input v-model="code" type="textarea" :rows="6" :placeholder="lang==='python'?'print(sum(range(1,101)))  # Python':'SELECT COUNT(*) FROM products  # SQL''/>
+<el-input v-model="code" type="textarea" :rows="6" :placeholder="lang==='python'?'print(sum(range(1,101)))  # Python':'SELECT COUNT(*) FROM products  # SQL'" />
 
 <div v-if="codeResult" class="result-box"><pre>{{codeResult}}</pre></div></el-tab-pane>
 
@@ -13,7 +13,7 @@
 
 <el-tab-pane label=" " name="image">
 <el-input v-model="imgPrompt" placeholder="..." type="textarea" :rows="3"/><el-button type="primary" @click="genImage" :loading="loading" style="margin-top:8px"> DALL-E</el-button>
-<div v-if="genImages.length" class="image-grid">-</el-tab-pane>
+<div v-if="genImages.length" class="image-grid">-</div></el-tab-pane>
 
 <el-tab-pane label=" " name="usage">
 <el-button @click="loadUsage" :loading="loading">OK</el-button>

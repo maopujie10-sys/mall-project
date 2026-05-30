@@ -15,8 +15,8 @@
       <el-tab-pane label='Status' name="market">
         <div class="toolbar">
           <el-input v-model="search" placeholder="..." clearable style="width:240px" size="small" />
-          <el-select v-model="categoryFilter" :placeholder="\('plugin.search')" clearable style="width:140px" size="small">
-            <el-option v-for="c in categories" :key="c.category" :label="(c.icon||'') + c.category + ' (' + c.count + ')' :value="c.category" />
+          <el-select v-model="categoryFilter" :placeholder="$t('plugin.search')" clearable style="width:140px" size="small">
+            <el-option v-for="c in categories" :key="c.category" :label="(c.icon||'') + c.category + ' (' + c.count + ')'" :value="c.category" />
           </el-select>
           <el-button @click="fetchMarket" size="small" :loading="loading">OK</el-button>
         </div>
@@ -41,23 +41,23 @@
                 <el-tag v-for="t in s.tags.slice(0,3)" :key="t" size="small" effect="plain">{{ t }}</el-tag>
               </div>
               <el-button
-                :type="s.installed ? 'success' : 'primary''
+                :type="s.installed ? 'success' : 'primary'"
                 size="small" style="width:100%;margin-top:10px"
                 @click="s.installed ? null : installSkill(s)"
                 :disabled="s.installed || installing === s.id"
                 :loading="installing === s.id"
-              >{{ s.installed ? '?? : '' }}</el-button>
+              >{{ s.installed ? '已安装' : '' }}</el-button>
             </el-card>
           </el-col>
         </el-row>
-        <el-empty v-if="filteredSkills.length===0" description="? />
+        <el-empty v-if="filteredSkills.length===0" description="暂无数据" />
       </el-tab-pane>
 
       <!-- Tab 2:  -->
       <el-tab-pane label='Status' name="community">
         <div class="toolbar">
-          <el-input v-model="communitySearch" placeholder="?.." clearable style="width:240px" size="small" />
-          <el-select v-model="communityCategory" :placeholder="\('plugin.search')" clearable style="width:140px" size="small">
+          <el-input v-model="communitySearch" placeholder="搜索插件..." clearable style="width:240px" size="small" />
+          <el-select v-model="communityCategory" :placeholder="$t('plugin.search')" clearable style="width:140px" size="small">
             <el-option v-for="c in communityCategories" :key="c" :label="c" :value="c" />
           </el-select>
           <el-button @click="fetchCommunity" size="small" :loading="communityLoading">OK</el-button>
@@ -87,22 +87,22 @@
                  {{ s.readme }}
               </div>
               <el-button
-                :type="isCommunityInstalled(s.id) ? 'success' : 'primary''
+                :type="isCommunityInstalled(s.id) ? 'success' : 'primary'"
                 size="small" style="width:100%;margin-top:10px"
                 :disabled="isCommunityInstalled(s.id) || communityInstalling === s.id"
                 :loading="communityInstalling === s.id"
                 @click="installCommunity(s)"
-              >{{ isCommunityInstalled(s.id) ? '?? : '' }}</el-button>
+              >{{ isCommunityInstalled(s.id) ? '已安装' : '' }}</el-button>
             </el-card>
           </el-col>
         </el-row>
-        <el-empty v-if="filteredCommunity.length===0" description="? />
+        <el-empty v-if="filteredCommunity.length===0" description="暂无数据" />
       </el-tab-pane>
 
       <!-- Tab 3: ?-->
-      <el-tab-pane label=" ? name="installed">
+      <el-tab-pane label="已安装" name="installed">
         <el-table :data="allInstalledSkills" stripe size="small">
-          <el-table-column label="? min-width="200">
+          <el-table-column label="状态" min-width="200">
             <template #default="{row}">
               <span style="font-size:18px;margin-right:6px">{{ row.icon || '' }}</span>
               <span style="font-weight:500">{{ row.name }}</span>
@@ -112,29 +112,29 @@
           <el-table-column prop="category" label='Status' width="100">
             <template #default="{row}"><el-tag size="small">{{ row.category }}</el-tag></template>
           </el-table-column>
-          <el-table-column :label="\('plugin.title')" width="80">
+          <el-table-column :label="$t('plugin.title')" width="80">
             <template #default="{row}">
-              <el-tag v-if="row.id" size="small" :type="row._source==='package'?'warning':'default''>{{ row._source==='package'?'?:'' }}</el-tag>
+              <el-tag v-if="row.id" size="small" :type="row._source==='package'?'warning':'default'">{{ row._source==='package'?'包管理':'已安装' }}</el-tag>
             </template>
           </el-table-column>
           <el-table-column prop="desc" label='Status' min-width="200" show-overflow-tooltip />
-          <el-table-column label="? width="90">
+          <el-table-column label="状态" width="90">
             <template #default="{row}">
-              <el-switch v-model="row.enabled" @change="toggleSkill(row)" size="small" :disabled="row._source==='package'' />
+              <el-switch v-model="row.enabled" @change="toggleSkill(row)" size="small" :disabled="row._source==='package'" />
             </template>
           </el-table-column>
           <el-table-column label='Status' width="100" fixed="right">
             <template #default="{row}">
-              <el-button v-if="row._source==='package'' text type="danger" size="small" @click="uninstallPackage(row)">OK</el-button>
+              <el-button v-if="row._source==='package'" text type="danger" size="small" @click="uninstallPackage(row)">OK</el-button>
               <el-button v-else text type="danger" size="small" @click="uninstallSkill(row)">OK</el-button>
             </template>
           </el-table-column>
         </el-table>
-        <el-empty v-if="allInstalledSkills.length===0" description="? />
+        <el-empty v-if="allInstalledSkills.length===0" description="暂无数据" />
       </el-tab-pane>
 
       <!-- Tab 4: ?-->
-      <el-tab-pane label=" ? name="publish">
+      <el-tab-pane label="发布" name="publish">
         <el-card shadow="never">
           -
           <p style="color:#999;font-size:13px">?skill.json + main.py ?ZIP</p>
@@ -269,7 +269,7 @@ async function installSkill(s) {
   try {
     const r = await agentApi.post("/agent/plugins/install", { plugin_id: s.id })
     if (r.ok || r.status === "installed" || r.status === "already_installed") {
-      ElMessage.success("?" + s.name + " ")
+      ElMessage.success(s.name + " 安装成功")
       s.installed = true
     }
   } catch (e) {
@@ -280,10 +280,10 @@ async function installSkill(s) {
 
 async function uninstallSkill(s) {
   try {
-    await ElMessageBox.confirm(" " + s.name + "?, "", { type: "warning" })
+    await ElMessageBox.confirm("确认卸载 " + s.name + " 吗?", "提示", { type: "warning" })
     const r = await agentApi.post("/agent/plugins/uninstall", { plugin_id: s.id })
     if (r.ok || r.uninstalled) {
-      ElMessage.success(s.name + " ?)
+      ElMessage.success(s.name + " 已卸载")
       s.installed = false
     }
   } catch (e) {
@@ -294,7 +294,7 @@ async function uninstallSkill(s) {
 async function toggleSkill(s) {
   try {
     await agentApi.post("/agent/plugins/toggle", { plugin_id: s.id, enabled: s.enabled })
-    ElMessage.success(s.enabled ? s.name + " ? : s.name + " ?)
+    ElMessage.success(s.enabled ? s.name + " 已启用" : s.name + " 已禁用")
   } catch {
     s.enabled = !s.enabled
     ElMessage.error('Error')
@@ -319,7 +319,7 @@ async function installCommunity(s) {
   try {
     const r = await agentApi.post("/agent/plugins/community/install", { skill_id: s.id })
     if (r.ok || r.status === "installed") {
-      ElMessage.success("?" + s.name + " ")
+      ElMessage.success(s.name + " 安装成功")
       communityInstalledIds.value.push(s.id)
       fetchInstalledPackages()
     }
@@ -339,10 +339,10 @@ async function fetchInstalledPackages() {
 
 async function uninstallPackage(s) {
   try {
-    await ElMessageBox.confirm(" " + s.name + "n?, "", { type: "warning" })
+    await ElMessageBox.confirm("确认卸载 " + s.name + " 吗?", "提示", { type: "warning" })
     const r = await agentApi.post("/agent/plugins/uninstall/" + s.id)
     if (r.ok || r.uninstalled) {
-      ElMessage.success(s.name + " ?)
+      ElMessage.success(s.name + " 已卸载")
       installedPackages.value = installedPackages.value.filter(p => p.id !== s.id)
     }
   } catch (e) {
@@ -366,7 +366,7 @@ async function publishSkill() {
       headers: { "Content-Type": "multipart/form-data" }
     })
     if (r.ok) {
-      ElMessage.success("?")
+      ElMessage.success("发布成功")
       publishFile.value = null
       publishFileList.value = []
       fetchInstalledPackages()
@@ -385,7 +385,7 @@ async function publishFromUrl() {
   try {
     const r = await agentApi.post("/agent/plugins/publish", { download_url: publishUrl.value })
     if (r.ok) {
-      ElMessage.success("?")
+      ElMessage.success("发布成功")
       publishUrl.value = ''
       fetchInstalledPackages()
     } else {

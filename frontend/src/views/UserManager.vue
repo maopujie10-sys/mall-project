@@ -8,7 +8,7 @@
 <el-col :span="12"><el-card><template #header>  ({{users.length}})</template>
 <div v-if="!users.length" style="text-align:center;padding:20px;color:rgba(255,255,255,0.4)">...</div>
 <div v-for="u in users" :key="u.username" class="user-row"><div><div class="user-name">{{u.username}}</div><div class="user-meta">{{u.role}}  {{u.created_at?.slice(0,10)}}</div></div>
-<el-dropdown @command="(cmd)=>roleAction(u.username,cmd)"><el-tag :type="u.role==='admin'?'danger':u.role==='operator'?'warning':'info' style="cursor:pointer">{{u.role}}</el-tag>
+<el-dropdown @command="(cmd)=>roleAction(u.username,cmd)"><el-tag :type="u.role==='admin'?'danger':u.role==='operator'?'warning':'info'" style="cursor:pointer">{{u.role}}</el-tag>
 <template #dropdown><el-dropdown-menu><el-dropdown-item command="admin">admin</el-dropdown-item><el-dropdown-item command="operator">operator</el-dropdown-item><el-dropdown-item command="viewer">viewer</el-dropdown-item><el-dropdown-item divided command="delete">-</el-dropdown-item></el-dropdown-menu></template>
 </el-dropdown></div></el-card></el-col></el-row></div></template>
 <script setup>

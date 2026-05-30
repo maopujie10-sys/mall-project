@@ -7,11 +7,11 @@
           <template #header>
             <div class="rb-header">
               <span>{{ rb.name }}</span>
-              <el-tag :type="rb.risk === 'L1' ? 'success' : 'warning'' size="small">{{ rb.risk }}</el-tag>
+              <el-tag :type="rb.risk === 'L1' ? 'success' : 'warning'" size="small">{{ rb.risk }}</el-tag>
             </div>
           </template>
           <el-button type="primary" @click="run(rb.id)" :loading="runningId === rb.id" :disabled="runningId">
-            {{ runningId === rb.id ? '?..' : '? }}
+            {{ runningId === rb.id ? '执行中...' : '开始诊断' }}
           </el-button>
         </el-card>
       </el-col>
@@ -29,22 +29,22 @@
     <el-card v-if="report" shadow="never" style="margin-top:16px">
       <template #header>
         -
-        <el-tag :type="report.all_passed ? 'success' : 'danger'' size="small" style="margin-left:8px">
-          {{ report.all_passed ? '' : `${report.failed}  }}
+        <el-tag :type="report.all_passed ? 'success' : 'danger'" size="small" style="margin-left:8px">
+          {{ report.all_passed ? '' : `${report.failed} 个失败`}}
         </el-tag>
       </template>
       <el-timeline>
         <el-timeline-item v-for="s in report.steps" :key="s.name"
           :timestamp="s.time"
-          :type="s.ok ? 'success' : 'danger''
-          :color="s.ok ? '#67c23a' : '#f56c6c''>
+          :type="s.ok ? 'success' : 'danger'"
+          :color="s.ok ? '#67c23a' : '#f56c6c'">
           <p><strong>{{ s.name }}</strong></p>
           <p>{{ s.detail }}</p>
           <p v-if="s.evidence" style="font-size:12px;color:#999">{{ s.evidence }}</p>
         </el-timeline-item>
       </el-timeline>
-      <el-alert v-if="!report.all_passed" :title="\('selfService.title')" :description="report.summary" type="warning" show-icon style="margin-top:12px" />
-      <el-alert v-else title="? :description="report.summary" type="success" show-icon style="margin-top:12px" />
+      <el-alert v-if="!report.all_passed" :title="$t('selfService.title')" :description="report.summary" type="warning" show-icon style="margin-top:12px" />
+      <el-alert v-else title="状态" :description="report.summary" type="success" show-icon style="margin-top:12px" />
     </el-card>
   </div>
 </template>
@@ -74,9 +74,9 @@ async function run(id) {
   try {
     report.value = await agentApi.post(`/self-service/run/${id}`)
     if (report.value.all_passed) {
-      ElMessage.success(' ?)
+      ElMessage.success('所有检查通过')
     } else {
-      ElMessage.warning(`${report.value.failed} )
+      ElMessage.warning(`${report.value.failed} 个失败`)
     }
   } catch { ElMessage.error('Error') }
   runningId.value = ''

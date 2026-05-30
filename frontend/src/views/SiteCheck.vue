@@ -1,13 +1,13 @@
 <template>
   <div class="site-check">
-    <h2>{{ \('site.title') }}</h2>
+    <h2>{{ $t('site.title') }}</h2>
     <el-row :gutter="16">
       <el-col :span="12">
         <el-card shadow="never">
           <template #header></template>
           <el-input v-model="checkUrl" placeholder="URL https://example.com" clearable />
           <el-button type="primary" @click="doCheck" :loading="checkLoading" style="margin-top:8px">OK</el-button>
-          <el-result v-if="checkResult" :status="checkResult.accessible ? 'success' : 'error'' :title="checkResult.accessible ? '' : ''">
+          <el-result v-if="checkResult" :status="checkResult.accessible ? 'success' : 'error'" :title="checkResult.accessible ? '可访问' : '不可访问'">
             <template #extra>
               <p>: {{ checkResult.status_code }}</p>
               <p>: {{ checkResult.latency_ms }}ms</p>

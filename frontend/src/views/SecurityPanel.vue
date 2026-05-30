@@ -1,7 +1,7 @@
 <template>
   <div class="page-container">
     <div class="page-header">
-      <h2>{{ \('security.title') }}</h2>
+      <h2>{{ $t('security.title') }}</h2>
       <p>Google ? </p>
     </div>
 
@@ -24,16 +24,16 @@
                 <el-form-item><el-input v-model="code" placeholder="6" maxlength="6" style="width:140px;" /></el-form-item>
                 <el-form-item><el-button type="primary" @click="doVerify" :loading="verifying">OK</el-button></el-form-item>
               </el-form>
-              <el-button type="danger" text @click="doReset">?/el-button>
+              <el-button type="danger" text @click="doReset"></el-button>
             </template>
           </div>
         </el-card>
       </el-col>
       <el-col :span="12">
         <el-card shadow="never">
-          <div class="card-title">?/div>
+          <div class="card-title"></div>
           <div style="padding:20px 0;">
-            <el-result :icon="verified?'success':'warning'' :title="verified?'?:'?" :sub-title="verified?'':'?" />
+            <el-result :icon="verified?'success':'warning'" :title="verified?'已验证':'未验证'" :sub-title="verified?'有效':'请验证'" />
           </div>
         </el-card>
       </el-col>
@@ -74,15 +74,15 @@ async function doSetup() {
 }
 
 async function doVerify() {
-  if (!code.value || code.value.length !== 6) { ElMessage.warning('?'); return }
+  if (!code.value || code.value.length !== 6) { ElMessage.warning('请输入6位验证码'); return }
   verifying.value = true
   try {
     await agentApi.post(`/2fa/verify?code=${code.value}`)
     verified.value = true
-    ElMessage.success('?)
+    ElMessage.success('成功')
     code.value = ''
   } catch (e) {
-    ElMessage.error(e.response?.data?.detail || '?)
+    ElMessage.error(e.response?.data?.detail || '成功')
   } finally { verifying.value = false }
 }
 
@@ -90,7 +90,7 @@ async function doReset() {
   try {
     await agentApi.delete('/2fa/reset')
     verified.value = false; setupDone.value = false; qrCode.value = ''; secret.value = ''
-    ElMessage.success('?)
+    ElMessage.success('成功')
   } catch (e) { ElMessage.error('Error') }
 }
 

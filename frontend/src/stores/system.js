@@ -42,6 +42,10 @@ export const useSystemStore = defineStore('system', () => {
     return map[currentMode.value] || currentMode.value
   })
 
+  async function fetchStatus() {
+    return fetchMode()
+  }
+
   async function fetchMode() {
     try {
       const data = await getSystemMode()

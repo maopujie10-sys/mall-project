@@ -5,10 +5,10 @@
       <div class="em-header">
         <div class="em-logo">
           <el-icon :size="28" color="#ff4d4f"><WarningFilled /></el-icon>
-          <span>{{ \('emergency.title') }}</span>
+          <span>{{ $t('emergency.title') }}</span>
         </div>
         <div class="em-mode" :class="currentMode">
-          <span class="mode-dot">{{ \('emergency.title') }}</span>
+          <span class="mode-dot">{{ $t('emergency.title') }}</span>
           {{ modeLabel }}
         </div>
       </div>
@@ -17,6 +17,7 @@
       <div class="kill-section">
         <div class="kill-description">
           <strong> AI </strong>-
+        </div>
         <el-button
           class="kill-button"
           :class="{ killed: isKilled }"
@@ -35,7 +36,7 @@
 
       
       <div class="recovery-section">
-        <h3>{{ \('emergency.title') }}</h3>
+        <h3>{{ $t('emergency.title') }}</h3>
         <div class="recovery-buttons">
           <el-button type="primary" size="large" @click="restoreMode('ai_control')" :disabled="!isKilled">
             <el-icon><RefreshRight /></el-icon>  AI 
@@ -50,14 +51,14 @@
 
       
       <div class="history-section">
-        <h3>{{ \('emergency.title') }}</h3>
+        <h3>{{ $t('emergency.title') }}</h3>
         <div class="history-list">
           <div v-for="(record, i) in history" :key="i" class="history-item">
-            <span class="status-dot" :class="record.mode === 'human_control' ? 'offline' : 'online''>
-              <span class="dot">{{ \('emergency.title') }}</span>
+            <span class="status-dot" :class="record.mode === 'human_control' ? 'offline' : 'online'">
+              <span class="dot">{{ $t('emergency.title') }}</span>
             </span>
             <span class="history-time">{{ record.time }}</span>
-            <el-tag :type="record.mode === 'human_control' ? 'danger' : 'success'' size="small">
+            <el-tag :type="record.mode === 'human_control' ? 'danger' : 'success'" size="small">
               {{ record.mode === 'human_control' ? '' : record.mode === 'ai_control' ? 'AI ' : record.mode }}
             </el-tag>
             <span class="history-reason">{{ record.reason }}</span>

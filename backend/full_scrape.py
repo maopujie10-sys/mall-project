@@ -9,9 +9,9 @@ MEMORY_CHECK_INTERVAL = 20
 SEARCH_DELAY_BASE = 0.05
 SEARCH_DELAY_MAX = 10
 PRODUCT_DELAY = 0.01
-CONCURRENCY = 20           
+CONCURRENCY = 8
 CATEGORY_PAUSE = 0.1
-MAX_PAGES = 20             
+MAX_PAGES = 3
 IMPORT_BATCH_SIZE = 30
 
 SHARD_INDEX = 0
@@ -137,7 +137,7 @@ SUBCAT_KEYWORDS = {
     # Jewelry & Watches
     "Anklet": ["anklet bracelet", "gold anklet", "beach anklet"],
     "Earrings": ["gold earrings", "hoop earrings", "stud earrings set"],
-    "Jewelry": ["jewelry set", "statement necklace", "tennis bracelet"],
+    "Fashion Jewelry": ["fashion jewelry set", "statement necklace", "tennis bracelet"],
     "Jewelry Set": ["jewelry gift set", "bridal jewelry set", "pearl jewelry set"],
     "Keychains & Trinkets": ["keychain", "car keychain", "cute keychain"],
     "Ladies Bracelet": ["bracelet women", "gold bracelet women", "charm bracelet"],
@@ -176,16 +176,25 @@ SUBCAT_KEYWORDS = {
     "Plush Toy": ["stuffed animal", "teddy bear", "plush doll"],
     "Wooden Toys": ["wooden blocks", "wooden puzzle", "wooden train set"],
     # Ladies Bag
-    "Ladies Backpack": ["women backpack", "leather backpack women", "mini backpack women"],
-    "Ladies Messenger Handbag": ["crossbody bag women", "messenger bag women", "sling bag women"],
-    "Ladies Shoulder Bag": ["shoulder bag women", "hobo bag women", "satchel bag women"],
-    "Ladies Wallet": ["women wallet", "rfid wallet women", "card holder women"],
-    "Suitcase": ["luggage set", "carry on suitcase", "hard shell luggage"],
+    "Tote Bags": ["tote bag", "large tote bag", "leather tote", "canvas tote", "designer tote"],
+    "Shoulder Bags": ["shoulder bag women", "leather shoulder bag", "fashion shoulder bag"],
+    "Crossbody Bags": ["crossbody bag women", "sling bag women", "mini crossbody bag"],
+    "Backpack Purses": ["women backpack purse", "leather backpack women", "mini backpack purse"],
+    "Satchel Bags": ["satchel handbag", "leather satchel bag", "top handle satchel"],
+    "Clutch Bags": ["clutch purse", "evening clutch bag", "designer clutch bag"],
+    "Hobo Bags": ["hobo handbag", "hobo shoulder bag", "leather hobo bag"],
+    "Bucket Bags": ["bucket bag", "drawstring bucket bag", "mini bucket bag"],
+    "Wallets & Wristlets": ["wristlet wallet women", "wristlet clutch", "women card holder"],
+    "Suitcase": ["luggage set", "carry on suitcase", "hard shell luggage", "travel suitcase"],
     # Men's Bag
-    "Men's Backpack": ["men backpack", "laptop backpack men", "travel backpack men"],
-    "Men's Briefcase": ["briefcase men", "leather briefcase", "attache case"],
-    "Men's Shoulder Bag": ["sling bag men", "crossbody bag men", "chest bag men"],
-    "Men's Wallet": ["men wallet", "rfid wallet men", "bifold wallet"],
+    "Backpacks": ["men backpack", "laptop backpack men", "travel backpack men", "tactical backpack"],
+    "Messenger Bags": ["men messenger bag", "leather messenger bag", "canvas messenger bag"],
+    "Briefcases": ["briefcase men", "leather briefcase men", "business briefcase"],
+    "Men's Shoulder Bags": ["sling bag men", "men shoulder bag", "crossbody bag men"],
+    "Laptop Bags": ["laptop bag men", "laptop briefcase men", "laptop shoulder bag"],
+    "Duffel & Gym Bags": ["duffel bag men", "gym duffel bag", "sports duffel", "travel duffel"],
+    "Waist Packs": ["waist bag men", "men fanny pack", "chest sling bag", "belt bag men"],
+    "Wallets & Card Cases": ["men wallet", "rfid wallet men", "bifold wallet men", "men card holder"],
     # Luxury
     "Art": ["wall art", "canvas painting", "modern art print"],
     "Bags": ["designer bag", "luxury handbag", "evening clutch"],
@@ -235,7 +244,9 @@ SUBCAT_KEYWORDS = {
     "Alcohol & Sanitizers": ["hand sanitizer", "alcohol wipes", "surface disinfectant"],
     "Disposable Gloves": ["nitrile gloves", "disposable gloves box", "vinyl gloves"],
     "Goggles": ["safety goggles", "protective glasses", "lab goggles"],
-    "Medical Mask": ["surgical mask", "n95 mask", "face mask disposable"],
+    "Medical Masks": ["surgical mask", "n95 mask", "face mask disposable"],
+    "Protective Mask": ["face shield mask", "protective face mask", "reusable face mask"],
+    "Protective Shoe Covers": ["disposable shoe covers", "protective shoe covers", "waterproof shoe cover"],
     "Protective Suit": ["protective coverall", "disposable coverall", "hazmat suit"],
     "Thermometer": ["digital thermometer", "forehead thermometer", "infrared thermometer"],
     # Recreational Fishing Gear
@@ -476,7 +487,7 @@ async def run(ppk=80):
     return stats
 
 if __name__ == "__main__":
-    ppk = 150
+    ppk = 200
     shard_idx = 0
     shard_total = 1
     args = sys.argv[1:]
@@ -499,10 +510,10 @@ if __name__ == "__main__":
         import pymysql as _mysql
         _c = _mysql.connect(host='127.0.0.1', port=3306, user='root', password='Root@123', database='mall')
         _cur = _c.cursor()
-        _cur.execute(''"SELECT cl.NAME FROM T_MALL_CATEGORY c
+        _cur.execute("""SELECT cl.NAME FROM T_MALL_CATEGORY c
             JOIN T_MALL_CATEGORY_LANG cl ON c.UUID = cl.CATEGORY_ID AND cl.LANG='en'
-            WHERE c.TYPE=1 AND c.STATUS=1
-            AND c.UUID NOT IN (SELECT DISTINCT CATEGORY_ID FROM T_MALL_SYSTEM_GOODS WHERE IS_SHELF=1)''")
+            WHERE c.TYPE=1 AND c.STATUS=1 AND c.LEVEL=2
+            AND c.UUID NOT IN (SELECT DISTINCT CATEGORY_ID FROM T_MALL_SELLER_GOODS WHERE IS_VALID=1)""")
         zero_cat_names = set(row[0] for row in _cur.fetchall())
         _c.close()
     except Exception:
@@ -514,14 +525,14 @@ if __name__ == "__main__":
     shard_cats = dict(cats[shard_idx::shard_total])
     
     zero_items = [(k, v) for k, v in shard_cats.items() if k in zero_cat_names]
-    other_items = [(k, v) for k, v in shard_cats.items() if k not in zero_cat_names]
+    skipped = [(k, v) for k, v in shard_cats.items() if k not in zero_cat_names]
     random.shuffle(zero_items)
-    random.shuffle(other_items)
     SUBCAT_KEYWORDS.clear()
-    SUBCAT_KEYWORDS.update(dict(zero_items + other_items))
+    SUBCAT_KEYWORDS.update(dict(zero_items))
     TOTAL = sum(len(v) for v in SUBCAT_KEYWORDS.values())
+    print(f"  {len(zero_items)}  {len(skipped)} ")
     if zero_items:
-        print(f": {len(zero_items)}  ")
+        print(f"  {[k for k,v in zero_items]}")
 
     # (__main__full_scrape)
     main_mod = sys.modules["__main__"]

@@ -7,7 +7,7 @@
             <el-table-column prop="name" label='' width="120" />
             <el-table-column label='' width="80">
               <template #default="{row}">
-                <el-tag :type="row.ok ? 'success' : 'danger'' size="small">{{ row.ok ? '' : '' }}</el-tag>
+                <el-tag :type="row.ok ? 'success' : 'danger'" size="small">{{ row.ok ? '' : '' }}</el-tag>
               </template>
             </el-table-column>
             <el-table-column prop="code" label='' width="80" />

@@ -3,7 +3,7 @@
     <el-tabs type="card">
       <el-tab-pane label=''>
         <el-row :gutter="12" style="margin-bottom:12px">
-          <el-col :span="12"><div class="metric-card"><div class="metric-label">{{ \('mallSub.title') }}</div><div class="metric-value">{{ inviteStats.total || 0 }}</div></div></el-col>
+          <el-col :span="12"><div class="metric-card"><div class="metric-label">{{ $t('mallSub.title') }}</div><div class="metric-value">{{ inviteStats.total || 0 }}</div></div></el-col>
         </el-row>
         <el-table :data="invites" stripe size="small" v-loading="iv">
           <el-table-column prop="uuid" label="UUID" width="200" />

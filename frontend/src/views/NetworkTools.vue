@@ -10,7 +10,7 @@
             <el-input v-model="pingHost" placeholder="P" size="small" @keyup.enter="runPing" />
             <el-button @click="runPing" size="small" type="primary" :loading="pingLoading">Ping</el-button>
           </div>
-          <pre v-if="pingResult" class="result-box">{{ pingResult.stdout || pingResult.error || "? }}</pre>
+          <pre v-if="pingResult" class="result-box">{{ pingResult.stdout || pingResult.error || "" }}</pre>
         </el-card>
 
         <el-card shadow="never" style="margin-bottom:16px">
@@ -20,19 +20,19 @@
             <el-button @click="runDns" size="small" type="primary" :loading="dnsLoading"></el-button>
           </div>
           <div v-if="dnsResult" class="result-box">
-            <div v-if="dnsResult.ips">IP?code v-for="ip in dnsResult.ips" :key="ip" style="display:block">{{ ip }}</code></div>
+            <div v-if="dnsResult.ips">IP 地址<code v-for="ip in dnsResult.ips" :key="ip" style="display:block">{{ ip }}</code></div>
             <div v-else style="color:#ff4d4f">{{ dnsResult.error }}</div>
           </div>
         </el-card>
 
         <el-card shadow="never">
-          <template #header><span> HTTP ?/span></template>
+          <template #header><span> HTTP </span></template>
           <div style="display:flex;gap:8px">
             <el-input v-model="httpUrl" placeholder="https://example.com" size="small" @keyup.enter="runHttp" />
-            <el-button @click="runHttp" size="small" type="primary" :loading="httpLoading">?/el-button>
+            <el-button @click="runHttp" size="small" type="primary" :loading="httpLoading"></el-button>
           </div>
           <div v-if="httpResult" class="result-box">
-            <div>?el-tag :type="httpResult.status < 400 ? 'success' : 'danger''>{{ httpResult.status }}</el-tag></div>
+            <div><el-tag :type="httpResult.status < 400 ? 'success' : 'danger'">{{ httpResult.status }}</el-tag></div>
             <div>{ httpResult.elapsed_ms }}ms</div>
             <div>{ httpResult.size }} bytes</div>
           </div>
@@ -50,7 +50,7 @@
           <div v-if="scanResult" class="result-box">
             <div style="margin-bottom:8px">{{ scanResult.open_count }}/{{ scanResult.results?.length || 0 }}</div>
             <div v-for="r in scanResult.results" :key="r.port" style="display:flex;align-items:center;gap:8px;padding:2px 0">
-              <span :style="{color:r.open?'#52c41a':'#999'}">{{ r.open ? '' : '? }}</span>
+              <span :style="{color:r.open?'#52c41a':'#999'}">{{ r.open ? '开放' : '关闭' }}</span>
               <span style="font-family:monospace"> {{ r.port }}</span>
               <el-tag v-if="r.open" size="small" type="success"></el-tag>
               -
@@ -64,7 +64,7 @@
             <el-input v-model="traceHost" placeholder="P" size="small" @keyup.enter="runTrace" />
             <el-button @click="runTrace" size="small" type="primary" :loading="traceLoading">OK</el-button>
           </div>
-          <pre v-if="traceResult" class="result-box">{{ traceResult.stdout || traceResult.error || "? }}</pre>
+          <pre v-if="traceResult" class="result-box">{{ traceResult.stdout || traceResult.error || "" }}</pre>
         </el-card>
       </el-col>
     </el-row>

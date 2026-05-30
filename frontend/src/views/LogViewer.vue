@@ -7,7 +7,7 @@
       <el-col :span="6" v-for="s in sources" :key="s.id">
         <el-card shadow="never" :class="['src-card', { active: activeSource === s.id, unavailable: !s.available }]" @click="selectSource(s)">
           <div class="src-name">{{ s.name }}</div>
-          <div class="src-info">{{ s.available ? s.size : '? }}</div>
+          <div class="src-info">{{ s.available ? s.size : '不可用' }}</div>
         </el-card>
       </el-col>
     </el-row>
@@ -16,18 +16,18 @@
     <el-card shadow="never" style="margin-bottom:20px">
       <el-row :gutter="12" align="middle">
         <el-col :span="4">
-          <el-select v-model="logLevel" :placeholder="\('logs.search')" clearable style="width:100%">
-            <el-option :label="\('logs.title')" value=''/><el-option label="ERROR" value="ERROR"/>
+          <el-select v-model="logLevel" :placeholder="$t('logs.search')" clearable style="width:100%">
+            <el-option :label="$t('logs.title')" value=''/><el-option label="ERROR" value="ERROR"/>
             <el-option label="WARN" value="WARN"/><el-option label="INFO" value="INFO"/>
           </el-select>
         </el-col>
         <el-col :span="6">
-          <el-input v-model="filterText" placeholder="?.." clearable @keyup.enter="loadLogs"/>
+          <el-input v-model="filterText" placeholder="搜索日志..." clearable @keyup.enter="loadLogs"/>
         </el-col>
         <el-col :span="4">
           <el-select v-model="logLines" style="width:100%">
-            <el-option :value="50" label="50?/><el-option :value="100" label="100?/>
-            <el-option :value="200" label="200?/><el-option :value="500" label="500?/>
+            <el-option :value="50" label="50" /><el-option :value="100" label="100" />
+            <el-option :value="200" label="200" /><el-option :value="500" label="500" />
           </el-select>
         </el-col>
         <el-col :span="4">
@@ -47,7 +47,7 @@
     
     <el-card shadow="never">
       <template #header>
-        <span> {{ activeSourceName }} ?{{ logData.total_filtered || 0 }} / {{ logData.total_raw || 0 }} ?/span>
+        <span> {{ activeSourceName }} ?{{ logData.total_filtered || 0 }} / {{ logData.total_raw || 0 }} </span>
       </template>
       <div class="log-container" ref="logContainer">
         -

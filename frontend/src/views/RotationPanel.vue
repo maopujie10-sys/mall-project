@@ -8,17 +8,17 @@
 
     
     <el-row :gutter="16" style="margin-bottom:20px">
-      <el-col :span="6"><div class="metric-card"><div class="metric-label">?/div><div class="metric-value">{{ domains.length }}</div></div></el-col>
+      <el-col :span="6"><div class="metric-card"><div class="metric-label"></div><div class="metric-value">{{ domains.length }}</div></div></el-col>
       <el-col :span="6"><div class="metric-card">-<div class="metric-value" style="color:#52c41a">{{ domains.filter(d=>d.active).length }}</div></div></el-col>
-      <el-col :span="6"><div class="metric-card"><div class="metric-label">{{ \('rotation.title') }}</div><div class="metric-value" style="color:#ff4d4f">{{ domains.filter(d=>!d.active&&d.status==='fail').length }}</div></div></el-col>
-      <el-col :span="6"><div class="metric-card"><div class="metric-label">{{ \('rotation.title') }}</div><div class="metric-value">{{ avgLatency }}ms</div></div></el-col>
+      <el-col :span="6"><div class="metric-card"><div class="metric-label">{{ $t('rotation.title') }}</div><div class="metric-value" style="color:#ff4d4f">{{ domains.filter(d=>!d.active&&d.status==='fail').length }}</div></div></el-col>
+      <el-col :span="6"><div class="metric-card"><div class="metric-label">{{ $t('rotation.title') }}</div><div class="metric-value">{{ avgLatency }}ms</div></div></el-col>
     </el-row>
 
     <!-- ?-->
     <div style="display:flex;gap:10px;margin-bottom:16px">
       <el-button type="primary" @click="addDialogVisible=true">?</el-button>
-      <el-button @click="refreshDomains" :loading="loading">?/el-button>
-      <el-button @click="handleCheckAll" :loading="checkingAll">?/el-button>
+      <el-button @click="refreshDomains" :loading="loading"></el-button>
+      <el-button @click="handleCheckAll" :loading="checkingAll"></el-button>
     </div>
 
     
@@ -27,21 +27,21 @@
         <el-table-column label='Status' min-width="200">
           <template #default="{row}">
             <span style="display:flex;align-items:center;gap:8px">
-              <span class="status-dot" :class="row.active?'online':'offline''><span class="dot">{{ \('rotation.title') }}</span></span>
+              <span class="status-dot" :class="row.active?'online':'offline'"><span class="dot">{{ $t('rotation.title') }}</span></span>
               {{ row.domain }}
             </span>
           </template>
         </el-table-column>
         <el-table-column prop="type" label='Status' width="90">
-          <template #default="{row}"><el-tag size="small">{{ row.type||'? }}</el-tag></template>
+          <template #default="{row}"><el-tag size="small">{{ row.type || '未知' }}</el-tag></template>
         </el-table-column>
         <el-table-column prop="ip" label="IP" width="140" />
         <el-table-column prop="latency" label='Status' width="80">
           <template #default="{row}"><span :style="{color:row.latency>800?'#ff4d4f':row.latency>300?'#faad14':'#52c41a'}">{{ row.latency }}ms</span></template>
         </el-table-column>
-        <el-table-column prop="status" :label="\('rotation.title')" width="90">
+        <el-table-column prop="status" :label="$t('rotation.title')" width="90">
           <template #default="{row}">
-            <el-tag :type="row.active?'success':row.status==='fail'?'danger':'info' size="small">{{ row.active?'':row.status==='fail'?'':'' }}</el-tag>
+            <el-tag :type="row.active?'success':row.status==='fail'?'danger':'info'" size="small">{{ row.active?'':row.status==='fail'?'':'' }}</el-tag>
           </template>
         </el-table-column>
         <el-table-column label='Status' width="100">
@@ -51,35 +51,35 @@
         </el-table-column>
         <el-table-column label='Status' width="220">
           <template #default="{row}">
-            <el-button text size="small" :type="row.active?'warning':'success'' @click="handleToggle(row)">{{ row.active?'':'' }}</el-button>
-            <el-button text size="small" type="primary" @click="handleCheckOne(row)">?/el-button>
+            <el-button text size="small" :type="row.active?'warning':'success'" @click="handleToggle(row)">{{ row.active?'':'' }}</el-button>
+            <el-button text size="small" type="primary" @click="handleCheckOne(row)"></el-button>
             <el-button text size="small" type="danger" @click="handleRemove(row)">OK</el-button>
           </template>
         </el-table-column>
       </el-table>
-      <el-empty v-if="domains.length===0&&!loading" description="? :image-size="80" style="padding:60px 0" />
+      <el-empty v-if="domains.length===0&&!loading" description="暂无数据" :image-size="80" style="padding:60px 0" />
     </el-card>
 
     <!-- ===== ?===== -->
     <el-card shadow="never" style="margin-top:20px">
       <template #header><span style="font-weight:600">?+  + </span></template>
-      <div v-if="!twoLevelConfig">?/div>
+      <div v-if="!twoLevelConfig"></div>
       <div v-else>
         <div style="margin-bottom:16px">
           -{{ twoLevelConfig.primary?.main || '-' }}
-          <span v-if="twoLevelConfig.primary?.children">{ twoLevelConfig.primary.children.length }} ?/span>
+          <span v-if="twoLevelConfig.primary?.children">{ twoLevelConfig.primary.children.length }} </span>
         </div>
         <div v-for="g in (twoLevelConfig.rotation||[])" :key="g.id" style="padding:12px;background:rgba(102,126,234,0.05);border-radius:8px;margin-bottom:8px">
           <div style="display:flex;justify-content:space-between;align-items:center">
             <div><strong>{{ g.main }}</strong><el-tag size="small" style="margin-left:8px"> {{ g.weight }}</el-tag></div>
             <div style="display:flex;gap:6px">
-              <el-button text size="small" :type="g.enabled!==false?'success':'info' @click="toggleRotationGroup(g.id)">{{ g.enabled!==false?'?:'? }}</el-button>
-              <el-button text size="small" type="primary" @click="showAddSubDomain(g)">??/el-button>
+              <el-button text size="small" :type="g.enabled!==false?'success':'info'" @click="toggleRotationGroup(g.id)">{{ g.enabled!==false?'启用':'禁用' }}</el-button>
+              <el-button text size="small" type="primary" @click="showAddSubDomain(g)">?</el-button>
             </div>
           </div>
           <div v-if="g.children?.length" style="margin-top:8px;padding-left:16px;font-size:13px;color:var(--text-muted)">
             <div v-for="c in g.children" :key="c.host" style="display:flex;justify-content:space-between;padding:4px 0">
-              <span>{{ c.host }}?{{ c.weight }}?/span>
+              <span>{{ c.host }}?{{ c.weight }}</span>
               <el-button text size="small" type="danger" @click="removeSubDomain(g.id,c.host)">OK</el-button>
             </div>
           </div>
@@ -95,12 +95,12 @@
         </el-form-item>
         <el-form-item label=''>
           <el-select v-model="newDomain.type" style="width:100%">
-            <el-option label="? value="? />
-            <el-option label="? value="? />
+            <el-option label="主域名" value="primary" />
+            <el-option label="子域名" value="sub" />
             <el-option label="CDN" value="CDN" />
           </el-select>
         </el-form-item>
-        <el-form-item label="?-10">
+        <el-form-item label="权重 (1-10)">
           <el-input-number v-model="newDomain.weight" :min="1" :max="10" />
         </el-form-item>
       </el-form>
@@ -111,7 +111,7 @@
     </el-dialog>
 
     <!-- ?-->
-    <el-dialog v-model="subDialogVisible" :title=''?'+(subGroup?.main||'')+' ?" width="400px">
+    <el-dialog v-model="subDialogVisible" :title="'添加子域名: ' + (subGroup?.main || '')" width="400px">
       <el-form label-position="top">
         <el-form-item label="">
           <el-input v-model="newSubDomain.host" placeholder="shop.example.com" />
@@ -146,7 +146,7 @@ const twoLevelConfig = ref(null)
 
 const addDialogVisible = ref(false)
 const adding = ref(false)
-const newDomain = reactive({ domain: '', type: "?, weight: 3 })
+const newDomain = reactive({ domain: '', type: 'primary', weight: 3 })
 
 // ?
 const subDialogVisible = ref(false)
@@ -169,7 +169,7 @@ async function fetchDomains() {
         active: d.active ?? d.status === "ok",
         status: d.status || (d.active ? "ok" : "paused"),
         latency: d.latency ?? 0,
-        type: d.type || "?,
+        type: d.type || "",
         weight: d.weight ?? 3,
         sslExpiry: d.sslExpiry || '',
         sslDays: d.sslDays ?? 0,
@@ -187,11 +187,11 @@ async function fetchTwoLevelConfig() {
 }
 
 async function handleAdd() {
-  if (!newDomain.domain) { ElMessage.warning("?); return }
+  if (!newDomain.domain) { ElMessage.warning("请选择容器"); return }
   adding.value = true
   try {
     await addDomain(newDomain.domain, newDomain.type)
-    ElMessage.success(`?${newDomain.domain}`)
+    ElMessage.success(`已${newDomain.domain}`)
     addDialogVisible.value = false
     newDomain.domain = ''
     await fetchDomains()
@@ -201,9 +201,9 @@ async function handleAdd() {
 
 async function handleRemove(row) {
   try {
-    await ElMessageBox.confirm(` ${row.domain}, "", { type: "warning" })
+    await ElMessageBox.confirm(`确认删除 ${row.domain}?`,'提示',{type:'warning'})
     await removeDomain(row.domain)
-    ElMessage.success(`?${row.domain}`)
+    ElMessage.success(`已${row.domain}`)
     await fetchDomains()
   } catch {}
 }
@@ -213,17 +213,17 @@ async function handleToggle(row) {
     await toggleDomain(row.domain, !row.active)
     row.active = !row.active
     row.status = row.active ? "ok" : "paused"
-    ElMessage.success(row.active ? "? : "?)
+    ElMessage.success(row.active ? '运行中' : '已停止')
   } catch { ElMessage.error('Error') }
 }
 
 async function handleCheckOne(row) {
-  ElMessage.info(`?${row.domain}...`)
+  ElMessage.info(`已${row.domain}...`)
   try {
     const r = await checkDomain(row.domain)
     if (r) { row.latency = r.latency ?? row.latency; row.active = r.online ?? row.active }
-    ElMessage.success(`${row.domain} )
-  } catch { ElMessage.warning("?) }
+    ElMessage.success(`已删除 ${row.domain}`)
+  } catch { ElMessage.warning("请选择容器") }
 }
 
 async function handleCheckAll() {
@@ -231,7 +231,7 @@ async function handleCheckAll() {
   try {
     await Promise.all(domains.map(d => checkDomain(d.domain).catch(()=>{})))
     await fetchDomains()
-    ElMessage.success("?)
+    ElMessage.success('操作成功')
   } catch {}
   finally { checkingAll.value = false }
 }
@@ -244,7 +244,7 @@ async function toggleRotationGroup(id) {
   try {
     await apiToggleGroup(id)
     await fetchTwoLevelConfig()
-    ElMessage.success("?)
+    ElMessage.success('操作成功')
   } catch { ElMessage.error('Error') }
 }
 
@@ -269,9 +269,9 @@ async function handleAddSub() {
 
 async function removeSubDomain(groupId, host) {
   try {
-    await ElMessageBox.confirm(`?${host}, "", { type: "warning" })
+    await ElMessageBox.confirm(`确认删除 ${host}?`,'提示',{type:'warning'})
     await removeSubdomain(groupId, host)
-    ElMessage.success("?)
+    ElMessage.success('操作成功')
     await fetchTwoLevelConfig()
   } catch {}
 }
@@ -279,7 +279,7 @@ async function removeSubDomain(groupId, host) {
 const refreshDomains = async () => {
   loading.value = true
   await fetchDomains()
-  ElMessage.success("?)
+  ElMessage.success('操作成功')
 }
 
 onMounted(() => {

@@ -7,7 +7,7 @@
         <el-card :class="{ 'connected': p.connected, 'disconnected': !p.connected }">
           <template #header>
             <span class="platform-header">{{ p.icon }} {{ p.name }}</span>
-            <el-tag :type="p.connected ? 'success' : 'info' size="small" style="float:right">{{ p.connected ? '' : '' }}</el-tag>
+            <el-tag :type="p.connected ? 'success' : 'info'" size="small" style="float:right">{{ p.connected ? '' : '' }}</el-tag>
           </template>
           <div class="platform-status">{{ p.status }}</div>
           <div class="platform-memory" v-if="p.memoryCount !== null">
@@ -22,7 +22,7 @@
     <el-card style="margin-top:16px">
       <template #header> </template>
       <el-timeline v-if="logs.length">
-        <el-timeline-item v-for="l in logs" :key="l.time" :timestamp="l.time" :type="l.ok ? 'success' : 'danger''>
+        <el-timeline-item v-for="l in logs" :key="l.time" :timestamp="l.time" :type="l.ok ? 'success' : 'danger'">
           {{ l.platform }}: {{ l.message }}
         </el-timeline-item>
       </el-timeline>

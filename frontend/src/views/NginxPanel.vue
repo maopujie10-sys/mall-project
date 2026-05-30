@@ -2,17 +2,17 @@
   <div class="nginx-panel">
     <div class="page-header"><h1> Nginx </h1><p>        SSL</p></div>
     <el-row :gutter="16" style="margin-bottom:20px">
-      <el-col :span="6"><el-card shadow="never"><template #header>?/template>
-        <el-tag :type="status?.running ? 'success' : 'danger'' size="large">{{ status?.running ? "? : "? }}</el-tag>
-        <div style="margin-top:8px;font-size:12px;color:var(--text-muted)">HTTP: {{ conn?.http_connections || "?" }} | HTTPS: {{ conn?.https_connections || "?" }}</div>
+      <el-col :span="6"><el-card shadow="never"><template #header></template>
+        <el-tag :type="status?.running ? 'success' : 'danger'" size="large">{{ status?.running ? '运行中' : '已停止' }}</el-tag>
+        <div style="margin-top:8px;font-size:12px;color:var(--text-muted)">HTTP: {{ conn?.http_connections || "" }} | HTTPS: {{ conn?.https_connections || "" }}</div>
       </el-card></el-col>
       <el-col :span="6"><el-card shadow="never"><template #header></template>
         <el-button @click="testConfig" :loading="cfgLoading" size="small"> nginx -t</el-button>
         <div v-if="cfgResult" :style="{color:cfgResult.ok?'#52c41a':'#ff4d4f',fontSize:'12px',marginTop:'8px'}">{{ cfgResult.ok ? "" : "" }}</div>
       </el-card></el-col>
-      <el-col :span="6"><el-card shadow="never"><template #header>?/template>
+      <el-col :span="6"><el-card shadow="never"><template #header></template>
         <div style="font-size:28px;font-weight:700;color:var(--color-primary)">{{ sites.length }}</div>
-        <div style="font-size:12px;color:var(--text-muted)">?/div>
+        <div style="font-size:12px;color:var(--text-muted)"></div>
       </el-card></el-col>
       <el-col :span="6"><el-card shadow="never"><template #header></template>
         <el-button type="warning" @click="doReload" :loading="rlLoading" size="small"> Nginx</el-button>
@@ -21,19 +21,19 @@
     </el-row>
     <el-row :gutter="16">
       <el-col :span="12">
-        <el-card shadow="never"><template #header><span>{{ \('nginx.title') }}</span><el-select v-model="configPath" size="small" style="width:200px;margin-left:12px">
-          <el-option label="nginx.conf ? value="/etc/nginx/nginx.conf" />
+        <el-card shadow="never"><template #header><span>{{ $t('nginx.title') }}</span><el-select v-model="configPath" size="small" style="width:200px;margin-left:12px">
+          <el-option label="nginx.conf" value="/etc/nginx/nginx.conf" />
           <el-option label="default " value="/etc/nginx/sites-enabled/default" />
         </el-select><el-button size="small" @click="fetchConfig" style="margin-left:8px">OK</el-button></template>
         <pre class="code-box">{{ configContent || '' }}</pre>
       </el-card></el-col>
       <el-col :span="12">
         <el-card shadow="never"><template #header> </template>
-          <div v-if="errors?.total" style="margin-bottom:12px">?{{ errors.total }} ?/div>
+          <div v-if="errors?.total" style="margin-bottom:12px">?{{ errors.total }} </div>
           <div v-for="(cnt,type) in errors?.by_type" :key="type" style="display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:13px">
-            <span style="width:60px">{{ type }}</span><el-progress :percentage="Math.round(cnt/errors.total*100)" :stroke-width="12" :color="type==='error'?'#ff4d4f':type==='warn'?'#faad14':'#1890ff'' />
+            <span style="width:60px">{{ type }}</span><el-progress :percentage="Math.round(cnt/errors.total*100)" :stroke-width="12" :color="type==='error'?'#ff4d4f':type==='warn'?'#faad14':'#1890ff'" />
           </div>
-          <el-empty v-if="!errors?.total" description="? />
+          <el-empty v-if="!errors?.total" description="暂无错误" />
         </el-card>
       </el-col>
     </el-row>
@@ -41,9 +41,9 @@
       <el-col :span="8">
         <el-card shadow="never"><template #header> </template>
           <el-table :data="sites" stripe size="small" max-height="300">
-            <el-table-column prop="name" label="? min-width="140" />
+            <el-table-column prop="name" label="状态" min-width="140" />
             <el-table-column prop="type" label='Status' width="80"><template #default="{row}"><el-tag size="small">{{ row.type }}</el-tag></template></el-table-column>
-            <el-table-column prop="date" :label="\('nginx.title')" width="100" />
+            <el-table-column prop="date" :label="$t('nginx.title')" width="100" />
           </el-table>
           <el-empty v-if="!sites.length" description='' />
         </el-card>
@@ -52,9 +52,9 @@
         <el-card shadow="never"><template #header>
           -
           <el-select v-model="logType" size="small" style="width:120px;margin-left:12px">
-            <el-option :label="\('nginx.title')" value="error" /><el-option :label="\('nginx.title')" value="access" />
+            <el-option :label="$t('nginx.title')" value="error" /><el-option :label="$t('nginx.title')" value="access" />
           </el-select>
-          <el-input v-model="logKeyword" placeholder="? size="small" style="width:150px;margin-left:8px" clearable />
+          <el-input v-model="logKeyword" placeholder="搜索" size="small" style="width:150px;margin-left:8px" clearable />
           <el-button size="small" @click="fetchLogs" style="margin-left:8px">OK</el-button>
         </template>
         <pre class="code-box" style="max-height:350px">{{ logs || "" }}</pre>

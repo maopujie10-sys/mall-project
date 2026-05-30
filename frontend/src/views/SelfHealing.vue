@@ -11,11 +11,11 @@
         <el-card shadow="never">
           <el-space>
             
-            <el-button type="warning" :loading="fixLoading" @click="doAutoFix"> ?/el-button>
+            <el-button type="warning" :loading="fixLoading" @click="doAutoFix"> </el-button>
             <el-select v-model="historyDays" style="width:120px" @change="loadHistory">
-              <el-option :value="1" label="??/>
-              <el-option :value="7" label="??/>
-              <el-option :value="30" label="?0?/>
+              <el-option :value="1" label="最近1天" />
+              <el-option :value="7" label="最近7天" />
+              <el-option :value="30" label="最近30天" />
             </el-select>
             <el-button @click="loadHistory">OK</el-button>
           </el-space>
@@ -37,33 +37,33 @@
     <el-card v-if="patrolResult" shadow="never" style="margin-bottom:20px">
       <template #header> </template>
       <el-descriptions :column="3" border size="small">
-        <el-descriptions-item :label="\('selfHeal.title')">{{ patrolResult.total_checks || 0 }}</el-descriptions-item>
+        <el-descriptions-item :label="$t('selfHeal.title')">{{ patrolResult.total_checks || 0 }}</el-descriptions-item>
         <el-descriptions-item label=''>{{ patrolResult.checks_passed || 0 }}</el-descriptions-item>
-        <el-descriptions-item :label="\('selfHeal.title')">{{ (patrolResult.issues || []).length }}</el-descriptions-item>
+        <el-descriptions-item :label="$t('selfHeal.title')">{{ (patrolResult.issues || []).length }}</el-descriptions-item>
       </el-descriptions>
       <el-table v-if="patrolResult.issues && patrolResult.issues.length" :data="patrolResult.issues" size="small" style="margin-top:12px">
-        <el-table-column prop="severity" :label="\('selfHeal.title')" width="80">
+        <el-table-column prop="severity" :label="$t('selfHeal.title')" width="80">
           <template #default="{row}"><el-tag :type="sevType(row.severity)" size="small">{{ row.severity }}</el-tag></template>
         </el-table-column>
-        <el-table-column prop="source" :label="\('selfHeal.title')" width="100"/>
-        <el-table-column prop="detail" :label="\('selfHeal.title')"/>
+        <el-table-column prop="source" :label="$t('selfHeal.title')" width="100"/>
+        <el-table-column prop="detail" :label="$t('selfHeal.title')"/>
       </el-table>
-      <el-empty v-else description="? :image-size="60"/>
+      <el-empty v-else description="暂无数据" :image-size="60"/>
     </el-card>
 
     
     <el-card v-if="fixResult" shadow="never" style="margin-bottom:20px">
       <template #header> </template>
       <el-descriptions :column="3" border size="small">
-        <el-descriptions-item :label="\('selfHeal.title')">{{ fixResult.attempted || 0 }}</el-descriptions-item>
+        <el-descriptions-item :label="$t('selfHeal.title')">{{ fixResult.attempted || 0 }}</el-descriptions-item>
         <el-descriptions-item label="">{{ fixResult.fixed || 0 }}</el-descriptions-item>
         <el-descriptions-item label=''>{{ fixResult.failed || 0 }}</el-descriptions-item>
       </el-descriptions>
       <el-table v-if="fixResult.results && fixResult.results.length" :data="fixResult.results" size="small" style="margin-top:12px">
         <el-table-column prop="id" label="ID" width="120"/>
         <el-table-column prop="result.action" label='OK'/>
-        <el-table-column label="? width="100">
-          <template #default="{row}"><el-tag :type="row.result.fixed ? 'success' : 'danger'' size="small">{{ row.result.fixed ? '? : '' }}</el-tag></template>
+        <el-table-column label="状态" width="100">
+          <template #default="{row}"><el-tag :type="row.result.fixed ? 'success' : 'danger'" size="small">{{ row.result.fixed ? '已修复' : '失败' }}</el-tag></template>
         </el-table-column>
       </el-table>
     </el-card>
@@ -73,22 +73,22 @@
       <template #header>  ({ historyDays }}?</template>
       <el-table :data="anomalies" size="small" v-loading="historyLoading" empty-text="">
         <el-table-column prop="id" label="ID" width="100"/>
-        <el-table-column prop="severity" :label="\('selfHeal.title')" width="80">
+        <el-table-column prop="severity" :label="$t('selfHeal.title')" width="80">
           <template #default="{row}"><el-tag :type="sevType(row.severity)" size="small">{{ row.severity }}</el-tag></template>
         </el-table-column>
-        <el-table-column prop="source" :label="\('selfHeal.title')" width="100"/>
+        <el-table-column prop="source" :label="$t('selfHeal.title')" width="100"/>
         <el-table-column prop="description" label='Status' min-width="200"/>
-        <el-table-column prop="detected_at" label="? width="170"/>
-        <el-table-column prop="status" label="? width="100">
+        <el-table-column prop="detected_at" label="状态" width="170"/>
+        <el-table-column prop="status" label="状态" width="100">
           <template #default="{row}">
-            <el-tag :type="row.status==='resolved'?'success':row.status==='open'?'danger':'warning'' size="small">
-              {{ row.status === 'resolved' ? '? : row.status === 'open' ? '? : '? }}
+            <el-tag :type="row.status==='resolved'?'success':row.status==='open'?'danger':'warning'" size="small">
+              {{ row.status === 'resolved' ? '已解决' : row.status === 'open' ? '未处理' : '进行中' }}
             </el-tag>
           </template>
         </el-table-column>
         <el-table-column label='Status' width="120">
           <template #default="{row}">
-            <el-button v-if="row.status !== 'resolved'' type="primary" size="small" link @click="doResolve(row.id)"></el-button>
+            <el-button v-if="row.status !== 'resolved'" type="primary" size="small" link @click="doResolve(row.id)"></el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -112,8 +112,8 @@ const historySummary = ref({})
 
 const statCards = computed(() => [
   { label: '', value: historySummary.value.total || 0, type: 'total' },
-  { label: '?, value: historySummary.value.open || 0, type: 'open' },
-  { label: '?, value: historySummary.value.resolved || 0, type: 'resolved' },
+  { label: '状态', value: historySummary.value.open || 0, type: 'open' },
+  { label: '状态', value: historySummary.value.resolved || 0, type: 'resolved' },
   { label: '', value: historySummary.value.auto_fixed || 0, type: 'auto' },
 ])
 
@@ -126,7 +126,7 @@ async function doPatrol() {
   try {
     const { data } = await runPatrol()
     patrolResult.value = data
-    ElMessage.success(`?{data.checks_passed || 0}?{(data.issues || []).length})
+    ElMessage.success(`已检查 ${data.checks_passed || 0} 项，发现 ${(data.issues || []).length} 个问题`)
   } catch (e) {
     ElMessage.error('Error')
   } finally { patrolLoading.value = false }
@@ -137,7 +137,7 @@ async function doAutoFix() {
   try {
     const { data } = await autoFix()
     fixResult.value = data
-    ElMessage.success(`?{data.fixed || 0}/${data.attempted || 0}`)
+    ElMessage.success(`已修复 ${data.fixed || 0}/${data.attempted || 0}`)
     loadHistory()
   } catch (e) {
     ElMessage.error('Error')
@@ -158,7 +158,7 @@ async function loadHistory() {
 async function doResolve(id) {
   try {
     await resolveAnomaly(id)
-    ElMessage.success('?)
+    ElMessage.success('成功')
     loadHistory()
   } catch (e) {
     ElMessage.error('OK')

@@ -3,7 +3,7 @@
 
 <el-tab-pane label=" " name="voice">
 <div class="voice-area"><div class="voice-status" :class="{active:voiceConnected}">{{voiceConnected?'':''}}</div>
-<div class="voice-transcript" ref="voiceLog"><div v-for="(m,i) in voiceMsgs" :key="i" :class=''vm-'+m.role">{{m.content}}</div></div>
+<div class="voice-transcript" ref="voiceLog"><div v-for="(m,i) in voiceMsgs" :key="i" :class="'vm-' + m.role">{{m.content}}</div></div>
 <div class="voice-controls"><button class="vc-btn" :class="{recording:isRecording}" @click="toggleVoice" :disabled="!voiceConnected">{{isRecording?'':''}}</button></div></div></el-tab-pane>
 
 <el-tab-pane label=" " name="research">
@@ -45,11 +45,11 @@
 <div v-if="browserPlan" class="result-box" style="margin-top:12px"><div class="plan-title"> AI({{browserPlan.length}}):</div>
 <div v-for="(s,i) in browserPlan" :key="i" class="plan-step">{{i+1}}. {{s.action}}  {{s.target}} <span style="color:rgba(255,255,255,.4)">({{s.reason}})</span></div></div>
 <div v-if="browserSummary" class="result-box"><b> :</b>-</div>
-<div v-if="browserScreenshot" style="margin-top:12px">-</el-tab-pane>
+<div v-if="browserScreenshot" style="margin-top:12px">-</div></el-tab-pane>
 
 <el-tab-pane label=" Agent" name="human">
 <el-input v-model="humanCmd" placeholder='Enter...' type="textarea" :rows="3"/>
-<el-select v-model="humanTarget" style="margin-top:8px"><el-option label=" " value="server"/><el-option v-for="c in remoteClients" :key="c" :label='Status' '+c" :value="c"/></el-select>
+<el-select v-model="humanTarget" style="margin-top:8px"><el-option label=" " value="server"/><el-option v-for="c in remoteClients" :key="c" :label="c" :value="c"/></el-select>
 
 <div v-if="humanLog.length" class="human-log"><div v-for="l in humanLog" :key="l.cycle" class="hl-item">
 <div class="hl-cycle"> {{l.cycle}}</div>
@@ -58,7 +58,7 @@
 <div class="hl-action"> {{l.action}}: {{JSON.stringify(l.params)}}</div>
 </div></div>
 <div v-if="humanResult" class="result-box"><b> :</b> {{humanResult}}</div>
-<div v-if="humanScreenshot" class="result-box">-</el-tab-pane>
+<div v-if="humanScreenshot" class="result-box">-</div></el-tab-pane>
 
 <el-tab-pane label=" " name="remote">
 <div style="display:flex;gap:8px;margin-bottom:12px"><el-tag v-for="c in remoteClients" :key="c" type="success"> {{c}} </el-tag>-</div>
@@ -67,7 +67,7 @@
 <el-select v-model="remoteAction" placeholder='Enter...' style="margin-left:8px"><el-option label=" " value="screenshot"/><el-option label=" " value="open_url"/><el-option label=" " value="click"/><el-option label=" " value="type_text"/><el-option label=" " value="press_key"/><el-option label=" " value="run_command"/><el-option label=" " value="get_info"/><el-option label=" " value="open_app"/></el-select>
 <el-input v-model="remoteParams" placeholder="(JSON)" style="margin-top:8px"/>
 <el-button type="primary" @click="runRemote" :loading="loading" style="margin-top:8px">OK</el-button>
-<div v-if="remoteScreenshot" class="result-box">-
+<div v-if="remoteScreenshot" class="result-box">-</div>
 <div v-if="remoteResult" class="result-box"><pre>{{remoteResult}}</pre></div>
 
 <el-divider> Agent</el-divider>

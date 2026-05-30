@@ -1,11 +1,11 @@
 <template>
   <div class="page-container memory-center">
-    <div class="page-header"><h2>{{ \('memory.title') }}</h2><p>  HANDOFF    </p></div>
+    <div class="page-header"><h2>{{ $t('memory.title') }}</h2><p>  HANDOFF    </p></div>
     <el-row :gutter="16" style="margin-bottom:20px">
-      <el-col :span="6"><div class="metric-card"><div class="metric-label">{{ \('memory.title') }}</div><div class="metric-value">{{ memories.length }}</div></div></el-col>
-      <el-col :span="6"><div class="metric-card"><div class="metric-label">{{ \('memory.title') }}</div><div class="metric-value" style="color:#667eea">{{ graphNodes }}</div></div></el-col>
-      <el-col :span="6"><div class="metric-card"><div class="metric-label">{{ \('memory.title') }}</div><div class="metric-value" style="color:#52c41a">{{ handoffCount }}</div></div></el-col>
-      <el-col :span="6"><div class="metric-card"><div class="metric-label">{{ \('memory.title') }}</div><div class="metric-value" style="color:#faad14">{{ operationLogs.length }}</div></div></el-col>
+      <el-col :span="6"><div class="metric-card"><div class="metric-label">{{ $t('memory.title') }}</div><div class="metric-value">{{ memories.length }}</div></div></el-col>
+      <el-col :span="6"><div class="metric-card"><div class="metric-label">{{ $t('memory.title') }}</div><div class="metric-value" style="color:#667eea">{{ graphNodes }}</div></div></el-col>
+      <el-col :span="6"><div class="metric-card"><div class="metric-label">{{ $t('memory.title') }}</div><div class="metric-value" style="color:#52c41a">{{ handoffCount }}</div></div></el-col>
+      <el-col :span="6"><div class="metric-card"><div class="metric-label">{{ $t('memory.title') }}</div><div class="metric-value" style="color:#faad14">{{ operationLogs.length }}</div></div></el-col>
     </el-row>
     <el-tabs v-model="activeTab">
       <el-tab-pane label='Status' name="all">
@@ -42,7 +42,7 @@
       </el-tab-pane>
       <el-tab-pane label='Status' name="oplog">
         <el-timeline v-if="operationLogs.length">
-          <el-timeline-item v-for="log in operationLogs" :key="log.id" :timestamp="log.time" :type="log.level==='error'?'danger':log.level==='warn'?'warning':'primary' placement="top">
+          <el-timeline-item v-for="log in operationLogs" :key="log.id" :timestamp="log.time" :type="log.level==='error'?'danger':log.level==='warn'?'warning':'primary'" placement="top">
             <el-card shadow="hover"><p>{{ log.action }} - {{ log.detail }}</p><small v-if="log.file">{{ log.file }}</small></el-card>
           </el-timeline-item>
         </el-timeline>

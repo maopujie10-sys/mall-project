@@ -5,9 +5,9 @@
     <el-row :gutter="16">
       <el-col :span="12">
         <el-card shadow="never">
-          <template #header><span>{{ \('ocr.title') }}</span></template>
+          <template #header><span>{{ $t('ocr.title') }}</span></template>
           <el-upload class="ocr-upload" drag :auto-upload="false" :on-change="handleFile" accept="image/*">
-            <el-icon :size="48"><svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/>{{ \('ocr.title') }}</svg></el-icon>
+            <el-icon :size="48"><svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/>{{ $t('ocr.title') }}</svg></el-icon>
             <div class="el-upload__text">-</div>
           </el-upload>
           <div style="margin-top:12px">
@@ -22,7 +22,7 @@
         </el-card>
 
         <el-card shadow="never" style="margin-top:16px">
-          <template #header><span>{{ \('ocr.title') }}</span></template>
+          <template #header><span>{{ $t('ocr.title') }}</span></template>
           <el-upload class="batch-upload" drag multiple :auto-upload="false" :on-change="handleBatch" accept="image/*">
             <div class="el-upload__text">-</div>
           </el-upload>
@@ -36,7 +36,7 @@
       <el-col :span="12">
         <el-card shadow="never" v-if="ocrText">
           <template #header>
-            <div class="result-header"><span>{{ \('ocr.title') }}</span><el-button link type="primary" size="small" @click="copyText">OK</el-button><el-button link type="primary" size="small" @click="exportText">OK</el-button></div>
+            <div class="result-header"><span>{{ $t('ocr.title') }}</span><el-button link type="primary" size="small" @click="copyText">OK</el-button><el-button link type="primary" size="small" @click="exportText">OK</el-button></div>
           </template>
           <pre class="ocr-result">{{ ocrText }}</pre>
           <el-divider />
@@ -48,7 +48,7 @@
         </el-card>
 
         <el-card shadow="never" style="margin-top:16px">
-          <template #header><span>{{ \('ocr.title') }}</span></template>
+          <template #header><span>{{ $t('ocr.title') }}</span></template>
           <el-table :data="ocrHistory" stripe size="small" max-height="300">
             <el-table-column prop="name" label='Status' min-width="140" show-overflow-tooltip />
             <el-table-column prop="text" label='Status' min-width="160" show-overflow-tooltip />

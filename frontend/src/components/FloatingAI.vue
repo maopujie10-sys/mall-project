@@ -9,7 +9,7 @@
       @mousedown="startDrag" @touchstart="startDrag"
       :style="{ left: posX + 'px', top: posY + 'px' }"
     >
-      <div class="btn-glow">{{ \('floatingAI.title') }}</div>
+      <div class="btn-glow">{{ $t('floatingAI.title') }}</div>
       <div class="btn-inner">
         <svg width="28" height="28" viewBox="0 0 64 64">
           <defs><linearGradient id="aiGrad2" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#667eea"/><stop offset="100%" stop-color="#764ba2"/></linearGradient></defs>
@@ -24,22 +24,22 @@
     <transition name="slide-up">
       <div v-if="chatOpen" class="ai-chat-panel" :class="{ expanded: chatExpanded, video: videoActive }">
         <!-- ?-->
-        <div class="chat-header" @mousedown="startPanelDrag"><div class="header-scanline">{{ \('floatingAI.title') }}</div>
+        <div class="chat-header" @mousedown="startPanelDrag"><div class="header-scanline">{{ $t('floatingAI.title') }}</div>
           <div class="header-left">
-            <div class="ai-avatar-small"><div class="avatar-holo">{{ \('floatingAI.title') }}</div>AI</div>
+            <div class="ai-avatar-small"><div class="avatar-holo">{{ $t('floatingAI.title') }}</div>AI</div>
             <div>
-              <div class="header-title">{{ voiceActive ? ' ? : (voiceCallActive ? ' ? : 'Friday AI ') }}</div>
+              <div class="header-title">{{ voiceActive ? '' : (voiceCallActive ? '' : 'Friday AI') }}</div>
               <div class="header-status">{{ voiceActive ? ' ...' : (voiceCallActive ? '' : '') }}</div>
             </div>
           </div>
           <div class="header-actions">
-                        <button class="header-btn" @click="compareModels" :title="\('floatingAI.title')"></button>
-                        <button class="header-btn" @click="toggleVoiceInput" :title="voiceActive ? '' : ''' :class="{ active: voiceActive }"></button>
-            <button class="header-btn" @click="toggleVoiceCall" :title="voiceCallActive ? '' : ''' :class="{ active: voiceCallActive }"></button>
-                        <button class="header-btn" @click="toggleExpand" :title="chatExpanded ? '' : '''>
-              {{ chatExpanded ? '? : '? }}
+                        <button class="header-btn" @click="compareModels" :title="$t('floatingAI.title')"></button>
+                        <button class="header-btn" @click="toggleVoiceInput" :title="voiceActive ? '' : ''" :class="{ active: voiceActive }"></button>
+            <button class="header-btn" @click="toggleVoiceCall" :title="voiceCallActive ? '' : ''" :class="{ active: voiceCallActive }"></button>
+                        <button class="header-btn" @click="toggleExpand" :title="chatExpanded ? '' : ''">
+              {{ chatExpanded ? '' : '' }}
             </button>
-            <button class="header-btn" @click="minimizeChat" :title="\('floatingAI.title')">?/button>
+            <button class="header-btn" @click="minimizeChat" :title="$t('floatingAI.title')"></button>
             <button class="header-btn close-btn" @click="closeChat" title=''></button>
           </div>
         </div>
@@ -49,9 +49,9 @@
           <div v-if="messages.length === 0" class="empty-chat">
             -
             <p>?Friday AI </p>
-            <p class="empty-sub">        ?/p>
+            <p class="empty-sub"></p>
             <div class="quick-actions">
-              <button @click="quickAsk('')"> ?/button>
+              <button @click="quickAsk('')"></button>
               <button @click="quickAsk('')"> </button>
               <button @click="quickAsk('')"> </button>
               <button @click="quickAsk('')"> </button>
@@ -68,7 +68,7 @@
               </div>
             </div>
             
-            <button v-if="msg.role === 'assistant'' class="play-voice-btn" @click="speakText(msg.content)" :title="\('floatingAI.title')">
+            <button v-if="msg.role === 'assistant'" class="play-voice-btn" @click="speakText(msg.content)" :title="$t('floatingAI.title')">
               
             </button>
           </div>
@@ -76,7 +76,7 @@
           <div v-if="loading" class="msg-row assistant">
             <div class="msg-avatar">AI</div>
             <div class="msg-bubble assistant typing">
-              <span class="dot">{{ \('floatingAI.title') }}</span><span class="dot">{{ \('floatingAI.title') }}</span><span class="dot">{{ \('floatingAI.title') }}</span>
+              <span class="dot">{{ $t('floatingAI.title') }}</span><span class="dot">{{ $t('floatingAI.title') }}</span><span class="dot">{{ $t('floatingAI.title') }}</span>
             </div>
           </div>
         </div>
@@ -84,12 +84,12 @@
         <!-- ====== ?====== -->
         <div v-if="!videoActive" class="chat-input-area">
           
-          <div v-if="attachments.length > 0" class="attachments-bar"><div v-for="(att, i) in attachments" :key="i" class="attach-item"><div v-if="att.type === 'image'' class="attach-preview-img"><img :src="att.dataUrl" /><button class="attach-remove" @click="removeAttachment(i)">x</button></div><div v-else-if="att.type === 'video'' class="attach-preview-video"><video :src="att.dataUrl" controls preload="metadata"></video><button class="attach-remove" @click="removeAttachment(i)">x</button></div><div v-else class="attach-tag"><span class="attach-icon">{{ getFileIcon(att.name) }}</span><span class="attach-name">{{ att.name }}</span><span class="attach-size">{{ formatSize(att.size) }}</span><button class="attach-remove" @click="removeAttachment(i)">x</button></div></div></div>
+          <div v-if="attachments.length > 0" class="attachments-bar"><div v-for="(att, i) in attachments" :key="i" class="attach-item"><div v-if="att.type === 'image'" class="attach-preview-img"><img :src="att.dataUrl" /><button class="attach-remove" @click="removeAttachment(i)">x</button></div><div v-else-if="att.type === 'video'" class="attach-preview-video"><video :src="att.dataUrl" controls preload="metadata"></video><button class="attach-remove" @click="removeAttachment(i)">x</button></div><div v-else class="attach-tag"><span class="attach-icon">{{ getFileIcon(att.name) }}</span><span class="attach-name">{{ att.name }}</span><span class="attach-size">{{ formatSize(att.size) }}</span><button class="attach-remove" @click="removeAttachment(i)">x</button></div></div></div>
           <div v-if="voiceActive" class="voice-indicator">
             <div class="voice-wave">
               -
             </div>
-            <span>... ?/span>
+            <span>...</span>
           </div>
 
           <div class="input-row">
@@ -98,20 +98,20 @@
               class="voice-input-btn"
               :class="{ recording: voiceActive }"
               @click="toggleVoiceInput"
-              :title="\('floatingAI.title')"
+              :title="$t('floatingAI.title')"
             >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" :stroke="voiceActive ? '#fff' : '#889'' stroke-width="2">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" :stroke="voiceActive ? '#fff' : '#889'" stroke-width="2">
                 <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
                 <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
                 <line x1="12" y1="19" x2="12" y2="23"/>
-                <line x1="8" y1="23" x2="16" y2="23"/>{{ \('floatingAI.title') }}</svg>
+                <line x1="8" y1="23" x2="16" y2="23"/>{{ $t('floatingAI.title') }}</svg>
             </button>
 
             <textarea
               v-model="inputText"
               @keydown.enter.exact.prevent="sendMessage"
-              @keydown.enter.shift.exact="inputText += '\n''
-              :placeholder="voiceActive ? '?..' : '... (Enter?''
+              @keydown.enter.shift.exact="inputText += '\n'"
+              :placeholder="voiceActive ? '' : ''"
               rows="1"
               ref="inputBox"
               :disabled="loading || voiceActive"
@@ -119,7 +119,7 @@
 
             <button class="send-btn" @click="sendMessage" :disabled="loading || (!inputText.trim() && !attachments.length)">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                <path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/>{{ \('floatingAI.title') }}</svg>
+                <path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/>{{ $t('floatingAI.title') }}</svg>
             </button>
           </div>
         </div>
@@ -305,7 +305,7 @@ function toggleVoiceInput() {
 }
 
 // === STT (Speech-to-Text) ===
-function startVoiceInput() { emitBrain("brain:active", {detail: true}) {
+function startVoiceInput() { emitBrain("brain:active", {detail: true});
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
   if (!SpeechRecognition) {
     inputText.value = '[Chrome]'
@@ -427,7 +427,7 @@ async function sendMessage() {
       const token = getAgentToken()
       const res = await fetch('/agent/vision/analyze', {
         method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Agent-Token': token },
-        body: JSON.stringify({ image_base64: files[0].dataUrl.split(',')[1], question: '? })
+        body: JSON.stringify({ image_base64: files[0].dataUrl.split(',')[1], question: '' })
       })
       if (res.ok) {
         const data = await res.json()
@@ -557,7 +557,7 @@ async function loadPromptTemplates() {
 
 function applyTemplate(tmpl) {
   inputText.value = ''; selectedTemplate.value = tmpl.name
-  ElMessage.info(': ' + tmpl.name + '?)
+  ElMessage.info(tmpl.name + '')
 }
 
 
@@ -567,7 +567,7 @@ const attachments = ref([])
 function onFileSelected(e) {
   const files = Array.from(e.target.files || [])
   for (const file of files) {
-    if (attachments.value.length >= 5) { alert('??); break }
+    if (attachments.value.length >= 5) { alert(''); break }
     const reader = new FileReader()
     reader.onload = (ev) => {
       let type = 'file'
@@ -633,7 +633,7 @@ minimizeChat = function() { stopMatrixRain(); origMin() }
 function detectTask(msg) {
   const m = msg.toLowerCase();
   processingSteps.value = [];
-  if (m.includes('')||m.includes('server')||m.includes('?)||m.includes('cpu')||m.includes('')) {
+  if (m.includes('')||m.includes('server')||m.includes('')||m.includes('cpu')||m.includes('')) {
     processingSteps.value = ['?..', 'CPU?..', '...', '...', '...'];
     return '';
   }
@@ -653,7 +653,7 @@ function detectTask(msg) {
     processingSteps.value = ['...', '...', 'AI...'];
     return '';
   }
-  if (m.includes('')||m.includes('')||m.includes('?)) {
+  if (m.includes('')||m.includes('')||m.includes('')) {
     processingSteps.value = ['?..', 'AI...', '...'];
     return 'AI';
   }
@@ -661,7 +661,7 @@ function detectTask(msg) {
     processingSteps.value = ['?..', '...', '...'];
     return '';
   }
-  if (m.includes('')||m.includes('?)||m.includes('scrape')) {
+  if (m.includes('')||m.includes('')||m.includes('scrape')) {
     processingSteps.value = ['?..', '...', '...', '...'];
     return '';
   }

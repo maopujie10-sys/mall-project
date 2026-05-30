@@ -12,30 +12,30 @@
     <el-row :gutter="16" style="margin-bottom: 20px;">
       <el-col :span="6">
         <div class="metric-card">
-          <div class="metric-label">{{ \('rollback.title') }}</div>
+          <div class="metric-label">{{ $t('rollback.title') }}</div>
           <div class="metric-value">{{ backups.length }}</div>
           -
         </div>
       </el-col>
       <el-col :span="6">
         <div class="metric-card">
-          <div class="metric-label">?/div>
+          <div class="metric-label"></div>
           <div class="metric-value" style="font-size: 16px;">{{ latestBackup }}</div>
           -
         </div>
       </el-col>
       <el-col :span="6">
         <div class="metric-card">
-          <div class="metric-label">?/div>
+          <div class="metric-label"></div>
           <div class="metric-value">4.8 GB</div>
-          <div class="metric-sub"> 7 ?/div>
+          <div class="metric-sub"> 7 </div>
         </div>
       </el-col>
       <el-col :span="6">
         <div class="metric-card">
-          <div class="metric-label">?/div>
+          <div class="metric-label"></div>
           <div class="metric-value" style="color: var(--color-success);">100%</div>
-          <div class="metric-sub">?30 ?/div>
+          <div class="metric-sub">?30 </div>
         </div>
       </el-col>
     </el-row>
@@ -60,17 +60,17 @@
         <el-table-column prop="id" label=" ID" width="180" />
         <el-table-column prop="type" label='Status' width="100">
           <template #default="{ row }">
-            <el-tag :type="row.type === '' ? 'primary' : 'info' size="small" effect="light">
+            <el-tag :type="row.type === '' ? 'primary' : 'info'" size="small" effect="light">
               {{ row.type }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="target" :label="\('rollback.title')" min-width="140" />
+        <el-table-column prop="target" :label="$t('rollback.title')" min-width="140" />
         <el-table-column prop="time" label='Status' width="150" />
-        <el-table-column prop="size" :label="\('rollback.title')" width="100" />
-        <el-table-column prop="status" label="? width="90">
+        <el-table-column prop="size" :label="$t('rollback.title')" width="100" />
+        <el-table-column prop="status" label="状态" width="90">
           <template #default="{ row }">
-            <el-tag :type="row.status === '' ? 'success' : 'danger'' size="small" effect="light">
+            <el-tag :type="row.status === '' ? 'success' : 'danger'" size="small" effect="light">
               {{ row.status }}
             </el-tag>
           </template>
@@ -95,13 +95,13 @@
     
     <el-dialog
       v-model="rollbackDialogVisible"
-      :title="\('rollback.title')"
+      :title="$t('rollback.title')"
       width="480px"
       :close-on-click-modal="false"
     >
       <div v-if="rollbackTarget" style="padding: 8px 0;">
         <el-alert
-          :title="\('rollback.title')"
+          :title="$t('rollback.title')"
           type="warning"
           :closable="false"
           show-icon
@@ -117,7 +117,7 @@
             <span class="info-value">{{ rollbackTarget.target }}</span>
           </div>
           <div class="info-row">
-            <span class="info-label">{{ \('rollback.title') }}</span>
+            <span class="info-label">{{ $t('rollback.title') }}</span>
             <span class="info-value">{{ rollbackTarget.time }}</span>
           </div>
           <div class="info-row">
@@ -130,7 +130,7 @@
         </p>
         <el-input
           v-model="rollbackConfirmText"
-          placeholder="?ID "
+          placeholder="搜索"ID "
           style="margin-top: 8px;"
         />
       </div>
@@ -234,7 +234,7 @@ const handleCreateBackup = async () => {
 const refreshBackups = async () => {
   loading.value = true
   await fetchBackups()
-  ElMessage.success('?)
+  ElMessage.success('成功')
 }
 
 onMounted(() => {

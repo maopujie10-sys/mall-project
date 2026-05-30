@@ -8,16 +8,16 @@
     
     <el-row :gutter="16" style="margin-bottom:20px">
       <el-col :span="6">
-        <div class="metric-card">-<div class="metric-value">{{ models.length }}</div><div class="metric-sub">?{{ providers.length }} ?/div></div>
+        <div class="metric-card">-<div class="metric-value">{{ models.length }}</div><div class="metric-sub">?{{ providers.length }} </div></div>
       </el-col>
       <el-col :span="6">
         <div class="metric-card">-<div class="metric-value" style="color:#52c41a">{{ currentModel?.name || '-' }}</div><div class="metric-sub">{{ currentModel?.provider || '' }}</div></div>
       </el-col>
       <el-col :span="6">
-        <div class="metric-card"><div class="metric-label">{{ \('model.title') }}</div><div class="metric-value">{{ stats.todayCalls }}</div><div class="metric-sub">?{{ stats.successRate }}%</div></div>
+        <div class="metric-card"><div class="metric-label">{{ $t('model.title') }}</div><div class="metric-value">{{ stats.todayCalls }}</div><div class="metric-sub">?{{ stats.successRate }}%</div></div>
       </el-col>
       <el-col :span="6">
-        <div class="metric-card"><div class="metric-label">?/div><div class="metric-value" style="color:#faad14">{{ stats.monthlyCost }}</div><div class="metric-sub"> {{ stats.remaining }}</div></div>
+        <div class="metric-card"><div class="metric-label"></div><div class="metric-value" style="color:#faad14">{{ stats.monthlyCost }}</div><div class="metric-sub"> {{ stats.remaining }}</div></div>
       </el-col>
     </el-row>
 
@@ -27,16 +27,16 @@
         <div class="card-header-row">-<el-button type="primary" size="small" @click="showAdd = true"></el-button></div>
       </template>
       <el-table :data="filteredModels" stripe>
-        <el-table-column prop="name" :label="\('model.title')" min-width="160">
+        <el-table-column prop="name" :label="$t('model.title')" min-width="160">
           <template #default="{row}"><span class="model-name">{{ row.icon }} {{ row.name }}</span></template>
         </el-table-column>
-        <el-table-column prop="provider" label="? width="120"><template #default="{row}"><el-tag size="small">{{ row.provider }}</el-tag></template></el-table-column>
-        <el-table-column prop="type" label='Status' width="100"><template #default="{row}"><el-tag :type="row.type==='text'?'':'warning'' size="small">{{ row.type==='text'?'':'? }}</el-tag></template></el-table-column>
+        <el-table-column prop="provider" label="提供商" width="120"><template #default="{row}"><el-tag size="small">{{ row.provider }}</el-tag></template></el-table-column>
+        <el-table-column prop="type" label="类型" width="100"><template #default="{row}"><el-tag :type="row.type==='text'?'':'warning'" size="small">{{ row.type==='text'?'文本':'多模态' }}</el-tag></template></el-table-column>
         <el-table-column label='Status' width="120"><template #default="{row}"><el-progress :percentage="row.speed" :stroke-width="6" :color="speedColor(row.speed)" /></template></el-table-column>
         <el-table-column label='Status' width="140"><template #default="{row}"><span class="cost"> {{ row.inputPrice }} /  {{ row.outputPrice }}</span></template></el-table-column>
-        <el-table-column prop="calls" :label="\('model.title')" width="100" sortable />
+        <el-table-column prop="calls" :label="$t('model.title')" width="100" sortable />
         <el-table-column prop="avgLatency" label='Status' width="100" />
-        <el-table-column label="? width="100">
+        <el-table-column label="操作" width="100">
           <template #default="{row}">
             <el-switch v-model="row.enabled" @change="toggleModel(row)" size="small" />
             -
@@ -44,7 +44,7 @@
         </el-table-column>
         <el-table-column label='Status' width="200" fixed="right">
           <template #default="{row}">
-            <el-button link type="primary" size="small" @click="testSpeed(row)">?/el-button>
+            <el-button link type="primary" size="small" @click="testSpeed(row)"></el-button>
             <el-button link type="primary" size="small" @click="setActive(row)" v-if="row.id!==activeModelId">OK</el-button>
             <el-button link type="primary" size="small" @click="editModel(row)">OK</el-button>
             <el-button link type="danger" size="small" @click="removeModel(row)">OK</el-button>
@@ -67,37 +67,37 @@
     <el-card shadow="never" style="margin-top:16px">
       <template #header>-</template>
       <el-table :data="usageStats" stripe>
-        <el-table-column prop="date" :label="\('model.title')" width="120" />
-        <el-table-column prop="model" :label="\('model.title')" width="140" />
-        <el-table-column prop="calls" :label="\('model.title')" width="100" sortable />
-        <el-table-column prop="tokens" label="Token? width="120" sortable />
+        <el-table-column prop="date" :label="$t('model.title')" width="120" />
+        <el-table-column prop="model" :label="$t('model.title')" width="140" />
+        <el-table-column prop="calls" :label="$t('model.title')" width="100" sortable />
+        <el-table-column prop="tokens" label="Token数" width="120" sortable />
         <el-table-column prop="cost" label="()" width="100" sortable />
         <el-table-column prop="avgTime" label='Status' width="100" />
       </el-table>
     </el-card>
 
-    <!-- /?-->
-    <el-dialog v-model="showAdd" :title="editingModel?'':''' width="520px">
+    <!-- 添加/编辑模型 -->
+    <el-dialog v-model="showAdd" :title="editingModel?'编辑模型':'添加模型'" width="520px">
       <el-form :model="modelForm" label-width="90px">
-        <el-form-item :label="\('model.title')"><el-input v-model="modelForm.name" placeholder="?DeepSeek V4" /></el-form-item>
+        <el-form-item :label="$t('model.title')"><el-input v-model="modelForm.name" placeholder="例如 DeepSeek V4" /></el-form-item>
         <el-form-item label=""><el-select v-model="modelForm.provider" style="width:100%"><el-option v-for="p in providers" :key="p" :label="p" :value="p" /></el-select></el-form-item>
         <el-form-item label="API"><el-input v-model="modelForm.apiUrl" placeholder="https://api.example.com/v1" /></el-form-item>
         <el-form-item label="API"><el-input v-model="modelForm.apiKey" type="password" show-password placeholder="sk-..." /></el-form-item>
-        <el-form-item label=''><el-radio-group v-model="modelForm.type"><el-radio value="text">?/el-radio><el-radio value="multimodal">?/el-radio></el-radio-group></el-form-item>
-        <el-form-item label=''><el-input-number v-model="modelForm.inputPrice" :min="0" :precision="2" :step="0.01" /> <span style="margin-left:4px">?1K tokens</span></el-form-item>
-        <el-form-item label=''><el-input-number v-model="modelForm.outputPrice" :min="0" :precision="2" :step="0.01" /> <span style="margin-left:4px">?1K tokens</span></el-form-item>
+        <el-form-item label="类型"><el-radio-group v-model="modelForm.type"><el-radio value="text">文本</el-radio><el-radio value="multimodal">多模态</el-radio></el-radio-group></el-form-item>
+        <el-form-item label="输入价格"><el-input-number v-model="modelForm.inputPrice" :min="0" :precision="2" :step="0.01" /> <span style="margin-left:4px">元/1K tokens</span></el-form-item>
+        <el-form-item label="输出价格"><el-input-number v-model="modelForm.outputPrice" :min="0" :precision="2" :step="0.01" /> <span style="margin-left:4px">元/1K tokens</span></el-form-item>
       </el-form>
-      <template #footer><el-button @click="showAdd=false">OK</el-button><el-button type="primary" @click="saveModel" :loading="saving">{{editingModel?'':''}}</el-button></template>
+      <template #footer><el-button @click="showAdd=false">取消</el-button><el-button type="primary" @click="saveModel" :loading="saving">{{editingModel?'更新':'添加'}}</el-button></template>
     </el-dialog>
 
-    <!-- ?-->
-    <el-dialog v-model="showSpeedResult" title="? width="400px">
+    <!-- 测速结果 -->
+    <el-dialog v-model="showSpeedResult" title="测速结果" width="400px">
       <el-descriptions :column="1" border v-if="speedResult">
-        <el-descriptions-item :label="\('model.title')">{{ speedResult.model }}</el-descriptions-item>
-        <el-descriptions-item label=''>{{ speedResult.latency }}ms</el-descriptions-item>
-        <el-descriptions-item label="oken">{{ speedResult.firstToken }}ms</el-descriptions-item>
-        <el-descriptions-item label="Token/">{{ speedResult.tokensPerSec }}</el-descriptions-item>
-        <el-descriptions-item label="">{{ speedResult.ok ? '?' : '?' }}</el-descriptions-item>
+        <el-descriptions-item :label="$t('model.title')">{{ speedResult.model }}</el-descriptions-item>
+        <el-descriptions-item label="延迟">{{ speedResult.latency }}ms</el-descriptions-item>
+        <el-descriptions-item label="首Token">{{ speedResult.firstToken }}ms</el-descriptions-item>
+        <el-descriptions-item label="Token/秒">{{ speedResult.tokensPerSec }}</el-descriptions-item>
+        <el-descriptions-item label="状态">{{ speedResult.ok ? '正常' : '异常' }}</el-descriptions-item>
       </el-descriptions>
       <template #footer><el-button @click="showSpeedResult=false">OK</el-button></template>
     </el-dialog>
@@ -119,7 +119,7 @@ const speedResult = ref(null)
 const testingModel = ref('')
 const loading = ref(true)
 
-const providers = ['DeepSeek', 'OpenAI', 'Anthropic', 'Google', 'Ollama', 'OpenRouter', '?]
+const providers = ['DeepSeek', 'OpenAI', 'Anthropic', 'Google', 'Ollama', 'OpenRouter', 'Other']
 
 const models = ref([])
 
@@ -131,10 +131,10 @@ const stats = reactive({
 })
 
 const modes = [
-  { id:'quality', name:'?, desc:'? },
-  { id:'balanced', name:'', desc:'' },
-  { id:'fast', name:'?, desc:'' },
-  { id:'economy', name:'', desc:'? },
+  { id:'quality', name:'高质量', desc:'最佳质量但速度较慢' },
+  { id:'balanced', name:'平衡', desc:'质量与速度均衡' },
+  { id:'fast', name:'快速', desc:'最快响应速度' },
+  { id:'economy', name:'经济', desc:'最低成本' },
 ]
 
 const usageStats = ref([])
@@ -149,17 +149,17 @@ function speedColor(v) { if (v >= 80) return '#52c41a'; if (v >= 50) return '#fa
 async function toggleModel(row) {
   try {
     row.enabled = !row.enabled
-    ElMessage.success(row.enabled ? `${row.name}  : `${row.name} )
+    ElMessage.success(row.enabled ? `${row.name} 已启用` : `${row.name} 已停用`)
   } catch {}
 }
 
 async function setActive(row) {
-  if (!row.enabled) { ElMessage.warning('?); return }
+  if (!row.enabled) { ElMessage.warning('模型未启用'); return }
   try {
     const res = await switchModel(row.id)
     if (res?.ok) {
       activeModelId.value = row.id
-      ElMessage.success(` ${row.name}`)
+      ElMessage.success(`确认删除 ${row.name}`)
     }
   } catch { ElMessage.error('Error') }
 }
@@ -192,16 +192,16 @@ function editModel(row) {
 }
 
 async function saveModel() {
-  if (!modelForm.name || !modelForm.provider) { ElMessage.warning('?); return }
+  if (!modelForm.name || !modelForm.provider) { ElMessage.warning('模型未启用'); return }
   saving.value = true
   try {
     if (editingModel.value) {
       Object.assign(editingModel.value, { ...modelForm })
-      ElMessage.success('?)
+      ElMessage.success('成功')
     } else {
       const id = 'model_' + Date.now()
       models.value.push({ id, ...modelForm, icon:'', speed:50, calls:0, avgLatency:'-', enabled:true })
-      ElMessage.success('?)
+      ElMessage.success('成功')
     }
     showAdd.value = false
     editingModel.value = null
@@ -211,16 +211,16 @@ async function saveModel() {
 }
 
 async function removeModel(row) {
-  if (row.id === activeModelId.value) { ElMessage.warning('?); return }
+  if (row.id === activeModelId.value) { ElMessage.warning('模型未启用'); return }
   try {
-    await ElMessageBox.confirm(` "${row.name}", '', { type:'warning' })
+    await ElMessageBox.confirm(`确认删除 "${row.name}"？`, '提示', { type:'warning' })
     models.value = models.value.filter(m => m.id !== row.id)
-    ElMessage.success('?)
+    ElMessage.success('成功')
   } catch {}
 }
 
 function switchMode() {
-  ElMessage.success(`${modes.find(m=>m.id===activeMode.value)?.name}`)
+  ElMessage.success(`已切换到 ${modes.find(m=>m.id===activeMode.value)?.name} 模式`)
 }
 
 async function fetchModels() {

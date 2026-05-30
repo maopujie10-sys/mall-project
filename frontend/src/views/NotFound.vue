@@ -5,8 +5,8 @@
         <el-icon :size="80" color="var(--text-disabled)"><WarningFilled /></el-icon>
       </div>
       <h1 class="nf-code">404</h1>
-      <h2 class="nf-title">{{ \('notFound.title') }}</h2>
-      <p class="nf-desc">{{ \('notFound.title') }}</p>
+      <h2 class="nf-title">{{ $t('notFound.title') }}</h2>
+      <p class="nf-desc">{{ $t('notFound.title') }}</p>
       <div class="nf-actions">
         <el-button type="primary" size="large" @click="$router.push('/dashboard')">
           <el-icon><HomeFilled /></el-icon> 

@@ -12,7 +12,7 @@
       <el-table-column prop="real_name" label='' width="120" />
       <el-table-column prop="id_number" label='' width="180" />
       <el-table-column prop="status" label='' width="80">
-        <template #default="{row}"><el-tag :type="row.status===1?'success':row.status===2?'danger':'warning'' size="small">{{ row.status===1?'':row.status===2?'':'' }}</el-tag></template>
+        <template #default="{row}"><el-tag :type="row.status===1?'success':row.status===2?'danger':'warning'" size="small">{{ row.status===1?'':row.status===2?'':'' }}</el-tag></template>
       </el-table-column>
       <el-table-column label='' width="160">
         <template #default="{row}">

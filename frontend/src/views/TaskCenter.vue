@@ -15,13 +15,13 @@
       <el-col :span="6">
         <el-card shadow="never" class="stat-simple">
           <div class="stat-num" style="color:#52c41a">{{ runningCount }}</div>
-          <div class="stat-text">?/div>
+          <div class="stat-text"></div>
         </el-card>
       </el-col>
       <el-col :span="6">
         <el-card shadow="never" class="stat-simple">
           <div class="stat-num" style="color:#faad14">{{ pausedCount }}</div>
-          <div class="stat-text">?/div>
+          <div class="stat-text"></div>
         </el-card>
       </el-col>
       <el-col :span="6">
@@ -38,23 +38,23 @@
       </template>
       <el-table :data="tasks" size="small" v-loading="loading">
         <el-table-column prop="id" label="ID" width="120"/>
-        <el-table-column prop="name" :label="\('tasks.title')" width="140"/>
+        <el-table-column prop="name" :label="$t('tasks.title')" width="140"/>
         <el-table-column prop="desc" label='Status' min-width="200"/>
-        <el-table-column prop="trigger" :label="\('tasks.title')" width="130"/>
-        <el-table-column prop="next_run" :label="\('tasks.title')" width="170">
+        <el-table-column prop="trigger" :label="$t('tasks.title')" width="130"/>
+        <el-table-column prop="next_run" :label="$t('tasks.title')" width="170">
           <template #default="{row}">{{ formatTime(row.next_run) }}</template>
         </el-table-column>
-        <el-table-column label="? width="90">
+        <el-table-column label="状态" width="90">
           <template #default="{row}">
-            <el-tag :type="row.status==='running'?'success':'warning'' size="small">
-              {{ row.status==='running'?'?:'? }}
+            <el-tag :type="row.status==='running'?'success':'warning'" size="small">
+              {{ row.status==='running'?'运行中':'已暂停' }}
             </el-tag>
           </template>
         </el-table-column>
         <el-table-column label='Status' width="180">
           <template #default="{row}">
             <el-button size="small" type="primary" link @click="doTrigger(row.id)">?</el-button>
-            <el-button v-if="row.status==='running'' size="small" type="warning" link @click="doPause(row.id)">?</el-button>
+            <el-button v-if="row.status==='running'" size="small" type="warning" link @click="doPause(row.id)">?</el-button>
             <el-button v-else size="small" type="success" link @click="doResume(row.id)">?</el-button>
           </template>
         </el-table-column>
@@ -94,7 +94,7 @@ async function loadTasks() {
 async function doTrigger(id) {
   try {
     await triggerTask(id)
-    ElMessage.success('?)
+    ElMessage.success('成功')
     loadTasks()
   } catch (e) { ElMessage.error('OK') }
 }
@@ -102,7 +102,7 @@ async function doTrigger(id) {
 async function doPause(id) {
   try {
     await pauseTask(id)
-    ElMessage.success('?)
+    ElMessage.success('成功')
     loadTasks()
   } catch (e) { ElMessage.error('OK') }
 }
@@ -110,7 +110,7 @@ async function doPause(id) {
 async function doResume(id) {
   try {
     await resumeTask(id)
-    ElMessage.success('?)
+    ElMessage.success('成功')
     loadTasks()
   } catch (e) { ElMessage.error('Error') }
 }

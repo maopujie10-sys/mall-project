@@ -11,9 +11,9 @@
       @touchstart="startDrag($event, cat)"
       @click="toggleCat(cat)"
     >
-      <div class="orb-glow">{{ \('floatingNav.title') }}</div>
-      <div class="orb-ring ring-1">{{ \('floatingNav.title') }}</div>
-      <div class="orb-ring ring-2">{{ \('floatingNav.title') }}</div>
+      <div class="orb-glow">{{ $t('floatingNav.title') }}</div>
+      <div class="orb-ring ring-1">{{ $t('floatingNav.title') }}</div>
+      <div class="orb-ring ring-2">{{ $t('floatingNav.title') }}</div>
       <div class="orb-core">
         <span class="orb-icon">{{ cat.icon }}</span>
         <span class="orb-label">{{ cat.label }}</span>
