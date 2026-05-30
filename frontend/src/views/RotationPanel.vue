@@ -1,14 +1,14 @@
 <template>
   <div class="page-container">
     <div class="page-header">
-      <h2>杞€肩鐞嗙郴缁?/h2>
-      <p style="color:var(--text-muted);font-size:13px">浼佷笟绾ц礋杞藉潎琛?路 鏁呴殰鑷姩鍒囨崲 路 澶氱骇鍩熷悕杞€?/p>
+      <h2>杞€肩鐞嗙郴缁</h2>
+      <p style="color:var(--text-muted);font-size:13px">浼佷笟绾ц礋杞藉潎琛?路 鏁呴殰鑷姩鍒囨崲 路 澶氱骇鍩熷悕杞€</p>
     </div>
     <el-alert v-if="error" :title="error" type="error" show-icon closable @close="error=null" style="margin-bottom:16px" />
 
     <!-- 缁熻 -->
     <el-row :gutter="16" style="margin-bottom:20px">
-      <el-col :span="6"><div class="metric-card"><div class="metric-label">鎬诲煙鍚?/div><div class="metric-value">{{ domains.length }}</div></div></el-col>
+      <el-col :span="6"><div class="metric-card"><div class="metric-label">鎬诲煙鍚</div><div class="metric-value">{{ domains.length }}</div></div></el-col>
       <el-col :span="6"><div class="metric-card"><div class="metric-label">鍦ㄧ嚎</div><div class="metric-value" style="color:#52c41a">{{ domains.filter(d=>d.active).length }}</div></div></el-col>
       <el-col :span="6"><div class="metric-card"><div class="metric-label">鏁呴殰</div><div class="metric-value" style="color:#ff4d4f">{{ domains.filter(d=>!d.active&&d.status==='fail').length }}</div></div></el-col>
       <el-col :span="6"><div class="metric-card"><div class="metric-label">骞冲潎鍝嶅簲</div><div class="metric-value">{{ avgLatency }}ms</div></div></el-col>
@@ -17,8 +17,8 @@
     <!-- 鎿嶄綔鏍?-->
     <div style="display:flex;gap:10px;margin-bottom:16px">
       <el-button type="primary" @click="addDialogVisible=true">锛?娣诲姞鍩熷悕</el-button>
-      <el-button @click="refreshDomains" :loading="loading">鍒锋柊鐘舵€?/el-button>
-      <el-button @click="handleCheckAll" :loading="checkingAll">妫€娴嬪叏閮?/el-button>
+      <el-button @click="refreshDomains" :loading="loading">鍒锋柊鐘舵€</el-button>
+      <el-button @click="handleCheckAll" :loading="checkingAll">妫€娴嬪叏閮</el-button>
     </div>
 
     <!-- 鍩熷悕鍒楄〃 -->
@@ -52,7 +52,7 @@
         <el-table-column label="鎿嶄綔" width="220">
           <template #default="{row}">
             <el-button text size="small" :type="row.active?'warning':'success'" @click="handleToggle(row)">{{ row.active?'鏆傚仠':'鎭㈠' }}</el-button>
-            <el-button text size="small" type="primary" @click="handleCheckOne(row)">妫€娴?/el-button>
+            <el-button text size="small" type="primary" @click="handleCheckOne(row)">妫€娴</el-button>
             <el-button text size="small" type="danger" @click="handleRemove(row)">鍒犻櫎</el-button>
           </template>
         </el-table-column>
@@ -63,23 +63,23 @@
     <!-- ===== 浜岀骇杞€奸厤缃?===== -->
     <el-card shadow="never" style="margin-top:20px">
       <template #header><span style="font-weight:600">浜岀骇杞€奸厤缃紙涓诲煙鍚?+ 杞€肩粍 + 瀛愬煙鍚嶏級</span></template>
-      <div v-if="!twoLevelConfig">鏆傛棤浜岀骇杞€奸厤缃?/div>
+      <div v-if="!twoLevelConfig">鏆傛棤浜岀骇杞€奸厤缃</div>
       <div v-else>
         <div style="margin-bottom:16px">
           <strong>涓诲煙鍚嶏細</strong>{{ twoLevelConfig.primary?.main || '-' }}
-          <span v-if="twoLevelConfig.primary?.children">锛坽{ twoLevelConfig.primary.children.length }} 涓瓙鍩熷悕锛?/span>
+          <span v-if="twoLevelConfig.primary?.children">锛坽{ twoLevelConfig.primary.children.length }} 涓瓙鍩熷悕锛</span>
         </div>
         <div v-for="g in (twoLevelConfig.rotation||[])" :key="g.id" style="padding:12px;background:rgba(102,126,234,0.05);border-radius:8px;margin-bottom:8px">
           <div style="display:flex;justify-content:space-between;align-items:center">
             <div><strong>{{ g.main }}</strong><el-tag size="small" style="margin-left:8px">鏉冮噸 {{ g.weight }}</el-tag></div>
             <div style="display:flex;gap:6px">
               <el-button text size="small" :type="g.enabled!==false?'success':'info'" @click="toggleRotationGroup(g.id)">{{ g.enabled!==false?'宸插惎鐢?:'宸插仠鐢? }}</el-button>
-              <el-button text size="small" type="primary" @click="showAddSubDomain(g)">锛?瀛愬煙鍚?/el-button>
+              <el-button text size="small" type="primary" @click="showAddSubDomain(g)">锛?瀛愬煙鍚</el-button>
             </div>
           </div>
           <div v-if="g.children?.length" style="margin-top:8px;padding-left:16px;font-size:13px;color:var(--text-muted)">
             <div v-for="c in g.children" :key="c.host" style="display:flex;justify-content:space-between;padding:4px 0">
-              <span>{{ c.host }}锛堟潈閲?{{ c.weight }}锛?/span>
+              <span>{{ c.host }}锛堟潈閲?{{ c.weight }}锛</span>
               <el-button text size="small" type="danger" @click="removeSubDomain(g.id,c.host)">绉婚櫎</el-button>
             </div>
           </div>

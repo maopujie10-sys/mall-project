@@ -47,7 +47,7 @@
     <!-- 鏃ュ織鍐呭 -->
     <el-card shadow="never">
       <template #header>
-        <span>馃搫 {{ activeSourceName }} 鈥?{{ logData.total_filtered || 0 }} / {{ logData.total_raw || 0 }} 琛?/span>
+        <span>馃搫 {{ activeSourceName }} 鈥?{{ logData.total_filtered || 0 }} / {{ logData.total_raw || 0 }} 琛</span>
       </template>
       <div class="log-container" ref="logContainer">
         <div v-if="!logLines_data.length" class="log-empty">璇烽€夋嫨鏃ュ織婧愬苟鐐瑰嚮鏌ヨ</div>

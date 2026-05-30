@@ -11,7 +11,7 @@
         <el-card shadow="never">
           <el-space>
             <el-button type="primary" :loading="patrolLoading" @click="doPatrol">馃攳 绔嬪嵆宸℃</el-button>
-            <el-button type="warning" :loading="fixLoading" @click="doAutoFix">馃敡 涓€閿嚜鎰?/el-button>
+            <el-button type="warning" :loading="fixLoading" @click="doAutoFix">馃敡 涓€閿嚜鎰</el-button>
             <el-select v-model="historyDays" style="width:120px" @change="loadHistory">
               <el-option :value="1" label="鏈€杩?澶?/>
               <el-option :value="7" label="鏈€杩?澶?/>

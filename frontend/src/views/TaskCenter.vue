@@ -2,7 +2,7 @@
   <div class="task-center-panel">
     <div class="page-header">
       <h1>鈴憋笍 瀹氭椂浠诲姟涓績</h1>
-      <p>9涓畾鏃朵换鍔?路 鑷姩宸℃/澶囦唤/杞€?鎶ュ憡 路 鏀寔鎵嬪姩瑙﹀彂鍜屾殏鍋?/p>
+      <p>9涓畾鏃朵换鍔?路 鑷姩宸℃/澶囦唤/杞€?鎶ュ憡 路 鏀寔鎵嬪姩瑙﹀彂鍜屾殏鍋</p>
     </div>
 
     <el-row :gutter="16" style="margin-bottom:20px">
@@ -15,13 +15,13 @@
       <el-col :span="6">
         <el-card shadow="never" class="stat-simple">
           <div class="stat-num" style="color:#52c41a">{{ runningCount }}</div>
-          <div class="stat-text">杩愯涓?/div>
+          <div class="stat-text">杩愯涓</div>
         </el-card>
       </el-col>
       <el-col :span="6">
         <el-card shadow="never" class="stat-simple">
           <div class="stat-num" style="color:#faad14">{{ pausedCount }}</div>
-          <div class="stat-text">宸叉殏鍋?/div>
+          <div class="stat-text">宸叉殏鍋</div>
         </el-card>
       </el-col>
       <el-col :span="6">

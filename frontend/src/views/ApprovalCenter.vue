@@ -12,14 +12,14 @@
     <el-row :gutter="16" style="margin-bottom: 20px;">
       <el-col :span="6">
         <div class="metric-card">
-          <div class="metric-label">寰呭鎵逛换鍔?/div>
+          <div class="metric-label">寰呭鎵逛换鍔</div>
           <div class="metric-value" style="color: var(--color-warning);">{{ loading ? '...' : pendingTasks.length }}</div>
-          <div class="metric-sub">闇€瑕佷汉宸ョ‘璁?/div>
+          <div class="metric-sub">闇€瑕佷汉宸ョ‘璁</div>
         </div>
       </el-col>
       <el-col :span="6">
         <div class="metric-card">
-          <div class="metric-label">浠婃棩宸插鎵?/div>
+          <div class="metric-label">浠婃棩宸插鎵</div>
           <div class="metric-value">{{ loading ? '...' : historyTasks.length }}</div>
           <div class="metric-sub">閫氳繃 {{ approvedCount }} 路 鎷掔粷 {{ rejectedCount }}</div>
         </div>

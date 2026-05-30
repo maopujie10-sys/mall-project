@@ -23,7 +23,7 @@
           </div>
           <div class="astat">
             <span class="astat-num" style="color:#52c41a">{{ agent.successRate }}%</span>
-            <span class="astat-label">鎴愬姛鐜?/span>
+            <span class="astat-label">鎴愬姛鐜</span>
           </div>
         </div>
         <div class="agent-bar">

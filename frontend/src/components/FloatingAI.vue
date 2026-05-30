@@ -39,7 +39,7 @@
                         <button class="header-btn" @click="toggleExpand" :title="chatExpanded ? '缂╁皬' : '鎵╁ぇ'">
               {{ chatExpanded ? '鈯? : '鈯? }}
             </button>
-            <button class="header-btn" @click="minimizeChat" title="鏈€灏忓寲">鈭?/button>
+            <button class="header-btn" @click="minimizeChat" title="鏈€灏忓寲">鈭</button>
             <button class="header-btn close-btn" @click="closeChat" title="鍏抽棴">脳</button>
           </div>
         </div>
@@ -49,9 +49,9 @@
           <div v-if="messages.length === 0" class="empty-chat">
             <div class="empty-icon">馃</div>
             <p>浣犲ソ锛佹垜鏄?Friday AI 鍔╂墜</p>
-            <p class="empty-sub">鏂囧瓧 路 璇煶 路 瑙嗛 路 浼犲浘 路 浼犳枃浠?/p>
+            <p class="empty-sub">鏂囧瓧 路 璇煶 路 瑙嗛 路 浼犲浘 路 浼犳枃浠</p>
             <div class="quick-actions">
-              <button @click="quickAsk('鏈嶅姟鍣ㄧ姸鎬佹€庝箞鏍凤紵')">馃搳 鏈嶅姟鍣ㄧ姸鎬?/button>
+              <button @click="quickAsk('鏈嶅姟鍣ㄧ姸鎬佹€庝箞鏍凤紵')">馃搳 鏈嶅姟鍣ㄧ姸鎬</button>
               <button @click="quickAsk('浠婂ぉ鏈夊灏戣鍗曪紵')">馃摝 浠婃棩璁㈠崟</button>
               <button @click="quickAsk('甯垜鍒嗘瀽鏈€杩戠殑寮傚父')">馃攳 寮傚父鍒嗘瀽</button>
               <button @click="quickAsk('鐢熸垚浠婃棩杩愯惀鎶ュ憡')">馃摑 杩愯惀鎶ュ憡</button>
@@ -89,7 +89,7 @@
             <div class="voice-wave">
               <span v-for="n in 5" :key="n" :style="{ animationDelay: n * 0.1 + 's' }"></span>
             </div>
-            <span>姝ｅ湪鑱嗗惉... 鐐瑰嚮楹﹀厠椋庡仠姝?/span>
+            <span>姝ｅ湪鑱嗗惉... 鐐瑰嚮楹﹀厠椋庡仠姝</span>
           </div>
 
           <div class="input-row">

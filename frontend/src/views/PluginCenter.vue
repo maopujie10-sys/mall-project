@@ -1,10 +1,10 @@
 <template>
   <div class="skill-center">
     <div class="page-header">
-      <h2>馃З 鎶€鑳藉競鍦?/h2>
-      <p>娴忚 路 瀹夎 路 绠＄悊 路 鍙戝竷 AI 鎶€鑳?/p>
+      <h2>馃З 鎶€鑳藉競鍦</h2>
+      <p>娴忚 路 瀹夎 路 绠＄悊 路 鍙戝竷 AI 鎶€鑳</p>
       <div class="header-stats">
-        <el-tag type="primary">鍐呯疆 {{ totalSkills }} 涓?/el-tag>
+        <el-tag type="primary">鍐呯疆 {{ totalSkills }} 涓</el-tag>
         <el-tag type="success">宸茶 {{ installedCount }}</el-tag>
         <el-tag type="warning">绀惧尯 {{ communityCount }}</el-tag>
       </div>
@@ -137,7 +137,7 @@
       <el-tab-pane label="馃摛 鍙戝竷鎶€鑳? name="publish">
         <el-card shadow="never">
           <h3 style="margin-top:0">馃摛 鍙戝竷鎶€鑳藉寘</h3>
-          <p style="color:#999;font-size:13px">灏嗕綘鐨?skill.json + main.py 鎵撳寘鎴?ZIP 涓婁紶锛屽嵆鍙湪绯荤粺涓畨瑁呬娇鐢?/p>
+          <p style="color:#999;font-size:13px">灏嗕綘鐨?skill.json + main.py 鎵撳寘鎴?ZIP 涓婁紶锛屽嵆鍙湪绯荤粺涓畨瑁呬娇鐢</p>
           <el-upload
             drag
             accept=".zip"

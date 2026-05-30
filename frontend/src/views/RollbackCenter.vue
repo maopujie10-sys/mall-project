@@ -19,23 +19,23 @@
       </el-col>
       <el-col :span="6">
         <div class="metric-card">
-          <div class="metric-label">鏈€杩戝浠?/div>
+          <div class="metric-label">鏈€杩戝浠</div>
           <div class="metric-value" style="font-size: 16px;">{{ latestBackup }}</div>
           <div class="metric-sub">鑷姩澶囦唤姝ｅ父</div>
         </div>
       </el-col>
       <el-col :span="6">
         <div class="metric-card">
-          <div class="metric-label">鎬诲崰鐢ㄧ┖闂?/div>
+          <div class="metric-label">鎬诲崰鐢ㄧ┖闂</div>
           <div class="metric-value">4.8 GB</div>
-          <div class="metric-sub">淇濈暀 7 澶╁巻鍙?/div>
+          <div class="metric-sub">淇濈暀 7 澶╁巻鍙</div>
         </div>
       </el-col>
       <el-col :span="6">
         <div class="metric-card">
-          <div class="metric-label">鍥炴粴鎴愬姛鐜?/div>
+          <div class="metric-label">鍥炴粴鎴愬姛鐜</div>
           <div class="metric-value" style="color: var(--color-success);">100%</div>
-          <div class="metric-sub">杩?30 澶?/div>
+          <div class="metric-sub">杩?30 澶</div>
         </div>
       </el-col>
     </el-row>

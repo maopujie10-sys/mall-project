@@ -26,10 +26,10 @@
         </el-card>
 
         <el-card shadow="never">
-          <template #header><span>馃攲 HTTP 鐘舵€佹鏌?/span></template>
+          <template #header><span>馃攲 HTTP 鐘舵€佹鏌</span></template>
           <div style="display:flex;gap:8px">
             <el-input v-model="httpUrl" placeholder="https://example.com" size="small" @keyup.enter="runHttp" />
-            <el-button @click="runHttp" size="small" type="primary" :loading="httpLoading">妫€鏌?/el-button>
+            <el-button @click="runHttp" size="small" type="primary" :loading="httpLoading">妫€鏌</el-button>
           </div>
           <div v-if="httpResult" class="result-box">
             <div>鐘舵€佺爜锛?el-tag :type="httpResult.status < 400 ? 'success' : 'danger'">{{ httpResult.status }}</el-tag></div>
@@ -52,7 +52,7 @@
             <div v-for="r in scanResult.results" :key="r.port" style="display:flex;align-items:center;gap:8px;padding:2px 0">
               <span :style="{color:r.open?'#52c41a':'#999'}">{{ r.open ? '馃煝' : '鈿? }}</span>
               <span style="font-family:monospace">绔彛 {{ r.port }}</span>
-              <el-tag v-if="r.open" size="small" type="success">寮€鏀?/el-tag>
+              <el-tag v-if="r.open" size="small" type="success">寮€鏀</el-tag>
               <el-tag v-else size="small">鍏抽棴</el-tag>
             </div>
           </div>

@@ -3,7 +3,7 @@
     <el-tabs v-model="activeTab" type="border-card" class="mall-tabs">
       <!-- ========== 浠〃鐩?========== -->
       <el-tab-pane name="dashboard">
-        <template #label><el-icon><DataAnalysis /></el-icon> 浠〃鐩?/template>
+        <template #label><el-icon><DataAnalysis /></el-icon> 浠〃鐩</template>
 
         <el-row :gutter="16" class="kpi-row">
           <el-col :xs="12" :sm="6" v-for="k in kpis" :key="k.label">
@@ -18,7 +18,7 @@
           <el-col :span="16">
             <el-card shadow="never">
               <div class="card-hd">
-                <span class="card-tt">閿€鍞秼鍔?/span>
+                <span class="card-tt">閿€鍞秼鍔</span>
                 <span class="chart-tabs">
                   <span v-for="(t,i) in ['浠婃棩','杩?澶?,'杩?0澶?]" :key="i"
                     class="ctab" :class="{on:chartR===i}" @click="switchChart(i)">{{t}}</span>
@@ -73,7 +73,7 @@
           <el-table-column label="鎿嶄綔" width="200">
             <template #default="{row}">
               <el-button size="small" @click="toggleUser(row)">{{ row.status===1?'绂佺敤':'鍚敤' }}</el-button>
-              <el-button size="small" type="warning" @click="showBalDlg(row)">璋冧綑棰?/el-button>
+              <el-button size="small" type="warning" @click="showBalDlg(row)">璋冧綑棰</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -145,7 +145,7 @@
           <el-table-column prop="createTime" label="鏃堕棿" width="160" />
           <el-table-column label="鎿嶄綔" width="100">
             <template #default="{row}">
-              <el-button size="small" type="danger" @click="doRefund(row)">閫€娆?/el-button>
+              <el-button size="small" type="danger" @click="doRefund(row)">閫€娆</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -276,7 +276,7 @@
 
       <!-- ========== 灞炴€у垎绫荤鐞?========== -->
       <el-tab-pane name="attrCats">
-        <template #label><el-icon><Collection /></el-icon> 灞炴€у垎绫?/template>
+        <template #label><el-icon><Collection /></el-icon> 灞炴€у垎绫</template>
         <div class="tb-bar">
           <el-input v-model="attrCatKw" placeholder="鎼滅储" style="width:220px" clearable @clear="fetchAttrCats" @keyup.enter="fetchAttrCats" />
           <el-button type="primary" @click="fetchAttrCats">鎼滅储</el-button>
@@ -298,11 +298,11 @@
 
       <!-- ========== 灞炴€х鐞?========== -->
       <el-tab-pane name="attrs">
-        <template #label><el-icon><SetUp /></el-icon> 灞炴€х鐞?/template>
+        <template #label><el-icon><SetUp /></el-icon> 灞炴€х鐞</template>
         <div class="tb-bar">
           <el-input v-model="attrCatFilter" placeholder="灞炴€у垎绫籌D" style="width:220px" clearable @clear="fetchAttrs" @keyup.enter="fetchAttrs" />
           <el-button type="primary" @click="fetchAttrs">鎼滅储</el-button>
-          <el-button type="success" @click="showAttrDlg()">鏂板灞炴€?/el-button>
+          <el-button type="success" @click="showAttrDlg()">鏂板灞炴€</el-button>
         </div>
         <el-table :data="attrs" stripe size="small" height="480">
           <el-table-column prop="id" label="ID" width="200" />

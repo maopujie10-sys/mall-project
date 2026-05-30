@@ -1,6 +1,6 @@
 <template>
   <div class="server-panel">
-    <div class="page-header"><h1>馃枼锔?鏈嶅姟鍣ㄧ鐞?/h1><p>AI鑷姩鍐呭瓨娌荤悊 路 杩涚▼绠＄悊 路 纾佺洏娓呯悊 路 瓒嬪娍棰勬祴</p></div>
+    <div class="page-header"><h1>馃枼锔?鏈嶅姟鍣ㄧ鐞</h1><p>AI鑷姩鍐呭瓨娌荤悊 路 杩涚▼绠＄悊 路 纾佺洏娓呯悊 路 瓒嬪娍棰勬祴</p></div>
     <!-- 鐘舵€佸崱鐗?-->
     <el-row :gutter="16" style="margin-bottom:20px">
       <el-col :span="6">
@@ -57,8 +57,8 @@
         </el-card>
       </el-col>
       <el-col :span="8">
-        <el-card shadow="never"><template #header>馃攳 鍐呭瓨娉勬紡妫€娴?/template>
-          <el-button @click="checkLeaks" :loading="leakLoading" size="small">妫€娴?/el-button>
+        <el-card shadow="never"><template #header>馃攳 鍐呭瓨娉勬紡妫€娴</template>
+          <el-button @click="checkLeaks" :loading="leakLoading" size="small">妫€娴</el-button>
           <div v-if="leaks?.length" style="margin-top:8px;font-size:12px">
             <div v-for="l in leaks" :key="l.pid" style="padding:4px 0;border-bottom:1px solid #f0f0f0">
               <el-tag size="small" type="danger">{{ l.name }}</el-tag> PID={{ l.pid }} 澧為暱{{ l.growth_pct }}% ({{ l.old_mb }}鈫抺{ l.new_mb }}MB)

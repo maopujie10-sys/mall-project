@@ -8,7 +8,7 @@
     <!-- 缁熻鍗＄墖 -->
     <el-row :gutter="16" style="margin-bottom:20px">
       <el-col :span="6">
-        <div class="metric-card"><div class="metric-label">鍙敤妯″瀷</div><div class="metric-value">{{ models.length }}</div><div class="metric-sub">璺?{{ providers.length }} 涓钩鍙?/div></div>
+        <div class="metric-card"><div class="metric-label">鍙敤妯″瀷</div><div class="metric-value">{{ models.length }}</div><div class="metric-sub">璺?{{ providers.length }} 涓钩鍙</div></div>
       </el-col>
       <el-col :span="6">
         <div class="metric-card"><div class="metric-label">褰撳墠妯″瀷</div><div class="metric-value" style="color:#52c41a">{{ currentModel?.name || '-' }}</div><div class="metric-sub">{{ currentModel?.provider || '' }}</div></div>
@@ -17,7 +17,7 @@
         <div class="metric-card"><div class="metric-label">浠婃棩璋冪敤</div><div class="metric-value">{{ stats.todayCalls }}</div><div class="metric-sub">鎴愬姛鐜?{{ stats.successRate }}%</div></div>
       </el-col>
       <el-col :span="6">
-        <div class="metric-card"><div class="metric-label">鏈湀娑堣€?/div><div class="metric-value" style="color:#faad14">{{ stats.monthlyCost }}</div><div class="metric-sub">鍓╀綑棰濆害 {{ stats.remaining }}</div></div>
+        <div class="metric-card"><div class="metric-label">鏈湀娑堣€</div><div class="metric-value" style="color:#faad14">{{ stats.monthlyCost }}</div><div class="metric-sub">鍓╀綑棰濆害 {{ stats.remaining }}</div></div>
       </el-col>
     </el-row>
 
@@ -44,7 +44,7 @@
         </el-table-column>
         <el-table-column label="鎿嶄綔" width="200" fixed="right">
           <template #default="{row}">
-            <el-button link type="primary" size="small" @click="testSpeed(row)">娴嬮€?/el-button>
+            <el-button link type="primary" size="small" @click="testSpeed(row)">娴嬮€</el-button>
             <el-button link type="primary" size="small" @click="setActive(row)" v-if="row.id!==activeModelId">鍒囨崲</el-button>
             <el-button link type="primary" size="small" @click="editModel(row)">缂栬緫</el-button>
             <el-button link type="danger" size="small" @click="removeModel(row)">鍒犻櫎</el-button>
@@ -83,7 +83,7 @@
         <el-form-item label="渚涘簲鍟?><el-select v-model="modelForm.provider" style="width:100%"><el-option v-for="p in providers" :key="p" :label="p" :value="p" /></el-select></el-form-item>
         <el-form-item label="API鍦板潃"><el-input v-model="modelForm.apiUrl" placeholder="https://api.example.com/v1" /></el-form-item>
         <el-form-item label="API瀵嗛挜"><el-input v-model="modelForm.apiKey" type="password" show-password placeholder="sk-..." /></el-form-item>
-        <el-form-item label="绫诲瀷"><el-radio-group v-model="modelForm.type"><el-radio value="text">绾枃鏈?/el-radio><el-radio value="multimodal">澶氭ā鎬?/el-radio></el-radio-group></el-form-item>
+        <el-form-item label="绫诲瀷"><el-radio-group v-model="modelForm.type"><el-radio value="text">绾枃鏈</el-radio><el-radio value="multimodal">澶氭ā鎬</el-radio></el-radio-group></el-form-item>
         <el-form-item label="杈撳叆浠锋牸"><el-input-number v-model="modelForm.inputPrice" :min="0" :precision="2" :step="0.01" /> <span style="margin-left:4px">鍏?1K tokens</span></el-form-item>
         <el-form-item label="杈撳嚭浠锋牸"><el-input-number v-model="modelForm.outputPrice" :min="0" :precision="2" :step="0.01" /> <span style="margin-left:4px">鍏?1K tokens</span></el-form-item>
       </el-form>

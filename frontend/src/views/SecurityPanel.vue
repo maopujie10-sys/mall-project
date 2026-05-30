@@ -24,14 +24,14 @@
                 <el-form-item><el-input v-model="code" placeholder="6浣嶉獙璇佺爜" maxlength="6" style="width:140px;" /></el-form-item>
                 <el-form-item><el-button type="primary" @click="doVerify" :loading="verifying">楠岃瘉</el-button></el-form-item>
               </el-form>
-              <el-button type="danger" text @click="doReset">閲嶇疆楠岃瘉鍣?/el-button>
+              <el-button type="danger" text @click="doReset">閲嶇疆楠岃瘉鍣</el-button>
             </template>
           </div>
         </el-card>
       </el-col>
       <el-col :span="12">
         <el-card shadow="never">
-          <div class="card-title">鐘舵€?/div>
+          <div class="card-title">鐘舵€</div>
           <div style="padding:20px 0;">
             <el-result :icon="verified?'success':'warning'" :title="verified?'宸插惎鐢?:'鏈惎鐢?" :sub-title="verified?'涓ゆ楠岃瘉宸插紑鍚紝鐧诲綍鏃堕渶瑕佽緭鍏ラ獙璇佺爜':'璐︽埛鏈紑鍚袱姝ラ獙璇佷繚鎶?" />
           </div>

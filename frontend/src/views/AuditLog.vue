@@ -4,8 +4,8 @@
       <h2>馃搵 瀹¤鏃ュ織</h2>
       <p>鍏ㄩ噺鎿嶄綔杩借釜 路 瀹屾暣鍘嗗彶璁板綍</p>
       <div class="header-stats">
-        <el-tag>鎬昏 {{ stats.total || 0 }} 鏉?/el-tag>
-        <el-tag type="success">浠婃棩 {{ stats.today || 0 }} 鏉?/el-tag>
+        <el-tag>鎬昏 {{ stats.total || 0 }} 鏉</el-tag>
+        <el-tag type="success">浠婃棩 {{ stats.today || 0 }} 鏉</el-tag>
       </div>
     </div>
 

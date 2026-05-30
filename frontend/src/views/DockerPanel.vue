@@ -13,7 +13,7 @@
       <el-col :span="6">
         <el-card shadow="hover">
           <div class="stat-value">{{ stats.running ?? "-" }}</div>
-          <div class="stat-label">杩愯涓?/div>
+          <div class="stat-label">杩愯涓</div>
         </el-card>
       </el-col>
       <el-col :span="6">
@@ -31,7 +31,7 @@
       <el-col :span="6">
         <el-card shadow="hover">
           <div class="stat-value">{{ images.length }}</div>
-          <div class="stat-label">闀滃儚鏁?/div>
+          <div class="stat-label">闀滃儚鏁</div>
         </el-card>
       </el-col>
     </el-row>
