@@ -1,12 +1,12 @@
 <template>
   <div class="server-panel">
-    <div class="page-header"><h1>馃枼锔?鏈嶅姟鍣ㄧ鐞</h1><p>AI鑷姩鍐呭瓨娌荤悊 路 杩涚▼绠＄悊 路 纾佺洏娓呯悊 路 瓒嬪娍棰勬祴</p></div>
+    <div class="page-header"><h1>馃枼锔鏈嶅姟鍣ㄧ鐞</h1><p>AI鑷姩鍐呭瓨娌荤悊 路 杩涚▼绠＄悊 路 纾佺洏娓呯悊 路 瓒嬪娍棰勬祴</p></div>
     <!-- 鐘舵€佸崱鐗?-->
     <el-row :gutter="16" style="margin-bottom:20px">
       <el-col :span="6">
         <el-card shadow="never"><template #header>馃 CPU</template>
           <div class="metric-ring"><svg viewBox="0 0 100 100" width="80" height="80"><circle cx="50" cy="50" r="40" fill="none" stroke="#f0f0f0" stroke-width="8"/><circle cx="50" cy="50" r="40" fill="none" :stroke="cpu>80?'#ff4d4f':cpu>60?'#faad14':'#52c41a'" stroke-width="8" stroke-dasharray="251.2" :stroke-dashoffset="251.2-251.2*cpu/100" transform="rotate(-90,50,50)"/><text x="50" y="55" text-anchor="middle" font-size="18" fill="currentColor">{{ cpu }}%</text></svg></div>
-          <div style="font-size:12px;color:var(--text-muted);text-align:center">{{ status?.cpu_count }}鏍?路 璐熻浇{{ status?.load?.["1min"] }}</div>
+          <div style="font-size:12px;color:var(--text-muted);text-align:center">{{ status?.cpu_count }}鏍路 璐熻浇{{ status?.load?.["1min"] }}</div>
         </el-card>
       </el-col>
       <el-col :span="6">
@@ -31,13 +31,13 @@
     <!-- 鑷姩娌荤悊 + 瓒嬪娍 -->
     <el-row :gutter="16" style="margin-bottom:20px">
       <el-col :span="8">
-        <el-card shadow="never"><template #header>鈿?鍐呭瓨娌荤悊 <el-tag size="small" :type="memPct>80?'danger':'success'">{{ memPct>80?"闇€娌荤悊":"姝ｅ父" }}</el-tag></template>
+        <el-card shadow="never"><template #header>鈿鍐呭瓨娌荤悊 <el-tag size="small" :type="memPct>80?'danger':'success'">{{ memPct>80?"闇€娌荤悊":"姝ｅ父" }}</el-tag></template>
           <div style="display:flex;flex-direction:column;gap:8px">
             <el-button type="primary" @click="doRelease('safe')" :loading="rlSafe" size="small">馃煝 瀹夊叏閲婃斁(娓呯紦瀛?</el-button>
-            <el-button type="warning" @click="doRelease('aggressive')" :loading="rlAgg" size="small">馃煛 绉瀬閲婃斁(娓呯紦瀛?鏉€绌鸿浆杩涚▼)</el-button>
-            <el-button type="danger" @click="doRelease('max')" :loading="rlMax" size="small">馃敶 鏈€澶ч噴鏀?娓呯紦瀛?鏉€杩涚▼+閲嶅惎Nginx+Docker娓呯悊)</el-button>
+            <el-button type="warning" @click="doRelease('aggressive')" :loading="rlAgg" size="small">馃煛 绉瀬閲婃斁(娓呯紦瀛鏉€绌鸿浆杩涚▼)</el-button>
+            <el-button type="danger" @click="doRelease('max')" :loading="rlMax" size="small">馃敶 鏈€澶ч噴鏀娓呯紦瀛鏉€杩涚▼+閲嶅惎Nginx+Docker娓呯悊)</el-button>
             <div v-if="releaseResult" style="font-size:12px;margin-top:4px">
-              <div>閲婃斁鍓? {{ releaseResult.before_percent }}% 鈫?閲婃斁鍚? {{ releaseResult.after_percent }}%</div>
+              <div>閲婃斁鍓? {{ releaseResult.before_percent }}% 鈫閲婃斁鍚? {{ releaseResult.after_percent }}%</div>
               <div>閲婃斁: {{ releaseResult.freed_mb }}MB</div>
               <div v-for="a in releaseResult.actions" :key="a" style="color:var(--text-muted)">{{ a }}</div>
             </div>
@@ -53,7 +53,7 @@
               <defs><linearGradient id="memGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#667eea"/><stop offset="100%" stop-color="#667eea" stop-opacity="0"/></linearGradient></defs>
             </svg>
           </div>
-          <div v-if="trend?.prediction_12h" style="font-size:12px;color:var(--text-muted);margin-top:4px">棰勬祴12h鍚? {{ trend.prediction_12h }}% <span :style="{color:trend.prediction_12h>85?'#ff4d4f':'#52c41a'}">{{ trend.prediction_12h>85?'鈿狅笍 闇€鍏虫敞':'鉁?瀹夊叏' }}</span></div>
+          <div v-if="trend?.prediction_12h" style="font-size:12px;color:var(--text-muted);margin-top:4px">棰勬祴12h鍚? {{ trend.prediction_12h }}% <span :style="{color:trend.prediction_12h>85?'#ff4d4f':'#52c41a'}">{{ trend.prediction_12h>85?'鈿狅笍 闇€鍏虫敞':'鉁瀹夊叏' }}</span></div>
         </el-card>
       </el-col>
       <el-col :span="8">
@@ -64,7 +64,7 @@
               <el-tag size="small" type="danger">{{ l.name }}</el-tag> PID={{ l.pid }} 澧為暱{{ l.growth_pct }}% ({{ l.old_mb }}鈫抺{ l.new_mb }}MB)
             </div>
           </div>
-          <div v-else-if="leakChecked" style="margin-top:8px;font-size:12px;color:#52c41a">鉁?鏈娴嬪埌鍐呭瓨娉勬紡</div>
+          <div v-else-if="leakChecked" style="margin-top:8px;font-size:12px;color:#52c41a">鉁鏈娴嬪埌鍐呭瓨娉勬紡</div>
         </el-card>
       </el-col>
     </el-row>
@@ -92,7 +92,7 @@ const status = ref({}), topMem = ref([]), trend = ref(null), leaks = ref([])
 const rlSafe=ref(false), rlAgg=ref(false), rlMax=ref(false), releaseResult=ref(null)
 const leakLoading=ref(false), leakChecked=ref(false)
 
-const cpu = computed(() => status.value?.cpu ?? 0)
+const cpu = computed(() => status.value?.cpu '? 0)
 const memPct = computed(() => status.value?.memory?.percent ?? 0)
 const diskPct = computed(() => status.value?.disk?.percent ?? 0)
 const swapPct = computed(() => status.value?.swap?.percent ?? 0)

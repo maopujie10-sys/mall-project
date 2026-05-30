@@ -46,7 +46,7 @@
                 @click="s.installed ? null : installSkill(s)"
                 :disabled="s.installed || installing === s.id"
                 :loading="installing === s.id"
-              >{{ s.installed ? '鉁?宸插畨瑁' : '馃摜 瀹夎' }}</el-button>
+              >{{ s.installed ? '鉁宸插畨瑁' : '馃摜 瀹夎' }}</el-button>
             </el-card>
           </el-col>
         </el-row>
@@ -92,7 +92,7 @@
                 :disabled="isCommunityInstalled(s.id) || communityInstalling === s.id"
                 :loading="communityInstalling === s.id"
                 @click="installCommunity(s)"
-              >{{ isCommunityInstalled(s.id) ? '鉁?宸插畨瑁' : '馃摜 瀹夎' }}</el-button>
+              >{{ isCommunityInstalled(s.id) ? '鉁宸插畨瑁' : '馃摜 瀹夎' }}</el-button>
             </el-card>
           </el-col>
         </el-row>
@@ -100,7 +100,7 @@
       </el-tab-pane>
 
       <!-- Tab 3: 宸插畨瑁?-->
-      <el-tab-pane label="馃摝 宸插畨瑁? name="installed">
+      <el-tab-pane label="..." name="installed">
         <el-table :data="allInstalledSkills" stripe size="small">
           <el-table-column label="鎶€鑳? min-width="200">
             <template #default="{row}">
@@ -118,7 +118,7 @@
             </template>
           </el-table-column>
           <el-table-column prop="desc" label="鎻忚堪" min-width="200" show-overflow-tooltip />
-          <el-table-column label="鐘舵€? width="90">
+          <el-table-column label="..." width="90">
             <template #default="{row}">
               <el-switch v-model="row.enabled" @change="toggleSkill(row)" size="small" :disabled="row._source==='package'" />
             </template>
@@ -134,7 +134,7 @@
       </el-tab-pane>
 
       <!-- Tab 4: 鍙戝竷鎶€鑳?-->
-      <el-tab-pane label="馃摛 鍙戝竷鎶€鑳? name="publish">
+      <el-tab-pane label="..." name="publish">
         <el-card shadow="never">
           <h3 style="margin-top:0">馃摛 鍙戝竷鎶€鑳藉寘</h3>
           <p style="color:#999;font-size:13px">灏嗕綘鐨?skill.json + main.py 鎵撳寘鎴?ZIP 涓婁紶锛屽嵆鍙湪绯荤粺涓畨瑁呬娇鐢</p>
@@ -167,12 +167,12 @@
           <h4>馃摝 鎶€鑳藉寘鏍煎紡瑕佹眰</h4>
           <pre style="font-size:12px;background:#f5f5f5;padding:12px;border-radius:4px">
 my-skill.zip
-鈹溾攢鈹€ skill.json          # 蹇呭～锛氭妧鑳芥竻鍗?鈹?  鈹溾攢鈹€ id              # 鍞竴鏍囪瘑
+鈹溾攢鈹€ skill.json          # 蹇呭～锛氭妧鑳芥竻鍗鈹?  鈹溾攢鈹€ id              # 鍞竴鏍囪瘑
 鈹?  鈹溾攢鈹€ name            # 鏄剧ず鍚嶇О
-鈹?  鈹溾攢鈹€ version         # 鐗堟湰鍙?鈹?  鈹溾攢鈹€ desc            # 鎻忚堪
+鈹?  鈹溾攢鈹€ version         # 鐗堟湰鍙鈹?  鈹溾攢鈹€ desc            # 鎻忚堪
 鈹?  鈹溾攢鈹€ author          # 浣滆€?鈹?  鈹溾攢鈹€ category        # 鍒嗙被
-鈹?  鈹溾攢鈹€ entry           # 鍏ュ彛鏂囦欢锛堥粯璁?main.py锛?鈹?  鈹斺攢鈹€ dependencies    # 渚濊禆鍒楄〃
-鈹溾攢鈹€ main.py             # 鍏ュ彛浠ｇ爜锛堥渶瀹炵幇 async def execute(params)锛?鈹斺攢鈹€ assets/             # 璧勬簮鏂囦欢锛堝彲閫夛級
+鈹?  鈹溾攢鈹€ entry           # 鍏ュ彛鏂囦欢锛堥粯璁?main.py锛鈹?  鈹斺攢鈹€ dependencies    # 渚濊禆鍒楄〃
+鈹溾攢鈹€ main.py             # 鍏ュ彛浠ｇ爜锛堥渶瀹炵幇 async def execute(params)锛鈹斺攢鈹€ assets/             # 璧勬簮鏂囦欢锛堝彲閫夛級
           </pre>
         </el-card>
       </el-tab-pane>
@@ -297,7 +297,7 @@ async function uninstallSkill(s) {
 async function toggleSkill(s) {
   try {
     await agentApi.post("/agent/plugins/toggle", { plugin_id: s.id, enabled: s.enabled })
-    ElMessage.success(s.enabled ? s.name + " 宸插惎鐢? : s.name + " 宸茬鐢?)
+    ElMessage.success(s.enabled ? s.name + " 宸插惎鐢' : s.name + " 宸茬鐢?)
   } catch {
     s.enabled = !s.enabled
     ElMessage.error("鎿嶄綔澶辫触")
@@ -369,7 +369,7 @@ async function publishSkill() {
       headers: { "Content-Type": "multipart/form-data" }
     })
     if (r.ok) {
-      ElMessage.success("鉁?鎶€鑳藉彂甯冨苟瀹夎鎴愬姛")
+      ElMessage.success("鉁鎶€鑳藉彂甯冨苟瀹夎鎴愬姛")
       publishFile.value = null
       publishFileList.value = []
       fetchInstalledPackages()
@@ -388,7 +388,7 @@ async function publishFromUrl() {
   try {
     const r = await agentApi.post("/agent/plugins/publish", { download_url: publishUrl.value })
     if (r.ok) {
-      ElMessage.success("鉁?瀹夎鎴愬姛")
+      ElMessage.success("鉁瀹夎鎴愬姛")
       publishUrl.value = ""
       fetchInstalledPackages()
     } else {

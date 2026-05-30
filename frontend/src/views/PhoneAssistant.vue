@@ -2,7 +2,7 @@
   <div class="phone-assistant">
     <div class="page-header">
       <h2>馃摫 AI鐢佃瘽鍔╃悊</h2>
-      <p>璇煶IVR 路 鑷姩鎺ュ崟 路 杞汉宸?路 24h鍦ㄧ嚎</p>
+      <p>璇煶IVR 路 鑷姩鎺ュ崟 路 杞汉宸路 24h鍦ㄧ嚎</p>
       <div class="header-stats">
         <el-statistic title="浠婃棩鏉ョ數" :value="stats.today_calls" />
         <el-statistic title="鑷姩瑙ｅ喅鐜? :value="stats.auto_resolved" suffix="%" />

@@ -1,6 +1,6 @@
 <template>
   <div class="net-tools">
-    <div class="page-header"><h2>馃寪 缃戠粶宸ュ叿</h2><p>Ping 路 DNS 路 绔彛鎵弿 路 HTTP妫€鏌?路 璺敱杩借釜</p></div>
+    <div class="page-header"><h2>馃寪 缃戠粶宸ュ叿</h2><p>Ping 路 DNS 路 绔彛鎵弿 路 HTTP妫€鏌路 璺敱杩借釜</p></div>
 
     <el-row :gutter="16">
       <el-col :span="12">
@@ -10,7 +10,7 @@
             <el-input v-model="pingHost" placeholder="鍩熷悕鎴朓P" size="small" @keyup.enter="runPing" />
             <el-button @click="runPing" size="small" type="primary" :loading="pingLoading">Ping</el-button>
           </div>
-          <pre v-if="pingResult" class="result-box">{{ pingResult.stdout || pingResult.error || "鏃犵粨鏋? }}</pre>
+          <pre v-if="pingResult" class="result-box">{{ pingResult.stdout || pingResult.error || "鏃犵粨鏋' }}</pre>
         </el-card>
 
         <el-card shadow="never" style="margin-bottom:16px">
@@ -50,7 +50,7 @@
           <div v-if="scanResult" class="result-box">
             <div style="margin-bottom:8px">寮€鏀剧鍙ｏ細{{ scanResult.open_count }}/{{ scanResult.results?.length || 0 }}</div>
             <div v-for="r in scanResult.results" :key="r.port" style="display:flex;align-items:center;gap:8px;padding:2px 0">
-              <span :style="{color:r.open?'#52c41a':'#999'}">{{ r.open ? '馃煝' : '鈿? }}</span>
+              <span :style="{color:r.open?'#52c41a':'#999'}">{{ r.open ? '馃煝' : '鈿' }}</span>
               <span style="font-family:monospace">绔彛 {{ r.port }}</span>
               <el-tag v-if="r.open" size="small" type="success">寮€鏀</el-tag>
               <el-tag v-else size="small">鍏抽棴</el-tag>
@@ -59,12 +59,12 @@
         </el-card>
 
         <el-card shadow="never">
-          <template #header><span>馃洡锔?璺敱杩借釜</span></template>
+          <template #header><span>馃洡锔璺敱杩借釜</span></template>
           <div style="display:flex;gap:8px">
             <el-input v-model="traceHost" placeholder="鍩熷悕鎴朓P" size="small" @keyup.enter="runTrace" />
             <el-button @click="runTrace" size="small" type="primary" :loading="traceLoading">杩借釜</el-button>
           </div>
-          <pre v-if="traceResult" class="result-box">{{ traceResult.stdout || traceResult.error || "鏃犵粨鏋? }}</pre>
+          <pre v-if="traceResult" class="result-box">{{ traceResult.stdout || traceResult.error || "鏃犵粨鏋' }}</pre>
         </el-card>
       </el-col>
     </el-row>

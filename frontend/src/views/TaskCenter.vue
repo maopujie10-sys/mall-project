@@ -2,7 +2,7 @@
   <div class="task-center-panel">
     <div class="page-header">
       <h1>鈴憋笍 瀹氭椂浠诲姟涓績</h1>
-      <p>9涓畾鏃朵换鍔?路 鑷姩宸℃/澶囦唤/杞€?鎶ュ憡 路 鏀寔鎵嬪姩瑙﹀彂鍜屾殏鍋</p>
+      <p>9涓畾鏃朵换鍔路 鑷姩宸℃/澶囦唤/杞€?鎶ュ憡 路 鏀寔鎵嬪姩瑙﹀彂鍜屾殏鍋</p>
     </div>
 
     <el-row :gutter="16" style="margin-bottom:20px">
@@ -44,7 +44,7 @@
         <el-table-column prop="next_run" label="涓嬫鎵ц" width="170">
           <template #default="{row}">{{ formatTime(row.next_run) }}</template>
         </el-table-column>
-        <el-table-column label="鐘舵€? width="90">
+        <el-table-column label="..." width="90">
           <template #default="{row}">
             <el-tag :type="row.status==='running'?'success':'warning'" size="small">
               {{ row.status==='running'''杩愯涓':'宸叉殏鍋' }}
@@ -53,9 +53,9 @@
         </el-table-column>
         <el-table-column label="鎿嶄綔" width="180">
           <template #default="{row}">
-            <el-button size="small" type="primary" link @click="doTrigger(row.id)">鈻?绔嬪嵆鎵ц</el-button>
-            <el-button v-if="row.status==='running'" size="small" type="warning" link @click="doPause(row.id)">鈴?鏆傚仠</el-button>
-            <el-button v-else size="small" type="success" link @click="doResume(row.id)">鈻?鎭㈠</el-button>
+            <el-button size="small" type="primary" link @click="doTrigger(row.id)">鈻绔嬪嵆鎵ц</el-button>
+            <el-button v-if="row.status==='running'" size="small" type="warning" link @click="doPause(row.id)">鈴鏆傚仠</el-button>
+            <el-button v-else size="small" type="success" link @click="doResume(row.id)">鈻鎭㈠</el-button>
           </template>
         </el-table-column>
       </el-table>

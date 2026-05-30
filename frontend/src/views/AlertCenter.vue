@@ -13,7 +13,7 @@
     <el-card shadow="never" style="margin-top:16px">
       <template #header>
         <span>鍛婅鍒楄〃</span>
-        <el-select v-model="filterLevel" size="small" clearable placeholder="绛涢€夌瓑绾? style="width:120px;margin-left:12px">
+        <el-select v-model="filterLevel" size="small" clearable placeholder="..." style="width:120px;margin-left:12px">
           <el-option v-for="(n, k) in levelMap" :key="k" :label="`${k} - ${n}`" :value="k" />
         </el-select>
         <el-button size="small" @click="fetchAlerts" style="margin-left:8px">鍒锋柊</el-button>
@@ -28,7 +28,7 @@
         <el-table-column prop="title" label="鏍囬" min-width="200" />
         <el-table-column prop="detail" label="璇︽儏" min-width="200" show-overflow-tooltip />
         <el-table-column prop="source" label="鏉ユ簮" width="80" />
-        <el-table-column label="鐘舵€? width="80">
+        <el-table-column label="..." width="80">
           <template #default="{row}">
             <el-tag :type="row.resolved ? 'info' : 'danger'" size="small">{{ row.resolved ' '宸茶В鍐' : '鏈В鍐' }}</el-tag>
           </template>

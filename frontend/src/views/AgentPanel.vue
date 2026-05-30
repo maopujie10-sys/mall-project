@@ -3,7 +3,7 @@
     <div class="page-header">
       <div>
         <h1>馃 Agent 鎺у埗闈㈡澘</h1>
-        <p>7澶gent鍗忓悓宸ヤ綔 路 瀹炴椂鐘舵€佺洃鎺?路 浠诲姟璋冨害</p>
+        <p>7澶gent鍗忓悓宸ヤ綔 路 瀹炴椂鐘舵€佺洃鎺路 浠诲姟璋冨害</p>
       </div>
     </div>
 

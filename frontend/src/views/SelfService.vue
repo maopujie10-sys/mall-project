@@ -11,7 +11,7 @@
             </div>
           </template>
           <el-button type="primary" @click="run(rb.id)" :loading="runningId === rb.id" :disabled="runningId">
-            {{ runningId === rb.id ? '鎵ц涓?..' : '涓€閿墽琛? }}
+            {{ runningId === rb.id ? '鎵ц涓?..' : '涓€閿墽琛' }}
           </el-button>
         </el-card>
       </el-col>
@@ -44,7 +44,7 @@
         </el-timeline-item>
       </el-timeline>
       <el-alert v-if="!report.all_passed" title="妫€娴嬪埌寮傚父" :description="report.summary" type="warning" show-icon style="margin-top:12px" />
-      <el-alert v-else title="涓€鍒囨甯? :description="report.summary" type="success" show-icon style="margin-top:12px" />
+      <el-alert v-else title="涓€鍒囨甯' :description="report.summary" type="success" show-icon style="margin-top:12px" />
     </el-card>
   </div>
 </template>

@@ -18,7 +18,7 @@
       <el-table :data="tracks" size="small">
         <el-table-column prop="product" label="鍟嗗搧鍚? min-width="150"/>
         <el-table-column prop="platform" label="骞冲彴" width="100"/>
-        <el-table-column label="褰撳墠浠? width="120">
+        <el-table-column label="..." width="120">
           <template #default="{row}">
             <span v-if="row.price_history && row.price_history.length">
               {{ row.price_history[row.price_history.length-1].price }} {{ row.price_history[row.price_history.length-1].currency || 'USD' }}
@@ -26,7 +26,7 @@
             <span v-else>-</span>
           </template>
         </el-table-column>
-        <el-table-column label="鐩爣浠? width="100"><template #default="{row}">{{ row.target_price || '-' }}</template></el-table-column>
+        <el-table-column label="..." width="100"><template #default="{row}">{{ row.target_price || '-' }}</template></el-table-column>
         <el-table-column label="鍙樺姩" width="80">
           <template #default="{row}">
             <el-tag v-if="row.lastChange" :type="row.lastChange>0?'danger':'success'" size="small">{{ row.lastChange }}%</el-tag>
@@ -50,7 +50,7 @@
       <el-table :data="trends" size="small">
         <el-table-column prop="product" label="鍟嗗搧"/>
         <el-table-column prop="platform" label="骞冲彴" width="100"/>
-        <el-table-column prop="first_price" label="鍒濆浠? width="100"/>
+        <el-table-column prop="first_price" label="..." width="100"/>
         <el-table-column prop="last_price" label="鏈€鏂颁环" width="100"/>
         <el-table-column label="鍙樺姩" width="100">
           <template #default="{row}">
@@ -67,7 +67,7 @@
     <el-row :gutter="16">
       <el-col :span="12">
         <el-card shadow="never">
-          <template #header>鈿狅笍 浠锋牸鍛婅 (杩?澶?</template>
+          <template #header>鈿狅笍 浠锋牸鍛婅 (杩澶?</template>
           <el-timeline v-if="alerts.length">
             <el-timeline-item v-for="a in alerts.slice(-10).reverse()" :key="a.time" :timestamp="a.time?.substr(0,16)" :type="a.severity==='P1'?'danger':'warning'">
               {{ a.product }}: {{ a.from }}鈫抺{ a.to }} ({{ a.change_pct }}%)

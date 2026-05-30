@@ -3,7 +3,7 @@
     <div class="page-header"><h1>馃敡 Nginx 绠＄悊</h1><p>杩涚▼鐩戞帶 路 閰嶇疆绠＄悊 路 绔欑偣绠＄悊 路 鏃ュ織鍒嗘瀽 路 SSL</p></div>
     <el-row :gutter="16" style="margin-bottom:20px">
       <el-col :span="6"><el-card shadow="never"><template #header>杩涚▼鐘舵€</template>
-        <el-tag :type="status?.running ? 'success' : 'danger'" size="large">{{ status?.running ? "杩愯涓? : "宸插仠姝? }}</el-tag>
+        <el-tag :type="status?.running ? 'success' : 'danger'" size="large">{{ status?.running ? "杩愯涓' : "宸插仠姝' }}</el-tag>
         <div style="margin-top:8px;font-size:12px;color:var(--text-muted)">HTTP杩炴帴: {{ conn?.http_connections || "?" }} | HTTPS: {{ conn?.https_connections || "?" }}</div>
       </el-card></el-col>
       <el-col :span="6"><el-card shadow="never"><template #header>閰嶇疆璇硶</template>
@@ -22,7 +22,7 @@
     <el-row :gutter="16">
       <el-col :span="12">
         <el-card shadow="never"><template #header><span>馃搫 閰嶇疆鏂囦欢</span><el-select v-model="configPath" size="small" style="width:200px;margin-left:12px">
-          <el-option label="nginx.conf 涓婚厤缃? value="/etc/nginx/nginx.conf" />
+          <el-option label="..." value="/etc/nginx/nginx.conf" />
           <el-option label="default 绔欑偣" value="/etc/nginx/sites-enabled/default" />
         </el-select><el-button size="small" @click="fetchConfig" style="margin-left:8px">鍔犺浇</el-button></template>
         <pre class="code-box">{{ configContent || "鐐瑰嚮鍔犺浇閰嶇疆" }}</pre>
@@ -54,7 +54,7 @@
           <el-select v-model="logType" size="small" style="width:120px;margin-left:12px">
             <el-option label="閿欒鏃ュ織" value="error" /><el-option label="璁块棶鏃ュ織" value="access" />
           </el-select>
-          <el-input v-model="logKeyword" placeholder="鎼滅储鍏抽敭璇? size="small" style="width:150px;margin-left:8px" clearable />
+          <el-input v-model="logKeyword" placeholder="..." size="small" style="width:150px;margin-left:8px" clearable />
           <el-button size="small" @click="fetchLogs" style="margin-left:8px">鎼滅储</el-button>
         </template>
         <pre class="code-box" style="max-height:350px">{{ logs || "鐐瑰嚮鎼滅储鏌ョ湅鏃ュ織" }}</pre>

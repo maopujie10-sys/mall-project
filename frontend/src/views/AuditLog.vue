@@ -12,9 +12,9 @@
     <div class="filters">
       <el-input v-model="filters.action" placeholder="鎼滅储鎿嶄綔..." clearable size="small" style="width:200px" />
       <el-select v-model="filters.risk" placeholder="椋庨櫓绛夌骇" clearable size="small" style="width:120px">
-        <el-option label="L1 浣? value="L1" />
-        <el-option label="L2 涓? value="L2" />
-        <el-option label="L3 楂? value="L3" />
+        <el-option label="..." value="L1" />
+        <el-option label="..." value="L2" />
+        <el-option label="..." value="L3" />
         <el-option label="L4 涓ラ噸" value="L4" />
       </el-select>
       <el-button @click="fetchLogs" type="primary" size="small">馃攳 鏌ヨ</el-button>
@@ -39,7 +39,7 @@
           <el-tag :type="riskType(row.risk)" size="small">{{ row.risk }}</el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="鎿嶄綔浜? width="80">
+      <el-table-column label="..." width="80">
         <template #default="{row}">{{ row.user }}</template>
       </el-table-column>
     </el-table>

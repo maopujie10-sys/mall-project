@@ -7,7 +7,7 @@
       <el-col :span="6" v-for="s in sources" :key="s.id">
         <el-card shadow="never" :class="['src-card', { active: activeSource === s.id, unavailable: !s.available }]" @click="selectSource(s)">
           <div class="src-name">{{ s.name }}</div>
-          <div class="src-info">{{ s.available ? s.size : '涓嶅彲鐢? }}</div>
+          <div class="src-info">{{ s.available ? s.size : '涓嶅彲鐢' }}</div>
         </el-card>
       </el-col>
     </el-row>

@@ -13,8 +13,8 @@
             <el-button type="primary" :loading="patrolLoading" @click="doPatrol">馃攳 绔嬪嵆宸℃</el-button>
             <el-button type="warning" :loading="fixLoading" @click="doAutoFix">馃敡 涓€閿嚜鎰</el-button>
             <el-select v-model="historyDays" style="width:120px" @change="loadHistory">
-              <el-option :value="1" label="鏈€杩?澶?/>
-              <el-option :value="7" label="鏈€杩?澶?/>
+              <el-option :value="1" label="鏈€杩澶?/>
+              <el-option :value="7" label="鏈€杩澶?/>
               <el-option :value="30" label="鏈€杩?0澶?/>
             </el-select>
             <el-button @click="loadHistory">馃攧 鍒锋柊</el-button>
@@ -48,7 +48,7 @@
         <el-table-column prop="source" label="鏉ユ簮" width="100"/>
         <el-table-column prop="detail" label="璇︽儏"/>
       </el-table>
-      <el-empty v-else description="涓€鍒囨甯革紝鏈彂鐜板紓甯? :image-size="60"/>
+      <el-empty v-else description="涓€鍒囨甯革紝鏈彂鐜板紓甯' :image-size="60"/>
     </el-card>
 
     <!-- 淇缁撴灉 -->
@@ -62,7 +62,7 @@
       <el-table v-if="fixResult.results && fixResult.results.length" :data="fixResult.results" size="small" style="margin-top:12px">
         <el-table-column prop="id" label="寮傚父ID" width="120"/>
         <el-table-column prop="result.action" label="鎿嶄綔"/>
-        <el-table-column label="鐘舵€? width="100">
+        <el-table-column label="..." width="100">
           <template #default="{row}"><el-tag :type="row.result.fixed ? 'success' : 'danger'" size="small">{{ row.result.fixed ? '宸蹭慨澶' : '澶辫触' }}</el-tag></template>
         </el-table-column>
       </el-table>
@@ -78,8 +78,8 @@
         </el-table-column>
         <el-table-column prop="source" label="鏉ユ簮" width="100"/>
         <el-table-column prop="description" label="鎻忚堪" min-width="200"/>
-        <el-table-column prop="detected_at" label="妫€娴嬫椂闂? width="170"/>
-        <el-table-column prop="status" label="鐘舵€? width="100">
+        <el-table-column prop="detected_at" label="..." width="170"/>
+        <el-table-column prop="status" label="..." width="100">
           <template #default="{row}">
             <el-tag :type="row.status==='resolved'?'success':row.status==='open'?'danger':'warning'" size="small">
               {{ row.status === 'resolved' ' '宸茶В鍐' : row.status === 'open' ' '寰呭鐞' : '澶勭悊涓' }}

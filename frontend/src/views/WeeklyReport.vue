@@ -18,7 +18,7 @@
 
     <!-- 鏈€鏂板懆鎶?-->
     <el-card v-if="latestReport" shadow="never" style="margin-bottom:20px">
-      <template #header>馃搵 鏈€鏂板懆鎶?鈥?绗瑊{ latestReport.week }}鍛?({{ latestReport.date }})</template>
+      <template #header>馃搵 鏈€鏂板懆鎶鈥?绗瑊{ latestReport.week }}鍛?({{ latestReport.date }})</template>
       
       <el-row :gutter="16" style="margin-bottom:20px">
         <el-col :span="4" v-for="m in metrics" :key="m.label">
@@ -38,7 +38,7 @@
     <el-card shadow="never">
       <template #header>馃摎 鍘嗗彶鍛ㄦ姤 (鏈€杩?2鍛?</template>
       <el-timeline v-if="reports.length">
-        <el-timeline-item v-for="r in reports" :key="r.id" :timestamp="'绗?+r.week+'鍛?路 '+r.date" placement="top">
+        <el-timeline-item v-for="r in reports" :key="r.id" :timestamp="'绗?+r.week+'鍛路 '+r.date" placement="top">
           <el-card shadow="never">
             <pre class="summary-text" style="font-size:12px">{{ r.summary }}</pre>
           </el-card>

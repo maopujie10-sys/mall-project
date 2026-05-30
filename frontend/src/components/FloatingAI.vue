@@ -1,5 +1,5 @@
 <template>
-  <!-- 鍏ㄥ眬鎮诞AI鍔╂墜 鈥?鏂囧瓧+璇煶+瑙嗛鍏ㄩ泦鎴?-->
+  <!-- 鍏ㄥ眬鎮诞AI鍔╂墜 鈥鏂囧瓧+璇煶+瑙嗛鍏ㄩ泦鎴?-->
   <div class="floating-ai" :class="{ 'chat-open': chatOpen, 'chat-expanded': chatExpanded, 'video-mode': videoActive }">
     <!-- ====== 鎮诞鎸夐挳 ====== -->
     <div
@@ -28,7 +28,7 @@
           <div class="header-left">
             <div class="ai-avatar-small"><div class="avatar-holo"></div>AI</div>
             <div>
-              <div class="header-title">{{ voiceActive ? '馃帳 鑱嗗惉涓? : (voiceCallActive ? '馃攰 鏈楄涓? : 'Friday AI 鍔╂墜') }}</div>
+              <div class="header-title">{{ voiceActive ? '馃帳 鑱嗗惉涓' : (voiceCallActive ? '馃攰 鏈楄涓' : 'Friday AI 鍔╂墜') }}</div>
               <div class="header-status">{{ voiceActive ? '馃帳 姝ｅ湪鍚綘璇磋瘽...' : (voiceCallActive ? '馃攰 鑷姩鏈楄鍥炲' : '鍦ㄧ嚎 路 闅忔椂涓烘偍鏈嶅姟') }}</div>
             </div>
           </div>
@@ -344,7 +344,7 @@ async function toggleVideoCall() {
     // 妯℃嫙杩炴帴锛堢湡瀹炲満鏅渶瑕乄ebRTC淇′护鏈嶅姟鍣級
     setTimeout(() => { videoConnected.value = true }, 2000)
   } catch (e) {
-    alert('鏃犳硶璁块棶鎽勫儚澶?楹﹀厠椋? ' + e.message)
+    alert('鏃犳硶璁块棶鎽勫儚澶楹﹀厠椋? ' + e.message)
   }
 }
 
@@ -544,7 +544,7 @@ const attachments = ref([])
 function onFileSelected(e) {
   const files = Array.from(e.target.files || [])
   for (const file of files) {
-    if (attachments.value.length >= 5) { alert('? ?); break } const reader = new FileReader() reader.onload = (ev) => { let type ='file'
+    if (attachments.value.length >= 5) { alert('' ?); break } const reader = new FileReader() reader.onload = (ev) => { let type ='file'
       if (file.type.startsWith('image/')) type = 'image'
       else if (file.type.startsWith('video/')) type = 'video'
       attachments.value.push({ name: file.name, size: file.size, type, dataUrl: ev.target.result, mimeType: file.type, file })
@@ -572,7 +572,7 @@ function startMatrixRain() {
     canvas.width = parent.clientWidth
     canvas.height = parent.clientHeight
     const ctx = canvas.getContext('2d')
-    const chars = '?????????????????????????01'
+    const chars = ''????????????????????????01'
     const fontSize = 10
     const columns = Math.floor(canvas.width / fontSize)
     const drops = Array(columns).fill(1)
@@ -948,7 +948,7 @@ loadPromptTemplates()
 .slide-up-enter-from { opacity: 0; transform: translateY(20px) scale(0.95); }
 .slide-up-leave-to { opacity: 0; transform: translateY(10px) scale(0.98); }
 
-/* === ?????? === */
+/* === '????? === */
 .header-status.busy { color: #667eea; animation: statusPulse 1.5s ease-in-out infinite; }
 
 /* Processing steps in chat */

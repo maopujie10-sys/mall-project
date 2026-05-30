@@ -105,7 +105,7 @@
             <span class="risk-badge" :class="row.risk.toLowerCase()">{{ row.risk }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="creator" label="鍙戣捣浜? width="100" />
+        <el-table-column prop="creator" label="..." width="100" />
         <el-table-column prop="result" label="缁撴灉" width="90">
           <template #default="{ row }">
             <el-tag :type="row.result === '閫氳繃' ? 'success' : 'danger'" size="small" effect="light">
@@ -113,7 +113,7 @@
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="reviewer" label="瀹℃壒浜? width="100" />
+        <el-table-column prop="reviewer" label="..." width="100" />
         <el-table-column prop="time" label="鏃堕棿" width="100" />
       </el-table>
     </el-card>

@@ -29,7 +29,7 @@
         <el-table :data="commits" stripe size="small" height="500">
           <el-table-column prop="sha" label="SHA" width="90" />
           <el-table-column prop="message" label="鎻愪氦淇℃伅" min-width="300" />
-          <el-table-column prop="author" label="浣滆€? width="120" />
+          <el-table-column prop="author" label="..." width="120" />
           <el-table-column prop="date" label="鏃ユ湡" width="100" />
         </el-table>
       </el-tab-pane>
@@ -39,10 +39,10 @@
         <el-table :data="issues" stripe size="small" height="500">
           <el-table-column type="index" label="#" width="50" />
           <el-table-column prop="title" label="鏍囬" min-width="300" />
-          <el-table-column prop="state" label="鐘舵€? width="80">
+          <el-table-column prop="state" label="..." width="80">
             <template #default="{row}"><el-tag :type="row.state==='open'?'success':'info'" size="small">{{ row.state }}</el-tag></template>
           </el-table-column>
-          <el-table-column prop="user" label="鍒涘缓鑰? width="100" />
+          <el-table-column prop="user" label="..." width="100" />
           <el-table-column prop="created" label="鏃ユ湡" width="100" />
         </el-table>
       </el-tab-pane>
@@ -51,8 +51,8 @@
         <el-table :data="prs" stripe size="small" height="500">
           <el-table-column type="index" label="#" width="50" />
           <el-table-column prop="title" label="鏍囬" min-width="300" />
-          <el-table-column prop="state" label="鐘舵€? width="80" />
-          <el-table-column prop="user" label="鍒涘缓鑰? width="100" />
+          <el-table-column prop="state" label="..." width="80" />
+          <el-table-column prop="user" label="..." width="100" />
           <el-table-column prop="created" label="鏃ユ湡" width="100" />
         </el-table>
       </el-tab-pane>
@@ -60,7 +60,7 @@
       <el-tab-pane name="workflows" label="Actions">
         <el-table :data="workflows" stripe size="small" height="500">
           <el-table-column prop="name" label="宸ヤ綔娴佸悕绉? min-width="250" />
-          <el-table-column prop="state" label="鐘舵€? width="100" />
+          <el-table-column prop="state" label="..." width="100" />
           <el-table-column prop="path" label="璺緞" min-width="200" />
         </el-table>
       </el-tab-pane>
@@ -68,7 +68,7 @@
       <el-tab-pane name="branches" label="鍒嗘敮">
         <el-table :data="branches" stripe size="small" height="500">
           <el-table-column prop="name" label="鍒嗘敮鍚? min-width="200" />
-          <el-table-column prop="sha" label="鏈€鏂版彁浜? width="100" />
+          <el-table-column prop="sha" label="..." width="100" />
         </el-table>
       </el-tab-pane>
     </el-tabs>

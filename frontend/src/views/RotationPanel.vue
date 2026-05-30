@@ -2,7 +2,7 @@
   <div class="page-container">
     <div class="page-header">
       <h2>杞€肩鐞嗙郴缁</h2>
-      <p style="color:var(--text-muted);font-size:13px">浼佷笟绾ц礋杞藉潎琛?路 鏁呴殰鑷姩鍒囨崲 路 澶氱骇鍩熷悕杞€</p>
+      <p style="color:var(--text-muted);font-size:13px">浼佷笟绾ц礋杞藉潎琛路 鏁呴殰鑷姩鍒囨崲 路 澶氱骇鍩熷悕杞€</p>
     </div>
     <el-alert v-if="error" :title="error" type="error" show-icon closable @close="error=null" style="margin-bottom:16px" />
 
@@ -16,7 +16,7 @@
 
     <!-- 鎿嶄綔鏍?-->
     <div style="display:flex;gap:10px;margin-bottom:16px">
-      <el-button type="primary" @click="addDialogVisible=true">锛?娣诲姞鍩熷悕</el-button>
+      <el-button type="primary" @click="addDialogVisible=true">锛娣诲姞鍩熷悕</el-button>
       <el-button @click="refreshDomains" :loading="loading">鍒锋柊鐘舵€</el-button>
       <el-button @click="handleCheckAll" :loading="checkingAll">妫€娴嬪叏閮</el-button>
     </div>
@@ -33,7 +33,7 @@
           </template>
         </el-table-column>
         <el-table-column prop="type" label="绫诲瀷" width="90">
-          <template #default="{row}"><el-tag size="small">{{ row.type||'杞€? }}</el-tag></template>
+          <template #default="{row}"><el-tag size="small">{{ row.type||'杞€' }}</el-tag></template>
         </el-table-column>
         <el-table-column prop="ip" label="瑙ｆ瀽IP" width="140" />
         <el-table-column prop="latency" label="鍝嶅簲" width="80">
@@ -57,7 +57,7 @@
           </template>
         </el-table-column>
       </el-table>
-      <el-empty v-if="domains.length===0&&!loading" description="鏆傛棤鍩熷悕锛岀偣鍑讳笂鏂广€屾坊鍔犲煙鍚嶃€嶅紑濮嬮厤缃? :image-size="80" style="padding:60px 0" />
+      <el-empty v-if="domains.length===0&&!loading" description="鏆傛棤鍩熷悕锛岀偣鍑讳笂鏂广€屾坊鍔犲煙鍚嶃€嶅紑濮嬮厤缃' :image-size="80" style="padding:60px 0" />
     </el-card>
 
     <!-- ===== 浜岀骇杞€奸厤缃?===== -->
@@ -74,7 +74,7 @@
             <div><strong>{{ g.main }}</strong><el-tag size="small" style="margin-left:8px">鏉冮噸 {{ g.weight }}</el-tag></div>
             <div style="display:flex;gap:6px">
               <el-button text size="small" :type="g.enabled!==false?'success':'info'" @click="toggleRotationGroup(g.id)">{{ g.enabled!==false''宸插惎鐢':'宸插仠鐢' }}</el-button>
-              <el-button text size="small" type="primary" @click="showAddSubDomain(g)">锛?瀛愬煙鍚</el-button>
+              <el-button text size="small" type="primary" @click="showAddSubDomain(g)">锛瀛愬煙鍚</el-button>
             </div>
           </div>
           <div v-if="g.children?.length" style="margin-top:8px;padding-left:16px;font-size:13px;color:var(--text-muted)">
@@ -95,8 +95,8 @@
         </el-form-item>
         <el-form-item label="绫诲瀷">
           <el-select v-model="newDomain.type" style="width:100%">
-            <el-option label="涓诲煙鍚? value="涓诲煙鍚? />
-            <el-option label="杞€? value="杞€? />
+            <el-option label="..." value="涓诲煙鍚? />
+            <el-option label="..." value="杞€? />
             <el-option label="CDN鍥剧墖" value="CDN鍥剧墖" />
           </el-select>
         </el-form-item>
@@ -166,7 +166,7 @@ async function fetchDomains() {
       domains.splice(0, domains.length, ...data.map(d => ({
         domain: d.domain || d.host || "",
         ip: d.ip || d.address || "",
-        active: d.active ?? d.status === "ok",
+        active: d.active '? d.status === "ok",
         status: d.status || (d.active ? "ok" : "paused"),
         latency: d.latency ?? 0,
         type: d.type || "杞€?,
@@ -213,7 +213,7 @@ async function handleToggle(row) {
     await toggleDomain(row.domain, !row.active)
     row.active = !row.active
     row.status = row.active ? "ok" : "paused"
-    ElMessage.success(row.active ? "宸叉仮澶? : "宸叉殏鍋?)
+    ElMessage.success(row.active ? "宸叉仮澶' : "宸叉殏鍋?)
   } catch { ElMessage.error("鎿嶄綔澶辫触") }
 }
 
@@ -221,7 +221,7 @@ async function handleCheckOne(row) {
   ElMessage.info(`姝ｅ湪妫€娴?${row.domain}...`)
   try {
     const r = await checkDomain(row.domain)
-    if (r) { row.latency = r.latency ?? row.latency; row.active = r.online ?? row.active }
+    if (r) { row.latency = r.latency '? row.latency; row.active = r.online ?? row.active }
     ElMessage.success(`${row.domain} 妫€娴嬪畬鎴恅)
   } catch { ElMessage.warning("妫€娴嬭姹傚凡鍙戦€?) }
 }

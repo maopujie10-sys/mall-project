@@ -2,7 +2,7 @@
   <div class="page-container">
     <div class="page-header">
       <h2>瀹夊叏璁剧疆</h2>
-      <p>Google 楠岃瘉鍣?路 涓ゆ楠岃瘉</p>
+      <p>Google 楠岃瘉鍣路 涓ゆ楠岃瘉</p>
     </div>
 
     <el-row :gutter="16">
@@ -33,7 +33,7 @@
         <el-card shadow="never">
           <div class="card-title">鐘舵€</div>
           <div style="padding:20px 0;">
-            <el-result :icon="verified?'success':'warning'" :title="verified?'宸插惎鐢?:'鏈惎鐢?" :sub-title="verified?'涓ゆ楠岃瘉宸插紑鍚紝鐧诲綍鏃堕渶瑕佽緭鍏ラ獙璇佺爜':'璐︽埛鏈紑鍚袱姝ラ獙璇佷繚鎶?" />
+            <el-result :icon="verified?'success':'warning'" :title="verified?'宸插惎鐢':'鏈惎鐢?" :sub-title="verified?'涓ゆ楠岃瘉宸插紑鍚紝鐧诲綍鏃堕渶瑕佽緭鍏ラ獙璇佺爜':'璐︽埛鏈紑鍚袱姝ラ獙璇佷繚鎶?" />
           </div>
         </el-card>
       </el-col>
@@ -74,7 +74,7 @@ async function doSetup() {
 }
 
 async function doVerify() {
-  if (!code.value || code.value.length !== 6) { ElMessage.warning('璇疯緭鍏?浣嶉獙璇佺爜'); return }
+  if (!code.value || code.value.length !== 6) { ElMessage.warning('璇疯緭鍏浣嶉獙璇佺爜'); return }
   verifying.value = true
   try {
     await agentApi.post(`/2fa/verify?code=${code.value}`)

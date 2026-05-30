@@ -68,7 +68,7 @@
         <el-table-column prop="target" label="澶囦唤鐩爣" min-width="140" />
         <el-table-column prop="time" label="澶囦唤鏃堕棿" width="150" />
         <el-table-column prop="size" label="澶у皬" width="100" />
-        <el-table-column prop="status" label="鐘舵€? width="90">
+        <el-table-column prop="status" label="..." width="90">
           <template #default="{ row }">
             <el-tag :type="row.status === '鎴愬姛' ? 'success' : 'danger'" size="small" effect="light">
               {{ row.status }}

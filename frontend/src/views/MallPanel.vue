@@ -20,7 +20,7 @@
               <div class="card-hd">
                 <span class="card-tt">閿€鍞秼鍔</span>
                 <span class="chart-tabs">
-                  <span v-for="(t,i) in ['浠婃棩','杩?澶?,'杩?0澶?]" :key="i"
+                  <span v-for="(t,i) in ['浠婃棩','杩澶?,'杩?0澶?]" :key="i"
                     class="ctab" :class="{on:chartR===i}" @click="switchChart(i)">{{t}}</span>
                 </span>
               </div>
@@ -48,7 +48,7 @@
             <el-table-column label="浠锋牸" width="120" align="center">
               <template #default="{row}">楼{{ fmt(row.prizes||row.price) }}</template>
             </el-table-column>
-            <el-table-column label="閿€閲? width="100" align="center">
+            <el-table-column label="..." width="100" align="center">
               <template #default="{row}">{{ fmt(row.sellCount) }}</template>
             </el-table-column>
           </el-table>
@@ -64,10 +64,10 @@
         </div>
         <el-table :data="users" stripe size="small" height="520">
           <el-table-column prop="id" label="ID" width="70" />
-          <el-table-column prop="username" label="鐢ㄦ埛鍚? width="120" />
-          <el-table-column prop="phone" label="鎵嬫満鍙? width="130" />
+          <el-table-column prop="username" label="..." width="120" />
+          <el-table-column prop="phone" label="..." width="130" />
           <el-table-column prop="balance" label="浣欓" width="110" />
-          <el-table-column prop="status" label="鐘舵€? width="90">
+          <el-table-column prop="status" label="..." width="90">
             <template #default="{row}"><el-tag :type="row.status===1?'success':'danger'" size="small">{{ row.status===1?'姝ｅ父':'绂佺敤' }}</el-tag></template>
           </el-table-column>
           <el-table-column label="鎿嶄綔" width="200">
@@ -91,8 +91,8 @@
         <el-table :data="merchants" stripe size="small" height="520">
           <el-table-column prop="id" label="ID" width="70" />
           <el-table-column prop="name" label="鍟嗗鍚嶇О" min-width="150" />
-          <el-table-column prop="phone" label="鎵嬫満鍙? width="130" />
-          <el-table-column prop="status" label="鐘舵€? width="90">
+          <el-table-column prop="phone" label="..." width="130" />
+          <el-table-column prop="status" label="..." width="90">
             <template #default="{row}"><el-tag :type="row.status===1?'success':'danger'" size="small">{{ row.status===1?'姝ｅ父':'绂佺敤' }}</el-tag></template>
           </el-table-column>
           <el-table-column label="鎿嶄綔" width="120">
@@ -115,7 +115,7 @@
           <el-table-column prop="id" label="ID" width="70" />
           <el-table-column prop="name" label="鍟嗗搧鍚嶇О" min-width="180" />
           <el-table-column prop="price" label="浠锋牸" width="100" />
-          <el-table-column prop="status" label="鐘舵€? width="90">
+          <el-table-column prop="status" label="..." width="90">
             <template #default="{row}"><el-tag :type="row.status===1?'success':row.status===0?'warning':'info'" size="small">{{ statTxt(row.status) }}</el-tag></template>
           </el-table-column>
           <el-table-column label="鎿嶄綔" width="160">
@@ -137,9 +137,9 @@
         </div>
         <el-table :data="orders" stripe size="small" height="520">
           <el-table-column prop="id" label="ID" width="70" />
-          <el-table-column prop="orderNo" label="璁㈠崟鍙? width="180" />
+          <el-table-column prop="orderNo" label="..." width="180" />
           <el-table-column prop="amount" label="閲戦" width="100" />
-          <el-table-column prop="status" label="鐘舵€? width="90">
+          <el-table-column prop="status" label="..." width="90">
             <template #default="{row}"><el-tag size="small">{{ row.status }}</el-tag></template>
           </el-table-column>
           <el-table-column prop="createTime" label="鏃堕棿" width="160" />
@@ -157,7 +157,7 @@
         <template #label><el-icon><Wallet /></el-icon> 鍏呭€煎鏍?<el-badge :value="recPending" :hidden="!recPending" /></template>
         <el-table :data="recharges" stripe size="small" height="560">
           <el-table-column prop="id" label="ID" width="70" />
-          <el-table-column prop="orderNo" label="璁㈠崟鍙? width="180" />
+          <el-table-column prop="orderNo" label="..." width="180" />
           <el-table-column prop="amount" label="閲戦" width="100" />
           <el-table-column prop="userId" label="鐢ㄦ埛ID" width="80" />
           <el-table-column prop="createTime" label="鏃堕棿" width="160" />
@@ -175,7 +175,7 @@
         <template #label><el-icon><Money /></el-icon> 鎻愮幇瀹℃牳 <el-badge :value="witPending" :hidden="!witPending" /></template>
         <el-table :data="withdraws" stripe size="small" height="560">
           <el-table-column prop="id" label="ID" width="70" />
-          <el-table-column prop="orderNo" label="璁㈠崟鍙? width="180" />
+          <el-table-column prop="orderNo" label="..." width="180" />
           <el-table-column prop="amount" label="閲戦" width="100" />
           <el-table-column prop="userId" label="鐢ㄦ埛ID" width="80" />
           <el-table-column prop="createTime" label="鏃堕棿" width="160" />
@@ -219,7 +219,7 @@
         <template #label><el-icon><Grid /></el-icon> 鍒嗙被绠＄悊</template>
         <div class="tb-bar">
           <el-select v-model="catLevel" placeholder="灞傜骇" style="width:100px" clearable @change="fetchCategories">
-            <el-option label="涓€绾? :value="1" /><el-option label="浜岀骇" :value="2" />
+            <el-option label="涓€绾' :value="1" /><el-option label="浜岀骇" :value="2" />
           </el-select>
           <el-button type="primary" @click="fetchCategories">鍒锋柊</el-button>
           <el-button type="success" @click="showCatDlg()">鏂板鍒嗙被</el-button>
@@ -229,7 +229,7 @@
           <el-table-column prop="name" label="鍚嶇О" min-width="150" />
           <el-table-column prop="sort" label="鎺掑簭" width="70" />
           <el-table-column prop="level" label="灞傜骇" width="70" />
-          <el-table-column prop="status" label="鐘舵€? width="80">
+          <el-table-column prop="status" label="..." width="80">
             <template #default="{row}"><el-tag :type="row.status===1?'success':'danger'" size="small">{{ row.status===1?'鍚敤':'绂佺敤' }}</el-tag></template>
           </el-table-column>
           <el-table-column label="鎿嶄綔" width="220">
@@ -248,7 +248,7 @@
         <template #label><el-icon><Star /></el-icon> 璇勪环绠＄悊</template>
         <div class="tb-bar">
           <el-input v-model="evalKw" placeholder="鎼滅储璇勪环" style="width:220px" clearable @clear="fetchEvaluations" @keyup.enter="fetchEvaluations" />
-          <el-select v-model="evalStatus" placeholder="鐘舵€? style="width:100px" clearable @change="fetchEvaluations">
+          <el-select v-model="evalStatus" placeholder="..." style="width:100px" clearable @change="fetchEvaluations">
             <el-option label="鏄剧ず" :value="1" /><el-option label="闅愯棌" :value="0" />
           </el-select>
           <el-button type="primary" @click="fetchEvaluations">鎼滅储</el-button>
@@ -260,7 +260,7 @@
           <el-table-column prop="rating" label="璇勫垎" width="70">
             <template #default="{row}">{{ '鈽?.repeat(row.rating||0) }}</template>
           </el-table-column>
-          <el-table-column prop="status" label="鐘舵€? width="80">
+          <el-table-column prop="status" label="..." width="80">
             <template #default="{row}"><el-tag :type="row.status===1?'success':'info'" size="small">{{ row.status===1?'鏄剧ず':'闅愯棌' }}</el-tag></template>
           </el-table-column>
           <el-table-column prop="createTime" label="鏃堕棿" width="160" />
@@ -333,8 +333,8 @@
     <el-dialog v-model="applyDlg.show" title="鍏ラ┗鐢宠瀹℃牳" width="500px">
       <el-table :data="applies" stripe size="small" height="400">
         <el-table-column prop="id" label="ID" width="60" />
-        <el-table-column prop="name" label="鍟嗗鍚? width="120" />
-        <el-table-column prop="phone" label="鎵嬫満鍙? width="130" />
+        <el-table-column prop="name" label="..." width="120" />
+        <el-table-column prop="phone" label="..." width="130" />
         <el-table-column label="鎿嶄綔" width="140">
           <template #default="{row}">
             <el-button size="small" type="success" @click="auditApply(row,true)">閫氳繃</el-button>
@@ -370,7 +370,7 @@
     </el-dialog>
 
     <!-- 灞炴€у垎绫荤紪杈戝脊绐?-->
-    <el-dialog v-model="attrCatDlg.show" :title="attrCatDlg.uuid?'缂栬緫灞炴€у垎绫?:'鏂板灞炴€у垎绫?" width="400px">
+    <el-dialog v-model="attrCatDlg.show" :title="attrCatDlg.uuid?'缂栬緫灞炴€у垎绫':'鏂板灞炴€у垎绫?" width="400px">
       <el-form label-width="80px">
         <el-form-item label="鍚嶇О"><el-input v-model="attrCatDlg.name" /></el-form-item>
         <el-form-item label="鎺掑簭"><el-input-number v-model="attrCatDlg.sort" :min="0" /></el-form-item>
@@ -379,7 +379,7 @@
     </el-dialog>
 
     <!-- 灞炴€х紪杈戝脊绐?-->
-    <el-dialog v-model="attrDlg.show" :title="attrDlg.uuid?'缂栬緫灞炴€?:'鏂板灞炴€?" width="400px">
+    <el-dialog v-model="attrDlg.show" :title="attrDlg.uuid?'缂栬緫灞炴€':'鏂板灞炴€?" width="400px">
       <el-form label-width="100px">
         <el-form-item label="灞炴€у垎绫籌D"><el-input v-model="attrDlg.categoryId" /></el-form-item>
         <el-form-item label="鎺掑簭"><el-input-number v-model="attrDlg.sort" :min="0" /></el-form-item>
@@ -454,7 +454,7 @@ function fmt(v) {
   const n = Number(v)
   return Number.isNaN(n) ? String(v) : n.toLocaleString('en-US',{maximumFractionDigits:2})
 }
-function statTxt(s) { return s===1?'涓婃灦':s===0?'寰呭':'涓嬫灦'} // ===== ?===== async function loadDashboard() { try { const d = await getDashboard() if (d) { kpis[0].value = d.total_users ?? d.totalUsers ?? 0 kpis[1].value = d.today_orders ?? d.todayOrders ?? 0 kpis[2].value = d.today_amount ?? d.todayAmount ?? 0 kpis[3].value = (d.pending_recharge||0) + (d.pending_withdraw||0) + (d.pending_merchant||0) orderStats[0].v = d.total_orders ?? 0 } } catch(_){} try { const g = await getDashboardGoods() if (g?.goods) topGoods.value = g.goods.slice(0,10) } catch(_){} try { const l = await getDashboardLine({type:chartR.value}) if (l?.line) { chartData.comm = l.line.map(x=>x.dayString||'')
+function statTxt(s) { return s===1?'涓婃灦':s===0?'寰呭':'涓嬫灦'} // ===== ?===== async function loadDashboard() { try { const d = await getDashboard() if (d) { kpis[0].value = d.total_users '? d.totalUsers ?? 0 kpis[1].value = d.today_orders ?? d.todayOrders ?? 0 kpis[2].value = d.today_amount ?? d.todayAmount ?? 0 kpis[3].value = (d.pending_recharge||0) + (d.pending_withdraw||0) + (d.pending_merchant||0) orderStats[0].v = d.total_orders ?? 0 } } catch(_){} try { const g = await getDashboardGoods() if (g?.goods) topGoods.value = g.goods.slice(0,10) } catch(_){} try { const l = await getDashboardLine({type:chartR.value}) if (l?.line) { chartData.comm = l.line.map(x=>x.dayString||'')
       chartData.s = l.line.map(x=>x.countSales||0)
     }
   } catch(_){}
@@ -523,7 +523,7 @@ async function fetchProducts() {
 async function auditProd(row, status) {
   try {
     await auditProduct({productId:row.id,status})
-    ElMessage.success(status===1?'宸蹭笂鏋?:'?); fetchProducts() } catch(e) { ElMessage.error(e.message) } } // ===== ===== async function fetchOrders() { try { const d = await getOrderList({keyword:orderKw.value,page:orderPg.value,size:10}) if (d?.records) { orders.value = d.records; orderTotal.value = d.total||0 } else if (Array.isArray(d)) { orders.value = d; orderTotal.value = d.length } } catch(_){} } async function doRefund(row) { try { await ElMessageBox.confirm(` ?${row.orderNo||row.id} ,'閫€娆剧‘璁?,{type:'warning'})
+    ElMessage.success(status===1?'宸蹭笂鏋':'?); fetchProducts() } catch(e) { ElMessage.error(e.message) } } // ===== ===== async function fetchOrders() { try { const d = await getOrderList({keyword:orderKw.value,page:orderPg.value,size:10}) if (d?.records) { orders.value = d.records; orderTotal.value = d.total||0 } else if (Array.isArray(d)) { orders.value = d; orderTotal.value = d.length } } catch(_){} } async function doRefund(row) { try { await ElMessageBox.confirm(` ?${row.orderNo||row.id} ,'閫€娆剧‘璁?,{type:'warning'})
     await forceRefund(row.id)
     ElMessage.success('宸查€€娆?); fetchOrders()
   } catch(_){}
