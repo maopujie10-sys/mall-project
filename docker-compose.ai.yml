@@ -10,6 +10,8 @@ services:
     container_name: mall-ai-agent
     network_mode: host
     env_file: .env
+    environment:
+      - BACKUP_DIR=/app/backups
     volumes:
       - ./backups:/app/backups
       - ./logs:/app/logs
