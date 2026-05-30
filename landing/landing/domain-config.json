@@ -1,0 +1,100 @@
+{
+  "groups": [
+    {
+      "main": "tiktook.eu.cc",
+      "enabled": true,
+      "children": [
+        "www.tiktook.eu.cc",
+        "shop.tiktook.eu.cc",
+        "mall.tiktook.eu.cc",
+        "store.tiktook.eu.cc"
+      ]
+    },
+    {
+      "main": "chxhx.eu.cc",
+      "enabled": true,
+      "children": [
+        "www.chxhx.eu.cc",
+        "shop.chxhx.eu.cc",
+        "mall.chxhx.eu.cc",
+        "store.chxhx.eu.cc"
+      ]
+    },
+    {
+      "main": "drrgr.eu.cc",
+      "enabled": true,
+      "children": [
+        "www.drrgr.eu.cc",
+        "shop.drrgr.eu.cc",
+        "mall.drrgr.eu.cc",
+        "store.drrgr.eu.cc"
+      ]
+    },
+    {
+      "main": "drrimrf.eu.cc",
+      "enabled": true,
+      "children": [
+        "www.drrimrf.eu.cc",
+        "shop.drrimrf.eu.cc",
+        "mall.drrimrf.eu.cc",
+        "store.drrimrf.eu.cc"
+      ]
+    },
+    {
+      "main": "drriiu.eu.cc",
+      "enabled": true,
+      "children": [
+        "www.drriiu.eu.cc",
+        "shop.drriiu.eu.cc",
+        "mall.drriiu.eu.cc",
+        "store.drriiu.eu.cc"
+      ]
+    },
+    {
+      "main": "duomi.eu.cc",
+      "enabled": true,
+      "children": [
+        "www.duomi.eu.cc",
+        "shop.duomi.eu.cc",
+        "mall.duomi.eu.cc",
+        "store.duomi.eu.cc"
+      ]
+    },
+    {
+      "main": "dengruihan.eu.cc",
+      "enabled": true,
+      "children": [
+        "www.dengruihan.eu.cc",
+        "shop.dengruihan.eu.cc",
+        "mall.dengruihan.eu.cc",
+        "store.dengruihan.eu.cc"
+      ]
+    },
+    {
+      "main": "yyawzx.eu.cc",
+      "enabled": true,
+      "children": [
+        "www.yyawzx.eu.cc",
+        "shop.yyawzx.eu.cc",
+        "mall.yyawzx.eu.cc",
+        "store.yyawzx.eu.cc"
+      ]
+    },
+    {
+      "main": "gamed.eu.cc",
+      "enabled": true,
+      "children": [
+        "www.gamed.eu.cc",
+        "shop.gamed.eu.cc",
+        "mall.gamed.eu.cc",
+        "store.gamed.eu.cc"
+      ]
+    }
+  ],
+  "settings": {
+    "healthCheckTimeout": 5000,
+    "switchOnFail": true,
+    "retryDeadAfter": 600000,
+    "stickyGroup": false
+  }
+}

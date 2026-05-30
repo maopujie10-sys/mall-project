@@ -1,0 +1,72 @@
+[
+  {
+    "id": "seo-optimizer",
+    "name": "🔍 SEO优化器",
+    "version": "1.0.0",
+    "desc": "自动分析商品页面SEO，生成标题/描述/关键词优化建议，提升搜索排名",
+    "author": "Friday官方",
+    "category": "商城",
+    "tags": [
+      "seo",
+      "optimize",
+      "rank"
+    ],
+    "path": "SEO优化器"
+  },
+  {
+    "id": "price-monitor",
+    "name": "📊 竞品价格监控",
+    "version": "1.1.0",
+    "desc": "自动采集竞品价格变动，价格异常时推送微信/邮件告警",
+    "author": "Friday官方",
+    "category": "商城",
+    "tags": [
+      "price",
+      "monitor",
+      "alert"
+    ],
+    "path": "竞品价格监控"
+  },
+  {
+    "id": "daily-report",
+    "name": "📋 日报自动生成",
+    "version": "1.0.0",
+    "desc": "每日自动生成运营日报，汇总订单/收入/流量/异常，支持推送微信",
+    "author": "Friday官方",
+    "category": "自动化",
+    "tags": [
+      "report",
+      "daily",
+      "wechat"
+    ],
+    "path": "日报自动生成"
+  },
+  {
+    "id": "stock-alert",
+    "name": "📦 库存自动预警",
+    "version": "1.0.0",
+    "desc": "监控商品库存，低于阈值自动推送告警，支持批量设置预警规则",
+    "author": "Friday官方",
+    "category": "商城",
+    "tags": [
+      "stock",
+      "alert",
+      "inventory"
+    ],
+    "path": "库存预警"
+  },
+  {
+    "id": "watermark-tool",
+    "name": "🖼️ 批量水印工具",
+    "version": "1.0.0",
+    "desc": "批量给商品图片添加 Logo/文字水印，支持位置/透明度/大小自定义",
+    "author": "Friday官方",
+    "category": "工具",
+    "tags": [
+      "watermark",
+      "image",
+      "batch"
+    ],
+    "path": "批量水印"
+  }
+]

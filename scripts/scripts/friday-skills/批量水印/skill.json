@@ -1,0 +1,18 @@
+{
+  "id": "watermark-tool",
+  "name": "🖼️ 批量水印工具",
+  "version": "1.0.0",
+  "desc": "批量给商品图片添加 Logo/文字水印，支持位置/透明度/大小自定义",
+  "author": "Friday官方",
+  "category": "工具",
+  "tags": [
+    "watermark",
+    "image",
+    "batch"
+  ],
+  "entry": "main.py",
+  "dependencies": [
+    "Pillow"
+  ],
+  "readme": "安装后在AI对话输入「加水印 [商品ID] [位置]」"
+}

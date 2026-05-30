@@ -1,7 +1,7 @@
 """
-Friday AI 本地智能Agent v2.0 — 人类级电脑操控
-能力: 视觉理解 · 智能定位 · 任务拆解 · 自纠错 · 多应用操控
-用法: pip install websockets pyautogui pillow psutil playwright pytesseract opencv-python
+Friday AI Agent v2.0 — 
+:  ·  ·  ·  · 
+: pip install websockets pyautogui pillow psutil playwright pytesseract opencv-python
       playwright install chromium
       python friday_agent.py
 """
@@ -10,65 +10,65 @@ from pathlib import Path
 from datetime import datetime
 import socket
 
-# ===== 配置 =====
+# =====  =====
 SERVER = os.getenv("FRIDAY_SERVER", "wss://tiktook.eu.cc/agent/advanced/remote/ws")
 CLIENT_ID = socket.gethostname()
-VISION_ENABLED = True  # 是否启用视觉理解
-# ===== 本地零Token命令解析 =====
+VISION_ENABLED = True  # 
+# ===== Token =====
 LOCAL_COMMANDS = {
-    # 截图类
-    "截图": "screenshot", "截屏": "screenshot", "屏幕截图": "screenshot",
-    # 系统操作
-    "锁屏": "lock", "睡眠": "sleep_pc", "关机": "shutdown", "重启": "restart",
-    "音量加": "volume_up", "音量减": "volume_down", "静音": "mute",
-    "亮度加": "brightness_up", "亮度减": "brightness_down",
-    # 快捷键
-    "复制": "copy", "粘贴": "paste", "全选": "select_all", "撤销": "undo",
-    "保存": "save", "剪切": "cut",
-    # 窗口
-    "关闭窗口": "close_window", "切换窗口": "switch_window",
-    "最小化": "minimize", "最大化": "maximize",
-    # 应用
-    "打开记事本": ("open_app", "notepad"),
-    "打开计算器": ("open_app", "calc"),
-    "打开画图": ("open_app", "mspaint"),
-    "打开浏览器": ("open_app", "chrome"),
-    "打开任务管理器": ("open_app", "taskmgr"),
-    "打开cmd": ("open_app", "cmd"),
-    "打开终端": ("open_app", "cmd"),
-    # 信息
-    "现在几点": "get_time", "几点了": "get_time",
-    "今天几号": "get_date", "什么日期": "get_date",
-    "CPU使用率": "get_cpu", "内存使用": "get_memory", "磁盘空间": "get_disk",
+    # 
+    "": "screenshot", "": "screenshot", "": "screenshot",
+    # 
+    "": "lock", "": "sleep_pc", "": "shutdown", "": "restart",
+    "": "volume_up", "": "volume_down", "": "mute",
+    "": "brightness_up", "": "brightness_down",
+    # 
+    "": "copy", "": "paste", "": "select_all", "": "undo",
+    "": "save", "": "cut",
+    # 
+    "": "close_window", "": "switch_window",
+    "": "minimize", "": "maximize",
+    # 
+    "": ("open_app", "notepad"),
+    "": ("open_app", "calc"),
+    "": ("open_app", "mspaint"),
+    "": ("open_app", "chrome"),
+    "": ("open_app", "taskmgr"),
+    "cmd": ("open_app", "cmd"),
+    "": ("open_app", "cmd"),
+    # 
+    "": "get_time", "": "get_time",
+    "": "get_date", "": "get_date",
+    "CPU": "get_cpu", "": "get_memory", "": "get_disk",
 }
 
 def parse_local_command(text):
-    """解析自然语言指令，匹配本地命令。返回(action, params)或None"""
+    """。(action, params)None"""
     text_lower = text.strip().lower()
-    # 精确匹配
+    # 
     for keyword, action in LOCAL_COMMANDS.items():
         if keyword in text_lower or keyword in text:
             if isinstance(action, tuple):
                 return action[0], {"name": action[1]}
             return action, {}
     
-    # 模式匹配: "打开XXX" -> 尝试打开任意应用
+    # : "XXX" -> 
     import re
-    open_match = re.match(r'打开s*(.+)', text)
+    open_match = re.match(r's*(.+)', text)
     if open_match:
         app_name = open_match.group(1).strip()
         return "open_app", {"name": app_name}
     
-    # 模式匹配: "输入XXX" / "打字XXX"
-    type_match = re.match(r'(?:输入|打字|写)s*(.+)', text)
+    # : "XXX" / "XXX"
+    type_match = re.match(r'(?:||)s*(.+)', text)
     if type_match:
         return "type_text", {"text": type_match.group(1).strip()}
     
-    # 模式匹配: "按XXX键" / "按XXX"
-    key_match = re.match(r'按s*(.+?)(?:键)?$', text)
+    # : "XXX" / "XXX"
+    key_match = re.match(r's*(.+?)(?:)?$', text)
     if key_match:
-        key_map = {"回车": "enter", "空格": "space", "删除": "backspace", "退格": "backspace",
-                   "上": "up", "下": "down", "左": "left", "右": "right",
+        key_map = {"": "enter", "": "space", "": "backspace", "": "backspace",
+                   "": "up", "": "down", "": "left", "": "right",
                    "ESC": "escape", "Tab": "tab", "Win": "win", "F5": "f5"}
         key = key_match.group(1).strip()
         return "press_key", {"key": key_map.get(key, key)}
@@ -76,7 +76,7 @@ def parse_local_command(text):
     return None
 
 async def execute_local_command(action, params):
-    """执行本地零Token命令（不经过服务器AI）"""
+    """TokenAI"""
     import pyautogui, time
     
     if action == "screenshot":
@@ -166,7 +166,7 @@ async def execute_local_command(action, params):
         return {"ok": True, "disk": f"{psutil.disk_usage('/').percent}%"}
     
     elif action in ("brightness_up","brightness_down"):
-        # Windows亮度
+        # Windows
         if os.name == 'nt':
             import screen_brightness_control as sbc
             try:
@@ -175,15 +175,15 @@ async def execute_local_command(action, params):
                 sbc.set_brightness(new)
                 return {"ok": True, "brightness": new}
             except: pass
-        return {"ok": False, "error": "亮度调节需要安装 screen-brightness-control"}
+        return {"ok": False, "error": " screen-brightness-control"}
     
-    return {"ok": False, "error": f"未知本地命令: {action}"}
+    return {"ok": False, "error": f": {action}"}
 
-（截图发给服务器AI分析）
+AI
 
-# ===== 截图 =====
+# =====  =====
 def screenshot_to_base64():
-    """截取全屏 → base64"""
+    """ → base64"""
     try:
         from PIL import ImageGrab
         img = ImageGrab.grab()
@@ -193,28 +193,28 @@ def screenshot_to_base64():
     except Exception as e:
         return None
 
-# ===== 智能元素定位 =====
+# =====  =====
 def find_element(description, screenshot_b64=None):
     """
-    智能查找屏幕元素，支持多种方式：
-    - "坐标:500,400" → 直接返回坐标
-    - "文本:登录" → OCR查找包含"登录"的文字位置
-    - "图片:button.png" → 图像模板匹配
-    - "区域:左上角" → 返回预设区域坐标
-    返回 {"x":int, "y":int, "method":str} 或 None
+    
+    - ":500,400" → 
+    - ":" → OCR""
+    - ":button.png" → 
+    - ":" → 
+     {"x":int, "y":int, "method":str}  None
     """
     if not description:
         return None
     
     desc = str(description).strip()
     
-    # 方式1: 直接坐标
-    coord_match = re.match(r'坐标[:：]\s*(\d+)\s*[,，]\s*(\d+)', desc)
+    # 1: 
+    coord_match = re.match(r'[:]\s*(\d+)\s*[,]\s*(\d+)', desc)
     if coord_match:
         return {"x": int(coord_match.group(1)), "y": int(coord_match.group(2)), "method": "coordinate"}
     
-    # 方式2: OCR文字查找
-    text_match = re.match(r'文本[:：]\s*(.+)', desc)
+    # 2: OCR
+    text_match = re.match(r'[:]\s*(.+)', desc)
     if text_match:
         target_text = text_match.group(1).strip()
         try:
@@ -225,22 +225,22 @@ def find_element(description, screenshot_b64=None):
             
             img = ImageGrab.grab()
             img_np = np.array(img)
-            # OCR获取所有文字位置
+            # OCR
             data = pytesseract.image_to_data(img_np, lang='chi_sim+eng', output_type=pytesseract.Output.DICT)
             for i, text in enumerate(data['text']):
                 if target_text in text:
                     x = data['left'][i] + data['width'][i] // 2
                     y = data['top'][i] + data['height'][i] // 2
-                    if data['conf'][i] > 30:  # 置信度>30%
+                    if data['conf'][i] > 30:  # >30%
                         return {"x": x, "y": y, "method": f"ocr:{text}", "confidence": data['conf'][i]}
         except ImportError:
-            pass  # OCR不可用，降级
+            pass  # OCR
         except Exception:
             pass
-        return None  # 找不到文字
+        return None  # 
     
-    # 方式3: 图像模板匹配
-    img_match = re.match(r'图片[:：]\s*(.+)', desc)
+    # 3: 
+    img_match = re.match(r'[:]\s*(.+)', desc)
     if img_match:
         template_path = img_match.group(1).strip()
         try:
@@ -253,13 +253,13 @@ def find_element(description, screenshot_b64=None):
             pass
         return None
     
-    # 方式4: 语义区域
+    # 4: 
     area_map = {
-        "左上角": (100, 100), "右上角": (1820, 100),
-        "左下角": (100, 980), "右下角": (1820, 980),
-        "屏幕中央": (960, 540), "开始菜单": (50, 1030),
-        "任务栏": (960, 1050), "桌面中心": (960, 540),
-        "关闭按钮": (1880, 10), "最小化": (1840, 10),
+        "": (100, 100), "": (1820, 100),
+        "": (100, 980), "": (1820, 980),
+        "": (960, 540), "": (50, 1030),
+        "": (960, 1050), "": (960, 540),
+        "": (1880, 10), "": (1840, 10),
     }
     for area_name, (ax, ay) in area_map.items():
         if area_name in desc:
@@ -267,16 +267,16 @@ def find_element(description, screenshot_b64=None):
     
     return None
 
-# ===== 动作执行 =====
+# =====  =====
 async def execute_action(action, params, ws=None):
-    """执行单个操控动作，返回结果"""
+    """"""
     try:
         if action == "screenshot":
             b64 = screenshot_to_base64()
             return {"ok": True, "screenshot": b64, "action": action}
         
         elif action == "click":
-            # 智能定位优先
+            # 
             target_desc = params.get("target", "")
             pos = find_element(target_desc) if target_desc else None
             
@@ -285,14 +285,14 @@ async def execute_action(action, params, ws=None):
             elif "x" in params and "y" in params:
                 x, y = params["x"], params["y"]
             else:
-                return {"ok": False, "error": "需要坐标或元素描述", "action": action}
+                return {"ok": False, "error": "", "action": action}
             
             import pyautogui
-            pyautogui.moveTo(x, y, duration=0.3)  # 人类化移动
+            pyautogui.moveTo(x, y, duration=0.3)  # 
             time.sleep(0.1)
             pyautogui.click()
             result = {"ok": True, "action": action, "clicked": [x, y], "method": pos["method"] if pos else "coordinate"}
-            # 点击后自动截图验证
+            # 
             if VISION_ENABLED:
                 result["screenshot_after"] = screenshot_to_base64()
             return result
@@ -317,19 +317,19 @@ async def execute_action(action, params, ws=None):
         
         elif action == "type_text":
             text = params.get("text", "")
-            # 支持中文输入
+            # 
             import pyautogui, pyperclip
             try:
                 pyperclip.copy(text)
                 pyautogui.hotkey('ctrl', 'v')
             except ImportError:
-                pyautogui.write(text, interval=0.05)  # 人类化打字速度
+                pyautogui.write(text, interval=0.05)  # 
             return {"ok": True, "action": action, "typed": text[:50]}
         
         elif action == "press_key":
             key = params.get("key", "")
             import pyautogui
-            # 支持组合键
+            # 
             if "+" in key:
                 keys = [k.strip() for k in key.split("+")]
                 pyautogui.hotkey(*keys)
@@ -360,7 +360,7 @@ async def execute_action(action, params, ws=None):
             return {"ok": True, "action": action, "dragged": [x1,y1,x2,y2]}
         
         elif action == "wait":
-            seconds = min(params.get("seconds", 1), 30)  # 最多等30秒
+            seconds = min(params.get("seconds", 1), 30)  # 30
             await asyncio.sleep(seconds)
             return {"ok": True, "action": action, "waited": seconds}
         
@@ -382,7 +382,7 @@ async def execute_action(action, params, ws=None):
                 subprocess.Popen(app, shell=True)
             else:
                 subprocess.Popen([app])
-            await asyncio.sleep(1.5)  # 等应用启动
+            await asyncio.sleep(1.5)  # 
             result = {"ok": True, "action": action, "opened": app}
             if VISION_ENABLED:
                 result["screenshot_after"] = screenshot_to_base64()
@@ -424,14 +424,14 @@ async def execute_action(action, params, ws=None):
             return {"ok": True, "action": action}
         
         elif action == "browser_task":
-            # 委托给Playwright执行
+            # Playwright
             command = params.get("command", "")
             try:
                 from playwright.async_api import async_playwright
                 async with async_playwright() as p:
                     browser = await p.chromium.launch(headless=False)
                     page = await browser.new_page()
-                    # 简化版：让AI先拆步骤
+                    # AI
                     await page.goto("https://www.google.com")
                     await page.fill('textarea[name="q"]', command)
                     await page.press('textarea[name="q"]', "Enter")
@@ -440,57 +440,57 @@ async def execute_action(action, params, ws=None):
                     await browser.close()
                     return {"ok": True, "action": action, "result": text[:2000]}
             except ImportError:
-                return {"ok": False, "error": "Playwright未安装", "action": action}
+                return {"ok": False, "error": "Playwright", "action": action}
         
         else:
-            return {"ok": False, "error": f"未知操作: {action}", "action": action}
+            return {"ok": False, "error": f": {action}", "action": action}
     
     except Exception as e:
         return {"ok": False, "error": str(e), "action": action}
 
-# ===== 主循环 =====
+# =====  =====
 async def main():
     import websockets
     print(f"\n{'='*60}")
-    print(f"  Friday AI 本地 Agent v2.0")
-    print(f"  客户端ID: {CLIENT_ID}")
-    print(f"  服务器:   {SERVER}")
-    print(f"  视觉理解: {'✅ 启用' if VISION_ENABLED else '❌ 关闭'}")
+    print(f"  Friday AI  Agent v2.0")
+    print(f"  ID: {CLIENT_ID}")
+    print(f"  :   {SERVER}")
+    print(f"  : {'✅ ' if VISION_ENABLED else '❌ '}")
     print(f"{'='*60}\n")
     
-    # 检查依赖
+    # 
     deps_ok = True
     try:
         import pyautogui
         print(f"  ✅ pyautogui {pyautogui.__version__ if hasattr(pyautogui,'__version__') else 'OK'}")
     except ImportError:
-        print(f"  ❌ pyautogui 未安装")
+        print(f"  ❌ pyautogui ")
         deps_ok = False
     try:
         import PIL
         print(f"  ✅ Pillow OK")
     except ImportError:
-        print(f"  ❌ Pillow 未安装")
+        print(f"  ❌ Pillow ")
         deps_ok = False
     try:
         import pytesseract
-        print(f"  ✅ pytesseract OK (文字识别)")
+        print(f"  ✅ pytesseract OK ()")
     except ImportError:
-        print(f"  ⚠️  pytesseract 未安装 (文字查找降级)")
+        print(f"  ⚠️  pytesseract  ()")
     try:
         import cv2
-        print(f"  ✅ OpenCV OK (图像匹配)")
+        print(f"  ✅ OpenCV OK ()")
     except ImportError:
-        print(f"  ⚠️  OpenCV 未安装 (图像匹配降级)")
+        print(f"  ⚠️  OpenCV  ()")
     
     if not deps_ok:
-        print(f"\n  请安装缺失依赖: pip install pyautogui pillow\n")
+        print(f"\n  : pip install pyautogui pillow\n")
     
     while True:
         try:
-            print(f"[连接] 正在连接 {SERVER} ...")
+            print(f"[]  {SERVER} ...")
             async with websockets.connect(SERVER, ping_interval=20, ping_timeout=10) as ws:
-                # 注册
+                # 
                 await ws.send(json.dumps({
                     "type": "register",
                     "client_id": CLIENT_ID,
@@ -498,9 +498,9 @@ async def main():
                     "version": "2.0",
                     "capabilities": ["screenshot", "click", "type", "scroll", "ocr", "vision"]
                 }))
-                print(f"[注册] ✅ 已注册到服务器")
+                print(f"[] ✅ ")
                 
-                # 心跳
+                # 
                 async def heartbeat():
                     while True:
                         await asyncio.sleep(25)
@@ -510,7 +510,7 @@ async def main():
                             break
                 asyncio.create_task(heartbeat())
                 
-                # 指令循环
+                # 
                 async for msg in ws:
                     data = json.loads(msg)
                     msg_type = data.get("type", "")
@@ -519,20 +519,20 @@ async def main():
                         action = data.get("action", "")
                         params = data.get("params", {})
                         task_id = data.get("task_id", "")
-                        print(f"\n[执行] {action} | {str(params)[:80]}")
+                        print(f"\n[] {action} | {str(params)[:80]}")
                         
-                        # 先检查本地命令（零Token，不花钱）
+                        # Token
                         local_result = parse_local_command(action) if not params or not any(params.values()) else None
                         if local_result:
                             local_action, local_params = local_result
                             result = await execute_local_command(local_action, local_params)
                             await ws.send(json.dumps({"type":"result","task_id":task_id,"action":action,"ok":result.get("ok",False),"data":result,"screenshot":result.get("screenshot"),"local":True},ensure_ascii=False))
-                            print(f"[本地零Token] {action} -> {local_action} \u2705")
+                            print(f"[Token] {action} -> {local_action} \u2705")
                             continue
                         
                         result = await execute_action(action, params, ws)
                         
-                        # 返回结果
+                        # 
                         response = {
                             "type": "result",
                             "task_id": task_id,
@@ -545,10 +545,10 @@ async def main():
                         await ws.send(json.dumps(response, ensure_ascii=False))
                         
                         status = "✅" if result.get("ok") else "❌"
-                        print(f"[结果] {status} {str(result)[:120]}")
+                        print(f"[] {status} {str(result)[:120]}")
                     
                     elif msg_type == "vision_request":
-                        # 服务器请求截图用于AI视觉分析
+                        # AI
                         shot = screenshot_to_base64()
                         await ws.send(json.dumps({
                             "type": "vision_response",
@@ -557,30 +557,30 @@ async def main():
                         }))
                     
                     elif msg_type == "pong":
-                        pass  # 心跳响应
+                        pass  # 
                     
                     elif msg_type == "registered":
-                        print(f"[服务器] {data.get('message', 'OK')}")
+                        print(f"[] {data.get('message', 'OK')}")
                     
                     else:
-                        print(f"[未知消息] {msg_type}")
+                        print(f"[] {msg_type}")
                     
                     elif msg_type == "nl_command":
-                        # 自然语言指令 -> 先尝试本地解析（零Token）
+                        #  -> Token
                         text = data.get("text","")
                         local_result = parse_local_command(text)
                         if local_result:
                             local_action, local_params = local_result
                             result = await execute_local_command(local_action, local_params)
                             await ws.send(json.dumps({"type":"nl_result","original":text,"action":local_action,"ok":result.get("ok",False),"data":result,"screenshot":result.get("screenshot"),"local":True,"zero_token":True},ensure_ascii=False))
-                            print(f"[NL本地] \"{text}\" -> {local_action} ✅ (零Token)")
+                            print(f"[NL] \"{text}\" -> {local_action} ✅ (Token)")
                         else:
-                            await ws.send(json.dumps({"type":"nl_result","original":text,"local":False,"message":"需要AI处理"},ensure_ascii=False))
+                            await ws.send(json.dumps({"type":"nl_result","original":text,"local":False,"message":"AI"},ensure_ascii=False))
         
         except websockets.exceptions.ConnectionClosed:
-            print(f"[断开] 连接关闭，5秒后重连...")
+            print(f"[] 5...")
         except Exception as e:
-            print(f"[错误] {str(e)[:200]}, 5秒后重连...")
+            print(f"[] {str(e)[:200]}, 5...")
         
         await asyncio.sleep(5)
 
@@ -588,6 +588,6 @@ if __name__ == "__main__":
     try:
         asyncio.run(main())
     except KeyboardInterrupt:
-        print(f"\n[退出] Agent已停止")
+        print(f"\n[] Agent")
     except Exception as e:
-        print(f"\n[致命错误] {e}")
+        print(f"\n[] {e}")

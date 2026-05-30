@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AI Agent 总控系统</title>
+  <title>AI Agent </title>
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="manifest" href="/manifest.json">
@@ -13,11 +13,11 @@
   <meta name="apple-mobile-web-app-title" content="Friday AI">
   <link rel="apple-touch-icon" href="/icons/icon-192.svg">
   <script>
-    // 清除旧 Service Worker（避免缓存拦截 API 请求）
+    //  Service Worker API 
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.getRegistrations().then(regs => {
         regs.forEach(r => r.unregister());
-        console.log('[Friday] 已清除旧 SW:', regs.length);
+        console.log('[Friday]  SW:', regs.length);
       });
     }
   </script>

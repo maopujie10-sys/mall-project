@@ -1,0 +1,16 @@
+{
+  "id": "stock-alert",
+  "name": "📦 库存自动预警",
+  "version": "1.0.0",
+  "desc": "监控商品库存，低于阈值自动推送告警，支持批量设置预警规则",
+  "author": "Friday官方",
+  "category": "商城",
+  "tags": [
+    "stock",
+    "alert",
+    "inventory"
+  ],
+  "entry": "main.py",
+  "dependencies": [],
+  "readme": "安装后在AI对话输入「设置库存预警 [商品ID] [阈值]」"
+}
