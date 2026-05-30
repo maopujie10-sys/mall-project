@@ -119,42 +119,19 @@ const speedResult = ref(null)
 const testingModel = ref('')
 const loading = ref(true)
 
-const providers = ['DeepSeek', 'OpenAI', 'Anthropic', 'Google', 'Ollama', 'OpenRouter', '鑷畾涔?]
-
-const models = ref([])
-
-const stats = reactive({
-  todayCalls: 0,
-  successRate: 0,
-  monthlyCost: '楼 0',
+const providers = ['DeepSeek', 'OpenAI', 'Anthropic', 'Google', 'Ollama', 'OpenRouter', '?] const models = ref([]) const stats = reactive({ todayCalls: 0, successRate: 0, monthlyCost:'楼 0',
   remaining: '楼 0',
 })
 
 const modes = [
-  { id:'quality', name:'楂樿川閲?, desc:'鏈€娣辨帹鐞嗭紝鏈€浣崇粨鏋滐紝鎱絾鍑? },
-  { id:'balanced', name:'鍧囪　', desc:'閫熷害涓庤川閲忓吋椤撅紝鎺ㄨ崘鏃ュ父浣跨敤' },
-  { id:'fast', name:'瓒呴珮閫?, desc:'鏈€楂樺苟鍙戯紝蹇€熷搷搴旓紝閫傚悎鎵归噺' },
-  { id:'economy', name:'鐪侀挶', desc:'鏈€浣庢秷鑰楋紝閫傚悎闈炲叧閿换鍔? },
-]
-
-const usageStats = ref([])
-
-const modelForm = reactive({ name:'', provider:'', apiUrl:'', apiKey:'', type:'text', inputPrice:0, outputPrice:0 })
+  { id:'quality', name:'楂樿川閲?, desc:'? }, { id:'balanced', name:'鍧囪　', desc:'閫熷害涓庤川閲忓吋椤撅紝鎺ㄨ崘鏃ュ父浣跨敤' },
+  { id:'fast', name:'瓒呴珮閫?, desc:'TODO' },
+  { id:'economy', name:'鐪侀挶', desc:'? }, ] const usageStats = ref([]) const modelForm = reactive({ name:'', provider:'', apiUrl:'', apiKey:'', type:'text', inputPrice:0, outputPrice:0 })
 
 const currentModel = computed(() => models.value.find(m => m.id === activeModelId.value && m.enabled))
 const filteredModels = computed(() => models.value)
 
-function speedColor(v) { if (v >= 80) return '#52c41a'; if (v >= 50) return '#faad14'; return '#ff4d4f' }
-
-async function toggleModel(row) {
-  try {
-    row.enabled = !row.enabled
-    ElMessage.success(row.enabled ? `${row.name} 宸插惎鐢╜ : `${row.name} 宸茬鐢╜)
-  } catch {}
-}
-
-async function setActive(row) {
-  if (!row.enabled) { ElMessage.warning('璇峰厛鍚敤璇ユā鍨?); return }
+function speedColor(v) { if (v >= 80) return '#52c41a'; if (v >= 50) return '#faad14'; return '#ff4d4f'} async function toggleModel(row) { try { row.enabled = !row.enabled ElMessage.success(row.enabled ? `${row.name} : `${row.name} ) } catch {} } async function setActive(row) { if (!row.enabled) { ElMessage.warning('璇峰厛鍚敤璇ユā鍨?); return }
   try {
     const res = await switchModel(row.id)
     if (res?.ok) {
@@ -200,7 +177,7 @@ async function saveModel() {
       ElMessage.success('妯″瀷宸叉洿鏂?)
     } else {
       const id = 'model_' + Date.now()
-      models.value.push({ id, ...modelForm, icon:'馃', speed:50, calls:0, avgLatency:'-', enabled:true })
+      models.value.push({ id, ...modelForm, icon:'TODO', speed:50, calls:0, avgLatency:'-', enabled:true })
       ElMessage.success('妯″瀷宸叉坊鍔?)
     }
     showAdd.value = false
@@ -213,7 +190,7 @@ async function saveModel() {
 async function removeModel(row) {
   if (row.id === activeModelId.value) { ElMessage.warning('涓嶈兘鍒犻櫎褰撳墠浣跨敤鐨勬ā鍨?); return }
   try {
-    await ElMessageBox.confirm(`纭畾鍒犻櫎妯″瀷 "${row.name}"锛焋, '纭鍒犻櫎', { type:'warning' })
+    await ElMessageBox.confirm(`纭畾鍒犻櫎妯″瀷 "${row.name}"锛焋, 'TODO', { type:'warning' })
     models.value = models.value.filter(m => m.id !== row.id)
     ElMessage.success('宸插垹闄?)
   } catch {}

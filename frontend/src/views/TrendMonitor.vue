@@ -188,7 +188,7 @@ function showPriceDialog(row) { priceForm.value = { trackId: row.id, product: ro
 function showPromoDialog(row) { promoForm.value = { trackId: row.id, product: row.product, title: '', discount: '' }; showPromoDlg.value = true }
 
 async function doRecordPrice() {
-  try { await recordPrice(priceForm.value.trackId, priceForm.value.price, priceForm.value.currency); ElMessage.success('宸茶褰?); showPriceDlg.value = false; loadAll() } catch(e) { ElMessage.error('璁板綍澶辫触') }
+  try { await recordPrice(priceForm.value.trackId, priceForm.value.price, priceForm.value.currency); ElMessage.success('?); showPriceDlg.value = false; loadAll() } catch(e) { ElMessage.error('璁板綍澶辫触') }
 }
 
 async function doRecordPromo() {

@@ -70,7 +70,7 @@ async function fetchAlerts() {
     const params = filterLevel.value ? { level: filterLevel.value } : {}
     const r = await getAlertList(params)
     alerts.value = r.alerts || []
-  } catch { ElMessage.error('鑾峰彇鍛婅澶辫触') }
+  } catch { ElMessage.error('TODO') }
 }
 async function fetchStats() {
   try { const r = await getAlertStats(); stats.value = r.stats || {} } catch {}

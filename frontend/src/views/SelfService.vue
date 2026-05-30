@@ -74,11 +74,7 @@ async function run(id) {
   try {
     report.value = await agentApi.post(`/self-service/run/${id}`)
     if (report.value.all_passed) {
-      ElMessage.success('鎵€鏈夋鏌ラ€氳繃 鉁?)
-    } else {
-      ElMessage.warning(`${report.value.failed} 椤瑰紓甯革紝璇锋煡鐪嬫姤鍛奰)
-    }
-  } catch { ElMessage.error('鎵ц澶辫触') }
+      ElMessage.success('?) } else { ElMessage.warning(`${report.value.failed} ) } } catch { ElMessage.error('鎵ц澶辫触') }
   runningId.value = ''
 }
 

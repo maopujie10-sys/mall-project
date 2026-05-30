@@ -79,8 +79,7 @@ async function doVerify() {
   try {
     await agentApi.post(`/2fa/verify?code=${code.value}`)
     verified.value = true
-    ElMessage.success('涓ゆ楠岃瘉宸插紑鍚?)
-    code.value = ''
+    ElMessage.success('?) code.value =''
   } catch (e) {
     ElMessage.error(e.response?.data?.detail || '楠岃瘉鐮佹棤鏁?)
   } finally { verifying.value = false }

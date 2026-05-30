@@ -416,10 +416,10 @@ const kpis = reactive([
   { label:'鎬荤敤鎴?, value:0, color:'c1', key:'total_users' },
   { label:'浠婃棩璁㈠崟', value:0, color:'c2', key:'today_orders' },
   { label:'浠婃棩浜ゆ槗棰?, value:0, color:'c3', key:'today_amount' },
-  { label:'寰呭鏍?, value:0, color:'c4', key:'pending_recharge' },
+  { label:'?, value:0, color:'c4', key:'pending_recharge' },
 ])
 const orderStats = reactive([
-  { l:'鎬昏鍗?, v:0 },{ l:'杩涜涓?, v:0 },{ l:'宸插畬鎴?, v:0 },{ l:'宸插彇娑?, v:0 },
+  { l:'鎬昏鍗?, v:0 },{ l:'?, v:0 },{ l:'宸插畬鎴?, v:0 },{ l:'宸插彇娑?, v:0 },
 ])
 const topGoods = ref([])
 const chartData = reactive({ comm:[], s:[] })
@@ -432,11 +432,7 @@ const orders = ref([]), orderKw = ref(''), orderPg = ref(1), orderTotal = ref(0)
 const recharges = ref([]), recPending = ref(0)
 const withdraws = ref([]), witPending = ref(0)
 const applies = ref([])
-const balDlg = reactive({ show:false, user:'', userId:null, amount:'', remark:'' })
-const applyDlg = reactive({ show:false })
-
-// ===== 杞挱 =====
-const banners = ref([]), bannerType = ref(''), bannerPg = ref(1), bannerTotal = ref(0)
+const balDlg = reactive({ show:false, user:'', userId:null, amount:'', remark:''}) const applyDlg = reactive({ show:false }) // ===== ===== const banners = ref([]), bannerType = ref(''), bannerPg = ref(1), bannerTotal = ref(0)
 const bannerDlg = reactive({ show:false, uuid:'', title:'', type:'home', imgUrl:'', sort:0, linkUrl:'' })
 
 // ===== 鍒嗙被 =====
@@ -458,28 +454,7 @@ function fmt(v) {
   const n = Number(v)
   return Number.isNaN(n) ? String(v) : n.toLocaleString('en-US',{maximumFractionDigits:2})
 }
-function statTxt(s) { return s===1?'涓婃灦':s===0?'寰呭':'涓嬫灦' }
-
-// ===== 浠〃鐩?=====
-async function loadDashboard() {
-  try {
-    const d = await getDashboard()
-    if (d) {
-      kpis[0].value = d.total_users ?? d.totalUsers ?? 0
-      kpis[1].value = d.today_orders ?? d.todayOrders ?? 0
-      kpis[2].value = d.today_amount ?? d.todayAmount ?? 0
-      kpis[3].value = (d.pending_recharge||0) + (d.pending_withdraw||0) + (d.pending_merchant||0)
-      orderStats[0].v = d.total_orders ?? 0
-    }
-  } catch(_){}
-  try {
-    const g = await getDashboardGoods()
-    if (g?.goods) topGoods.value = g.goods.slice(0,10)
-  } catch(_){}
-  try {
-    const l = await getDashboardLine({type:chartR.value})
-    if (l?.line) {
-      chartData.comm = l.line.map(x=>x.dayString||'')
+function statTxt(s) { return s===1?'涓婃灦':s===0?'寰呭':'涓嬫灦'} // ===== ?===== async function loadDashboard() { try { const d = await getDashboard() if (d) { kpis[0].value = d.total_users ?? d.totalUsers ?? 0 kpis[1].value = d.today_orders ?? d.todayOrders ?? 0 kpis[2].value = d.today_amount ?? d.todayAmount ?? 0 kpis[3].value = (d.pending_recharge||0) + (d.pending_withdraw||0) + (d.pending_merchant||0) orderStats[0].v = d.total_orders ?? 0 } } catch(_){} try { const g = await getDashboardGoods() if (g?.goods) topGoods.value = g.goods.slice(0,10) } catch(_){} try { const l = await getDashboardLine({type:chartR.value}) if (l?.line) { chartData.comm = l.line.map(x=>x.dayString||'')
       chartData.s = l.line.map(x=>x.countSales||0)
     }
   } catch(_){}
@@ -519,22 +494,7 @@ function showBalDlg(row) { balDlg.user=row.username||row.phone; balDlg.userId=ro
 async function doAdjust() {
   try {
     await adjustUserBalance({userId:balDlg.userId,amount:balDlg.amount,remark:balDlg.remark})
-    ElMessage.success('浣欓宸茶皟鏁?); balDlg.show=false; fetchUsers()
-  } catch(e) { ElMessage.error(e.message) }
-}
-
-// ===== 鍟嗗 =====
-async function fetchMerchants() {
-  try {
-    const d = await getMerchantList({keyword:merKw.value,page:merPg.value,size:10})
-    if (d?.records) { merchants.value = d.records; merTotal.value = d.total||0 }
-    else if (Array.isArray(d)) { merchants.value = d; merTotal.value = d.length }
-  } catch(_){}
-}
-async function toggleMer(row) {
-  try {
-    await updateMerchantStatus({merchantId:row.id,status:row.status===1?0:1})
-    ElMessage.success('宸叉洿鏂?); fetchMerchants()
+    ElMessage.success('?); balDlg.show=false; fetchUsers() } catch(e) { ElMessage.error(e.message) } } // ===== ===== async function fetchMerchants() { try { const d = await getMerchantList({keyword:merKw.value,page:merPg.value,size:10}) if (d?.records) { merchants.value = d.records; merTotal.value = d.total||0 } else if (Array.isArray(d)) { merchants.value = d; merTotal.value = d.length } } catch(_){} } async function toggleMer(row) { try { await updateMerchantStatus({merchantId:row.id,status:row.status===1?0:1}) ElMessage.success('宸叉洿鏂?); fetchMerchants()
   } catch(e) { ElMessage.error(e.message) }
 }
 async function fetchMerApplies() {
@@ -563,21 +523,7 @@ async function fetchProducts() {
 async function auditProd(row, status) {
   try {
     await auditProduct({productId:row.id,status})
-    ElMessage.success(status===1?'宸蹭笂鏋?:'宸蹭笅鏋?); fetchProducts()
-  } catch(e) { ElMessage.error(e.message) }
-}
-
-// ===== 璁㈠崟 =====
-async function fetchOrders() {
-  try {
-    const d = await getOrderList({keyword:orderKw.value,page:orderPg.value,size:10})
-    if (d?.records) { orders.value = d.records; orderTotal.value = d.total||0 }
-    else if (Array.isArray(d)) { orders.value = d; orderTotal.value = d.length }
-  } catch(_){}
-}
-async function doRefund(row) {
-  try {
-    await ElMessageBox.confirm(`纭閫€娆捐鍗?${row.orderNo||row.id}锛焋,'閫€娆剧‘璁?,{type:'warning'})
+    ElMessage.success(status===1?'宸蹭笂鏋?:'?); fetchProducts() } catch(e) { ElMessage.error(e.message) } } // ===== ===== async function fetchOrders() { try { const d = await getOrderList({keyword:orderKw.value,page:orderPg.value,size:10}) if (d?.records) { orders.value = d.records; orderTotal.value = d.total||0 } else if (Array.isArray(d)) { orders.value = d; orderTotal.value = d.length } } catch(_){} } async function doRefund(row) { try { await ElMessageBox.confirm(` ?${row.orderNo||row.id} ,'閫€娆剧‘璁?,{type:'warning'})
     await forceRefund(row.id)
     ElMessage.success('宸查€€娆?); fetchOrders()
   } catch(_){}
@@ -609,23 +555,7 @@ async function fetchWithdraws() {
 async function auditWit(row, approved) {
   try {
     await auditWithdraw({id:row.id,approved,txHash:'',reason:''})
-    ElMessage.success(approved?'宸查€氳繃':'宸叉嫆缁?); fetchWithdraws()
-  } catch(e) { ElMessage.error(e.message) }
-}
-
-// ===== 杞挱绠＄悊 =====
-async function fetchBanners() {
-  try {
-    const params = { page: bannerPg.value, size: 20 }
-    if (bannerType.value) params.type = bannerType.value
-    const d = await getBannerList(params)
-    if (d?.records) { banners.value = d.records; bannerTotal.value = d.total || 0 }
-    else if (Array.isArray(d)) { banners.value = d; bannerTotal.value = d.length }
-  } catch(_){}
-}
-function showBannerDlg(row) {
-  if (row) {
-    bannerDlg.uuid = row.uuid; bannerDlg.title = row.title||''; bannerDlg.type = row.type||'home'
+    ElMessage.success(approved?'宸查€氳繃':'?); fetchWithdraws() } catch(e) { ElMessage.error(e.message) } } // ===== ===== async function fetchBanners() { try { const params = { page: bannerPg.value, size: 20 } if (bannerType.value) params.type = bannerType.value const d = await getBannerList(params) if (d?.records) { banners.value = d.records; bannerTotal.value = d.total || 0 } else if (Array.isArray(d)) { banners.value = d; bannerTotal.value = d.length } } catch(_){} } function showBannerDlg(row) { if (row) { bannerDlg.uuid = row.uuid; bannerDlg.title = row.title||''; bannerDlg.type = row.type||'home'
     bannerDlg.imgUrl = row.imgUrl||''; bannerDlg.sort = row.sort||0; bannerDlg.linkUrl = row.linkUrl||''
   } else {
     bannerDlg.uuid = ''; bannerDlg.title = ''; bannerDlg.type = 'home'
@@ -643,7 +573,7 @@ async function saveBannerDlg() {
 }
 async function delBanner(row) {
   try {
-    await ElMessageBox.confirm('纭鍒犻櫎璇ヨ疆鎾紵','鍒犻櫎纭',{type:'warning'})
+    await ElMessageBox.confirm('TODO','TODO',{type:'warning'})
     await deleteBanner(row.uuid); ElMessage.success('宸插垹闄?); fetchBanners()
   } catch(_){}
 }

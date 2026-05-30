@@ -147,7 +147,7 @@ async function fetchApprovals() {
       pendingTasks.splice(0, pendingTasks.length, ...pending.map((t) => ({
         id: t.id || t.taskId || Date.now(),
         risk: t.risk || 'L1',
-        name: t.name || t.task || '鏈煡浠诲姟',
+        name: t.name || t.task || 'TODO',
         time: t.time || '-',
         description: t.description || '',
         preview: t.preview || '',
@@ -180,8 +180,8 @@ async function fetchApprovals() {
 
 const approveTask = async (task) => {
   try {
-    await ElMessageBox.confirm(`纭鎵ц銆?{task.name}銆嶅悧锛熸鎿嶄綔涓嶅彲鎾ら攢銆俙, '瀹℃壒纭', {
-      confirmButtonText: '纭鎵ц',
+    await ElMessageBox.confirm(`纭鎵ц銆?{task.name}銆嶅悧锛熸鎿嶄綔涓嶅彲鎾ら攢銆俙, 'TODO', {
+      confirmButtonText: 'TODO',
       cancelButtonText: '鍙栨秷',
       type: 'warning',
     })
@@ -207,8 +207,8 @@ const approveTask = async (task) => {
 
 const rejectTask = async (task) => {
   try {
-    await ElMessageBox.confirm(`纭鎷掔粷銆?{task.name}銆嶅悧锛焋, '鎷掔粷纭', {
-      confirmButtonText: '纭鎷掔粷',
+    await ElMessageBox.confirm(`纭鎷掔粷銆?{task.name}銆嶅悧锛焋, 'TODO', {
+      confirmButtonText: 'TODO',
       cancelButtonText: '鍙栨秷',
       type: 'warning',
     })

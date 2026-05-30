@@ -293,7 +293,7 @@ function toggleVoiceInput() {
 function startVoiceInput() {
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
   if (!SpeechRecognition) {
-    inputText.value = '[娴忚鍣ㄤ笉鏀寔璇煶璇嗗埆锛岃浣跨敤Chrome]'
+    inputText.value = '[ Chrome]'
     return
   }
   recognition = new SpeechRecognition()
@@ -364,7 +364,7 @@ function captureSnapshot() {
   canvas.getContext('2d').drawImage(videoEl, 0, 0)
   const dataUrl = canvas.toDataURL('image/jpeg', 0.9)
   attachments.value.push({ name: 'snapshot.jpg', type: 'image', dataUrl, mimeType: 'image/jpeg', size: 0 })
-  ElMessage.success('宸叉埅鍥撅紝鍙彂閫佺粰AI鍒嗘瀽')
+  ElMessage.success('AI')
 }
 
 function toggleMic() {
@@ -417,12 +417,7 @@ async function sendMessage() {
         messages.value.push({ role: 'assistant', content: data.result || '鍒嗘瀽瀹屾垚', time: new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }) })
         speakIfActive(data.result)
       }
-    } catch (e) { messages.value.push({ role: 'assistant', content: '鍥剧墖鍒嗘瀽澶辫触', time: now }) }
-    loading.value = false; return
-  }
-
-  // 鏅€氭枃鏈秷鎭?- 浣跨敤SSE娴佸紡
-  messages.value.push({ role: 'user', content: text, time: now })
+    } catch (e) { messages.value.push({ role: 'assistant', content: '鍥剧墖鍒嗘瀽澶辫触', time: now }) } loading.value = false; return } // ?- SSE messages.value.push({ role:'user', content: text, time: now })
   inputText.value = ''
   loading.value = true; window.dispatchEvent(new CustomEvent('brain:thinking', {detail:true}))
   await nextTick(); scrollBottom()
@@ -549,10 +544,7 @@ const attachments = ref([])
 function onFileSelected(e) {
   const files = Array.from(e.target.files || [])
   for (const file of files) {
-    if (attachments.value.length >= 5) { alert('鏈€澶?涓枃浠?); break }
-    const reader = new FileReader()
-    reader.onload = (ev) => {
-      let type = 'file'
+    if (attachments.value.length >= 5) { alert('? ?); break } const reader = new FileReader() reader.onload = (ev) => { let type ='file'
       if (file.type.startsWith('image/')) type = 'image'
       else if (file.type.startsWith('video/')) type = 'video'
       attachments.value.push({ name: file.name, size: file.size, type, dataUrl: ev.target.result, mimeType: file.type, file })
@@ -616,23 +608,23 @@ function detectTask(msg) {
   const m = msg.toLowerCase();
   processingSteps.value = [];
   if (m.includes('鏈嶅姟')||m.includes('server')||m.includes('鐘舵€?)||m.includes('cpu')||m.includes('鍐呭瓨')) {
-    processingSteps.value = ['杩炴帴鏈嶅姟鍣?..', '鏌ヨCPU鐘舵€?..', '璇诲彇鍐呭瓨鏁版嵁...', '鍒嗘瀽璐熻浇鎯呭喌...', '鐢熸垚鎶ュ憡...'];
+    processingSteps.value = ['杩炴帴鏈嶅姟鍣?..', 'CPU ?..', '璇诲彇鍐呭瓨鏁版嵁...', '鍒嗘瀽璐熻浇鎯呭喌...', '鐢熸垚鎶ュ憡...'];
     return '绯荤粺璇婃柇';
   }
   if (m.includes('璁㈠崟')||m.includes('order')) {
-    processingSteps.value = ['鏌ヨ鏁版嵁搴?..', '缁熻璁㈠崟鏁版嵁...', '鐢熸垚姹囨€?..'];
-    return '璁㈠崟鏌ヨ';
+    processingSteps.value = ['?..', '...', '鐢熸垚姹囨€?..'];
+    return 'TODO';
   }
   if (m.includes('鎶ュ憡')||m.includes('report')||m.includes('鍛ㄦ姤')) {
-    processingSteps.value = ['鏀堕泦杩愯鏁版嵁...', '鍒嗘瀽瓒嬪娍...', 'AI鐢熸垚鎽樿...', '鎺掔増杈撳嚭...'];
+    processingSteps.value = ['...', '鍒嗘瀽瓒嬪娍...', 'AI ...', '鎺掔増杈撳嚭...'];
     return '鎶ュ憡鐢熸垚';
   }
-  if (m.includes('寮傚父')||m.includes('鍛婅')||m.includes('閿欒')||m.includes('鏁呴殰')) {
-    processingSteps.value = ['鎵弿寮傚父鐐?..', '鍏宠仈鍒嗘瀽...', 'AI璇婃柇...', '鐢熸垚澶勭悊寤鸿...'];
+  if (m.includes('寮傚父')||m.includes('TODO')||m.includes('TODO')||m.includes('鏁呴殰')) {
+    processingSteps.value = ['?..', '鍏宠仈鍒嗘瀽...', 'AI璇婃柇...', '...'];
     return '寮傚父鎺掓煡';
   }
   if (m.includes('瀹氫环')||m.includes('浠锋牸')||m.includes('price')) {
-    processingSteps.value = ['鑾峰彇甯傚満鏁版嵁...', '绔炲搧鍒嗘瀽...', 'AI瀹氫环寤鸿...'];
+    processingSteps.value = ['鑾峰彇甯傚満鏁版嵁...', '绔炲搧鍒嗘瀽...', 'AI ...'];
     return '鏅鸿兘瀹氫环';
   }
   if (m.includes('缂栫▼')||m.includes('浠ｇ爜')||m.includes('寮€鍙?)) {
@@ -644,7 +636,7 @@ function detectTask(msg) {
     return '澶囦唤鍥炴粴';
   }
   if (m.includes('閲囬泦')||m.includes('鐖?)||m.includes('scrape')) {
-    processingSteps.value = ['杩炴帴鏁版嵁婧?..', '瑙ｆ瀽瀛楁...', '娓呮礂鍘婚噸...', '鍏ュ簱瀛樺偍...'];
+    processingSteps.value = ['杩炴帴鏁版嵁婧?..', '...', '娓呮礂鍘婚噸...', '鍏ュ簱瀛樺偍...'];
     return '鏁版嵁閲囬泦';
   }
   processingSteps.value = ['鍒嗘瀽涓?..', '澶勭悊涓?..', 'AI鎬濊€?..'];

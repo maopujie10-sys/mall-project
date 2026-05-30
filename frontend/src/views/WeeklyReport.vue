@@ -65,7 +65,7 @@ const metrics = computed(() => {
     { label: '璁㈠崟鎬绘暟', value: d.orders_total || 0 },
     { label: '鍟嗗搧鎬绘暟', value: d.products_total || 0 },
     { label: '鐢ㄦ埛鎬绘暟', value: d.users_total || 0 },
-    { label: '鏈懆鍛婅', value: d.alerts_this_week || 0 },
+    { label: 'TODO', value: d.alerts_this_week || 0 },
     { label: '瀹㈡湇娑堟伅', value: d.customer_messages || 0 },
     { label: '鍋ュ悍鍒?, value: d.avg_health_score || 0 },
   ]

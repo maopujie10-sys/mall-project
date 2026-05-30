@@ -124,7 +124,7 @@ async function loadAll() {
     if (pr?.data?.prs) prs.value = pr.data.prs
     if (wf?.data?.workflows) workflows.value = wf.data.workflows
     if (br?.data?.branches) branches.value = br.data.branches
-  } catch { ElMessage.error('GitHub API璋冪敤澶辫触锛岃妫€鏌ITHUB_TOKEN閰嶇疆') }
+  } catch { ElMessage.error('GitHub API ITHUB_TOKEN') }
 }
 
 async function doCreateIssue() {

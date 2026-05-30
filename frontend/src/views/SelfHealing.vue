@@ -112,9 +112,9 @@ const historySummary = ref({})
 
 const statCards = computed(() => [
   { label: '寮傚父鎬绘暟', value: historySummary.value.total || 0, type: 'total' },
-  { label: '寰呭鐞?, value: historySummary.value.open || 0, type: 'open' },
+  { label: '?, value: historySummary.value.open || 0, type:'open' },
   { label: '宸茶В鍐?, value: historySummary.value.resolved || 0, type: 'resolved' },
-  { label: '鑷姩淇', value: historySummary.value.auto_fixed || 0, type: 'auto' },
+  { label: 'TODO', value: historySummary.value.auto_fixed || 0, type: 'auto' },
 ])
 
 function sevType(sev) {
@@ -128,7 +128,7 @@ async function doPatrol() {
     patrolResult.value = data
     ElMessage.success(`宸℃瀹屾垚锛?{data.checks_passed || 0}椤归€氳繃锛?{(data.issues || []).length}涓棶棰榒)
   } catch (e) {
-    ElMessage.error('宸℃澶辫触')
+    ElMessage.error('TODO')
   } finally { patrolLoading.value = false }
 }
 
@@ -140,7 +140,7 @@ async function doAutoFix() {
     ElMessage.success(`淇瀹屾垚锛?{data.fixed || 0}/${data.attempted || 0}`)
     loadHistory()
   } catch (e) {
-    ElMessage.error('淇澶辫触')
+    ElMessage.error('TODO')
   } finally { fixLoading.value = false }
 }
 
