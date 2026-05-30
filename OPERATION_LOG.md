@@ -1,5 +1,20 @@
 # 操作日志
 
+## 2026-05-30 22:10 — AI后端31个404路由修复（ASGI PathRewrite中间件）
+
+**问题：** 浏览器全量测试发现31个GET接口返回404。根因：前端调用路径为 `/agent/xxx/yyy`，但后端路由注册结构不一致（路由器的内部前缀与挂载前缀不匹配），导致路径对不上。
+
+**修复方案：** 替换原有基于 `BaseHTTPMiddleware` 的404修复中间件（因 Starlette 内部 `call_next()` 固定使用原始 ASGI scope，无法生效），改为**原始 ASGI 中间件**：
+- 缓冲原始请求的响应，若为 404 则查路径映射表重新分发
+- 路径映射表自动生成：扫描所有已注册路由，按规则推断前端路径 → 实际路径映射
+- 特殊映射：描述(describe→description)、Nginx(nginx→nginx-panel)、微信(wechat→agent/wechat)
+- 映射表在应用启动时自动写入 `/app/route_map.json`，无需手动维护
+
+**改动文件：** `backend/main.py` — 替换 middleware 实现（143新增/26删除）
+**新建文件：** `backend/route_map.json` — 307条路由映射（启动时自动生成，提交作为参考）
+
+**验证：** 31个404接口全部恢复200 ✅
+
 ## 2026-05-30 17:19 — Dubbo服务恢复 + 全量测试100%通过
 
 **问题：** 上次Docker重启后网桥IP变更(172.17→172.18→172.19)，ZooKeeper中残留旧IP注册，导致data.war Dubbo提供者(LogService/SysLogService)无法绑定端口20880。用户注册流程因缺少LogService而失败。

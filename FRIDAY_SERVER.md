@@ -15,6 +15,12 @@
 6. 客服自动回复 + 轮值域名监控
 
 ## 最近改动
+- 2026-05-30 22:10: [404路由修复] AI后端31个GET接口404全部修复（ASGI PathRewrite中间件）
+  - **根因：** 前端调用 `/agent/xxx/yyy`，后端路由结构不匹配（双挂载/前缀嵌套）
+  - **修复：** 替换原有的 `BaseHTTPMiddleware` 修复（因Starlette限制无法改写scope）为原始ASGI中间件
+  - **原理：** 缓冲响应 → 检测404 → 查映射表(`/app/route_map.json`，启动时自动生成307条) → 改写路径重新分发
+  - **验证：** 31个404全部返回200 ✅，POST接口不受影响
+  - **关键文件：** `backend/main.py`（中间件重构）+ `backend/route_map.json`（参考映射表）
 - 2026-05-30 17:25: [Dubbo恢复] ZK+Tomcat完整重启，Dubbo双端口20880/20881恢复，全量测试100%通过
   - **根因：** Docker网桥IP变更导致ZK残留旧注册，data.war Dubbo provider无法绑定
   - **修复序列：** 停Tomcat → killall java → 启ZK → 验证imok → 启Tomcat → 等180s

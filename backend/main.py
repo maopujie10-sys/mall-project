@@ -1,4 +1,4 @@
-''"TikTokMall AI Agent  - FastAPI :9000''"
+"""TikTokMall AI Agent 鎬绘帶 - FastAPI :9000"""
 from routers.code_deploy import router as code_deploy_router
 from routers.mall_tools import router as mall_tools_router
 from routers.rotation_panel import router as rotation_panel_router
@@ -35,33 +35,33 @@ from auth import verify_token, auth_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    print(f"[Agent] ? : {MALL_BASE_URL}")
+    print(f"[Agent] 鍚姩涓? 鍟嗗煄: {MALL_BASE_URL}")
     try:
         from scheduler import start_scheduler
         from digital_lifeform import DigitalLifeform
         start_scheduler()
         asyncio.create_task(DigitalLifeform.start_loop(300))
     except Exception as e:
-        print(f"[Agent] (?: {e}")
+        print(f"[Agent] 瀹氭椂浠诲姟鍚姩澶辫触(闈炶嚧鍛?: {e}")
     try:
         from tools.memory_store import memory_store
         stats = memory_store.get_stats()
         conv_count = stats["total_conversations"]
         cat_count = len(memory_store.get_knowledge_categories())
-        print(f"[Agent] : {conv_count}, {cat_count}")
+        print(f"[Agent] 持久记忆已加载: {conv_count}段对话, {cat_count}个知识分类")
     except Exception as e:
-        print(f"[Agent] (): {e}")
+        print(f"[Agent] 记忆加载失败(非致命): {e}")
     from tools.registry import register_builtin_tools
     register_builtin_tools()
-    print("[Agent] ...")
+    print("[Agent] 执行启动自检...")
     try:
         from startup import startup_self_check, startup_warmup
         check_result = await startup_self_check()
         summary = check_result["summary"]
-        print(f"[Agent] : {summary}")
+        print(f"[Agent] 鑷缁撴灉: {summary}")
         await startup_warmup()
 
-        # Dashboard?
+        # Dashboard瀹炴椂鎸囨爣鎺ㄩ€?
         async def push_metrics_loop():
             from websocket_manager import ws_manager
             while True:
@@ -72,16 +72,16 @@ async def lifespan(app: FastAPI):
                     pass
         asyncio.create_task(push_metrics_loop())
     except Exception as e:
-        print(f"[Agent] (?: {e}")
+        print(f"[Agent] 鑷澶辫触(闈炶嚧鍛?: {e}")
     yield
-    print("[Agent] ?..")
+    print("[Agent] 鍏抽棴鍓嶅悓姝ヨ蹇?..")
     try:
         from tools.memory_sync import MemorySync
         push_result = MemorySync.sync_push()
         status = "OK" if push_result["success"] else "WARN"
-        print(f"[Agent] : {status}")
+        print(f"[Agent] 璁板繂鍚屾: {status}")
     except Exception as e:
-        print(f"[Agent] : {e}")
+        print(f"[Agent] 璁板繂鍚屾澶辫触: {e}")
     try:
         from scheduler import stop_scheduler
         from digital_lifeform import DigitalLifeform
@@ -93,7 +93,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="TikTokMall Agent", version="1.1.0", lifespan=lifespan)
 
-# === ?? ->  -> CORS) ===
+# === 涓棿浠?椤哄簭寰堥噸瑕?闄愭祦 -> 杩借釜 -> CORS) ===
 app.middleware("http")(rate_limit_middleware)
 app.middleware("http")(trace_middleware)
 
@@ -106,7 +106,7 @@ app.add_middleware(
 
 app.include_router(auth_router)
 
-# ===  ===
+# === 璺敱妯″潡 ===
 from routers.vector_router import router as vector_router
 from routers.backup_router import router as backup_router
 from routers.copy_router import router as copy_router
@@ -124,7 +124,6 @@ from routers.evolution_router import router as evolution_router
 from routers.friday_router import router as friday_router
 from routers.github_router import router as github_router
 from routers.lifeform_router import router as lifeform_router
-from routers.brain_router import router as brain_router
 from routers.workflow_router import router as workflow_router
 from routers.user_auth_router import router as user_auth_router
 from routers.inspect_router import router as inspect_router
@@ -150,7 +149,7 @@ from routers.translate_router import router as translate_router
 from routers.excel_router import router as excel_router
 from routers.auto_reply_router import router as auto_reply_router
 from routers.order_alert_router import router as order_alert_router
-# : AI + 
+# 鏂板: AI瀹氫环 + 璇锋眰杩借釜
 from routers.pricing_router import router as pricing_router
 from routers.description_router import router as description_router
 from routers.fraud_router import router as fraud_router
@@ -159,7 +158,7 @@ from routers.ws_router import router as ws_router
 from routers.gateway_router import router as gateway_router
 from routers.omni_router import router as omni_router
 
-# === AI v5 ===
+# === 鍏ㄨ兘AI鍗囩骇 v5 ===
 from routers.voice_router import router as voice_router
 from routers.tools_router import router as tools_router
 from routers.advanced_ai import router as advanced_router
@@ -176,9 +175,7 @@ from routers.capabilities_router import router as capabilities_router
 from routers.key_router import router as key_router
 from routers.wechat_admin import router as wechat_admin_router
 from routers.ecommerce_ai import router as ecommerce_ai_router
-from routers.video_router import router as video_router
-from routers.media_router import router as media_router
-# === ?===
+# === 钀藉湴椤佃疆鍊?===
 ROTATION_DOMAINS = [
     "chxhx.eu.cc", "drrgr.eu.cc", "drrimrf.eu.cc", "drriiu.eu.cc",
     "duomi.eu.cc", "dengruihan.eu.cc", "yyawzx.eu.cc", "gamed.eu.cc"
@@ -194,7 +191,7 @@ async def rotation_redirect(flag: str = "pc"):
     path = FLAG_ROUTES.get(flag, "/home")
     return RedirectResponse(f"https://{domain}{path}", status_code=302)
 
-# === ?===
+# === 娉ㄥ唽鎵€鏈夎矾鐢?===
 app.include_router(health.router)
 app.include_router(status.router)
 app.include_router(restart.router)
@@ -250,8 +247,7 @@ app.include_router(excel_router, prefix="/excel")
 app.include_router(auto_reply_router, prefix="/auto-reply")
 app.include_router(order_alert_router, prefix="/order-alert")
 app.include_router(plugin_router)
-app.include_router(lifeform_router)  # internal /agent/lifeform
-app.include_router(brain_router)  # /agent/brain
+app.include_router(lifeform_router)  # internal prefix /agent/lifeform
 app.include_router(workflow_router)
 app.include_router(user_auth_router)
 app.include_router(inspect_router, prefix="/inspect")
@@ -261,7 +257,7 @@ app.include_router(vector_router, prefix="/vector")
 app.include_router(backup_router, prefix="/backup")
 app.include_router(copy_router, prefix="/copy")
 app.include_router(github_router)
-
+# 鏂板璺敱
 app.include_router(pricing_router, prefix="/pricing")
 app.include_router(description_router, prefix="/description")
 app.include_router(fraud_router, prefix="/fraud")
@@ -274,8 +270,6 @@ app.include_router(tools_router)
 app.include_router(advanced_router, prefix="/advanced")
 app.include_router(collab_router, prefix="/collab")
 app.include_router(rag_router, prefix="/rag")
-app.include_router(video_router)
-app.include_router(media_router)
 app.include_router(predict_router, prefix="/predict")
 app.include_router(recommend_router, prefix="/recommend")
 app.include_router(content_router, prefix="/content")
@@ -316,3 +310,126 @@ async def dashboard():
 @app.get("/agent/health")
 async def agent_health():
     return {"status": "ok", "timestamp": __import__("datetime").datetime.now().isoformat()}
+
+# === 404 fix (ASGI) ===
+import json
+
+class _PathRewriteASGI:
+    """ASGI  : 404 ->  """
+    def __init__(self, app):
+        self.app = app
+        self.route_map = {}
+        try:
+            with open("/app/route_map.json") as f:
+                self.route_map = json.load(f)
+        except Exception:
+            pass
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
+
+        path = scope.get("path", "")
+        method = scope.get("method", "GET")
+
+        if method != "GET":
+            await self.app(scope, receive, send)
+            return
+
+        #        receive  
+        received = []
+        async def _recv():
+            m = await receive()
+            received.append(m)
+            return m
+
+        #     send ->   
+        rsp_status = [200]
+        rsp_headers = [[]]
+        rsp_body = [bytearray()]
+
+        async def _send(msg):
+            if msg["type"] == "http.response.start":
+                rsp_status[0] = msg["status"]
+                rsp_headers[0] = msg.get("headers", [])
+            elif msg["type"] == "http.response.body":
+                rsp_body[0].extend(msg.get("body", b""))
+
+        await self.app(scope, _recv, _send)
+
+        # 404  
+        if rsp_status[0] != 404:
+            await send({"type": "http.response.start", "status": rsp_status[0], "headers": rsp_headers[0]})
+            if rsp_body[0]:
+                await send({"type": "http.response.body", "body": bytes(rsp_body[0]), "more_body": False})
+            return
+
+        #   404:   
+        target = self.route_map.get(path)
+        if not target:
+            await send({"type": "http.response.start", "status": 404, "headers": rsp_headers[0]})
+            if rsp_body[0]:
+                await send({"type": "http.response.body", "body": bytes(rsp_body[0]), "more_body": False})
+            return
+
+        #    receive  
+        replay_idx = [0]
+        async def _replay():
+            if replay_idx[0] < len(received):
+                m = received[replay_idx[0]]
+                replay_idx[0] += 1
+                return m
+            return {"type": "http.disconnect"}
+
+        new_scope = dict(scope, path=target, raw_path=target.encode())
+        await self.app(new_scope, _replay, send)
+
+#   route_map.json (  -> )
+import json as _json
+from starlette.routing import Route as _SRoute
+def _build_route_map():
+    _m = {}
+    for _r in app.routes:
+        if not hasattr(_r, 'path'):
+            continue
+        _P = _r.path
+        if _P.startswith(("/openapi.json", "/docs", "/redoc", "/ws")):
+            continue
+        if _P.startswith("/agent/") and _P.count("/agent/") == 1:
+            continue
+        _seg = _P.strip("/").split("/")
+        if len(_seg) < 2:
+            continue
+        _area = _seg[0]
+        _rest = "/" + "/".join(_seg[1:])
+        _f = None
+        if _rest.startswith("/agent/"):
+            _ia = _rest[7:]
+            if _ia.startswith(_area + "/"):
+                _f = f"/agent/{_area}/{_ia[len(_area) + 1:]}"
+            else:
+                _f = f"/agent/{_area}/{_ia}"
+        elif _rest.startswith("/" + _area):
+            _f = f"/agent/{_area}{_rest[len(_area) + 1:]}"
+        if _f and _f != _P:
+            _m[_f] = _P
+    _m["/agent/wechat/config"] = "/agent/wechat/agent/wechat/config"
+    _m["/agent/wechat/stats"] = "/agent/wechat/agent/wechat/stats"
+    _m["/agent/wechat/menu"] = "/agent/wechat/agent/wechat/menu"
+    _m["/agent/nginx/config"] = "/nginx-panel/nginx/config"
+    _m["/agent/nginx/status"] = "/nginx-panel/nginx/status"
+    _m["/agent/nginx/sites"] = "/nginx-panel/nginx/sites"
+    _m["/agent/describe/languages"] = "/description/agent/description/languages"
+    _m["/agent/describe/styles"] = "/description/agent/description/styles"
+    return _m
+
+try:
+    with open("/app/route_map.json", "w") as _f:
+        _json.dump(_build_route_map(), _f, ensure_ascii=False)
+except Exception as _e:
+    print(f"[route_map] : {_e}")
+
+#    ASGI  
+app.add_middleware(_PathRewriteASGI)
+
