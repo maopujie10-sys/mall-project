@@ -1,4 +1,4 @@
-"""A/B娴嬭瘯寮曟搸 -- 鑷姩鍒嗘祦+瀵规瘮+AI鍐崇瓥"""
+"""A/B测试引擎 -- 自动分流+对比+AI决策"""
 import time, random, hashlib
 from collections import defaultdict
 from typing import Dict, List
@@ -7,13 +7,13 @@ from tools.logger import get_logger
 logger = get_logger("abtest")
 
 class ABTestEngine:
-    """A/B娴嬭瘯寮曟搸"""
+    """A/B测试引擎"""
     _experiments: Dict[str, Dict] = {}
     _results: Dict[str, List[Dict]] = defaultdict(list)
 
     @classmethod
     def create_experiment(cls, name: str, variants: List[str], traffic_split: List[float] = None) -> str:
-        """鍒涘缓瀹為獙"""
+        """创建实验"""
         exp_id = hashlib.md5(f"{name}:{time.time()}".encode()).hexdigest()[:8]
         if not traffic_split:
             traffic_split = [1.0 / len(variants)] * len(variants)
@@ -26,12 +26,12 @@ class ABTestEngine:
 
     @classmethod
     def assign_variant(cls, exp_id: str, user_id: str) -> str:
-        """涓虹敤鎴峰垎閰嶅彉浣?""
+        """为用户分配变体"""
         exp = cls._experiments.get(exp_id)
         if not exp:
             return "control"
 
-        # 涓€鑷存€у搱甯?
+        # 一致性哈希
         h = int(hashlib.md5(f"{exp_id}:{user_id}".encode()).hexdigest(), 16)
         cum = 0
         for i, split in enumerate(exp["traffic_split"]):
@@ -45,16 +45,16 @@ class ABTestEngine:
 
     @classmethod
     def record_metric(cls, exp_id: str, variant: str, metric_name: str, value: float):
-        """璁板綍鎸囨爣"""
+        """记录指标"""
         if exp_id in cls._experiments:
             cls._experiments[exp_id]["metrics"][variant][metric_name].append(value)
 
     @classmethod
     async def analyze(cls, exp_id: str) -> Dict:
-        """AI鍒嗘瀽瀹為獙缁撴灉"""
+        """AI分析实验结果"""
         exp = cls._experiments.get(exp_id)
         if not exp:
-            return {"ok": False, "error": "瀹為獙涓嶅瓨鍦?}
+            return {"ok": False, "error": "实验不存在"}
 
         analysis = {"experiment": exp["name"], "variants": {}}
 
@@ -74,13 +74,13 @@ class ABTestEngine:
                 "metrics": variant_stats
             }
 
-        # AI鍐崇瓥
+        # AI决策
         try:
             from agents.multi_model import ModelRouter
-            resp = await ModelRouter.smart_chat(messages=[{"role":"user","content":f"鍒嗘瀽浠ヤ笅A/B娴嬭瘯缁撴灉,鎺ㄨ崘鏈€浣冲彉浣?\n{json.dumps(analysis, ensure_ascii=False)}"}], mode="fast")
+            resp = await ModelRouter.smart_chat(messages=[{"role":"user","content":f"分析以下A/B测试结果,推荐最佳变体:\n{json.dumps(analysis, ensure_ascii=False)}"}], mode="fast")
             analysis["ai_decision"] = resp.get("content", "")
         except:
-            analysis["ai_decision"] = "AI鍒嗘瀽涓嶅彲鐢?璇锋煡鐪嬪師濮嬫暟鎹?
+            analysis["ai_decision"] = "AI分析不可用,请查看原始数据"
 
         return {"ok": True, **analysis}
 

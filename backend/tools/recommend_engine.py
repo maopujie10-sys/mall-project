@@ -1,4 +1,4 @@
-"""鎺ㄨ崘寮曟搸 -- 鍗忓悓杩囨护 + 鍚戦噺鐩镐技搴?""
+"""推荐引擎 -- 协同过滤 + 向量相似度"""
 import math, json
 from collections import defaultdict, Counter
 from typing import List, Dict
@@ -7,13 +7,13 @@ from tools.logger import get_logger
 logger = get_logger("recommend")
 
 class RecommendEngine:
-    """AI鎺ㄨ崘寮曟搸"""
+    """AI推荐引擎"""
     _user_actions: Dict[str, List[Dict]] = defaultdict(list)  # user_id -> [{item_id, action, time}]
     _item_features: Dict[str, Dict] = {}  # item_id -> {category, price, tags, vector}
 
     @classmethod
     def record_action(cls, user_id: str, item_id: str, action: str):
-        """璁板綍鐢ㄦ埛琛屼负"""
+        """记录用户行为"""
         import time
         cls._user_actions[user_id].append({"item_id": item_id, "action": action, "time": time.time()})
 
@@ -23,10 +23,10 @@ class RecommendEngine:
 
     @classmethod
     def recommend_for_user(cls, user_id: str, top_k: int = 10) -> List[Dict]:
-        """涓虹敤鎴锋帹鑽愬晢鍝?""
+        """为用户推荐商品"""
         user_items = set(a["item_id"] for a in cls._user_actions.get(user_id, []))
 
-        # 鍗忓悓杩囨护:鎵剧浉浼肩敤鎴?
+        # 协同过滤:找相似用户
         similar_users = cls._find_similar_users(user_id)
         candidate_items = Counter()
         for su, sim in similar_users[:20]:
@@ -34,7 +34,7 @@ class RecommendEngine:
                 if action["item_id"] not in user_items:
                     candidate_items[action["item_id"]] += sim
 
-        # 鍩轰簬鍐呭鐨勬帹鑽?
+        # 基于内容的推荐
         user_categories = Counter()
         for item_id in user_items:
             if item_id in cls._item_features:
@@ -46,14 +46,14 @@ class RecommendEngine:
             if item_id not in user_items and features.get("category") in user_categories:
                 candidate_items[item_id] += user_categories[features["category"]] * 0.5
 
-        # 鎺掑簭杩斿洖
+        # 排序返回
         ranked = candidate_items.most_common(top_k)
         return [{"item_id": item_id, "score": round(score, 2), "features": cls._item_features.get(item_id, {})}
                 for item_id, score in ranked]
 
     @classmethod
     def _find_similar_users(cls, user_id: str, top_k: int = 30) -> List[tuple]:
-        """鎵剧浉浼肩敤鎴?Jaccard)"""
+        """找相似用户(Jaccard)"""
         user_items = set(a["item_id"] for a in cls._user_actions.get(user_id, []))
         if not user_items:
             return []
@@ -73,7 +73,7 @@ class RecommendEngine:
 
     @classmethod
     def recommend_similar_items(cls, item_id: str, top_k: int = 10) -> List[Dict]:
-        """鐩镐技鍟嗗搧鎺ㄨ崘"""
+        """相似商品推荐"""
         features = cls._item_features.get(item_id, {})
         if not features:
             return []
@@ -82,7 +82,7 @@ class RecommendEngine:
         similar = []
         for iid, feat in cls._item_features.items():
             if iid != item_id and feat.get("category") == category:
-                # 绠€鍗曚环鏍肩浉浼煎害
+                # 简单价格相似度
                 p1 = features.get("price", 0)
                 p2 = feat.get("price", 0)
                 price_sim = 1 - abs(p1 - p2) / max(p1, p2, 1)

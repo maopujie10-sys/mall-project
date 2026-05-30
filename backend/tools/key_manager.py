@@ -1,4 +1,4 @@
-"""API Key 绠＄悊鍣?-- 鍚庡彴澧炲垹鏀规煡+鐑垏鎹?SQLite鎸佷箙鍖?""
+"""API Key 管理器 -- 后台增删改查+热切换+SQLite持久化"""
 import os, json, time
 from typing import Dict, List, Optional
 from dataclasses import dataclass, asdict
@@ -18,17 +18,17 @@ class ApiKey:
     updated_at: float = 0.0
 
 class KeyManager:
-    """API Key 绠＄悊鍣?-- 鍚庡彴绠＄悊 > .env 鍏滃簳"""
+    """API Key 管理器 -- 后台管理 > .env 兜底"""
 
     _keys: Dict[str, ApiKey] = {}
     _env_map = {
         "OPENAI_API_KEY": ("openai", "OpenAI GPT-4/Vision/TTS"),
-        "DEEPSEEK_API_KEY": ("deepseek", "DeepSeek V3鎺ㄧ悊"),
-        "CLAUDE_API_KEY": ("claude", "Claude Agent鎬绘帶"),
+        "DEEPSEEK_API_KEY": ("deepseek", "DeepSeek V3推理"),
+        "CLAUDE_API_KEY": ("claude", "Claude Agent总控"),
         "TELEGRAM_BOT_TOKEN": ("telegram", "Telegram Bot"),
-        "WECHAT_TOKEN": ("wechat", "寰俊鍏紬鍙稵oken"),
-        "WECOM_CORP_ID": ("wecom", "浼佷笟寰俊CorpID"),
-        "DINGTALK_APP_KEY": ("dingtalk", "閽夐拤AppKey"),
+        "WECHAT_TOKEN": ("wechat", "微信公众号Token"),
+        "WECOM_CORP_ID": ("wecom", "企业微信CorpID"),
+        "DINGTALK_APP_KEY": ("dingtalk", "钉钉AppKey"),
         "AI302_API_KEY": ("302ai", "302.AI 多模型聚合"),
         "POE_API_KEY": ("poe", "Poe 多模型平台"),
         "GITHUB_TOKEN": ("github", "GitHub Personal Token"),
@@ -36,7 +36,7 @@ class KeyManager:
 
     @classmethod
     def load(cls):
-        """浠嶴QLite鎭㈠ + .env鍏滃簳"""
+        """从SQLite恢复 + .env兜底"""
         from tools.memory_store import memory_store
         try:
             raw = memory_store.get_knowledge("api_keys")
@@ -48,11 +48,11 @@ class KeyManager:
                         cls._keys[d["env_key"]] = ApiKey(**d)
                     except:
                         pass
-            logger.info(f"宸插姞杞?{len(cls._keys)} 涓狝PI Key")
+            logger.info(f"已加载 {len(cls._keys)} 个API Key")
         except Exception as e:
-            logger.warning(f"鍔犺浇API Key澶辫触: {e}")
+            logger.warning(f"加载API Key失败: {e}")
 
-        # .env 鍏滃簳
+        # .env 兜底
         for env_key, (provider, desc) in cls._env_map.items():
             if env_key not in cls._keys:
                 env_val = os.getenv(env_key, "")
@@ -65,17 +65,17 @@ class KeyManager:
 
     @classmethod
     def save(cls):
-        """鎸佷箙鍖栧埌SQLite"""
+        """持久化到SQLite"""
         from tools.memory_store import memory_store
         try:
             data = {k: asdict(v) for k, v in cls._keys.items()}
             memory_store.set_knowledge("api_keys", "", json.dumps(data, ensure_ascii=False))
         except Exception as e:
-            logger.error(f"淇濆瓨API Key澶辫触: {e}")
+            logger.error(f"保存API Key失败: {e}")
 
     @classmethod
     def get_all(cls) -> List[Dict]:
-        """鑾峰彇鎵€鏈塊ey(鑴辨晱)"""
+        """获取所有Key(脱敏)"""
         return [{
             "env_key": k, "name": v.name, "provider": v.provider,
             "description": v.description, "active": v.active,
@@ -86,7 +86,7 @@ class KeyManager:
 
     @classmethod
     def get_value(cls, env_key: str) -> str:
-        """鑾峰彇Key瀹為檯鍊?鐢ㄤ簬API璋冪敤)"""
+        """获取Key实际值(用于API调用)"""
         key = cls._keys.get(env_key)
         if key and key.active and key.value:
             return key.value
@@ -94,8 +94,8 @@ class KeyManager:
 
     @classmethod
     def set_key(cls, env_key: str, value: str, name: str = "", description: str = "") -> bool:
-        """娣诲姞鎴栨洿鏂癒ey"""
-        provider, desc = cls._env_map.get(env_key, ("custom", description or "鑷畾涔塊ey"))
+        """添加或更新Key"""
+        provider, desc = cls._env_map.get(env_key, ("custom", description or "自定义Key"))
         now = time.time()
         existing = cls._keys.get(env_key)
         cls._keys[env_key] = ApiKey(
@@ -105,22 +105,22 @@ class KeyManager:
             updated_at=now
         )
         cls.save()
-        logger.info(f"Key宸叉洿鏂? {env_key}")
+        logger.info(f"Key已更新: {env_key}")
         return True
 
     @classmethod
     def delete_key(cls, env_key: str) -> bool:
-        """鍒犻櫎Key"""
+        """删除Key"""
         if env_key in cls._keys:
             del cls._keys[env_key]
             cls.save()
-            logger.info(f"Key宸插垹闄? {env_key}")
+            logger.info(f"Key已删除: {env_key}")
             return True
         return False
 
     @classmethod
     def toggle_key(cls, env_key: str) -> bool:
-        """鍚敤/绂佺敤Key"""
+        """启用/禁用Key"""
         key = cls._keys.get(env_key)
         if key:
             key.active = not key.active
@@ -131,7 +131,7 @@ class KeyManager:
 
     @classmethod
     def get_status(cls) -> Dict:
-        """鑾峰彇鎵€鏈塊ey鐘舵€?""
+        """获取所有Key状态"""
         all_keys = cls._env_map.copy()
         all_keys.update({k: ("custom", v.description) for k, v in cls._keys.items() if k not in cls._env_map})
         caps = {}
@@ -146,7 +146,7 @@ class KeyManager:
         available = sum(1 for v in caps.values() if v["ok"])
         return {"ok": True, "available": available, "total": len(caps), "capabilities": caps}
 
-# 鍚姩鍔犺浇
+# 启动加载
 try:
     KeyManager.load()
 except:

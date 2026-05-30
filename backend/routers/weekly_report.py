@@ -75,7 +75,7 @@ async def generate_weekly_report(_=Depends(verify_token)):
     data["scraped_products"] = len(week_scraped)
     data["scraped_imported"] = sum(1 for s in week_scraped if s.get("status")=="imported")
 
-    # 域���轮值
+    # 域名轮值
     domains = state._data.get("rotation_domains", [])
     data["active_domains"] = sum(1 for d in domains if d.get("active"))
     data["total_domains"] = len(domains)

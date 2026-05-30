@@ -18,7 +18,7 @@ class NotifyRequest(BaseModel):
     level: str = "info"
     channel: str = "telegram"  # telegram / email / dingtalk / wecom / all
 
-EMOJI = {"info": "??", "warn": "??", "error": "??", "critical": "??"}
+EMOJI = {"info": "ℹ️", "warn": "⚠️", "error": "❌", "critical": "🚨"}
 
 async def send_telegram(message: str, level: str) -> dict:
     if not TELEGRAM_BOT_TOKEN or not TELEGRAM_CHAT_ID:
@@ -43,7 +43,7 @@ async def send_email(message: str, level: str) -> dict:
     try:
         msg = EmailMessage()
         msg.set_content(f"[{level}] TikTokMall\n\n{message}\n\n{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-        msg["Subject"] = f"[TikTokMall] {level} ֪ͨ"
+        msg["Subject"] = f"[TikTokMall] {level} 通知"
         msg["From"] = SMTP_USER
         msg["To"] = SMTP_TO
         with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as s:
@@ -85,7 +85,7 @@ CHANNEL_MAP = {
 @router.post("/send")
 async def send_notification(req: NotifyRequest, _=Depends(verify_token)):
     """消息通知 -- Telegram / SMTP 邮件 / 钉钉 / 企业微信"""
-    await handle_risk("L1", f"����֪ͨ ({req.channel})", req.message[:50])
+    await handle_risk("L1", f"发送通知 ({req.channel})", req.message[:50])
 
     if req.channel == "all":
         results = {}
@@ -95,13 +95,13 @@ async def send_notification(req: NotifyRequest, _=Depends(verify_token)):
 
     func = CHANNEL_MAP.get(req.channel)
     if not func:
-        return {"sent": False, "error": f"��֧�ֵ�֪ͨ����: {req.channel}����ѡ: {list(CHANNEL_MAP.keys()) + ['all']}"}
+        return {"sent": False, "error": f"不支持的通知渠道: {req.channel}, 可选: {list(CHANNEL_MAP.keys()) + ['all']}"}
 
     return await func(req.message, req.level)
 
 @router.get("/config")
 async def notify_config(_=Depends(verify_token)):
-    await handle_risk("L1", "�鿴֪ͨ����")
+    await handle_risk("L1", "查看通知配置")
     return {
         "telegram": {"configured": bool(TELEGRAM_BOT_TOKEN)},
         "email": {"configured": bool(SMTP_HOST)},

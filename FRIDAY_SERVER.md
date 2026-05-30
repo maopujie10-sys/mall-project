@@ -1,6 +1,6 @@
 # 🖥️ Friday AI OS — 服务器端 AI 记忆
 
-> 最后更新: 2026-05-30 08:26 | 运行环境: server
+> 最后更新: 2026-05-30 09:27 | 运行环境: server
 
 ## 🧬 当前人格
 - 类型: 均衡型 · 全面发展
@@ -15,6 +15,21 @@
 6. 客服自动回复 + 轮值域名监控
 
 ## 最近改动
+- 2026-05-30 09:27: [编码修复] 修复 7个Python文件 + 1个Vue文件的中文编码污染(mojibake)
+  - **问题根因：** 电脑端 compact 格式转换导致 UTF-8 中文被双重编码，4个文件有语法错误阻止 Agent 启动
+  - **修复列表（语法错误→阻塞启动）：**
+    - `predict_engine.py`: U+20AC 非法字符导致 SyntaxError → 重写全部中文 docstring/注释
+    - `recommend_engine.py`: 乱码中括号导致 invalid syntax → 重写全部中文 docstring/注释
+    - `abtest_engine.py`: 乱码导致 unterminated triple-quoted string → 重写全部中文 docstring/注释
+    - `key_manager.py`: U+FF04 全角＄导致 invalid character → 重写全部中文 docstring/注释
+  - **修复列表（解析通过但中文乱码→日志/UI显示异常）：**
+    - `notify.py`: 4处 handle_risk/字符串中的乱码 → 修复为正确中文
+    - `weekly_report.py`: 1处注释乱码 `域名轮值` → 修复
+    - `autopilot.py`: 12处 handle_risk/注释/返回值乱码 → 重写整个文件
+  - **前端修复（上一轮）：**
+    - `KeyManager.vue`: `</p>` 标签被破坏为 `?/p>` → 整个模板重写
+  - **验证：** 全部8文件 Python compile 通过，Docker 构建成功，容器正常运行
+  - **构建次数：** 1次（全部修复一次性完成），较上一轮的6次迭代大幅改善
 - 2026-05-30 08:26: [构建修复] 修复 ba32c37 拉取后 9 文件/6 类 Python 运行时错误
   - **问题根因：** 电脑端 compact 格式转换导致模块导出名不匹配 + typing 导入丢失
   - **修复列表：**
