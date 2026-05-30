@@ -1,12 +1,12 @@
 version: "3.8"
 
 # ============================================================
-# TikTokMall AI Agent + �̳� ͳһ����
-# һ���������ȫ������AI ȫȨ��ά�̳�
+# TikTokMall 统一编排 (v3.0 — mall-unified 统一前端)
+# 一键启动：MySQL + Redis + AI Agent + 商城API + 统一前端 + Nginx
 # ============================================================
 
 services:
-  # ========== ������ʩ ==========
+  # ========== 基础设施 ==========
 
   mysql:
     image: mysql:8.0
@@ -20,7 +20,7 @@ services:
       - mysql_data:/var/lib/mysql
       - ./mall-app/src/main/resources/db/init.sql:/docker-entrypoint-initdb.d/01-mall.sql
     restart: unless-stopped
-    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci --default-authentication-plugin=mysql_native_password
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       interval: 10s
@@ -37,7 +37,7 @@ services:
     restart: unless-stopped
     command: redis-server --appendonly yes
 
-  # ========== AI Agent ��̨ ==========
+  # ========== AI Agent 后台 ==========
 
   ai-agent:
     build:
@@ -72,18 +72,16 @@ services:
       redis:
         condition: service_started
 
-  # ========== AI ǰ�˿���̨ ==========
+  # ========== AI 控制台前端 ==========
 
   ai-frontend:
     build: ./frontend
     container_name: mall-ai-frontend
-    ports:
-      - "5173:80"
     restart: unless-stopped
     depends_on:
       - ai-agent
 
-  # ========== �̳� API (Java Spring) ==========
+  # ========== 商城 API (Java Spring) ==========
 
   mall-api:
     build:
@@ -93,11 +91,12 @@ services:
     ports:
       - "8080:8080"
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/mall_db?useUnicode=true&characterEncoding=utf8mb4
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/mall_db?useUnicode=true&characterEncoding=utf8mb4&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai
       - SPRING_DATASOURCE_USERNAME=root
       - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
       - SPRING_REDIS_HOST=redis
       - SPRING_REDIS_PORT=6379
+      - DB_PASSWORD=${DB_PASSWORD}
     volumes:
       - ./logs:/app/logs
     restart: unless-stopped
@@ -107,7 +106,18 @@ services:
       redis:
         condition: service_started
 
-  # ========== ͳһ��� Nginx ==========
+  # ========== 统一商城前端 (PC/H5/商家) ==========
+
+  mall-unified:
+    build:
+      context: ./mall-unified
+      dockerfile: Dockerfile
+    container_name: mall-unified
+    restart: unless-stopped
+    depends_on:
+      - mall-api
+
+  # ========== 统一入口 Nginx ==========
 
   nginx:
     image: nginx:alpine
@@ -116,16 +126,13 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - ./nginx.conf:/etc/nginx/conf.d/default.conf
-      - ./mall-frontend-pc/dist:/usr/share/nginx/html/mall
-      - ./mall-frontend-h5/dist:/usr/share/nginx/html/mall-h5
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
     restart: unless-stopped
     depends_on:
-      - ai-frontend
+      - mall-unified
       - mall-api
+      - ai-frontend
 
 volumes:
   mysql_data:
   redis_data:
-
-

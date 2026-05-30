@@ -1,0 +1,1 @@
+import{g as t}from"./index-dk0pHQF2.js";function s(e={}){return t("/api/product/list",e)}function l(){return t("/api/category/list")}function o(e){return t("/api/seller/list",e)}function a(e){return t("/api/seller/"+e)}function n(e,r){return t("/api/seller/"+e+"/goods",r)}export{s as a,a as b,n as c,o as d,l as g};

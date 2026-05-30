@@ -1,0 +1,1 @@
+import{g as s}from"./index-dk0pHQF2.js";const o=e=>s("/api/seller/list",e),r=e=>s("/api/product/recommend",e),t=e=>s("/api/banner/list",e),c=e=>s("/api/category/recommend",e),i=e=>s("/api/chat/unread",e),p=e=>s("/api/product/search",e),n=e=>s("/api/product/search",e),d=e=>s("/api/seller/search",e);export{t as a,r as b,c,i as d,n as e,d as f,o as g,p as s};

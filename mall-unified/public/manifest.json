@@ -1,0 +1,37 @@
+{
+  "name": "TikTokMall 跨境商城",
+  "short_name": "TikTokMall",
+  "description": "全球跨境电商平台 — 购物、商家管理一站式 PWA",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#6366f1",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "/icons/icon-72.png",
+      "sizes": "72x72",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "scope": "/",
+  "lang": "zh-CN",
+  "categories": ["shopping", "business"],
+  "screenshots": [],
+  "shortcuts": [
+    { "name": "购物", "url": "/m", "description": "手机商城" },
+    { "name": "商家", "url": "/m/seller/shop", "description": "商家管理" }
+  ]
+}

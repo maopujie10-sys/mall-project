@@ -1097,6 +1097,22 @@ async def java_rotation_stats(_=Depends(verify_token)):
     return await proxy_to_mall("/api/rotation/stats")
 
 # ============================================================
+# 收款方式 (无 Java 管理端, 代理商家 API)
+# ============================================================
+
+@router.get("/payment-methods")
+async def payment_method_list(_=Depends(verify_token), page: int = 1, size: int = 20):
+    """查看商家收款方式 (代理 SellerPaymentMethodController / 暂无管理端)"""
+    await handle_risk("L1", '')
+    return await proxy_to_mall("/api/seller/payment-methods", params={"page": page, "size": size})
+
+@router.delete("/payment-method/{pmid}")
+async def payment_method_delete(pmid: str, _=Depends(verify_token)):
+    """删除商家收款方式"""
+    await handle_risk("L3", '')
+    return await proxy_to_mall(f"/api/seller/payment-method/{pmid}", method="DELETE")
+
+# ============================================================
 # 代理管理 (AdminController agent/*)
 # ============================================================
 
