@@ -770,8 +770,15 @@ async def execute_action(action, params, ws=None):
             return {"ok": True, "action": action, "waited": seconds}
         
         elif action == "run_command":
-            cmd = params.get("command", "")
-            r = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=30)
+            ALLOWED_COMMANDS = {
+                "uptime": ["uptime"], "df": ["df", "-h"], "free": ["free", "-m"],
+                "ps": ["ps", "aux"], "who": ["who"], "hostname": ["hostname"],
+                "uname": ["uname", "-a"], "date": ["date"], "w": ["w"],
+            }
+            cmd_name = params.get("command", "").strip().split()[0] if params.get("command", "") else ""
+            if cmd_name not in ALLOWED_COMMANDS:
+                return {"ok": False, "action": action, "error": f"不允许的命令: {cmd_name}"}
+            r = subprocess.run(ALLOWED_COMMANDS[cmd_name], capture_output=True, text=True, timeout=30)
             return {"ok": True, "action": action, "stdout": r.stdout[:3000], "stderr": r.stderr[:1000], "code": r.returncode}
         
         elif action == "get_info":

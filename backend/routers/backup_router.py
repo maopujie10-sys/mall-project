@@ -54,8 +54,17 @@ async def restore_backup(backup_name: str, target_db: str = "", _=Depends(verify
     port = DB_CONFIG.get("port", 3306)
     try:
         if backup_name.endswith(".sql"):
-            cmd = f"mysql -h{host} -P{port} -u{user} -p{password} {db} < {backup_path}"
-            result = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=300)
+            import tempfile
+            fd, cnf_path = tempfile.mkstemp(suffix='.cnf')
+            with os.fdopen(fd, 'w') as f:
+                f.write(f"[client]\nuser={user}\npassword={password}\nhost={host}\nport={port}\n")
+            os.chmod(cnf_path, 0o600)
+            try:
+                result = subprocess.run(
+                    ["mysql", f"--defaults-extra-file={cnf_path}", db],
+                    stdin=open(backup_path, 'r'), capture_output=True, text=True, timeout=300)
+            finally:
+                os.unlink(cnf_path)
         else:
             result = subprocess.run(["tar", "-xzf", backup_path, "-C", "/"], capture_output=True, text=True, timeout=120)
         return {"ok": result.returncode == 0, "output": (result.stdout or result.stderr)[:500]}

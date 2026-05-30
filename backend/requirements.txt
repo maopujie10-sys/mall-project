@@ -16,3 +16,4 @@ curl_cffi>=0.5
 qrcode>=7.4
 packaging>=23.0
 PyPDF2>=3.0.0
+bcrypt>=4.0

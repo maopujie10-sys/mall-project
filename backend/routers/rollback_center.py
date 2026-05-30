@@ -61,25 +61,33 @@ async def create_backup(req: CreateBackupRequest, _=Depends(verify_token)):
 
     if req.target == "database" and MALL_DB_HOST and MALL_DB_USER:
         backup_file = os.path.join(BACKUP_DIR, f"backup_{MALL_DB_NAME}_{timestamp}.sql.gz")
-        dump_cmd = f'mysqldump -h {MALL_DB_HOST} -P {MALL_DB_PORT} -u {MALL_DB_USER} -p{MALL_DB_PASSWORD} {MALL_DB_NAME} 2>/dev/null | gzip > {backup_file}'
+        import tempfile
+        fd, cnf_path = tempfile.mkstemp(suffix='.cnf')
+        with os.fdopen(fd, 'w') as f:
+            f.write(f"[client]\nuser={MALL_DB_USER}\npassword={MALL_DB_PASSWORD}\nhost={MALL_DB_HOST}\nport={MALL_DB_PORT}\n")
+        os.chmod(cnf_path, 0o600)
         try:
-            subprocess.run(dump_cmd, shell=True, check=True, timeout=120)
-            if os.path.exists(backup_file):
-                result["path"] = backup_file
-                result["success"] = True
-                result["size"] = os.path.getsize(backup_file)
-        except Exception as e:
-            result["error"] = str(e)
-            backup_file = os.path.join(BACKUP_DIR, f"backup_{MALL_DB_NAME}_{timestamp}.sql")
-            dump_cmd = f'mysqldump -h {MALL_DB_HOST} -P {MALL_DB_PORT} -u {MALL_DB_USER} -p{MALL_DB_PASSWORD} {MALL_DB_NAME} > {backup_file} 2>/dev/null'
+            dump_cmd = f"mysqldump --defaults-extra-file={cnf_path} {MALL_DB_NAME} 2>/dev/null | gzip > {backup_file}"
             try:
                 subprocess.run(dump_cmd, shell=True, check=True, timeout=120)
                 if os.path.exists(backup_file):
                     result["path"] = backup_file
                     result["success"] = True
                     result["size"] = os.path.getsize(backup_file)
-            except Exception as e2:
-                result["error"] = f"数据库备份失败,请检查mysqldump是否可用: {str(e2)}"
+            except Exception as e:
+                result["error"] = str(e)
+                backup_file = os.path.join(BACKUP_DIR, f"backup_{MALL_DB_NAME}_{timestamp}.sql")
+                dump_cmd = f"mysqldump --defaults-extra-file={cnf_path} {MALL_DB_NAME} > {backup_file} 2>/dev/null"
+                try:
+                    subprocess.run(dump_cmd, shell=True, check=True, timeout=120)
+                    if os.path.exists(backup_file):
+                        result["path"] = backup_file
+                        result["success"] = True
+                        result["size"] = os.path.getsize(backup_file)
+                except Exception as e2:
+                    result["error"] = f"数据库备份失败,请检查mysqldump是否可用: {str(e2)}"
+        finally:
+            os.unlink(cnf_path)
 
     elif req.target == "nginx":
         backup_file = os.path.join(BACKUP_DIR, f"nginx_conf_{timestamp}.tar.gz")

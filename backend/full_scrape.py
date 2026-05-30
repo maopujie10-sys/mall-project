@@ -497,7 +497,7 @@ if __name__ == "__main__":
     zero_cat_names = set()
     try:
         import pymysql as _mysql
-        _c = _mysql.connect(host='127.0.0.1', port=3306, user='root', password='Root@123', database='mall')
+        _c = _mysql.connect(host=os.getenv('MALL_DB_HOST','127.0.0.1'), port=int(os.getenv('MALL_DB_PORT','3306')), user=os.getenv('MALL_DB_USER','root'), password=os.getenv('MALL_DB_PASSWORD',''), database=os.getenv('MALL_DB_NAME','mall'))
         _cur = _c.cursor()
         _cur.execute("""SELECT cl.NAME FROM T_MALL_CATEGORY c
             JOIN T_MALL_CATEGORY_LANG cl ON c.UUID = cl.CATEGORY_ID AND cl.LANG='en'

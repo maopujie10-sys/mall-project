@@ -49,24 +49,38 @@ async def run_code(req: CodeRequest, _=Depends(verify_token)):
     stderr = io.StringIO()
     try:
         code_clean = req.code.replace('\r\n','\n')[:5000]
-        # 安全检查:禁止危险操作
-        dangerous = ['__import__','eval(','exec(','compile(','open(','os.','subprocess','shutil','socket','urllib','requests','httpx','importlib','ctypes','multiprocessing','threading','signal','atexit','sys.exit','os.system','os.popen','os.exec']
-        for d in dangerous:
-            if d in code_clean:
-                return {"ok": False, "error": f"禁止操作: {d}"}
-        
+        # AST白名单验证 -- 只允许安全的AST节点
+        import ast
+        ALLOWED_NODES = {
+            ast.Expr, ast.Assign, ast.Name, ast.Constant, ast.Num, ast.Str,
+            ast.BinOp, ast.UnaryOp, ast.Compare, ast.BoolOp, ast.IfExp,
+            ast.If, ast.For, ast.While, ast.List, ast.Dict, ast.Tuple, ast.Set,
+            ast.Call, ast.Attribute, ast.Subscript, ast.Slice, ast.Index,
+            ast.Return, ast.FunctionDef, ast.arguments, ast.arg,
+            ast.Module, ast.Pass, ast.Break, ast.Continue,
+            ast.Add, ast.Sub, ast.Mult, ast.Div, ast.Mod, ast.Pow,
+            ast.Eq, ast.NotEq, ast.Lt, ast.Gt, ast.LtE, ast.GtE,
+            ast.And, ast.Or, ast.Not, ast.In, ast.NotIn, ast.Is, ast.IsNot,
+            ast.ListComp, ast.DictComp, ast.GeneratorExp,
+            ast.Load, ast.Store, ast.Del, ast.AugAssign,
+        }
+        tree = ast.parse(code_clean)
+        for node in ast.walk(tree):
+            if type(node) not in ALLOWED_NODES:
+                return {"ok": False, "error": f"禁止的代码结构: {type(node).__name__}"}
+
         old_stdout = sys.stdout; sys.stdout = stdout
         old_stderr = sys.stderr; sys.stderr = stderr
-        
+
         import math, statistics, datetime as dt, re as re_m, random as rnd, json as j, collections, itertools, hashlib, base64 as b64, csv
-        
+
         safe_globals = {
             "__builtins__": {k: __builtins__[k] for k in SAFE_BUILTINS if k in __builtins__},
             "math": math, "statistics": statistics, "datetime": dt, "re": re_m,
             "random": rnd, "json": j, "collections": collections, "itertools": itertools,
             "hashlib": hashlib, "base64": b64, "csv": csv,
         }
-        
+
         exec(code_clean, safe_globals)
         output = stdout.getvalue()
         _track("code-python", 0, 0, 0)

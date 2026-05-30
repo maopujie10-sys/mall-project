@@ -1,5 +1,5 @@
 """认证模块 v3 -- JWT + RBAC角色权限 + 审计日志"""
-import jwt, time, secrets, os, sqlite3, hashlib
+import jwt, time, secrets, os, sqlite3, bcrypt
 from pathlib import Path
 from datetime import datetime, timedelta
 from fastapi import HTTPException, Request, Depends
@@ -8,7 +8,9 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 security = HTTPBearer(auto_error=False)
 
 # JWT配置
-JWT_SECRET = os.getenv("JWT_SECRET", secrets.token_hex(32))
+JWT_SECRET = os.getenv("JWT_SECRET", "")
+if not JWT_SECRET:
+    raise RuntimeError("JWT_SECRET 环境变量未配置，拒绝启动。请设置: export JWT_SECRET=$(openssl rand -hex 32)")
 JWT_ALGORITHM = "HS256"
 JWT_EXPIRE_HOURS = 24
 
@@ -24,15 +26,21 @@ ROLES = {
 # 用户存储 -- SQLite持久化
 USER_DB = Path(__file__).parent / "data" / "users.db"
 
+def _hash_password(password: str) -> str:
+    return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt(rounds=12)).decode('utf-8')
+
+def _check_password(password: str, hashed: str) -> bool:
+    return bcrypt.checkpw(password.encode('utf-8'), hashed.encode('utf-8'))
+
 def _get_user_db():
     USER_DB.parent.mkdir(parents=True, exist_ok=True)
     conn = sqlite3.connect(str(USER_DB))
     conn.execute("CREATE TABLE IF NOT EXISTS users (username TEXT PRIMARY KEY, password_hash TEXT, role TEXT DEFAULT 'viewer', created_at TEXT)")
     cursor = conn.execute("SELECT COUNT(*) FROM users")
     if cursor.fetchone()[0] == 0:
-        conn.execute("INSERT INTO users VALUES ('admin', ?, 'admin', datetime('now'))", (hashlib.sha256("admin123".encode()).hexdigest(),))
-        conn.execute("INSERT INTO users VALUES ('operator', ?, 'operator', datetime('now'))", (hashlib.sha256("oper123".encode()).hexdigest(),))
-        conn.execute("INSERT INTO users VALUES ('viewer', ?, 'viewer', datetime('now'))", (hashlib.sha256("view123".encode()).hexdigest(),))
+        conn.execute("INSERT INTO users VALUES ('admin', ?, 'admin', datetime('now'))", (_hash_password(os.getenv("ADMIN_PASSWORD", "admin123")),))
+        conn.execute("INSERT INTO users VALUES ('operator', ?, 'operator', datetime('now'))", (_hash_password(os.getenv("OPERATOR_PASSWORD", "oper123")),))
+        conn.execute("INSERT INTO users VALUES ('viewer', ?, 'viewer', datetime('now'))", (_hash_password(os.getenv("VIEWER_PASSWORD", "view123")),))
         conn.commit()
     return conn
 
@@ -40,7 +48,7 @@ def verify_user_password(username, password):
     conn = _get_user_db()
     row = conn.execute("SELECT username, password_hash, role FROM users WHERE username=?", (username,)).fetchone()
     conn.close()
-    if row and row[1] == hashlib.sha256(password.encode()).hexdigest():
+    if row and _check_password(password, row[1]):
         return {"username": row[0], "role": row[2]}
     return None
 
@@ -53,7 +61,7 @@ def list_all_users():
 def add_user(username, password, role="viewer"):
     conn = _get_user_db()
     try:
-        conn.execute("INSERT INTO users VALUES (?, ?, ?, datetime('now'))", (username, hashlib.sha256(password.encode()).hexdigest(), role))
+        conn.execute("INSERT INTO users VALUES (?, ?, ?, datetime('now'))", (username, _hash_password(password), role))
         conn.commit(); conn.close(); return True
     except sqlite3.IntegrityError:
         conn.close(); return False

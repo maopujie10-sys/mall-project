@@ -39,26 +39,34 @@ async def backup_task():
     logger.info(f"数据库备份 {now_str}")
     try:
         from routers.rollback_center import _load_backups, _save_backups
-        import subprocess, os
+        import subprocess, os, tempfile
         from config import MALL_DB_HOST, MALL_DB_PORT, MALL_DB_USER, MALL_DB_PASSWORD, MALL_DB_NAME, BACKUP_DIR
         os.makedirs(BACKUP_DIR, exist_ok=True)
         ts = datetime.now().strftime("%Y%m%d_%H%M%S")
         backup_path = os.path.join(BACKUP_DIR, f"auto_backup_{ts}.sql")
-        cmd = f"mysqldump -h {MALL_DB_HOST} -P {MALL_DB_PORT} -u {MALL_DB_USER} -p{MALL_DB_PASSWORD} {MALL_DB_NAME}"
-        result = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=120)
-        if result.returncode == 0:
-            with open(backup_path, "w", encoding="utf-8") as f:
-                f.write(result.stdout)
-            records = _load_backups()
-            records.append({
-                "id": ts, "name": f"自动备份_{ts}", "type": "auto",
-                "target": "database", "path": backup_path,
-                "size": len(result.stdout), "created_at": datetime.now().isoformat(),
-            })
-            _save_backups(records)
-            logger.info(f"备份成功 {backup_path}")
-        else:
-            logger.info(f"备份失败: {result.stderr[:200]}")
+        # 使用临时配置文件避免密码暴露在ps aux中
+        fd, cnf_path = tempfile.mkstemp(suffix='.cnf')
+        with os.fdopen(fd, 'w') as f:
+            f.write(f"[client]\nuser={MALL_DB_USER}\npassword={MALL_DB_PASSWORD}\nhost={MALL_DB_HOST}\nport={MALL_DB_PORT}\n")
+        os.chmod(cnf_path, 0o600)
+        try:
+            cmd = ["mysqldump", f"--defaults-extra-file={cnf_path}", MALL_DB_NAME]
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
+            if result.returncode == 0:
+                with open(backup_path, "w", encoding="utf-8") as f:
+                    f.write(result.stdout)
+                records = _load_backups()
+                records.append({
+                    "id": ts, "name": f"自动备份_{ts}", "type": "auto",
+                    "target": "database", "path": backup_path,
+                    "size": len(result.stdout), "created_at": datetime.now().isoformat(),
+                })
+                _save_backups(records)
+                logger.info(f"备份成功 {backup_path}")
+            else:
+                logger.info(f"备份失败: {result.stderr[:200]}")
+        finally:
+            os.unlink(cnf_path)
     except Exception as e:
         logger.info(f"备份异常: {e}")
 

@@ -221,10 +221,14 @@ async def server_kill_process(pid:int, _=Depends(verify_token)):
 
 @router.get("/files")
 async def server_files(path:str="/", _=Depends(verify_token)):
-    if not os.path.exists(path): raise HTTPException(404,"目录不存在")
+    SAFE_ROOT = os.path.realpath(os.getenv("FILE_ROOT", "/home/data"))
+    full = os.path.realpath(os.path.join(SAFE_ROOT, path.lstrip('/')))
+    if not full.startswith(SAFE_ROOT):
+        raise HTTPException(403, "路径访问被拒绝")
+    if not os.path.exists(full): raise HTTPException(404,"目录不存在")
     entries = []
-    for name in sorted(os.listdir(path)):
-        fp=os.path.join(path,name)
+    for name in sorted(os.listdir(full)):
+        fp=os.path.join(full,name)
         try:
             st=os.stat(fp)
             entries.append({"name":name,"size":st.st_size,"is_dir":os.path.isdir(fp),
@@ -234,15 +238,23 @@ async def server_files(path:str="/", _=Depends(verify_token)):
 
 @router.post("/files/upload")
 async def server_file_upload(path:str="/tmp", file:UploadFile=File(...), _=Depends(verify_token)):
-    os.makedirs(path,exist_ok=True)
-    dest=os.path.join(path,file.filename or "upload")
+    SAFE_ROOT = os.path.realpath(os.getenv("FILE_ROOT", "/home/data"))
+    full = os.path.realpath(os.path.join(SAFE_ROOT, path.lstrip('/')))
+    if not full.startswith(SAFE_ROOT):
+        raise HTTPException(403, "路径访问被拒绝")
+    os.makedirs(full,exist_ok=True)
+    dest=os.path.join(full,file.filename or "upload")
     content=await file.read()
     with open(dest,"wb") as f: f.write(content)
     return {"ok":True,"path":dest,"size":len(content)}
 
 @router.delete("/files")
 async def server_file_delete(path:str, _=Depends(verify_token)):
-    if not os.path.exists(path): raise HTTPException(404,"不存在")
-    if os.path.isdir(path): os.rmdir(path)
-    else: os.remove(path)
+    SAFE_ROOT = os.path.realpath(os.getenv("FILE_ROOT", "/home/data"))
+    full = os.path.realpath(os.path.join(SAFE_ROOT, path.lstrip('/')))
+    if not full.startswith(SAFE_ROOT):
+        raise HTTPException(403, "路径访问被拒绝")
+    if not os.path.exists(full): raise HTTPException(404,"不存在")
+    if os.path.isdir(full): os.rmdir(full)
+    else: os.remove(full)
     return {"ok":True,"path":path}
