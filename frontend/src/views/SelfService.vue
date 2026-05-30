@@ -20,12 +20,12 @@
     <!-- 瀹㈡湇璁㈠崟鏌ヨ -->
     <el-card shadow="never" style="margin-top:16px">
       <template #header>瀹㈡湇璁㈠崟鏌ヨ</template>
-      <el-input v-model="queryUserId" placeholder="鐢ㄦ埛ID" style="width:200px;margin-right:8px" />
+      <el-input v-model="queryUserId" placeholder="用户ID" style="width:200px;margin-right:8px" />
       <el-input v-model="queryOrderId" placeholder="璁㈠崟ID" style="width:200px;margin-right:8px" />
       <el-button type="primary" @click="runCustomerQuery" :loading="queryLoading">鏌ヨ</el-button>
     </el-card>
 
-    <!-- 鎵ц缁撴灉 -->
+    <!-- 鎵ц结果 -->
     <el-card v-if="report" shadow="never" style="margin-top:16px">
       <template #header>
         <span>鎵ц鎶ュ憡</span>

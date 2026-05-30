@@ -1,7 +1,7 @@
 <template>
   <div class="trend-page">
     <div class="page-header">
-      <div><h1>馃摗 绔炲搧鐩戞帶</h1><p>浠锋牸鍙樺姩鍛婅 路 淇冮攢杩借釜 路 瓒嬪娍鍒嗘瀽 路 鏂板搧鍙戠幇</p></div>
+      <div><h1>馃摗 绔炲搧鐩戞帶</h1><p>价格鍙樺姩鍛婅 路 淇冮攢杩借釜 路 瓒嬪娍鍒嗘瀽 路 鏂板搧鍙戠幇</p></div>
       <el-button type="primary" @click="showAddDialog = true">+ 娣诲姞绔炲搧</el-button>
     </div>
 
@@ -34,21 +34,21 @@
         </el-table-column>
         <el-table-column label="鍛婅" width="80"><template #default="{row}">{{ (row.alerts||[]).length }}</template></el-table-column>
         <el-table-column label="淇冮攢" width="80"><template #default="{row}">{{ (row.promotions||[]).length }}</template></el-table-column>
-        <el-table-column label="鎿嶄綔" width="200">
+        <el-table-column label="操作" width="200">
           <template #default="{row}">
-            <el-button size="small" link @click="showPriceDialog(row)">馃挵璁板綍浠锋牸</el-button>
+            <el-button size="small" link @click="showPriceDialog(row)">馃挵璁板綍价格</el-button>
             <el-button size="small" link @click="showPromoDialog(row)">馃帀璁板綍淇冮攢</el-button>
-            <el-button size="small" link type="danger" @click="doRemove(row.id)">鍒犻櫎</el-button>
+            <el-button size="small" link type="danger" @click="doRemove(row.id)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
     </el-card>
 
-    <!-- 浠锋牸瓒嬪娍 -->
+    <!-- 价格瓒嬪娍 -->
     <el-card shadow="never" style="margin-bottom:20px" v-if="trends.length">
-      <template #header>馃搱 浠锋牸瓒嬪娍</template>
+      <template #header>馃搱 价格瓒嬪娍</template>
       <el-table :data="trends" size="small">
-        <el-table-column prop="product" label="鍟嗗搧"/>
+        <el-table-column prop="product" label="商品"/>
         <el-table-column prop="platform" label="骞冲彴" width="100"/>
         <el-table-column prop="first_price" label="..." width="100"/>
         <el-table-column prop="last_price" label="鏈€鏂颁环" width="100"/>
@@ -63,11 +63,11 @@
       </el-table>
     </el-card>
 
-    <!-- 浠锋牸鍛婅 + 淇冮攢 -->
+    <!-- 价格鍛婅 + 淇冮攢 -->
     <el-row :gutter="16">
       <el-col :span="12">
         <el-card shadow="never">
-          <template #header>鈿狅笍 浠锋牸鍛婅 (杩澶?</template>
+          <template #header>鈿狅笍 价格鍛婅 (杩澶?</template>
           <el-timeline v-if="alerts.length">
             <el-timeline-item v-for="a in alerts.slice(-10).reverse()" :key="a.time" :timestamp="a.time?.substr(0,16)" :type="a.severity==='P1'?'danger':'warning'">
               {{ a.product }}: {{ a.from }}鈫抺{ a.to }} ({{ a.change_pct }}%)
@@ -92,35 +92,35 @@
     <!-- 娣诲姞绔炲搧瀵硅瘽妗?-->
     <el-dialog v-model="showAddDialog" title="娣诲姞绔炲搧鐩戞帶" width="450px">
       <el-form label-width="80px">
-        <el-form-item label="鍟嗗搧鍚嶇О"><el-input v-model="addForm.product_name"/></el-form-item>
+        <el-form-item label="商品名称"><el-input v-model="addForm.product_name"/></el-form-item>
         <el-form-item label="骞冲彴"><el-select v-model="addForm.platform" style="width:100%">
           <el-option label="eBay" value="ebay"/><el-option label="Amazon" value="amazon"/>
           <el-option label="AliExpress" value="aliexpress"/><el-option label="Shopee" value="shopee"/>
           <el-option label="娣樺疂" value="taobao"/><el-option label="1688" value="alibaba1688"/>
         </el-select></el-form-item>
-        <el-form-item label="鍟嗗搧閾炬帴"><el-input v-model="addForm.url"/></el-form-item>
-        <el-form-item label="鐩爣浠锋牸"><el-input-number v-model="addForm.target_price" :min="0"/></el-form-item>
+        <el-form-item label="商品链接"><el-input v-model="addForm.url"/></el-form-item>
+        <el-form-item label="鐩爣价格"><el-input-number v-model="addForm.target_price" :min="0"/></el-form-item>
         <el-form-item label="鍒嗙被"><el-input v-model="addForm.category"/></el-form-item>
       </el-form>
-      <template #footer><el-button @click="showAddDialog=false">鍙栨秷</el-button><el-button type="primary" @click="doAdd">娣诲姞</el-button></template>
+      <template #footer><el-button @click="showAddDialog=false">取消</el-button><el-button type="primary" @click="doAdd">娣诲姞</el-button></template>
     </el-dialog>
 
-    <!-- 璁板綍浠锋牸瀵硅瘽妗?-->
-    <el-dialog v-model="showPriceDlg" :title="'璁板綍浠锋牸: '+priceForm.product" width="350px">
+    <!-- 璁板綍价格瀵硅瘽妗?-->
+    <el-dialog v-model="showPriceDlg" :title="'璁板綍价格: '+priceForm.product" width="350px">
       <el-form label-width="80px">
-        <el-form-item label="浠锋牸"><el-input-number v-model="priceForm.price" :min="0" :precision="2"/></el-form-item>
+        <el-form-item label="价格"><el-input-number v-model="priceForm.price" :min="0" :precision="2"/></el-form-item>
         <el-form-item label="甯佺"><el-select v-model="priceForm.currency"><el-option label="USD" value="USD"/><el-option label="CNY" value="CNY"/></el-select></el-form-item>
       </el-form>
-      <template #footer><el-button @click="showPriceDlg=false">鍙栨秷</el-button><el-button type="primary" @click="doRecordPrice">璁板綍</el-button></template>
+      <template #footer><el-button @click="showPriceDlg=false">取消</el-button><el-button type="primary" @click="doRecordPrice">璁板綍</el-button></template>
     </el-dialog>
 
     <!-- 璁板綍淇冮攢瀵硅瘽妗?-->
     <el-dialog v-model="showPromoDlg" :title="'璁板綍淇冮攢: '+promoForm.product" width="400px">
       <el-form label-width="80px">
-        <el-form-item label="鏍囬"><el-input v-model="promoForm.title"/></el-form-item>
+        <el-form-item label="标题"><el-input v-model="promoForm.title"/></el-form-item>
         <el-form-item label="鎶樻墸"><el-input v-model="promoForm.discount" placeholder="濡? 30% OFF"/></el-form-item>
       </el-form>
-      <template #footer><el-button @click="showPromoDlg=false">鍙栨秷</el-button><el-button type="primary" @click="doRecordPromo">璁板綍</el-button></template>
+      <template #footer><el-button @click="showPromoDlg=false">取消</el-button><el-button type="primary" @click="doRecordPromo">璁板綍</el-button></template>
     </el-dialog>
   </div>
 </template>

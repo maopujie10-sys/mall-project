@@ -4,7 +4,7 @@
       <h1>馃惓 Docker 绠＄悊</h1>
       <div class="header-actions">
         <el-button type="primary" @click="fetchAll" :loading="loading" size="small">
-          <el-icon><Refresh /></el-icon> 鍒锋柊
+          <el-icon><Refresh /></el-icon> 刷新
         </el-button>
       </div>
     </div>
@@ -41,7 +41,7 @@
         <span>瀹瑰櫒鍒楄〃</span>
       </template>
       <el-table :data="containers" stripe v-loading="loading" max-height="400">
-        <el-table-column prop="name" label="鍚嶇О" min-width="160" />
+        <el-table-column prop="name" label="名称" min-width="160" />
         <el-table-column prop="image" label="闀滃儚" min-width="200" />
         <el-table-column prop="status" label="..." min-width="180">
           <template #default="{ row }">
@@ -51,7 +51,7 @@
           </template>
         </el-table-column>
         <el-table-column prop="ports" label="绔彛" min-width="120" />
-        <el-table-column label="鎿嶄綔" width="100" fixed="right">
+        <el-table-column label="操作" width="100" fixed="right">
           <template #default="{ row }">
             <el-button size="small" type="warning" @click="restartContainer(row.name)" :loading="restarting === row.name">
               閲嶅惎
@@ -76,7 +76,7 @@
         <el-card class="section-card">
           <template #header><span>缃戠粶鍒楄〃</span></template>
           <el-table :data="networks" stripe v-loading="loading" max-height="300">
-            <el-table-column prop="name" label="鍚嶇О" min-width="160" />
+            <el-table-column prop="name" label="名称" min-width="160" />
             <el-table-column prop="driver" label="椹卞姩" width="100" />
             <el-table-column prop="scope" label="鑼冨洿" width="80" />
           </el-table>
@@ -87,7 +87,7 @@
     <el-card class="section-card">
       <template #header><span>瀹瑰櫒鏃ュ織</span></template>
       <div style="display: flex; gap: 8px; margin-bottom: 12px;">
-        <el-input v-model="logContainer" placeholder="杈撳叆瀹瑰櫒鍚嶇О鎴朓D" style="width: 300px;" size="small" />
+        <el-input v-model="logContainer" placeholder="杈撳叆瀹瑰櫒名称鎴朓D" style="width: 300px;" size="small" />
         <el-button @click="fetchLogs" type="primary" size="small">鏌ョ湅鏃ュ織</el-button>
       </div>
       <el-input type="textarea" :rows="8" :value="logs" readonly style="font-family: monospace; font-size: 12px;" />

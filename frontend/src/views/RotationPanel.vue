@@ -14,10 +14,10 @@
       <el-col :span="6"><div class="metric-card"><div class="metric-label">骞冲潎鍝嶅簲</div><div class="metric-value">{{ avgLatency }}ms</div></div></el-col>
     </el-row>
 
-    <!-- 鎿嶄綔鏍?-->
+    <!-- 操作鏍?-->
     <div style="display:flex;gap:10px;margin-bottom:16px">
       <el-button type="primary" @click="addDialogVisible=true">锛娣诲姞鍩熷悕</el-button>
-      <el-button @click="refreshDomains" :loading="loading">鍒锋柊鐘舵€</el-button>
+      <el-button @click="refreshDomains" :loading="loading">刷新鐘舵€</el-button>
       <el-button @click="handleCheckAll" :loading="checkingAll">妫€娴嬪叏閮</el-button>
     </div>
 
@@ -32,7 +32,7 @@
             </span>
           </template>
         </el-table-column>
-        <el-table-column prop="type" label="绫诲瀷" width="90">
+        <el-table-column prop="type" label="类型" width="90">
           <template #default="{row}"><el-tag size="small">{{ row.type||'杞€' }}</el-tag></template>
         </el-table-column>
         <el-table-column prop="ip" label="瑙ｆ瀽IP" width="140" />
@@ -49,21 +49,21 @@
             <el-input-number v-model="row.weight" :min="1" :max="10" size="small" controls-position="right" style="width:80px" @change="(v)=>updateWeight(row,v)" />
           </template>
         </el-table-column>
-        <el-table-column label="鎿嶄綔" width="220">
+        <el-table-column label="操作" width="220">
           <template #default="{row}">
             <el-button text size="small" :type="row.active?'warning':'success'" @click="handleToggle(row)">{{ row.active?'鏆傚仠':'鎭㈠' }}</el-button>
             <el-button text size="small" type="primary" @click="handleCheckOne(row)">妫€娴</el-button>
-            <el-button text size="small" type="danger" @click="handleRemove(row)">鍒犻櫎</el-button>
+            <el-button text size="small" type="danger" @click="handleRemove(row)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
       <el-empty v-if="domains.length===0&&!loading" description="暂无域名，点击上方「添加域名」开始配置" :image-size="80" style="padding:60px 0" />
     </el-card>
 
-    <!-- ===== 浜岀骇杞€奸厤缃?===== -->
+    <!-- ===== 二级杞€奸厤缃?===== -->
     <el-card shadow="never" style="margin-top:20px">
-      <template #header><span style="font-weight:600">浜岀骇杞€奸厤缃紙主域名"+ 杞€肩粍 + 瀛愬煙鍚嶏級</span></template>
-      <div v-if="!twoLevelConfig">鏆傛棤浜岀骇杞€奸厤缃</div>
+      <template #header><span style="font-weight:600">二级杞€奸厤缃紙主域名"+ 杞€肩粍 + 瀛愬煙鍚嶏級</span></template>
+      <div v-if="!twoLevelConfig">鏆傛棤二级杞€奸厤缃</div>
       <div v-else>
         <div style="margin-bottom:16px">
           <strong>涓诲煙鍚嶏細</strong>{{ twoLevelConfig.primary?.main || '-' }}
@@ -93,7 +93,7 @@
         <el-form-item label="鍩熷悕">
           <el-input v-model="newDomain.domain" placeholder="example.com" />
         </el-form-item>
-        <el-form-item label="绫诲瀷">
+        <el-form-item label="类型">
           <el-select v-model="newDomain.type" style="width:100%">
             <el-option label="..." value="主域名" />
             <el-option label="..." value="轮值" />
@@ -105,7 +105,7 @@
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="addDialogVisible=false">鍙栨秷</el-button>
+        <el-button @click="addDialogVisible=false">取消</el-button>
         <el-button type="primary" @click="handleAdd" :loading="adding">娣诲姞</el-button>
       </template>
     </el-dialog>
@@ -121,7 +121,7 @@
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="subDialogVisible=false">鍙栨秷</el-button>
+        <el-button @click="subDialogVisible=false">取消</el-button>
         <el-button type="primary" @click="handleAddSub" :loading="addingSub">娣诲姞</el-button>
       </template>
     </el-dialog>

@@ -38,7 +38,7 @@
         <div class="tb-bar"><el-button type="primary" size="small" @click="showCreateIssue=true">鍒涘缓Issue</el-button></div>
         <el-table :data="issues" stripe size="small" height="500">
           <el-table-column type="index" label="#" width="50" />
-          <el-table-column prop="title" label="鏍囬" min-width="300" />
+          <el-table-column prop="title" label="标题" min-width="300" />
           <el-table-column prop="state" label="..." width="80">
             <template #default="{row}"><el-tag :type="row.state==='open'?'success':'info'" size="small">{{ row.state }}</el-tag></template>
           </el-table-column>
@@ -50,7 +50,7 @@
       <el-tab-pane name="prs" label="PRs">
         <el-table :data="prs" stripe size="small" height="500">
           <el-table-column type="index" label="#" width="50" />
-          <el-table-column prop="title" label="鏍囬" min-width="300" />
+          <el-table-column prop="title" label="标题" min-width="300" />
           <el-table-column prop="state" label="..." width="80" />
           <el-table-column prop="user" label="..." width="100" />
           <el-table-column prop="created" label="鏃ユ湡" width="100" />
@@ -75,10 +75,10 @@
 
     <el-dialog v-model="showCreateIssue" title="鍒涘缓 Issue" width="500">
       <el-form label-width="60">
-        <el-form-item label="鏍囬"><el-input v-model="issueTitle" placeholder="Issue 鏍囬" /></el-form-item>
+        <el-form-item label="标题"><el-input v-model="issueTitle" placeholder="Issue 标题" /></el-form-item>
         <el-form-item label="鍐呭"><el-input v-model="issueBody" type="textarea" :rows="4" placeholder="鎻忚堪" /></el-form-item>
       </el-form>
-      <template #footer><el-button @click="showCreateIssue=false">鍙栨秷</el-button><el-button type="primary" @click="doCreateIssue" :loading="creating">鍒涘缓</el-button></template>
+      <template #footer><el-button @click="showCreateIssue=false">取消</el-button><el-button type="primary" @click="doCreateIssue" :loading="creating">鍒涘缓</el-button></template>
     </el-dialog>
   </div>
 </template>

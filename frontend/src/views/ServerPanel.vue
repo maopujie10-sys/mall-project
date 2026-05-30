@@ -31,7 +31,7 @@
     <!-- 鑷姩娌荤悊 + 瓒嬪娍 -->
     <el-row :gutter="16" style="margin-bottom:20px">
       <el-col :span="8">
-        <el-card shadow="never"><template #header>鈿鍐呭瓨娌荤悊 <el-tag size="small" :type="memPct>80?'danger':'success'">{{ memPct>80?"闇€娌荤悊":"姝ｅ父" }}</el-tag></template>
+        <el-card shadow="never"><template #header>鈿鍐呭瓨娌荤悊 <el-tag size="small" :type="memPct>80?'danger':'success'">{{ memPct>80?"闇€娌荤悊":"正常" }}</el-tag></template>
           <div style="display:flex;flex-direction:column;gap:8px">
             <el-button type="primary" @click="doRelease('safe')" :loading="rlSafe" size="small">馃煝 瀹夊叏閲婃斁(娓呯紦瀛?</el-button>
             <el-button type="warning" @click="doRelease('aggressive')" :loading="rlAgg" size="small">馃煛 绉瀬閲婃斁(娓呯紦瀛鏉€绌鸿浆杩涚▼)</el-button>
@@ -78,7 +78,7 @@
         <el-table-column prop="memory_percent" label="鍗犳瘮" width="80"><template #default="{row}">{{ row.memory_percent?.toFixed(1) }}%</template></el-table-column>
         <el-table-column prop="cpu_percent" label="CPU" width="60"><template #default="{row}">{{ row.cpu_percent }}%</template></el-table-column>
         <el-table-column prop="uptime_hours" label="杩愯(h)" width="80"/>
-        <el-table-column label="鎿嶄綔" width="80"><template #default="{row}"><el-button text size="small" type="danger" @click="killPid(row.pid)">缁堟</el-button></template></el-table-column>
+        <el-table-column label="操作" width="80"><template #default="{row}"><el-button text size="small" type="danger" @click="killPid(row.pid)">缁堟</el-button></template></el-table-column>
       </el-table>
     </el-card>
   </div>

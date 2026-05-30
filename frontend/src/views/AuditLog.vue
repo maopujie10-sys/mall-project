@@ -2,30 +2,30 @@
   <div class="audit-page">
     <div class="page-header">
       <h2>馃搵 瀹¤鏃ュ織</h2>
-      <p>鍏ㄩ噺鎿嶄綔杩借釜 路 瀹屾暣鍘嗗彶璁板綍</p>
+      <p>鍏ㄩ噺操作杩借釜 路 瀹屾暣鍘嗗彶璁板綍</p>
       <div class="header-stats">
         <el-tag>鎬昏 {{ stats.total || 0 }} 鏉</el-tag>
-        <el-tag type="success">浠婃棩 {{ stats.today || 0 }} 鏉</el-tag>
+        <el-tag type="success">今日 {{ stats.today || 0 }} 鏉</el-tag>
       </div>
     </div>
 
     <div class="filters">
-      <el-input v-model="filters.action" placeholder="鎼滅储鎿嶄綔..." clearable size="small" style="width:200px" />
-      <el-select v-model="filters.risk" placeholder="椋庨櫓绛夌骇" clearable size="small" style="width:120px">
+      <el-input v-model="filters.action" placeholder="搜索操作..." clearable size="small" style="width:200px" />
+      <el-select v-model="filters.risk" placeholder="风险等级" clearable size="small" style="width:120px">
         <el-option label="..." value="L1" />
         <el-option label="..." value="L2" />
         <el-option label="..." value="L3" />
         <el-option label="L4 涓ラ噸" value="L4" />
       </el-select>
       <el-button @click="fetchLogs" type="primary" size="small">馃攳 鏌ヨ</el-button>
-      <el-button @click="fetchLogs" size="small">馃攧 鍒锋柊</el-button>
+      <el-button @click="fetchLogs" size="small">馃攧 刷新</el-button>
     </div>
 
     <el-table :data="logs" stripe size="small" v-loading="loading" max-height="600">
-      <el-table-column label="鏃堕棿" width="170">
+      <el-table-column label="时间" width="170">
         <template #default="{row}">{{ formatTime(row.time) }}</template>
       </el-table-column>
-      <el-table-column label="鎿嶄綔" width="160">
+      <el-table-column label="操作" width="160">
         <template #default="{row}"><el-tag size="small">{{ row.action }}</el-tag></template>
       </el-table-column>
       <el-table-column label="鐩爣" width="200" show-overflow-tooltip>

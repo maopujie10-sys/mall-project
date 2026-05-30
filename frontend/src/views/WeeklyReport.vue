@@ -2,7 +2,7 @@
   <div class="weekly-report-panel">
     <div class="page-header">
       <h1>馃搳 AI杩愯惀鍛ㄦ姤</h1>
-      <p>姣忓懆鑷姩姹囨€?路 璁㈠崟/鍟嗗搧/鐢ㄦ埛 路 绯荤粺鍋ュ悍 路 鍛婅寮傚父 路 閲囬泦绔炲搧</p>
+      <p>姣忓懆鑷姩姹囨€?路 璁㈠崟/商品/用户 路 绯荤粺鍋ュ悍 路 鍛婅寮傚父 路 閲囬泦绔炲搧</p>
     </div>
 
     <el-row :gutter="16" style="margin-bottom:20px">
@@ -10,7 +10,7 @@
         <el-card shadow="never">
           <el-space>
             <el-button type="primary" :loading="genLoading" @click="doGenerate">馃 AI鐢熸垚鍛ㄦ姤</el-button>
-            <el-button @click="loadReports">馃攧 鍒锋柊</el-button>
+            <el-button @click="loadReports">馃攧 刷新</el-button>
           </el-space>
         </el-card>
       </el-col>
@@ -63,8 +63,8 @@ const metrics = computed(() => {
   const d = latestReport.value.data || {}
   return [
     { label: '璁㈠崟鎬绘暟', value: d.orders_total || 0 },
-    { label: '鍟嗗搧鎬绘暟', value: d.products_total || 0 },
-    { label: '鐢ㄦ埛鎬绘暟', value: d.users_total || 0 },
+    { label: '商品鎬绘暟', value: d.products_total || 0 },
+    { label: '用户鎬绘暟', value: d.users_total || 0 },
     { label: 'TODO', value: d.alerts_this_week || 0 },
     { label: '瀹㈡湇娑堟伅', value: d.customer_messages || 0 },
     { label: '健康分', value: d.avg_health_score || 0 },

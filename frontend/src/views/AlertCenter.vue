@@ -16,7 +16,7 @@
         <el-select v-model="filterLevel" size="small" clearable placeholder="..." style="width:120px;margin-left:12px">
           <el-option v-for="(n, k) in levelMap" :key="k" :label="`${k} - ${n}`" :value="k" />
         </el-select>
-        <el-button size="small" @click="fetchAlerts" style="margin-left:8px">鍒锋柊</el-button>
+        <el-button size="small" @click="fetchAlerts" style="margin-left:8px">刷新</el-button>
       </template>
       <el-table :data="alerts" stripe size="small" empty-text="鏆傛棤鍛婅">
         <el-table-column label="绛夌骇" width="80">
@@ -24,8 +24,8 @@
             <el-tag :type="tagType(row.level)" size="small">{{ row.level }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="time" label="鏃堕棿" width="80" />
-        <el-table-column prop="title" label="鏍囬" min-width="200" />
+        <el-table-column prop="time" label="时间" width="80" />
+        <el-table-column prop="title" label="标题" min-width="200" />
         <el-table-column prop="detail" label="璇︽儏" min-width="200" show-overflow-tooltip />
         <el-table-column prop="source" label="鏉ユ簮" width="80" />
         <el-table-column label="..." width="80">
@@ -33,7 +33,7 @@
             <el-tag :type="row.resolved ? 'info' : 'danger'" size="small">{{ row.resolved ? '已解决' : '未解决' }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="鎿嶄綔" width="100">
+        <el-table-column label="操作" width="100">
           <template #default="{row}">
             <el-button v-if="!row.resolved" size="small" type="primary" link @click="doResolve(row.id)">瑙ｅ喅</el-button>
           </template>
