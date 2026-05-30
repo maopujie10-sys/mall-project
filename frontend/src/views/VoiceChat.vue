@@ -63,9 +63,13 @@ const wsConnected = ref(false)
 let ws = null
 let mediaRecorder = null
 let audioChunks = []
+let heartbeatTimer = null
+let reconnectTimer = null
+let destroyed = false
 const msgList = ref(null)
 
 function connectWS() {
+  if (destroyed) return
   const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:'
   const wsUrl = `${protocol}//${location.host}/agent/voice/ws`
 
@@ -74,15 +78,15 @@ function connectWS() {
   ws.onopen = () => {
     wsConnected.value = true
     ElMessage.success('语音服务已连接')
-    // 心跳
-    setInterval(() => {
-      if (ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: 'ping' }))
+    heartbeatTimer = setInterval(() => {
+      if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: 'ping' }))
     }, 30000)
   }
 
   ws.onclose = () => {
     wsConnected.value = false
-    setTimeout(connectWS, 3000)
+    if (heartbeatTimer) { clearInterval(heartbeatTimer); heartbeatTimer = null }
+    if (!destroyed) reconnectTimer = setTimeout(connectWS, 3000)
   }
 
   ws.onmessage = (event) => {
@@ -192,9 +196,12 @@ function scrollDown() {
   })
 }
 
-onMounted(() => connectWS())
+onMounted(() => { destroyed = false; connectWS() })
 onUnmounted(() => {
-  if (ws) ws.close()
+  destroyed = true
+  if (heartbeatTimer) { clearInterval(heartbeatTimer); heartbeatTimer = null }
+  if (reconnectTimer) { clearTimeout(reconnectTimer); reconnectTimer = null }
+  if (ws) { ws.onclose = null; ws.close(); ws = null }
   if (mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop()
 })
 </script>

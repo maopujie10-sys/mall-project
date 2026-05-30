@@ -72,7 +72,7 @@
 </template>
 
 <script>
-import { ref, onMounted, onUnmounted, nextTick } from "vue"
+import { ref, computed, onMounted, onUnmounted, nextTick } from "vue"
 import { ElMessage } from "element-plus"
 import { agentApi } from "@/api"
 import { useRouter } from "vue-router"
@@ -89,6 +89,7 @@ export default {
     const cpuMemChart = ref(null)
     const diskChart = ref(null)
     let chartInterval = null
+    let chartResizeHandler = null
 
     async function fetchMetrics() {
       try {
@@ -161,8 +162,10 @@ export default {
         series: [{ name: "纾佺洏", type: "line", data: h.map(p => p.disk_percent), smooth: true, lineStyle: { width: 2, color: "#faad14" }, areaStyle: { color: "rgba(250,173,20,0.1)" }, itemStyle: { color: "#faad14" } }],
         legend: { bottom: 0, textStyle: { fontSize: 11 } },
       })
-      // Resize on window resize
-      window.addEventListener("resize", () => { cm.resize(); dc.resize() })
+      // Resize on window resize (移除旧监听器防累积)
+      if (chartResizeHandler) window.removeEventListener("resize", chartResizeHandler)
+      chartResizeHandler = () => { cm.resize(); dc.resize() }
+      window.addEventListener("resize", chartResizeHandler)
     }
 
     const healthLevel = computed(() => health.value.level || "unknown")
@@ -181,7 +184,10 @@ export default {
       // Auto refresh every 30s
       chartInterval = setInterval(fetchMetrics, 30000)
     })
-    onUnmounted(() => { if (chartInterval) clearInterval(chartInterval) })
+    onUnmounted(() => {
+      if (chartInterval) clearInterval(chartInterval)
+      if (chartResizeHandler) { window.removeEventListener("resize", chartResizeHandler); chartResizeHandler = null }
+    })
 
     return { loading, recording, metrics, health, history, cpuMemChart, diskChart, healthLevel, healthLevelText, refreshAll, recordMetrics, goTo }
   }

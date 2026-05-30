@@ -38,8 +38,9 @@ function buildGraph() {
   instance.setOption(option)
 }
 
-onMounted(() => { buildGraph(); window.addEventListener('resize', () => instance?.resize()) })
-onBeforeUnmount(() => { instance?.dispose(); window.removeEventListener('resize', () => instance?.resize()) })
+const onResize = () => instance?.resize()
+onMounted(() => { buildGraph(); window.addEventListener('resize', onResize) })
+onBeforeUnmount(() => { instance?.dispose(); window.removeEventListener('resize', onResize) })
 </script>
 <style scoped>
 .kg-container { width: 100%; height: 500px; background: rgba(10,13,42,0.6); border-radius: 12px; }

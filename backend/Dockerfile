@@ -39,10 +39,12 @@ RUN pip install --no-cache-dir -r requirements.txt
 RUN pip install --no-cache-dir playwright && \
     python -m playwright install chromium 2>/dev/null || echo "playwright chromium install skipped"
 
-# 创建必要目录
-RUN mkdir -p /app/data/screenshots /app/memory /app/state /app/backups /app/logs
+# 创建必要目录和非root用户
+RUN mkdir -p /app/data/screenshots /app/memory /app/state /app/backups /app/logs && \
+    useradd -m -s /bin/bash appuser && \
+    chown -R appuser:appuser /app
 
-# Docker socket挂载
+USER appuser
 EXPOSE 9000
 ENV TZ=Asia/Shanghai
 

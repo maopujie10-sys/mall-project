@@ -21,7 +21,7 @@
   </div>
 </template>
 <script setup>
-import { ref, onMounted, onUnmounted } from "vue"
+import { ref, computed, onMounted, onUnmounted } from "vue"
 import { agentApi } from "@/api"
 
 const status = ref({ traits:{}, insights:[], dreams:[], mood:{}, reflection:"" })
@@ -42,8 +42,6 @@ const stats = computed(() => [
   {key:"success_rate",icon:"🏆",label:"成功率",value:status.value.success_rate||0,color:"cyan",gradient:"linear-gradient(90deg,#06b6d4,#22d3ee)"},
   {key:"memory_count",icon:"💾",label:"记忆",value:Math.min(100,(status.value.memory_count||0)),color:"pink",gradient:"linear-gradient(90deg,#ec4899,#f472b6)"},
 ])
-
-function computed(fn) { return fn() }
 
 async function refresh() {
   try { status.value = (await agentApi.get("/agent/lifeform/status")).data || {} } catch {}
