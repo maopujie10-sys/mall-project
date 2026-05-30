@@ -177,6 +177,7 @@ from routers.key_router import router as key_router
 from routers.wechat_admin import router as wechat_admin_router
 from routers.ecommerce_ai import router as ecommerce_ai_router
 from routers.video_router import router as video_router
+from routers.media_router import router as media_router
 # === ?===
 ROTATION_DOMAINS = [
     "chxhx.eu.cc", "drrgr.eu.cc", "drrimrf.eu.cc", "drriiu.eu.cc",
@@ -249,7 +250,8 @@ app.include_router(excel_router, prefix="/excel")
 app.include_router(auto_reply_router, prefix="/auto-reply")
 app.include_router(order_alert_router, prefix="/order-alert")
 app.include_router(plugin_router)
-app.include_router(lifeform_router)  # internal /agent/lifeform'napp.include_router(brain_router)  # /agent/brain  # internal prefix /agent/lifeform
+app.include_router(lifeform_router)  # internal /agent/lifeform
+app.include_router(brain_router)  # /agent/brain
 app.include_router(workflow_router)
 app.include_router(user_auth_router)
 app.include_router(inspect_router, prefix="/inspect")
@@ -273,6 +275,7 @@ app.include_router(advanced_router, prefix="/advanced")
 app.include_router(collab_router, prefix="/collab")
 app.include_router(rag_router, prefix="/rag")
 app.include_router(video_router)
+app.include_router(media_router)
 app.include_router(predict_router, prefix="/predict")
 app.include_router(recommend_router, prefix="/recommend")
 app.include_router(content_router, prefix="/content")
