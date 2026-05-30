@@ -70,6 +70,12 @@ async def update_product(uuid: str, data: dict, _=Depends(verify_token)):
     await handle_risk("L2", '')
     return await proxy_to_mall(f"/api/product/{uuid}", method="PUT", json_data=data)
 
+@router.post("/product")
+async def create_product(data: dict, _=Depends(verify_token)):
+    """创建商品 (AdminController.productCreate)"""
+    await handle_risk("L2", '', f"{data.get('name','')}")
+    return await proxy_to_mall("/api/product", method="POST", json_data=data)
+
 @router.delete("/product/{uuid}")
 async def delete_product(uuid: str, _=Depends(verify_token)):
     await handle_risk("L3", '')
@@ -526,6 +532,18 @@ async def merchant_finance(_=Depends(verify_token), page: int = 1, size: int = 2
     await handle_risk("L1", '')
     return await proxy_to_mall("/merchant/finance/list", params={"page": page, "size": size})
 
+@router.get("/merchant/finance-report/head")
+async def merchant_finance_head(_=Depends(verify_token)):
+    """财务报表KPI汇总"""
+    await handle_risk("L1", '')
+    return await proxy_to_mall("/merchant/finance-report/head")
+
+@router.get("/merchant/finance-report/list")
+async def merchant_finance_report(_=Depends(verify_token), page: int = 1, size: int = 30):
+    """财务报表明细"""
+    await handle_risk("L1", '')
+    return await proxy_to_mall("/merchant/finance-report/list", params={"page": page, "size": size})
+
 
 # ============================================================
 #  (MerchantGoodsController)
@@ -632,6 +650,18 @@ async def notification_create(data: dict, _=Depends(verify_token)):
     await handle_risk("L2", '')
     return await proxy_to_mall("/api/notification", method="POST", json_data=data)
 
+@router.put("/notification/{nid}")
+async def notification_update(nid: str, data: dict, _=Depends(verify_token)):
+    """更新通知 (AdminController.notificationUpdate)"""
+    await handle_risk("L2", '')
+    return await proxy_to_mall(f"/api/notification/{nid}", method="PUT", json_data=data)
+
+@router.delete("/notification/{nid}")
+async def notification_delete(nid: str, _=Depends(verify_token)):
+    """删除通知 (AdminController.notificationAdminDelete)"""
+    await handle_risk("L3", '')
+    return await proxy_to_mall(f"/api/notification/{nid}", method="DELETE")
+
 # ============================================================
 #  (SysParamController)
 # ============================================================
@@ -685,6 +715,49 @@ async def area_cities(_=Depends(verify_token), state_id: int = None):
 async def area_mobile_prefix(_=Depends(verify_token)):
     await handle_risk("L1", '')
     return await proxy_to_mall("/api/area/mobile-prefix")
+
+# 区域后台管理CRUD
+@router.get("/area/admin/countries")
+async def area_admin_countries(_=Depends(verify_token), page: int = 1, size: int = 50):
+    await handle_risk("L1", '')
+    return await proxy_to_mall("/api/area/admin/countries", params={"page": page, "size": size})
+
+@router.post("/area/admin/country")
+async def area_country_create(data: dict, _=Depends(verify_token)):
+    await handle_risk("L2", '', f"{data.get('name','')}")
+    return await proxy_to_mall("/api/area/admin/country", method="POST", json_data=data)
+
+@router.put("/area/admin/country/{cid}")
+async def area_country_update(cid: str, data: dict, _=Depends(verify_token)):
+    await handle_risk("L2", '')
+    return await proxy_to_mall(f"/api/area/admin/country/{cid}", method="PUT", json_data=data)
+
+@router.delete("/area/admin/country/{cid}")
+async def area_country_delete(cid: str, _=Depends(verify_token)):
+    await handle_risk("L3", '')
+    return await proxy_to_mall(f"/api/area/admin/country/{cid}", method="DELETE")
+
+@router.get("/area/admin/cities")
+async def area_admin_cities(_=Depends(verify_token), page: int = 1, size: int = 50, country_id: str = None):
+    await handle_risk("L1", '')
+    params = {"page": page, "size": size}
+    if country_id: params["countryId"] = country_id
+    return await proxy_to_mall("/api/area/admin/cities", params=params)
+
+@router.post("/area/admin/city")
+async def area_city_create(data: dict, _=Depends(verify_token)):
+    await handle_risk("L2", '', f"{data.get('name','')}")
+    return await proxy_to_mall("/api/area/admin/city", method="POST", json_data=data)
+
+@router.put("/area/admin/city/{cid}")
+async def area_city_update(cid: str, data: dict, _=Depends(verify_token)):
+    await handle_risk("L2", '')
+    return await proxy_to_mall(f"/api/area/admin/city/{cid}", method="PUT", json_data=data)
+
+@router.delete("/area/admin/city/{cid}")
+async def area_city_delete(cid: str, _=Depends(verify_token)):
+    await handle_risk("L3", '')
+    return await proxy_to_mall(f"/api/area/admin/city/{cid}", method="DELETE")
 
 
 # ============================================================
@@ -749,6 +822,30 @@ async def idcode_list(_=Depends(verify_token), page: int = 1, size: int = 20):
 async def combo_list(_=Depends(verify_token)):
     await handle_risk("L1", '')
     return await proxy_to_mall("/api/combo/list")
+
+@router.post("/combo")
+async def combo_create(data: dict, _=Depends(verify_token)):
+    """创建套餐 (AdminController.comboSave)"""
+    await handle_risk("L2", '', f"{data.get('name','')}")
+    return await proxy_to_mall("/api/combo", method="POST", json_data=data)
+
+@router.put("/combo/{uuid}")
+async def combo_update(uuid: str, data: dict, _=Depends(verify_token)):
+    """更新套餐 (AdminController.comboUpdate)"""
+    await handle_risk("L2", '')
+    return await proxy_to_mall(f"/api/combo/{uuid}", method="PUT", json_data=data)
+
+@router.delete("/combo/{uuid}")
+async def combo_delete(uuid: str, _=Depends(verify_token)):
+    """删除套餐 (AdminController.comboDelete)"""
+    await handle_risk("L3", '')
+    return await proxy_to_mall(f"/api/combo/{uuid}", method="DELETE")
+
+@router.get("/combo/records")
+async def combo_records(_=Depends(verify_token), page: int = 1, size: int = 20):
+    """套餐购买记录"""
+    await handle_risk("L1", '')
+    return await proxy_to_mall("/api/combo/record/list", params={"page": page, "size": size})
 
 
 # ============================================================
@@ -998,3 +1095,139 @@ async def java_rotation_unblock(data: dict, _=Depends(verify_token)):
 async def java_rotation_stats(_=Depends(verify_token)):
     await handle_risk("L1", '')
     return await proxy_to_mall("/api/rotation/stats")
+
+# ============================================================
+# 代理管理 (AdminController agent/*)
+# ============================================================
+
+@router.get("/agent/list")
+async def agent_list(_=Depends(verify_token), page: int = 1, size: int = 20, keyword: str = None):
+    await handle_risk("L1", '代理列表')
+    params = {"page": page, "size": size}
+    if keyword: params["keyword"] = keyword
+    return await proxy_to_mall("/admin/agent/list", params=params)
+
+@router.get("/agent/{seller_id}")
+async def agent_detail(seller_id: str, _=Depends(verify_token)):
+    await handle_risk("L1", '')
+    return await proxy_to_mall(f"/admin/agent/{seller_id}")
+
+@router.put("/agent/{seller_id}/status")
+async def agent_update_status(seller_id: str, data: dict, _=Depends(verify_token)):
+    await handle_risk("L2", '')
+    return await proxy_to_mall(f"/admin/agent/{seller_id}/status", method="PUT", json_data=data)
+
+@router.get("/agent/{seller_id}/team")
+async def agent_team(seller_id: str, _=Depends(verify_token)):
+    await handle_risk("L1", '')
+    return await proxy_to_mall(f"/admin/agent/{seller_id}/team")
+
+@router.get("/agent/levels")
+async def agent_level_list(_=Depends(verify_token)):
+    await handle_risk("L1", '')
+    return await proxy_to_mall("/admin/agent/level/list")
+
+@router.post("/agent/level")
+async def agent_level_create(data: dict, _=Depends(verify_token)):
+    await handle_risk("L2", '')
+    return await proxy_to_mall("/admin/agent/level", method="POST", json_data=data)
+
+@router.put("/agent/level/{uuid}")
+async def agent_level_update(uuid: str, data: dict, _=Depends(verify_token)):
+    await handle_risk("L2", '')
+    return await proxy_to_mall(f"/admin/agent/level/{uuid}", method="PUT", json_data=data)
+
+@router.delete("/agent/level/{uuid}")
+async def agent_level_delete(uuid: str, _=Depends(verify_token)):
+    await handle_risk("L2", '')
+    return await proxy_to_mall(f"/admin/agent/level/{uuid}", method="DELETE")
+
+@router.get("/agent/rebates")
+async def agent_rebate_list(_=Depends(verify_token), page: int = 1, size: int = 20):
+    await handle_risk("L1", '')
+    return await proxy_to_mall("/admin/agent/rebate/list", params={"page": page, "size": size})
+
+@router.get("/agent/rebate/stats")
+async def agent_rebate_stats(_=Depends(verify_token)):
+    await handle_risk("L1", '')
+    return await proxy_to_mall("/admin/agent/rebate/stats")
+
+# ============================================================
+# 活动/抽奖管理 (AdminController activity/*)
+# ============================================================
+
+@router.get("/activity/list")
+async def activity_list(_=Depends(verify_token), page: int = 1, size: int = 20):
+    await handle_risk("L1", '')
+    return await proxy_to_mall("/admin/activity/list", params={"page": page, "size": size})
+
+@router.get("/activity/{activity_id}")
+async def activity_detail(activity_id: str, _=Depends(verify_token)):
+    await handle_risk("L1", '')
+    return await proxy_to_mall(f"/admin/activity/{activity_id}")
+
+@router.post("/activity")
+async def activity_create(data: dict, _=Depends(verify_token)):
+    await handle_risk("L2", '', f"{data.get('title','')}")
+    return await proxy_to_mall("/admin/activity", method="POST", json_data=data)
+
+@router.put("/activity/{activity_id}")
+async def activity_update(activity_id: str, data: dict, _=Depends(verify_token)):
+    await handle_risk("L2", '')
+    return await proxy_to_mall(f"/admin/activity/{activity_id}", method="PUT", json_data=data)
+
+@router.put("/activity/{activity_id}/toggle")
+async def activity_toggle(activity_id: str, data: dict, _=Depends(verify_token)):
+    await handle_risk("L2", '')
+    return await proxy_to_mall(f"/admin/activity/{activity_id}/show", method="PUT", json_data=data)
+
+@router.delete("/activity/{activity_id}")
+async def activity_delete(activity_id: str, _=Depends(verify_token)):
+    await handle_risk("L3", '')
+    return await proxy_to_mall(f"/admin/activity/{activity_id}", method="DELETE")
+
+@router.get("/activity/{activity_id}/prizes")
+async def activity_prize_list(activity_id: str, _=Depends(verify_token)):
+    await handle_risk("L1", '')
+    return await proxy_to_mall(f"/admin/activity/{activity_id}/prize/list")
+
+@router.post("/activity/prize")
+async def activity_prize_create(data: dict, _=Depends(verify_token)):
+    await handle_risk("L2", '')
+    return await proxy_to_mall("/admin/activity/prize", method="POST", json_data=data)
+
+@router.put("/activity/prize/{prize_id}")
+async def activity_prize_update(prize_id: str, data: dict, _=Depends(verify_token)):
+    await handle_risk("L2", '')
+    return await proxy_to_mall(f"/admin/activity/prize/{prize_id}", method="PUT", json_data=data)
+
+@router.delete("/activity/prize/{prize_id}")
+async def activity_prize_delete(prize_id: str, _=Depends(verify_token)):
+    await handle_risk("L2", '')
+    return await proxy_to_mall(f"/admin/activity/prize/{prize_id}", method="DELETE")
+
+@router.get("/activity/records")
+async def activity_record_list(_=Depends(verify_token), page: int = 1, size: int = 20, activity_id: str = None):
+    await handle_risk("L1", '')
+    params = {"page": page, "size": size}
+    if activity_id: params["activityId"] = activity_id
+    return await proxy_to_mall("/admin/activity/record/list", params=params)
+
+# ============================================================
+# 安全重置审核 (AdminController safeword/*)
+# ============================================================
+
+@router.get("/safeword/list")
+async def safeword_list(_=Depends(verify_token), page: int = 1, size: int = 20):
+    await handle_risk("L1", '安全重置')
+    return await proxy_to_mall("/admin/safeword/list", params={"page": page, "size": size})
+
+@router.post("/safeword/{apply_id}/approve")
+async def safeword_approve(apply_id: str, _=Depends(verify_token)):
+    await handle_risk("L3", '', f"ID: {apply_id}")
+    return await proxy_to_mall(f"/admin/safeword/{apply_id}/approve", method="POST")
+
+@router.post("/safeword/{apply_id}/reject")
+async def safeword_reject(apply_id: str, _=Depends(verify_token)):
+    await handle_risk("L3", '', f"ID: {apply_id}")
+    return await proxy_to_mall(f"/admin/safeword/{apply_id}/reject", method="POST")

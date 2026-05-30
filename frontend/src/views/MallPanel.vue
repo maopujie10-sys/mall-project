@@ -104,48 +104,50 @@
         <el-pagination style="margin-top:12px" background layout="prev,next" :total="merTotal" :page-size="10" v-model:current-page="merPg" @current-change="fetchMerchants" small />
       </el-tab-pane>
 
-      <!-- ==========  ========== -->
+      <!-- ========== 商品管理 ========== -->
       <el-tab-pane name="products">
-        <template #label><el-icon><Goods /></el-icon> </template>
+        <template #label><el-icon><Goods /></el-icon> 商品</template>
         <div class="tb-bar">
-          <el-input v-model="prodKw" placeholder='Enter...' style="width:220px" clearable @clear="fetchProducts" @keyup.enter="fetchProducts" />
-          <el-button type="primary" @click="fetchProducts">OK</el-button>
+          <el-input v-model="prodKw" placeholder="搜索商品..." style="width:220px" clearable @clear="fetchProducts" @keyup.enter="fetchProducts" />
+          <el-button type="primary" @click="fetchProducts">搜索</el-button>
+          <el-button type="success" @click="showProdDlg()">创建商品</el-button>
         </div>
-        <el-table :data="products" stripe size="small" height="520">
+        <el-table :data="products" stripe size="small" height="460" @row-click="showProdDetail">
           <el-table-column prop="id" label="ID" width="70" />
-          <el-table-column prop="name" :label="$t('mall.title')" min-width="180" />
-          <el-table-column prop="price" label='Status' width="100" />
+          <el-table-column prop="name" label="名称" min-width="180" />
+          <el-table-column prop="price" label="价格" width="100" />
           <el-table-column prop="status" label="状态" width="90">
             <template #default="{row}"><el-tag :type="row.status===1?'success':row.status===0?'warning':'info'" size="small">{{ statTxt(row.status) }}</el-tag></template>
           </el-table-column>
-          <el-table-column label='Status' width="160">
+          <el-table-column label="操作" width="200">
             <template #default="{row}">
-              <el-button v-if="row.status===0" size="small" type="success" @click="auditProd(row,1)">OK</el-button>
-              <el-button v-if="row.status===1" size="small" type="danger" @click="auditProd(row,0)">OK</el-button>
+              <el-button size="small" @click.stop="showProdDlg(row)">编辑</el-button>
+              <el-button v-if="row.status===0" size="small" type="success" @click.stop="auditProd(row,1)">通过</el-button>
+              <el-button v-if="row.status===1" size="small" type="danger" @click.stop="auditProd(row,0)">拒绝</el-button>
             </template>
           </el-table-column>
         </el-table>
         <el-pagination style="margin-top:12px" background layout="prev,next" :total="prodTotal" :page-size="10" v-model:current-page="prodPg" @current-change="fetchProducts" small />
       </el-tab-pane>
 
-      <!-- ==========  ========== -->
+      <!-- ========== 订单管理 ========== -->
       <el-tab-pane name="orders">
-        <template #label><el-icon><Document /></el-icon> </template>
+        <template #label><el-icon><Document /></el-icon> 订单</template>
         <div class="tb-bar">
-          <el-input v-model="orderKw" :placeholder="$t('mall.search')" style="width:220px" clearable @clear="fetchOrders" @keyup.enter="fetchOrders" />
-          <el-button type="primary" @click="fetchOrders">OK</el-button>
+          <el-input v-model="orderKw" placeholder="搜索订单..." style="width:220px" clearable @clear="fetchOrders" @keyup.enter="fetchOrders" />
+          <el-button type="primary" @click="fetchOrders">搜索</el-button>
         </div>
-        <el-table :data="orders" stripe size="small" height="520">
+        <el-table :data="orders" stripe size="small" height="520" @row-click="showOrderDetail">
           <el-table-column prop="id" label="ID" width="70" />
-          <el-table-column prop="orderNo" label="状态" width="180" />
-          <el-table-column prop="amount" :label="$t('mall.title')" width="100" />
+          <el-table-column prop="orderNo" label="订单号" width="180" />
+          <el-table-column prop="amount" label="金额" width="100" />
           <el-table-column prop="status" label="状态" width="90">
             <template #default="{row}"><el-tag size="small">{{ row.status }}</el-tag></template>
           </el-table-column>
-          <el-table-column prop="createTime" label='Status' width="160" />
-          <el-table-column label='Status' width="100">
+          <el-table-column prop="createTime" label="创建时间" width="160" />
+          <el-table-column label="操作" width="100">
             <template #default="{row}">
-              <el-button size="small" type="danger" @click="doRefund(row)"></el-button>
+              <el-button size="small" type="danger" @click.stop="doRefund(row)">退款</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -384,7 +386,90 @@
         <el-form-item label="D"><el-input v-model="attrDlg.categoryId" /></el-form-item>
         <el-form-item label=''><el-input-number v-model="attrDlg.sort" :min="0" /></el-form-item>
       </el-form>
-      <template #footer><el-button @click="attrDlg.show=false">OK</el-button><el-button type="primary" @click="saveAttrDlg">OK</el-button></template>
+      <template #footer><el-button @click="attrDlg.show=false">取消</el-button><el-button type="primary" @click="saveAttrDlg">保存</el-button></template>
+    </el-dialog>
+
+    <!-- 商品创建/编辑弹窗 -->
+    <el-dialog v-model="prodDlg.show" :title="prodDlg.uuid?'编辑商品':'创建商品'" width="600px">
+      <el-form label-width="80px">
+        <el-form-item label="名称"><el-input v-model="prodDlg.name" /></el-form-item>
+        <el-form-item label="描述"><el-input v-model="prodDlg.description" type="textarea" :rows="3" /></el-form-item>
+        <el-row :gutter="12">
+          <el-col :span="12"><el-form-item label="价格"><el-input v-model="prodDlg.price" /></el-form-item></el-col>
+          <el-col :span="12"><el-form-item label="原价"><el-input v-model="prodDlg.originalPrice" /></el-form-item></el-col>
+        </el-row>
+        <el-row :gutter="12">
+          <el-col :span="12"><el-form-item label="库存"><el-input v-model="prodDlg.stock" /></el-form-item></el-col>
+          <el-col :span="12"><el-form-item label="分类ID"><el-input v-model="prodDlg.categoryId" /></el-form-item></el-col>
+        </el-row>
+        <el-form-item label="图片URL"><el-input v-model="prodDlg.imageUrl" placeholder="https://..." /></el-form-item>
+        <el-form-item label="状态"><el-switch v-model="prodDlg.status" :active-value="1" :inactive-value="0" /></el-form-item>
+      </el-form>
+      <template #footer><el-button @click="prodDlg.show=false">取消</el-button><el-button type="primary" @click="saveProdDlg">保存</el-button></template>
+    </el-dialog>
+
+    <!-- 商品详情弹窗 -->
+    <el-dialog v-model="prodDetail.show" title="商品详情" width="500px">
+      <el-descriptions :column="2" border size="small" v-if="prodDetail.data">
+        <el-descriptions-item label="ID">{{ prodDetail.data.id }}</el-descriptions-item>
+        <el-descriptions-item label="名称">{{ prodDetail.data.name }}</el-descriptions-item>
+        <el-descriptions-item label="价格">{{ prodDetail.data.price }}</el-descriptions-item>
+        <el-descriptions-item label="原价">{{ prodDetail.data.originalPrice }}</el-descriptions-item>
+        <el-descriptions-item label="库存">{{ prodDetail.data.stock }}</el-descriptions-item>
+        <el-descriptions-item label="销量">{{ prodDetail.data.sales || prodDetail.data.sellCount || 0 }}</el-descriptions-item>
+        <el-descriptions-item label="分类ID">{{ prodDetail.data.categoryId }}</el-descriptions-item>
+        <el-descriptions-item label="品牌">{{ prodDetail.data.brand }}</el-descriptions-item>
+        <el-descriptions-item label="状态"><el-tag :type="(prodDetail.data.status===1)?'success':'warning'" size="small">{{ statTxt(prodDetail.data.status) }}</el-tag></el-descriptions-item>
+        <el-descriptions-item label="创建时间">{{ prodDetail.data.createTime }}</el-descriptions-item>
+        <el-descriptions-item label="描述" :span="2">{{ prodDetail.data.description }}</el-descriptions-item>
+        <el-descriptions-item label="图片" :span="2"><img v-if="prodDetail.data.imageUrl || prodDetail.data.mainImage" :src="prodDetail.data.imageUrl || prodDetail.data.mainImage" style="max-width:200px;max-height:200px" /></el-descriptions-item>
+      </el-descriptions>
+      <template #footer><el-button type="primary" @click="prodDetail.show=false">关闭</el-button></template>
+    </el-dialog>
+
+    <!-- 订单详情弹窗 -->
+    <el-dialog v-model="orderDetail.show" title="订单详情" width="650px">
+      <template v-if="orderDetail.data">
+        <el-descriptions :column="2" border size="small">
+          <el-descriptions-item label="订单ID">{{ orderDetail.data.id }}</el-descriptions-item>
+          <el-descriptions-item label="订单号">{{ orderDetail.data.orderNo }}</el-descriptions-item>
+          <el-descriptions-item label="金额">{{ orderDetail.data.amount }}</el-descriptions-item>
+          <el-descriptions-item label="状态">{{ orderDetail.data.status }}</el-descriptions-item>
+          <el-descriptions-item label="创建时间">{{ orderDetail.data.createTime }}</el-descriptions-item>
+          <el-descriptions-item label="支付时间">{{ orderDetail.data.payTime || '-' }}</el-descriptions-item>
+          <el-descriptions-item label="收货地址" :span="2">{{ orderDetail.data.address || orderDetail.data.shippingAddress || '-' }}</el-descriptions-item>
+        </el-descriptions>
+        <!-- 订单商品 -->
+        <el-divider>商品列表</el-divider>
+        <el-table :data="orderDetail.data.items || orderDetail.data.goodsList || []" stripe size="small" max-height="200">
+          <el-table-column prop="name" label="名称" />
+          <el-table-column prop="quantity" label="数量" width="70" />
+          <el-table-column prop="price" label="单价" width="90" />
+        </el-table>
+        <!-- 操作日志 -->
+        <el-divider>操作日志</el-divider>
+        <el-table :data="orderDetail.logs" stripe size="small" max-height="150" v-loading="orderDetail.logsLoading">
+          <el-table-column prop="id" label="ID" width="60" />
+          <el-table-column prop="action" label="操作" width="120" />
+          <el-table-column prop="detail" label="详情" />
+          <el-table-column prop="createTime" label="时间" width="160" />
+        </el-table>
+      </template>
+      <template #footer>
+        <el-button type="primary" @click="showLogistics(orderDetail.data?.id)">查物流</el-button>
+        <el-button @click="orderDetail.show=false">关闭</el-button>
+      </template>
+    </el-dialog>
+
+    <!-- 物流弹窗 -->
+    <el-dialog v-model="logisticsDlg.show" title="物流信息" width="500px">
+      <el-timeline v-if="logisticsDlg.traces?.length">
+        <el-timeline-item v-for="(t,i) in logisticsDlg.traces" :key="i" :timestamp="t.time||t.acceptTime" placement="top">
+          {{ t.status||t.acceptStation }}
+        </el-timeline-item>
+      </el-timeline>
+      <el-empty v-else description="暂无物流信息" />
+      <template #footer><el-button @click="logisticsDlg.show=false">关闭</el-button></template>
     </el-dialog>
   </div>
 </template>
@@ -395,7 +480,8 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import * as echarts from 'echarts'
 import {
   getDashboard, getUserList, updateUserStatus, adjustUserBalance,
-  getProductList, auditProduct, getOrderList, forceRefund,
+  getProductList, getProductDetail, createProduct, auditProduct, updateProduct,
+  getOrderList, getOrderDetail, forceRefund, getOrderLogs,
   getRechargePending, auditRecharge, getWithdrawPending, auditWithdraw,
   getMerchantList, updateMerchantStatus, getMerchantApplyList, auditMerchantApply,
   getDashboardHead, getDashboardLine, getDashboardGoods,
@@ -404,6 +490,7 @@ import {
   getEvaluationList, updateEvaluationStatus, deleteEvaluation,
   getAttrCategoryList, saveAttrCategory, updateAttrCategory, deleteAttrCategory,
   getAttrList, saveAttr, updateAttr, deleteAttr,
+  getLogisticsInfo, getLogisticsTrace,
 } from '@/api/mall'
 
 const activeTab = ref('dashboard')
@@ -446,11 +533,19 @@ const catDlg = reactive({ show:false, uuid:'', name:'', sort:0, level:1, parentI
 // =====  =====
 const evaluations = ref([]), evalKw = ref(''), evalStatus = ref(null), evalPg = ref(1), evalTotal = ref(0)
 
-// ===== ?+ ?=====
+// ===== 属性分类 + 属性 =====
 const attrCats = ref([]), attrCatKw = ref(''), attrCatPg = ref(1), attrCatTotal = ref(0)
 const attrCatDlg = reactive({ show:false, uuid:'', name:'', sort:0 })
 const attrs = ref([]), attrCatFilter = ref(''), attrPg = ref(1), attrTotal = ref(0)
 const attrDlg = reactive({ show:false, uuid:'', categoryId:'', sort:0 })
+
+// ===== 商品创建/编辑 =====
+const prodDlg = reactive({ show:false, uuid:'', name:'', description:'', price:'', originalPrice:'', stock:'', categoryId:'', imageUrl:'', status:1 })
+const prodDetail = reactive({ show:false, data:null })
+
+// ===== 订单详情/物流 =====
+const orderDetail = reactive({ show:false, data:null, logs:[], logsLoading:false })
+const logisticsDlg = reactive({ show:false, traces:[] })
 
 // =====  =====
 function fmt(v) {
@@ -566,8 +661,37 @@ async function auditProd(row, status) {
     ElMessage.success(status===1?'审核通过':'已拒绝'); fetchProducts()
   } catch(e) { ElMessage.error(e.message) }
 }
+function showProdDlg(row) {
+  if (row) {
+    prodDlg.uuid = row.uuid || row.id || ''; prodDlg.name = row.name||''; prodDlg.description = row.description||''
+    prodDlg.price = row.price||''; prodDlg.originalPrice = row.originalPrice||''; prodDlg.stock = row.stock||''
+    prodDlg.categoryId = row.categoryId||''; prodDlg.imageUrl = row.imageUrl||row.mainImage||''; prodDlg.status = row.status||1
+  } else {
+    prodDlg.uuid = ''; prodDlg.name = ''; prodDlg.description = ''; prodDlg.price = ''; prodDlg.originalPrice = ''
+    prodDlg.stock = ''; prodDlg.categoryId = ''; prodDlg.imageUrl = ''; prodDlg.status = 1
+  }
+  prodDlg.show = true
+}
+async function saveProdDlg() {
+  try {
+    const body = { name:prodDlg.name, description:prodDlg.description, price:Number(prodDlg.price)||0,
+      originalPrice:Number(prodDlg.originalPrice)||0, stock:Number(prodDlg.stock)||0,
+      categoryId:prodDlg.categoryId, imageUrl:prodDlg.imageUrl, status:prodDlg.status }
+    if (prodDlg.uuid) await updateProduct(prodDlg.uuid, body)
+    else await createProduct(body)
+    ElMessage.success('保存成功'); prodDlg.show=false; fetchProducts()
+  } catch(e) { ElMessage.error(e.message||'保存失败') }
+}
+async function showProdDetail(row) {
+  try {
+    const id = row.uuid || row.id
+    const r = await getProductDetail(id)
+    prodDetail.data = r?.data || r
+    prodDetail.show = true
+  } catch(e) { ElMessage.error('获取商品详情失败') }
+}
 
-// =====  =====
+// ===== 订单 =====
 async function fetchOrders() {
   try {
     const d = await getOrderList({keyword:orderKw.value,page:orderPg.value,size:10})
@@ -577,9 +701,30 @@ async function fetchOrders() {
 }
 async function doRefund(row) {
   try {
-    await ElMessageBox.confirm(`确认操作 ${row.orderNo||row.id}?`,'提示',{type:'warning'})
+    await ElMessageBox.confirm(`确认退款 ${row.orderNo||row.id}?`,'提示',{type:'warning'})
     await forceRefund(row.id)
-    ElMessage.success('成功'); fetchOrders()
+    ElMessage.success('退款成功'); fetchOrders()
+  } catch(_){}
+}
+async function showOrderDetail(row) {
+  const id = row.uuid || row.id
+  try {
+    orderDetail.data = (await getOrderDetail(id))?.data || row
+  } catch(_) { orderDetail.data = row }
+  orderDetail.show = true
+  orderDetail.logsLoading = true
+  try {
+    const r = await getOrderLogs(id)
+    orderDetail.logs = r?.records || r?.list || (Array.isArray(r)?r:[])
+  } catch(_) { orderDetail.logs = [] }
+  orderDetail.logsLoading = false
+}
+async function showLogistics(orderId) {
+  if (!orderId) return
+  logisticsDlg.show = true; logisticsDlg.traces = []
+  try {
+    const r = await getLogisticsTrace(orderId)
+    logisticsDlg.traces = r?.traces || r?.data || (Array.isArray(r)?r:[])
   } catch(_){}
 }
 

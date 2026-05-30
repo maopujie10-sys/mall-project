@@ -101,6 +101,40 @@
 - `/opt/tomcat8/conf/server.xml` — maxThreads=300 + acceptCount=200
 - ZK `/dubbo` 节点自动重建，provider URL使用172.19.0.1 (当前docker0网桥)
 
+## 2026-05-31 01:30 — mall-unified 统一前端审计（龙一）
+
+**审计范围：** 对照旧5个前端，审计 mall-unified 完成度。
+
+**旧前端（mall-app/frontend/）：**
+- pc/ — PC买家商城 (Vue 2.6)
+- h5/ — 手机买家H5 (Vue 2.6)
+- merchant/ — PC商家后台 (Vue 2.6)
+- merchant-h5/ — 手机商家H5 (Vue 3)
+
+**新统一前端（mall-unified/）：** Vue 3 + Vite，路由统一在 src/router/
+
+**审计结果：**
+
+| 模块 | 路由数 | 视图目录 | 状态 |
+|------|--------|----------|------|
+| PC 买家 | 16 | 20 | ✅ 完成（4空目录无影响） |
+| H5 手机 | 15 | 22 | ✅ 完成（7空目录无影响） |
+| PC 商家 | 11 | 11 | ✅ 完成 |
+| 手机商家H5 | 9 | 46 | ❌ 缺32个页面路由 |
+
+**PC/H5/Merchant 结论：** 路由全部对齐，缺失目录均为空壳（无 index.vue），无需处理。
+
+**merchant-h5 缺口明细（32个待挂载）：**
+- 有 index.vue 缺路由（24个）：bindVerify, certified, changeAvatar, changeFundsPassword, changePassword, changePhone, customerService, customerServiceOther, email, forget, fundsPasswordSettings, fundsRecords, invitationActivity, language, login-agreement, messageCenter, number, personalInfo, refundRequest, resetPane, resetVerify, safety, search, sellerLevel, setting, successChange, termsOfService, verifyPage, FinancialStatements
+- 子组件需路由（5个）：Record, activityCenter, authentication, message, payMentMethod
+- 非页面（3个，已忽略）：404.vue, Layout.vue, components
+
+**Git 状态：** mall-unified/ 从未提交（Untracked）
+
+**下一步：** 补全 merchant-h5.routes.js 的32条路由
+
+---
+
 ## 2026-05-30 09:27 — 修复8个文件中文编码污染 + Docker重建
 
 **原因：** 电脑端compact格式转换导致UTF-8中文双重编码(mojibake)，4个Python文件语法错误阻塞Agent启动。

@@ -21,6 +21,9 @@ const routes = [
       { path: "database", name: "DatabasePanel", component: () => import("@/views/DatabasePanel.vue"), meta: { title: '' } },
 
       { path: "mall", name: "MallPanel", component: () => import("@/views/MallPanel.vue"), meta: { title: '' } },
+      { path: "mall/agent", name: "AgentPanel", component: () => import("@/views/mall/AgentPanel.vue"), meta: { title: '' } },
+      { path: "mall/activity", name: "ActivityPanel", component: () => import("@/views/mall/ActivityPanel.vue"), meta: { title: '' } },
+      { path: "mall/safeword", name: "SafewordPanel", component: () => import("@/views/mall/SafewordPanel.vue"), meta: { title: '' } },
       { path: "site", name: "SiteCheck", component: () => import("@/views/SiteCheck.vue"), meta: { title: '' } },
       { path: "customer", name: "CustomerPanel", component: () => import("@/views/CustomerPanel.vue"), meta: { title: '' } },
 

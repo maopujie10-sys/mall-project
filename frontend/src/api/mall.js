@@ -7,6 +7,7 @@ export function getMallStatus() { return agentApi.get('/tools/mall/stats') }
 // =====  =====
 export function getProductList(params) { return agentApi.get('/tools/mall/products', { params }) }
 export function getProductDetail(uuid) { return agentApi.get(`/tools/mall/product/${uuid}`) }
+export function createProduct(data) { return agentApi.post('/tools/mall/product', data) }
 export function auditProduct(data) { return agentApi.post('/tools/mall/product/audit', data) }
 export function updateProduct(uuid, data) { return agentApi.put(`/tools/mall/product/${uuid}`, data) }
 export function deleteProduct(uuid) { return agentApi.delete(`/tools/mall/product/${uuid}`) }
@@ -122,6 +123,8 @@ export function getMerchantDashboard() { return agentApi.get('/tools/mall/mercha
 
 // =====  =====
 export function getMerchantFinance(params) { return agentApi.get('/tools/mall/merchant/finance', { params }) }
+export function getMerchantFinanceHead() { return agentApi.get('/tools/mall/merchant/finance-report/head') }
+export function getMerchantFinanceReport(params) { return agentApi.get('/tools/mall/merchant/finance-report/list', { params }) }
 
 // =====  =====
 export function getMerchantGoods(params) { return agentApi.get('/tools/mall/merchant/goods', { params }) }
@@ -149,6 +152,8 @@ export function deleteNews(newsId) { return agentApi.delete(`/tools/mall/news/${
 // =====  =====
 export function getNotificationList(params) { return agentApi.get('/tools/mall/notifications', { params }) }
 export function saveNotification(data) { return agentApi.post('/tools/mall/notification', data) }
+export function updateNotification(nid, data) { return agentApi.put(`/tools/mall/notification/${nid}`, data) }
+export function deleteNotification(nid) { return agentApi.delete(`/tools/mall/notification/${nid}`) }
 
 // =====  =====
 export function getSysparaList() { return agentApi.get('/tools/mall/syspara/list') }
@@ -162,6 +167,15 @@ export function getAreaCountries(lang) { return agentApi.get('/tools/mall/area/c
 export function getAreaStates(countryId) { return agentApi.get('/tools/mall/area/states', { params: { country_id: countryId } }) }
 export function getAreaCities(stateId) { return agentApi.get('/tools/mall/area/cities', { params: { state_id: stateId } }) }
 export function getAreaMobilePrefix() { return agentApi.get('/tools/mall/area/mobile-prefix') }
+// 区域后台管理CRUD
+export function getAreaAdminCountries(params) { return agentApi.get('/tools/mall/area/admin/countries', { params }) }
+export function saveAreaCountry(data) { return agentApi.post('/tools/mall/area/admin/country', data) }
+export function updateAreaCountry(cid, data) { return agentApi.put(`/tools/mall/area/admin/country/${cid}`, data) }
+export function deleteAreaCountry(cid) { return agentApi.delete(`/tools/mall/area/admin/country/${cid}`) }
+export function getAreaAdminCities(params) { return agentApi.get('/tools/mall/area/admin/cities', { params }) }
+export function saveAreaCity(data) { return agentApi.post('/tools/mall/area/admin/city', data) }
+export function updateAreaCity(cid, data) { return agentApi.put(`/tools/mall/area/admin/city/${cid}`, data) }
+export function deleteAreaCity(cid) { return agentApi.delete(`/tools/mall/area/admin/city/${cid}`) }
 
 // =====  =====
 export function getMallLevelList() { return agentApi.get('/tools/mall/malllevel/list') }
@@ -185,6 +199,10 @@ export function getIdcodeList(params) { return agentApi.get('/tools/mall/idcodes
 
 // =====  =====
 export function getComboList() { return agentApi.get('/tools/mall/combos') }
+export function getComboRecords(params) { return agentApi.get('/tools/mall/combo/records', { params }) }
+export function saveCombo(data) { return agentApi.post('/tools/mall/combo', data) }
+export function updateCombo(uuid, data) { return agentApi.put(`/tools/mall/combo/${uuid}`, data) }
+export function deleteCombo(uuid) { return agentApi.delete(`/tools/mall/combo/${uuid}`) }
 
 // ===== Google =====
 export function getGoogleAuthList(params) { return agentApi.get('/tools/mall/google-auth/list', { params }) }
@@ -281,3 +299,33 @@ export function getJavaRotationDomains() { return agentApi.get('/tools/mall/rota
 export function javaBlockDomain(data) { return agentApi.post('/tools/mall/rotation/block', data) }
 export function javaUnblockDomain(data) { return agentApi.post('/tools/mall/rotation/unblock', data) }
 export function getJavaRotationStats() { return agentApi.get('/tools/mall/rotation/stats') }
+
+// ===== 代理管理 =====
+export function getAgentList(params) { return agentApi.get('/tools/mall/agent/list', { params }) }
+export function getAgentDetail(sellerId) { return agentApi.get(`/tools/mall/agent/${sellerId}`) }
+export function updateAgentStatus(data) { return agentApi.put(`/tools/mall/agent/${data.sellerId}/status`, data) }
+export function getAgentTeam(sellerId) { return agentApi.get(`/tools/mall/agent/${sellerId}/team`) }
+export function getAgentLevelList() { return agentApi.get('/tools/mall/agent/levels') }
+export function saveAgentLevel(data) { return agentApi.post('/tools/mall/agent/level', data) }
+export function updateAgentLevel(uuid, data) { return agentApi.put(`/tools/mall/agent/level/${uuid}`, data) }
+export function deleteAgentLevel(uuid) { return agentApi.delete(`/tools/mall/agent/level/${uuid}`) }
+export function getAgentRebateList(params) { return agentApi.get('/tools/mall/agent/rebates', { params }) }
+export function getAgentRebateStats() { return agentApi.get('/tools/mall/agent/rebate/stats') }
+
+// ===== 活动/抽奖管理 =====
+export function getActivityList(params) { return agentApi.get('/tools/mall/activity/list', { params }) }
+export function getActivityDetail(activityId) { return agentApi.get(`/tools/mall/activity/${activityId}`) }
+export function saveActivity(data) { return agentApi.post('/tools/mall/activity', data) }
+export function updateActivity(activityId, data) { return agentApi.put(`/tools/mall/activity/${activityId}`, data) }
+export function toggleActivityShow(activityId, data) { return agentApi.put(`/tools/mall/activity/${activityId}/toggle`, data) }
+export function deleteActivity(activityId) { return agentApi.delete(`/tools/mall/activity/${activityId}`) }
+export function getActivityPrizes(activityId) { return agentApi.get(`/tools/mall/activity/${activityId}/prizes`) }
+export function saveActivityPrize(data) { return agentApi.post('/tools/mall/activity/prize', data) }
+export function updateActivityPrize(prizeId, data) { return agentApi.put(`/tools/mall/activity/prize/${prizeId}`, data) }
+export function deleteActivityPrize(prizeId) { return agentApi.delete(`/tools/mall/activity/prize/${prizeId}`) }
+export function getActivityRecords(params) { return agentApi.get('/tools/mall/activity/records', { params }) }
+
+// ===== 安全重置审核 =====
+export function getSafewordList(params) { return agentApi.get('/tools/mall/safeword/list', { params }) }
+export function approveSafeword(applyId) { return agentApi.post(`/tools/mall/safeword/${applyId}/approve`) }
+export function rejectSafeword(applyId) { return agentApi.post(`/tools/mall/safeword/${applyId}/reject`) }
