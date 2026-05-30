@@ -47,8 +47,7 @@
                 <!-- ====== ?====== -->
         <div class="chat-messages" ref="msgList"><canvas ref="matrixCanvas" class="matrix-bg"></canvas>
           <div v-if="messages.length === 0" class="empty-chat">
-            -
-            <p>?Friday AI </p>
+            <p>Friday AI</p>
             <p class="empty-sub"></p>
             <div class="quick-actions">
               <button @click="quickAsk('')"></button>
@@ -111,7 +110,7 @@
               v-model="inputText"
               @keydown.enter.exact.prevent="sendMessage"
               @keydown.enter.shift.exact="inputText += '\n'"
-              :placeholder="voiceActive ? '' : ''"
+              :placeholder="voiceActive ? '' : $t('floatingAI.placeholder')"
               rows="1"
               ref="inputBox"
               :disabled="loading || voiceActive"
