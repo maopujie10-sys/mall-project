@@ -36,6 +36,7 @@ const routes = [
       { path: "weekly-report", name: "WeeklyReport", component: () => import("@/views/WeeklyReport.vue"), meta: { title: "运营周报" } },
       { path: "log-viewer", name: "LogViewer", component: () => import("@/views/LogViewer.vue"), meta: { title: "日志中心" } },
       { path: "self-service", name: "SelfService", component: () => import("@/views/SelfService.vue"), meta: { title: "自助服务" } },
+      { path: "workflow", name: "WorkflowEditor", component: () => import("@/views/WorkflowEditor.vue"), meta: { title: "??????" } },
 
       { path: "alert", name: "AlertCenter", component: () => import("@/views/AlertCenter.vue"), meta: { title: "告警中心" } },
       { path: "security", name: "SecurityPanel", component: () => import("@/views/SecurityPanel.vue"), meta: { title: "安全中心" } },

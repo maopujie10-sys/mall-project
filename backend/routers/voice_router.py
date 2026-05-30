@@ -80,3 +80,43 @@ async def voice_websocket(ws: WebSocket):
             await ws.send_json({"type": "error", "message": str(e)})
         except:
             pass
+
+# ===== ????? =====
+from pydantic import BaseModel
+
+class MultimodalRequest(BaseModel):
+    video_path: str = ""
+    video_url: str = ""
+    audio_path: str = ""
+    audio_url: str = ""
+    image_b64: str = ""
+    questions: list = None
+    frames: int = 5
+
+@router.post("/video/analyze")
+async def analyze_video(req: MultimodalRequest, _=Depends(verify_token)):
+    """????: ?????+AI????+????"""
+    from tools.multimodal_engine import multimodal_engine
+    return await multimodal_engine.analyze_video(
+        video_path=req.video_path,
+        video_url=req.video_url,
+        frames=req.frames
+    )
+
+@router.post("/audio/analyze")
+async def analyze_audio(req: MultimodalRequest, _=Depends(verify_token)):
+    """????: ???+????"""
+    from tools.multimodal_engine import multimodal_engine
+    return await multimodal_engine.analyze_audio(
+        audio_path=req.audio_path,
+        audio_url=req.audio_url
+    )
+
+@router.post("/image/deep-understand")
+async def deep_image_understand(req: MultimodalRequest, _=Depends(verify_token)):
+    """??????: ??+OCR+????+??"""
+    from tools.multimodal_engine import multimodal_engine
+    return await multimodal_engine.deep_image_understanding(
+        image_b64=req.image_b64,
+        questions=req.questions
+    )

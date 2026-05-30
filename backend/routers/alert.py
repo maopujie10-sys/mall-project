@@ -115,3 +115,22 @@ async def alert_stats(_=Depends(verify_token)):
             if not a.get("resolved"):
                 stats[lv]["unresolved"] += 1
     return {"stats": stats, "total": len(alerts)}
+
+
+# ===== ???? =====
+from tools.alert_closed_loop import AlertClosedLoop
+
+@router.post("/health-check")
+async def run_health_check(_=Depends(verify_token)):
+    """???????? + ????"""
+    return await AlertClosedLoop.run_health_check()
+
+@router.get("/closed-loop-history")
+async def get_closed_loop_history(limit: int = 20, _=Depends(verify_token)):
+    """????????"""
+    return {"ok": True, "history": AlertClosedLoop.get_history(limit)}
+
+@router.post("/auto-fix")
+async def trigger_auto_fix(req: AlertCreateRequest, _=Depends(verify_token)):
+    """???????????"""
+    return await AlertClosedLoop.detect_and_fix(req.title, req.detail, auto_fix=True)
