@@ -1,6 +1,6 @@
 # 🖥️ Friday AI OS — 服务器端 AI 记忆
 
-> 最后更新: 2026-05-30 09:27 | 运行环境: server
+> 最后更新: 2026-05-30 09:40 | 运行环境: server
 
 ## 🧬 当前人格
 - 类型: 均衡型 · 全面发展
@@ -15,6 +15,16 @@
 6. 客服自动回复 + 轮值域名监控
 
 ## 最近改动
+- 2026-05-30 09:40: [编码修复-续] 修复 advanced_ai.py(6处) + agent_chat.py(3处) + memory_router.py(6处) 残留编码污染
+  - **根本原因：** 电脑端 compact 格式转换在每次 push 前污染中文 UTF-8，`"` 被替换为 `?` (0x3F)，导致大量语法错误
+  - advanced_ai.py: f-string `}` 单括号、缺失引号 `"__EUR",copy`、f-string `)` 导致解析异常、`}""` 多余引号 — 逐行修了6轮
+  - agent_chat.py: dict默认值引号缺失、缩进异常(tab vs spaces)、PROMPTS 行完全损毁重写
+  - memory_router.py: 合并 34e7394 后新出现的 6 处中文 docstring+handle_risk 乱码
+  - **辅助修复：** master_agent.py + gateway_router.py 在上轮已完全重写，本轮编译通过
+  - **验证：** `ast.parse()` 全量扫描 89 个 .py 文件，零语法错误
+  - **db.py 部署：** docker cp + docker restart (按用户指令，未重建)
+  - **容器状态：** mall-ai-agent ✅ / mall-ai-frontend ✅
+  - **⚠️ 电脑端 compact format 必须修复，否则每次 push 都会再次污染文件**
 - 2026-05-30 09:27: [编码修复] 修复 7个Python文件 + 1个Vue文件的中文编码污染(mojibake)
   - **问题根因：** 电脑端 compact 格式转换导致 UTF-8 中文被双重编码，4个文件有语法错误阻止 Agent 启动
   - **修复列表（语法错误→阻塞启动）：**
