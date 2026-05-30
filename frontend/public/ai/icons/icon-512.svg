@@ -1,0 +1,6 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="64" fill="#667eea"/>
+  <rect x="40" y="40" width="432" height="432" rx="48" fill="none" stroke="#ffffff30" stroke-width="4"/>
+  <text x="256" y="290" text-anchor="middle" font-size="180" font-weight="bold" fill="white" font-family="sans-serif">F</text>
+  <text x="256" y="400" text-anchor="middle" font-size="64" fill="#ffffff80" font-family="sans-serif">AI OS</text>
+</svg>
