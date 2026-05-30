@@ -32,12 +32,12 @@ async def lifespan(app: FastAPI):
         stats = memory_store.get_stats()
         conv_count = stats["total_conversations"]
         cat_count = len(memory_store.get_knowledge_categories())
-        print(f"[Agent] 鎸佷箙璁板繂宸插姞杞? {conv_count}娈靛璇? {cat_count}涓煡璇嗗垎绫?)
+        print(f"[Agent] 持久记忆已加载: {conv_count}段对话, {cat_count}个知识分类")
     except Exception as e:
-        print(f"[Agent] 璁板繂鍔犺浇澶辫触(闈炶嚧鍛?: {e}")
+        print(f"[Agent] 记忆加载失败(非致命): {e}")
     from tools.registry import register_builtin_tools
     register_builtin_tools()
-    print("[Agent] 鎵ц鍚姩鑷...")
+    print("[Agent] 执行启动自检...")
     try:
         from startup import startup_self_check, startup_warmup
         check_result = await startup_self_check()

@@ -1,6 +1,6 @@
-"""Master Agent -- Friday AI OS 鎬绘帶澶ц剳
-鑱岃矗:浠诲姟鎷嗚В銆丄gent璋冨害銆佷笂涓嬫枃绠＄悊銆侀暱鏈熺洰鏍囪拷韪?
-v2: Claude 鐪熷疄AI鎺ㄧ悊 + 鍏抽敭璇嶅厹搴?""
+"""Master Agent -- Friday AI OS 总控大脑
+职责:任务拆解、Agent调度、上下文管理、长期目标追踪
+v2: Claude 真实AI推理 + 关键词兜底"""
 import json
 import httpx
 import time
@@ -19,22 +19,22 @@ class Task:
     completed_at: str = ""
 
 class MasterAgent:
-    """鎬绘帶Agent -- AI鎺ㄧ悊 + 瑙勫垯鍏滃簳鍙屽紩鎿?""
+    """总控Agent -- AI推理 + 规则兜底双引擎"""
 
     AGENTS = {
-        "code": "浠ｇ爜缂栧啓/淇/Bug鍒嗘瀽",
-        "devops": "鏈嶅姟鍣?Docker/Nginx/閮ㄧ讲",
-        "vision": "鍥剧墖璇嗗埆/瑙嗛鍒嗘瀽/OCR",
-        "trend": "鐑偣鐩戞帶/鑸嗘儏鍒嗘瀽/瓒嬪娍棰勬祴",
-        "memory": "闀挎湡璁板繂/鐭ヨ瘑妫€绱?缁忛獙瀛︿範",
-        "heal": "寮傚父妫€娴?鑷姩淇/鏈嶅姟鎭㈠",
-        "scraper": "鍟嗗搧閲囬泦/鏁版嵁鎶撳彇",
-        "mall": "鍟嗗煄绠＄悊/瀹㈡湇/杞€?,
+        "code": "代码编写/修复/Bug分析",
+        "devops": "服务器/Docker/Nginx/部署",
+        "vision": "图片识别/视频分析/OCR",
+        "trend": "热点监控/舆情分析/趋势预测",
+        "memory": "长期记忆/知识检索/经验学习",
+        "heal": "异常检测/自动修复/服务恢复",
+        "scraper": "商品采集/数据抓取",
+        "mall": "商城管理/客服/轮值",
     }
 
     @staticmethod
     async def analyze_intent(message: str, use_ai: bool = True) -> dict:
-        """鍒嗘瀽鐢ㄦ埛鎰忓浘 -- AI鎺ㄧ悊浼樺厛,鍏抽敭璇嶅厹搴?""
+        """分析用户意图 -- AI推理优先,关键词兜底"""
         if use_ai:
             ai_result = await MasterAgent._ai_analyze(message)
             if ai_result and ai_result.get("agents"):
@@ -44,7 +44,7 @@ class MasterAgent:
 
     @staticmethod
     async def _ai_analyze(message: str) -> Optional[dict]:
-        """璋冪敤 Claude 杩涜娣卞眰鎰忓浘鍒嗘瀽"""
+        """调用 Claude 进行深层意图分析"""
         try:
             from config import CLAUDE_API_KEY, CLAUDE_MODEL
         except Exception:
@@ -53,15 +53,15 @@ class MasterAgent:
             return None
 
         agent_desc = "\n".join([f"- {k}: {v}" for k, v in MasterAgent.AGENTS.items()])
-        prompt = f"""浣犳槸 Friday AI OS 鐨勬€绘帶澶ц剳.鍒嗘瀽鐢ㄦ埛娑堟伅,杩斿洖闇€瑕佽皟鐢ㄧ殑Agent鍒楄〃.
+        prompt = f"""你是 Friday AI OS 的总控大脑.分析用户消息,返回需要调用的Agent列表.
 
-鍙敤Agent:
+可用Agent:
 {agent_desc}
 
-鐢ㄦ埛娑堟伅: {message}
+用户消息: {message}
 
-杩斿洖绾疛SON(涓嶈markdown鍖呰９):
-{{"intent": "绠€鐭剰鍥炬弿杩?, "agents": ["agent1","agent2"], "complexity": "low/medium/high", "reasoning": "鎺ㄧ悊渚濇嵁"}}"""
+返回纯JSON(不要markdown包裹):
+{{"intent": "简短意图描述", "agents": ["agent1","agent2"], "complexity": "low/medium/high", "reasoning": "推理依据"}}"""
 
         try:
             async with httpx.AsyncClient(timeout=20) as c:
@@ -81,7 +81,7 @@ class MasterAgent:
                 if r.status_code == 200:
                     data = r.json()
                     text = data["content"][0]["text"]
-                    # 鎻愬彇JSON
+                    # 提取JSON
                     start = text.find("{")
                     end = text.rfind("}") + 1
                     if start >= 0 and end > start:
@@ -95,19 +95,19 @@ class MasterAgent:
 
     @staticmethod
     def _keyword_analyze(message: str) -> dict:
-        """鍏抽敭璇嶅尮閰?-- AI涓嶅彲鐢ㄦ椂鐨勫厹搴曟柟妗?""
+        """关键词匹配 -- AI不可用时的兜底方案"""
         msg_lower = message.lower()
         agents_needed = []
 
         rules = [
-            (["浠ｇ爜","bug","鎶ラ敊","鎺ュ彛","sql","淇","寮€鍙?,"鍐欎竴涓?,"鍑芥暟","绫?], "code"),
-            (["鏈嶅姟鍣?,"docker","nginx","閮ㄧ讲","閲嶅惎","绔彛","cpu","鍐呭瓨","纾佺洏"], "devops"),
-            (["鍥剧墖","瑙嗛","璇嗗埆","ocr","鐪嬪浘","鍒嗘瀽鍥剧墖","鎷嶇収","浜鸿劯"], "vision"),
-            (["鐑偣","鎶栭煶","寰崥","鐑悳","瓒嬪娍","鑸嗘儏","b绔?], "trend"),
-            (["璁板繂","璁颁綇","涓婃","涔嬪墠","鍘嗗彶","瀛︿範","鏃ヨ"], "memory"),
-            (["寮傚父","鎸備簡","鎭㈠","鑷姩淇","宸℃","鍋ュ悍"], "heal"),
-            (["閲囬泦","鎶撳彇","鍟嗗搧","涓婃灦","ebay","shopee"], "scraper"),
-            (["鍟嗗煄","瀹㈡湇","杞€?,"璁㈠崟","鐢ㄦ埛"], "mall"),
+            (["代码","bug","报错","接口","sql","修复","开发","写一个","函数","类"], "code"),
+            (["服务器","docker","nginx","部署","重启","端口","cpu","内存","磁盘"], "devops"),
+            (["图片","视频","识别","ocr","看图","分析图片","拍照","人脸"], "vision"),
+            (["热点","抖音","微博","热搜","趋势","舆情","b站"], "trend"),
+            (["记忆","记住","上次","之前","历史","学习","日记"], "memory"),
+            (["异常","挂了","恢复","自动修复","巡检","健康"], "heal"),
+            (["采集","抓取","商品","上架","ebay","shopee"], "scraper"),
+            (["商城","客服","轮值","订单","用户"], "mall"),
         ]
 
         for keywords, agent in rules:
@@ -127,32 +127,32 @@ class MasterAgent:
 
     @staticmethod
     def create_task_plan(goal: str, agents: list) -> list:
-        """鏍规嵁鐩爣鍜孉gent鍒楄〃鐢熸垚鎵ц璁″垝"""
+        """根据目标和Agent列表生成执行计划"""
         plan = []
         for i, agent in enumerate(agents):
             plan.append({
                 "step": i + 1,
                 "agent": agent,
-                "action": f"{MasterAgent.AGENTS.get(agent, '鎵ц浠诲姟')}",
+                "action": f"{MasterAgent.AGENTS.get(agent, '执行任务')}",
                 "status": "pending",
             })
         return plan
 
     @staticmethod
     async def create_ai_plan(goal: str, agents: list) -> list:
-        """浣跨敤Claude鐢熸垚鏅鸿兘鎵ц璁″垝"""
+        """使用Claude生成智能执行计划"""
         try:
             from config import CLAUDE_API_KEY, CLAUDE_MODEL
             if not CLAUDE_API_KEY:
                 return MasterAgent.create_task_plan(goal, agents)
 
             agent_list = ", ".join(agents)
-            prompt = f"""涓轰互涓嬬洰鏍囩敓鎴愭墽琛岃鍒?
-鐩爣: {goal}
-鍙敤Agent: {agent_list}
+            prompt = f"""为以下目标生成执行计划:
+目标: {goal}
+可用Agent: {agent_list}
 
-杩斿洖JSON鏁扮粍(涓嶈markdown鍖呰９):
-[{{"step": 1, "agent": "agent鍚?, "action": "鍏蜂綋鎿嶄綔", "detail": "璇︾粏璇存槑"}}]"""
+返回JSON数组(不要markdown包裹):
+[{{"step": 1, "agent": "agent名", "action": "具体操作", "detail": "详细说明"}}]"""
 
             async with httpx.AsyncClient(timeout=20) as c:
                 r = await c.post(
@@ -184,16 +184,16 @@ class MasterAgent:
 
     @staticmethod
     def get_agent_status() -> list:
-        """鑾峰彇鎵€鏈堿gent鐘舵€?""
+        """获取所有Agent状态"""
         return [
-            {"id": "master", "name": "Master Agent", "icon": "馃", "status": "active", "engine": "claude+keyword", "tasks": 0},
-            {"id": "code", "name": "Code Agent", "icon": "馃捇", "status": "idle", "tasks": 0},
-            {"id": "devops", "name": "DevOps Agent", "icon": "鈿欙笍", "status": "active", "tasks": 0},
-            {"id": "vision", "name": "Vision Agent", "icon": "馃憗锔?, "status": "idle", "tasks": 0},
-            {"id": "trend", "name": "Trend Agent", "icon": "馃摗", "status": "idle", "tasks": 0},
-            {"id": "memory", "name": "Memory Agent", "icon": "馃捑", "status": "active", "tasks": 0},
-            {"id": "heal", "name": "Self-Healing Agent", "icon": "馃洝锔?, "status": "idle", "tasks": 0},
-            {"id": "scraper", "name": "Scraper Agent", "icon": "馃暦锔?, "status": "idle", "tasks": 0},
+            {"id": "master", "name": "Master Agent", "icon": "🧥", "status": "active", "engine": "claude+keyword", "tasks": 0},
+            {"id": "code", "name": "Code Agent", "icon": "🖇", "status": "idle", "tasks": 0},
+            {"id": "devops", "name": "DevOps Agent", "icon": "⚙️", "status": "active", "tasks": 0},
+            {"id": "vision", "name": "Vision Agent", "icon": "👁️", "status": "idle", "tasks": 0},
+            {"id": "trend", "name": "Trend Agent", "icon": "📗", "status": "idle", "tasks": 0},
+            {"id": "memory", "name": "Memory Agent", "icon": "🧑", "status": "active", "tasks": 0},
+            {"id": "heal", "name": "Self-Healing Agent", "icon": "🛝️", "status": "idle", "tasks": 0},
+            {"id": "scraper", "name": "Scraper Agent", "icon": "🕦️", "status": "idle", "tasks": 0},
         ]
 
     @classmethod

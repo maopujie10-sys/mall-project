@@ -73,31 +73,31 @@ class MemorySync:
 
     @staticmethod
     def generate_friday_md() -> str:
-        """鐢熸垚FRIDAY.md -- AI鑷垜鎻忚堪鏂囨。"""
+        """生成FRIDAY.md -- AI自我描述文档"""
         identity = MemorySync.identify_self()
-        emoji = "馃捇" if identity == "local" else "馃枼锔?
+        emoji = "💻" if identity == "local" else "🖥️"
 
-        content = f"""# {emoji} Friday AI OS -- 鏁板瓧鐢熷懡浣撴。妗?
+        content = f"""# {emoji} Friday AI OS -- 数字生命体档案
 
-> 鑷姩鐢熸垚浜?{datetime.now().strftime('%Y-%m-%d %H:%M')} | 杩愯鐜: {identity}
+> 自动生成于 {datetime.now().strftime('%Y-%m-%d %H:%M')} | 运行环境: {identity}
 
-## 馃К AI浜烘牸鐢诲儚
+## 🧬 AI人格画像
 
 """
         # 濡傛灉浜烘牸寮曟搸鍙敤
         try:
             from tools.memory_personality import PersonalityEngine
             personality = PersonalityEngine.get_personality()
-            content += f"- **浜烘牸绫诲瀷**: {personality.get('personality_type', '钀岃娊鏈?)}\n"
-            content += f"- **涓诲鐗硅川**: {personality.get('dominant_name', '')}\n"
-            content += f"- **杩涘寲闃舵**: {personality.get('evolution_stage', '馃尡 钀岃娊鏈?)}\n"
-            content += f"- **浜や簰娆℃暟**: {personality.get('total_interactions', 0)}\n"
-            content += f"- **杩?鏃ユ椿璺?*: {personality.get('recent_7d_interactions', 0)}娆n"
+            content += f"- **人格类型**: {personality.get('personality_type', '萌芽期')}\n"
+            content += f"- **主导特质**: {personality.get('dominant_name', '')}\n"
+            content += f"- **进化阶段**: {personality.get('evolution_stage', '🌱 萌芽期')}\n"
+            content += f"- **交互次数**: {personality.get('total_interactions', 0)}\n"
+            content += f"- **近7日活跃**: {personality.get('recent_7d_interactions', 0)}次\n"
 
             if personality.get('traits'):
-                content += "\n### 浜烘牸缁村害\n\n"
+                content += "\n### 人格维度\n\n"
                 for key, info in sorted(personality['traits'].items(), key=lambda x: x[1]['value'], reverse=True):
-                    bar = "鈻? * int(info['value'] * 20) + "鈻? * (20 - int(info['value'] * 20))
+                    bar = "█" * int(info['value'] * 20) + "░" * (20 - int(info['value'] * 20))
                     content += f"- {info['icon']} **{info['name']}**: {bar} {info['value']:.0%}\n"
         except Exception as e:
             content += f"\n*(浜烘牸寮曟搸鏆備笉鍙敤: {e})*\n"
@@ -235,7 +235,7 @@ class MemorySync:
 
     @staticmethod
     def sync_pull() -> dict:
-        """浠嶨itHub鎷夊彇 -- 鑾峰彇鍙︿竴绔疉I鐨勬渶鏂拌蹇?""
+        """从GitHub拉取 -- 获取另一端AI的最新记忆"""
         # git pull
         ok, out, err = MemorySync._run_git(["pull", "origin", "HEAD"], timeout=30)
 

@@ -1,4 +1,4 @@
-"""缁旂偛鎼ч惄鎴炲付婢х偛宸?-- 娴犻攱鐗搁崣妯哄З閸涘﹨顒?閺傛澘鎼ч崣鎴犲箛+娣囧啴鏀㈡潻鍊熼嚋+鐡掑濞嶉崚鍡樼€?""
+"""绔炲搧鐩戞帶澧炲己 -- 浠锋牸鍙樺姩鍛婅+鏂板搧鍙戠幇+淇冮攢杩借釜+瓒嬪娍鍒嗘瀽"""
 from datetime import datetime, timedelta
 from fastapi import APIRouter, Depends, Query
 from pydantic import BaseModel
@@ -17,8 +17,8 @@ class TrackRequest(BaseModel):
 
 @router.post("/track")
 async def add_track(req: TrackRequest, _=Depends(verify_token)):
-    """濞ｈ濮炵粩鐐叉惂閻╂垶甯?""
-    await handle_risk("L1", f"濞ｈ濮炵粩鐐叉惂: {req.product_name}")
+    """娣诲姞绔炲搧鐩戞帶"""
+    await handle_risk("L1", f"娣诲姞绔炲搧: {req.product_name}")
     tracks = state._data.setdefault("competitor_tracks", [])
     entry = {
         "id": f"ct{len(tracks)+1}",
@@ -39,12 +39,12 @@ async def add_track(req: TrackRequest, _=Depends(verify_token)):
 
 @router.get("/tracks")
 async def list_tracks(_=Depends(verify_token)):
-    """缁旂偛鎼ч惄鎴炲付閸掓銆?""
+    """绔炲搧鐩戞帶鍒楄〃"""
     return {"ok": True, "tracks": state._data.get("competitor_tracks", [])}
 
 @router.delete("/track/{track_id}")
 async def remove_track(track_id: str, _=Depends(verify_token)):
-    """閸掔娀娅庣粩鐐叉惂閻╂垶甯?""
+    """鍒犻櫎绔炲搧鐩戞帶"""
     tracks = state._data.get("competitor_tracks", [])
     state._data["competitor_tracks"] = [t for t in tracks if t.get("id") != track_id]
     state._save()
@@ -52,7 +52,7 @@ async def remove_track(track_id: str, _=Depends(verify_token)):
 
 @router.post("/track/{track_id}/price")
 async def record_price(track_id: str, price: float = Query(...), currency: str = "USD", _=Depends(verify_token)):
-    """鐠佹澘缍嶆禒閿嬬壐閸欐ê濮?""
+    """璁板綍浠锋牸鍙樺姩"""
     tracks = state._data.get("competitor_tracks", [])
     for t in tracks:
         if t.get("id") == track_id:
@@ -87,11 +87,11 @@ async def record_price(track_id: str, price: float = Query(...), currency: str =
                 })
             state._save()
             return {"ok": True, "price": price, "change": change if prev else 0}
-    return {"ok": False, "error": "缁旂偛鎼ф稉宥呯摠閸?}
+    return {"ok": False, "error": "竞品不存在"}
 
 @router.post("/track/{track_id}/promotion")
 async def record_promotion(track_id: str, title: str = Query(...), discount: str = Query(""), _=Depends(verify_token)):
-    """鐠佹澘缍嶆穱鍐敘濞茶濮?""
+    """璁板綍淇冮攢娲诲姩"""
     tracks = state._data.get("competitor_tracks", [])
     for t in tracks:
         if t.get("id") == track_id:
@@ -99,11 +99,11 @@ async def record_promotion(track_id: str, title: str = Query(...), discount: str
             promos.append({"title": title, "discount": discount, "time": datetime.now().isoformat()})
             state._save()
             return {"ok": True, "promotion": {"title": title, "discount": discount}}
-    return {"ok": False, "error": "缁旂偛鎼ф稉宥呯摠閸?}
+    return {"ok": False, "error": "竞品不存在"}
 
 @router.get("/alerts")
 async def price_alerts(days: int = 7, _=Depends(verify_token)):
-    """娴犻攱鐗搁崣妯哄З閸涘﹨顒?""
+    """浠锋牸鍙樺姩鍛婅"""
     alerts = state._data.get("price_alerts", [])
     cutoff = (datetime.now() - timedelta(days=days)).isoformat()
     recent = [a for a in alerts if a.get("time", "") >= cutoff]
@@ -111,7 +111,7 @@ async def price_alerts(days: int = 7, _=Depends(verify_token)):
 
 @router.get("/trends")
 async def price_trends(_=Depends(verify_token)):
-    """缁旂偛鎼ф禒閿嬬壐鐡掑濞嶉崚鍡樼€?""
+    """绔炲搧浠锋牸瓒嬪娍鍒嗘瀽"""
     tracks = state._data.get("competitor_tracks", [])
     trends = []
     for t in tracks:
@@ -134,7 +134,7 @@ async def price_trends(_=Depends(verify_token)):
 
 @router.get("/promotions")
 async def active_promotions(_=Depends(verify_token)):
-    """濞叉槒绌穱鍐敘濞茶濮?""
+    """娲昏穬淇冮攢娲诲姩"""
     tracks = state._data.get("competitor_tracks", [])
     promos = []
     for t in tracks:
@@ -144,7 +144,7 @@ async def active_promotions(_=Depends(verify_token)):
 
 @router.get("/summary")
 async def competitor_summary(_=Depends(verify_token)):
-    """缁旂偛鎼ч惄鎴炲付閹槒顫?""
+    """绔炲搧鐩戞帶鎬昏"""
     tracks = state._data.get("competitor_tracks", [])
     active = sum(1 for t in tracks if t.get("status") == "active")
     total_alerts = sum(len(t.get("alerts", [])) for t in tracks)
@@ -167,19 +167,3 @@ async def competitor_summary(_=Depends(verify_token)):
         "price_changes_7d": recent_changes,
         "by_platform": platforms,
     }
-
-@router.post("/scrape")
-async def scrape_competitor(url: str = "", _=Depends(verify_token)):
-    """爬取竞品信息"""
-    try:
-        import httpx
-        async with httpx.AsyncClient(timeout=30, headers={"User-Agent":"Mozilla/5.0"}) as client:
-            resp = await client.get(url)
-            html = resp.text[:5000]
-            from agents.multi_model import ModelRouter
-            ai = ModelRouter.smart_chat(messages=[{"role":"user","content":f"从HTML提取商品信息(名称/价格/销量/评分),返回JSON:\n{html}"}], mode="fast")
-            import json as j
-            data = j.loads(ai.get("content","{}") if isinstance(ai,dict) else "{}")
-            return {"ok":True,"url":url,"data":data}
-    except Exception as e:
-        return {"ok":False,"error":str(e)}
