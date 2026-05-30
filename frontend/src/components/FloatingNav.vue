@@ -35,7 +35,7 @@
           <router-link
             v-for="item in activeCategory?.items"
             :key="item.to + item.label"
-            :to="item.to ? { name: item.to } : ''"
+            :to="item.to ? { path: item.to } : ''"
             class="panel-item"
             @click="item.action ? handleAction(item.action) : (activeCat = null)"
           >
