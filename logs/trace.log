@@ -1475,3 +1475,10 @@
 [2026-05-30 11:13:19] [INFO ] [trace] [d6d0bc421428] -> GET /agent/health/simple
 [2026-05-30 11:13:49] [INFO ] [trace] [094fc5127263] -> GET /agent/health/simple
 [2026-05-30 11:14:19] [INFO ] [trace] [bd1aa7e81481] -> GET /agent/health/simple
+[2026-05-30 13:00:09] [INFO ] [trace] [7df0ab471fb7] -> GET /
+[2026-05-30 13:00:09] [INFO ] [trace] [020afa861245] -> GET /
+[2026-05-30 13:00:19] [INFO ] [trace] [a79152cd81f0] -> GET /agent/health/simple
+[2026-05-30 13:00:19] [INFO ] [trace] [5d6407b2d16c] -> GET /agent/health
+[2026-05-30 13:00:25] [INFO ] [trace] [31d0d9c98735] -> GET /agent/health
+[2026-05-30 13:00:34] [INFO ] [trace] [ff66ed861517] -> GET /agent/health/simple
+[2026-05-30 13:01:05] [INFO ] [trace] [06aa32354c6b] -> GET /agent/health/simple

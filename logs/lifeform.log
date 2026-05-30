@@ -243,3 +243,7 @@
 [2026-05-30 11:07:00] [INFO ] [lifeform] 周期异常: DigitalLifeform.one_cycle() missing 1 required positional argument: 'cls'
 [2026-05-30 11:12:00] [INFO ] [lifeform] 周期异常: DigitalLifeform.one_cycle() missing 1 required positional argument: 'cls'
 [2026-05-30 11:12:00] [INFO ] [lifeform] 周期异常: DigitalLifeform.one_cycle() missing 1 required positional argument: 'cls'
+[2026-05-30 13:00:08] [INFO ] [lifeform] 数字生命体v4启动, 间隔300s
+[2026-05-30 13:00:08] [INFO ] [lifeform] 数字生命体v4启动, 间隔300s
+[2026-05-30 13:00:08] [INFO ] [lifeform] 周期异常: DigitalLifeform.one_cycle() missing 1 required positional argument: 'cls'
+[2026-05-30 13:00:08] [INFO ] [lifeform] 周期异常: DigitalLifeform.one_cycle() missing 1 required positional argument: 'cls'
