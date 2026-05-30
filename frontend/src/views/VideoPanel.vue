@@ -52,8 +52,8 @@ async function analyze() {
   if(!videoUrl.value) { ElMessage.warning('URL'); return }
   analyzing.value = true; result.value = null
   try {
-    const res = await agentApi.post('/agent/vision/video', { video_url: videoUrl.value })
-    if(res?.data?.ok) { result.value = res.data; subtitles.value = res.data.subtitles || []; ElMessage.success('OK') }
+    const res = await agentApi.post('/agent/video/analyze', { video_url: videoUrl.value })
+    if(res?.data?.ok) { result.value = res.data; subtitles.value = res.data.subtitles || []; ElMessage.success('Analysis complete') }
     else { ElMessage.error(': ' + (res?.data?.error || '')) }
   } catch(e) { ElMessage.error(': ' + (e.message || '')) }
   analyzing.value = false
