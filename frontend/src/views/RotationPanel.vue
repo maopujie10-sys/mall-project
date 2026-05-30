@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="page-container">
     <div class="page-header">
       <h2>杞€肩鐞嗙郴缁</h2>
@@ -133,7 +133,7 @@ import { ref, reactive, computed, onMounted, onUnmounted } from "vue"
 import { ElMessage, ElMessageBox } from "element-plus"
 import {
   getDomains, toggleDomain, checkDomain, addDomain, removeDomain, setDomainWeight,
-  getTwoLevelConfig, toggleRotationGroup as apiToggleGroup, addSubdomain, removeSubdomain, getRotationHistory
+  getTwoLevelConfig, toggleRotationGroup as apiToggleGroup, addSubdomain, removeSubdomain
 } from "@/api/rotation"
 
 const loading = ref(true)
