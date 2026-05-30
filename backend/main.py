@@ -1,4 +1,4 @@
-"""TikTokMall AI Agent 鎬绘帶 - FastAPI :9000"""
+"""TikTokMall AI Agent 閹粯甯?- FastAPI :9000"""
 from routers.code_deploy import router as code_deploy_router
 from routers.emergency_panel import router as emergency_panel_router
 from routers.prompt_templates import router as prompt_templates_router
@@ -19,33 +19,33 @@ from auth import verify_token, auth_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    print(f"[Agent] 鍚姩涓? 鍟嗗煄: {MALL_BASE_URL}")
+    print(f"[Agent] 閸氼垰濮╂稉? 閸熷棗鐓? {MALL_BASE_URL}")
     try:
         from scheduler import start_scheduler
         from digital_lifeform import DigitalLifeform
         start_scheduler()
         asyncio.create_task(DigitalLifeform.start_loop(300))
     except Exception as e:
-        print(f"[Agent] 瀹氭椂浠诲姟鍚姩澶辫触(闈炶嚧鍛?: {e}")
+        print(f"[Agent] 鐎规碍妞傛禒璇插閸氼垰濮╂径杈Е(闂堢偠鍤ч崨?: {e}")
     try:
         from tools.memory_store import memory_store
         stats = memory_store.get_stats()
         conv_count = stats["total_conversations"]
         cat_count = len(memory_store.get_knowledge_categories())
-        print(f"[Agent] 鎸佷箙璁板繂宸插姞杞? {conv_count}娈靛璇? {cat_count}涓煡璇嗗垎绫?)
+        print(f"[Agent] 閹镐椒绠欑拋鏉跨箓瀹告彃濮炴潪? {conv_count}濞堥潧顕拠? {cat_count}娑擃亞鐓＄拠鍡楀瀻缁?)
     except Exception as e:
-        print(f"[Agent] 璁板繂鍔犺浇澶辫触(闈炶嚧鍛?: {e}")
+        print(f"[Agent] 鐠佹澘绻傞崝鐘烘祰婢惰精瑙?闂堢偠鍤ч崨?: {e}")
     from tools.registry import register_builtin_tools
     register_builtin_tools()
-    print("[Agent] 鎵ц鍚姩鑷...")
+    print("[Agent] 閹笛嗩攽閸氼垰濮╅懛顏咁梾...")
     try:
         from startup import startup_self_check, startup_warmup
         check_result = await startup_self_check()
         summary = check_result["summary"]
-        print(f"[Agent] 鑷缁撴灉: {summary}")
+        print(f"[Agent] 閼奉亝顥呯紒鎾寸亯: {summary}")
         await startup_warmup()
 
-        # Dashboard瀹炴椂鎸囨爣鎺ㄩ€?
+        # Dashboard鐎圭偞妞傞幐鍥ㄧ垼閹恒劑鈧?
         async def push_metrics_loop():
             from websocket_manager import ws_manager
             while True:
@@ -56,16 +56,16 @@ async def lifespan(app: FastAPI):
                     pass
         asyncio.create_task(push_metrics_loop())
     except Exception as e:
-        print(f"[Agent] 鑷澶辫触(闈炶嚧鍛?: {e}")
+        print(f"[Agent] 閼奉亝顥呮径杈Е(闂堢偠鍤ч崨?: {e}")
     yield
-    print("[Agent] 鍏抽棴鍓嶅悓姝ヨ蹇?..")
+    print("[Agent] 閸忔娊妫撮崜宥呮倱濮濄儴顔囪箛?..")
     try:
         from tools.memory_sync import MemorySync
         push_result = MemorySync.sync_push()
         status = "OK" if push_result["success"] else "WARN"
-        print(f"[Agent] 璁板繂鍚屾: {status}")
+        print(f"[Agent] 鐠佹澘绻傞崥灞绢劄: {status}")
     except Exception as e:
-        print(f"[Agent] 璁板繂鍚屾澶辫触: {e}")
+        print(f"[Agent] 鐠佹澘绻傞崥灞绢劄婢惰精瑙? {e}")
     try:
         from scheduler import stop_scheduler
         from digital_lifeform import DigitalLifeform
@@ -77,7 +77,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="TikTokMall Agent", version="1.1.0", lifespan=lifespan)
 
-# === 涓棿浠?椤哄簭寰堥噸瑕?闄愭祦 -> 杩借釜 -> CORS) ===
+# === 娑擃參妫挎禒?妞ゅ搫绨鍫ュ櫢鐟?闂勬劖绁?-> 鏉╁€熼嚋 -> CORS) ===
 app.middleware("http")(rate_limit_middleware)
 app.middleware("http")(trace_middleware)
 
@@ -90,7 +90,7 @@ app.add_middleware(
 
 app.include_router(auth_router)
 
-# === 璺敱妯″潡 ===
+# === 鐠侯垳鏁卞Ο鈥虫健 ===
 from routers.vector_router import router as vector_router
 from routers.backup_router import router as backup_router
 from routers.copy_router import router as copy_router
@@ -133,7 +133,7 @@ from routers.translate_router import router as translate_router
 from routers.excel_router import router as excel_router
 from routers.auto_reply_router import router as auto_reply_router
 from routers.order_alert_router import router as order_alert_router
-# 鏂板: AI瀹氫环 + 璇锋眰杩借釜
+# 閺傛澘顤? AI鐎规矮鐜?+ 鐠囬攱鐪版潻鍊熼嚋
 from routers.pricing_router import router as pricing_router
 from routers.description_router import router as description_router
 from routers.fraud_router import router as fraud_router
@@ -142,7 +142,7 @@ from routers.ws_router import router as ws_router
 from routers.gateway_router import router as gateway_router
 from routers.omni_router import router as omni_router
 
-# === 鍏ㄨ兘AI鍗囩骇 v5 ===
+# === 閸忋劏鍏楢I閸楀洨楠?v5 ===
 from routers.voice_router import router as voice_router
 from routers.tools_router import router as tools_router
 from routers.advanced_ai import router as advanced_router
@@ -158,7 +158,7 @@ from routers.security_scan_router import router as security_scan_router
 from routers.capabilities_router import router as capabilities_router
 from routers.key_router import router as key_router
 from routers.ecommerce_ai import router as ecommerce_ai_router
-# === 钀藉湴椤佃疆鍊?===
+# === 閽€钘夋勾妞や絻鐤嗛崐?===
 ROTATION_DOMAINS = [
     "chxhx.eu.cc", "drrgr.eu.cc", "drrimrf.eu.cc", "drriiu.eu.cc",
     "duomi.eu.cc", "dengruihan.eu.cc", "yyawzx.eu.cc", "gamed.eu.cc"
@@ -174,7 +174,7 @@ async def rotation_redirect(flag: str = "pc"):
     path = FLAG_ROUTES.get(flag, "/home")
     return RedirectResponse(f"https://{domain}{path}", status_code=302)
 
-# === 娉ㄥ唽鎵€鏈夎矾鐢?===
+# === 濞夈劌鍞介幍鈧張澶庣熅閻?===
 app.include_router(health.router)
 app.include_router(status.router)
 app.include_router(restart.router)
@@ -207,7 +207,7 @@ app.include_router(mall_brain_router, prefix="/mall-brain")
 app.include_router(evolution_router, prefix="/evolution")
 app.include_router(friday_router)
 app.include_router(devops_agent_router.router, prefix="/devops")
-app.include_router(memory_router.router, prefix="/memory")
+app.include_router(memory_router.router)
 app.include_router(heal_router.router, prefix="/heal")
 app.include_router(ssl_router, prefix="/ssl")
 app.include_router(scheduler_api_router)
@@ -240,7 +240,7 @@ app.include_router(vector_router, prefix="/vector")
 app.include_router(backup_router, prefix="/backup")
 app.include_router(copy_router, prefix="/copy")
 app.include_router(github_router)
-# 鏂板璺敱
+# 閺傛澘顤冪捄顖滄暠
 app.include_router(pricing_router, prefix="/pricing")
 app.include_router(description_router, prefix="/description")
 app.include_router(fraud_router, prefix="/fraud")
