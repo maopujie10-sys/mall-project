@@ -1,6 +1,6 @@
 # 🖥️ Friday AI OS — 服务器端 AI 记忆
 
-> 最后更新: 2026-05-30 09:40 | 运行环境: server
+> 最后更新: 2026-05-30 10:30 | 运行环境: server | 任务: 全量审计修复完成
 
 ## 🧬 当前人格
 - 类型: 均衡型 · 全面发展
@@ -15,7 +15,80 @@
 6. 客服自动回复 + 轮值域名监控
 
 ## 最近改动
-- 2026-05-30 09:40: [编码修复-续] 修复 advanced_ai.py(6处) + agent_chat.py(3处) + memory_router.py(6处) 残留编码污染
+
+### 2026-05-30: 全量审计6轮修复 — 全部完成 (8 commits: 6e6346d..c4d789b)
+
+**总览：36个问题修复，19个文件（Python后端）+ 11个文件（Java后端）+ 19个文件（AI前端）+ 7个文件（商城前端）+ 13个文件（基础设施）= 69个文件**
+
+| 轮次 | 范围 | 文件数 | 问题 |
+|------|------|--------|------|
+| R1 | AI 后端安全 | 9 | 9 Critical: 硬编码密码/弱哈希/exec()注入/shell=True/命令行密码/路径遍历/webhook无签名 |
+| R2 | 启动稳定性 | 3 | rag_router崩溃 + agent_chat重复端点/死代码/CONV_DB重复 |
+| R3 | Java后端 | 11 | 订单字段不持久化/余额无乐观锁/提现扣减错误/Redis全量flush/setSql注入/密码纯数字 |
+| R4 | AI前端 | 19 | 5崩溃(DatabasePanel等变量缺失) + 3运行时(ElMessage未导入) + 11双重解包(.data.data) |
+| R5 | 商城前端 | 7 | mockXHR生产环境泄露/Firebase凭据硬编码/keep-alive重复渲染/WebSocket localhost/空环境变量/PWA域名轮换 |
+| R6 | 基础设施 | 13 | Docker socket挂载/4个Dockerfile非root/nginx安全头+限流+WS/db连接池/依赖升级/前端内存泄漏+computed缺失+404路由 |
+
+**详细修复清单：**
+
+**第1轮 — 安全底线 (6e6346d)**
+- `.env.example` 清除真实凭据 → 占位符
+- `full_scrape.py:500 + db.py:11` 硬编码密码 `Root@123` → 环境变量
+- `auth.py:33` SHA-256 无盐 → bcrypt
+- `auth.py:11` JWT_SECRET 随机生成 → 拒绝启动
+- `tools_router.py:70` `exec()` 黑名单 → AST白名单
+- `advanced_ai.py:774` `shell=True` 用户输入 → 命令白名单
+- `scheduler.py/backup_router.py/rollback_center.py` 密码暴露 → `--defaults-extra-file`
+- `server_panel.py:222-248` 路径遍历 → `os.path.realpath()` + `SAFE_ROOT`
+- `gateway_router.py` Webhook无签名 → 添加平台签名验证
+
+**第2轮 — 启动稳定性 (73616b2)**
+- `rag_engine.py` 添加单例 `rag = RAGEngine()` 供 rag_router 导入
+- `agent_chat.py` 移除重复 CONV_DB、删除 return 后死代码、删除重复 /chat/vision 端点
+
+**第3轮 — Java后端 (3a9be40)**
+- `MallOrder.java` 移除4个 `@TableField(exist=false)` → payTime/deliveryTime/finishTime/remark 正常持久化
+- `UserBalanceMapper.java` 添加乐观锁版本号参数 → addBalance/deductFrozen/unfreezeBalance
+- `MerchantServiceImpl.java:668` 提现改为 freezeBalance(冻结) 替代 deductBalance(直接扣)
+- `AgentController.java:70` Redis flushAll → 选择性 `keys("mall:*")` + delete
+- `UserServiceImpl.java:555` 密码验证从纯数字改为必须字母+数字
+- `OrderServiceImpl.java:166` 取消订单退款加乐观锁版本检查
+- `LotteryServiceImpl.java` 5处 setSql 字符串拼接 → 参数化mapper
+
+**第4轮 — AI前端 (1d1d900)**
+- RiskPanel/DatabasePanel/ScraperCenter/MemoryCenter/FileManager 5文件补充缺失变量/函数
+- ImageProcessor/BatchUpload/PhoneAssistant 3文件添加 ElMessage 导入
+- MemorySync/AgentCollab/KnowledgeHub等11文件移除双重 `.data` 解包
+
+**第5轮 — 商城前端 (5f7fe36)**
+- merchant/src/main.js mockXHR 改为仅在 development 加载
+- h5/src/main.js Firebase 凭据 → 环境变量
+- h5/src/App.vue 移除 keep-alive 外重复渲染
+- h5/vue.config.js outputDir 添加默认值
+- pc/src/config/index.js WebSocket localhost → 动态域名
+- merchant-h5/.env.development 配置 VITE_APP_BASE_URL
+- unified-pwa/index.html 移除DMCA风险域名轮换
+
+**第6轮 — 基础设施 (3310943 + c4d789b)**
+- docker-compose.unified.yml + docker-compose.ai.yml 移除 Docker socket 挂载
+- 4个Dockerfile 添加 USER 非root（appuser/nginx/appuser）
+- nginx.conf 添加 HTTPS/SSL + 安全头(HSTS/X-Frame等) + 速率限制(30r/s API, 10r/s AI) + WebSocket升级
+- backend/db.py pymysql连接 → SQLAlchemy QueuePool连接池(pool_size=5, max_overflow=10)
+- requirements.txt 升级 fastapi→0.115.6, uvicorn→0.34.0, python-dotenv→1.0.1
+- VoiceChat.vue 修复 setInterval 心跳泄漏 + ws.onclose 重连泄漏
+- KnowledgeGraph.vue 修复 resize 监听器引用不匹配无法移除
+- FridayBrain.vue 补充 computed 导入 + 删除本地polyfill恢复响应式
+- Dashboard.vue 补充 computed 导入 + 修复 renderCharts resize 累积泄漏
+- router/index.js 添加 404 兜底路由
+
+**验证通过：**
+- ast.parse() 全量扫描 180个 .py 文件 ✅
+- mvn compile (JDK 17) BUILD SUCCESS ✅
+- Git 状态：8 commits ahead of origin/master，待推送
+
+---
+
+### 历史记录 advanced_ai.py(6处) + agent_chat.py(3处) + memory_router.py(6处) 残留编码污染
   - **根本原因：** 电脑端 compact 格式转换在每次 push 前污染中文 UTF-8，`"` 被替换为 `?` (0x3F)，导致大量语法错误
   - advanced_ai.py: f-string `}` 单括号、缺失引号 `"__EUR",copy`、f-string `)` 导致解析异常、`}""` 多余引号 — 逐行修了6轮
   - agent_chat.py: dict默认值引号缺失、缩进异常(tab vs spaces)、PROMPTS 行完全损毁重写
