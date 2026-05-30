@@ -1,17 +1,17 @@
-"""全品类采集 -- 覆盖所有二级分类,采集后替换旧商品"""
+"""全品类采集 — 覆盖所有二级分类，采集后替换旧商品"""
 import asyncio, sys, hashlib, time, gc, os, random
 import psutil
 sys.path.insert(0, ".")
 
-# 内存安全配置(多进程分片模式)
+# 内存安全配置（多进程分片模式）
 MEMORY_LIMIT_PCT = 75
 MEMORY_CHECK_INTERVAL = 20
-SEARCH_DELAY_BASE = 0.08
+SEARCH_DELAY_BASE = 0.05
 SEARCH_DELAY_MAX = 10
 PRODUCT_DELAY = 0.01
-CONCURRENCY = 20           # 产品页并发数(单进程最大)
+CONCURRENCY = 20           # 产品页并发数（单进程最大）
 CATEGORY_PAUSE = 0.1
-MAX_PAGES = 20             # 每个关键词搜索页数(深挖全量)
+MAX_PAGES = 20             # 每个关键词搜索页数（深挖全量）
 IMPORT_BATCH_SIZE = 30
 
 SHARD_INDEX = 0
@@ -41,7 +41,7 @@ async def check_memory():
         print(f"[内存] 恢复: {mem.percent}%", flush=True)
     return mem.percent
 
-# 每个二级分类 -> Amazon搜索关键词
+# 每个二级分类 → Amazon搜索关键词
 SUBCAT_KEYWORDS = {
     # Computer Peripherals
     "Computer Assembly Accessories": ["pc fan", "thermal paste", "sata cable"],
@@ -260,7 +260,7 @@ SUBCAT_KEYWORDS = {
 
 TOTAL = sum(len(v) for v in SUBCAT_KEYWORDS.values())
 
-# 自动扩充关键词:中性修饰词+品牌,覆盖全量而非仅最新/最热
+# 自动扩充关键词：中性修饰词+品牌，覆盖全量而非仅最新/最热
 def expand_keywords(keywords):
     modifiers = ["best", "top rated", "cheap", "popular", "budget"]
     brands = ["logitech","samsung","sony","apple","anker","jbl","bose","dyson",
@@ -344,9 +344,9 @@ async def run(ppk=80):
                     await check_memory()
                 if cat_imported >= ppk:
                     break
-                # 已刮空品类跳过:3个关键词总计<5新品
-                if cat_kw >= 3 and cat_imported < 5:
-                    _log(f"  ⚡ {subcat} {cat_kw}关键词仅{cat_imported}新品,跳过")
+                # 已刮空品类跳过：2个关键词总计<3新品
+                if cat_kw >= 2 and cat_imported < 3:
+                    _log(f"  ⚡ {subcat} {cat_kw}关键词仅{cat_imported}新品，跳过")
                     break
                 cat_kw += 1
                 stats["kws"] += 1
@@ -404,7 +404,7 @@ async def run(ppk=80):
                     if not products:
                         continue
 
-                    # 限制COS并发连接数,所有产品图片并发下载
+                    # 限制COS并发连接数，所有产品图片并发下载
                     dl_sem = asyncio.Semaphore(12)
                     async def _dl_limited(img_url, idx, pid):
                         async with dl_sem:
@@ -413,55 +413,56 @@ async def run(ppk=80):
                             except Exception:
                                 return None
 
-                    dl_results = await asyncio.gather(*[_dl_limited(u, i, p.id)
-                        for p in products[:need]
-                        for i, u in enumerate(p.images[:3])], return_exceptions=True)
-
-                    # 将结果分配回各产品,收集可入库的
-                    dl_idx = 0
-                    ready_products = []
-                    for p in products[:need]:
-                        uploaded = []
-                        for i in range(min(3, len(p.images))):
-                            r = dl_results[dl_idx]
-                            dl_idx += 1
-                            if isinstance(r, str) and r:
-                                uploaded.append(r)
-                        if not uploaded:
-                            continue
-                        p.cos_images = uploaded
-                        ready_products.append(p)
-
-                    # 分批入库,控制每批内存
                     imported_now = 0
                     review_total = 0
                     sku_total = 0
-                    for batch_start in range(0, len(ready_products), IMPORT_BATCH_SIZE):
-                        batch_products = ready_products[batch_start:batch_start+IMPORT_BATCH_SIZE]
-                        batch_dicts = [p.to_dict() for p in batch_products]
-                        result = import_batch(batch_dicts, subcat_name=subcat)
-                        imported_now += result["imported"]
-                        stats["imported"] += result["imported"]
-                        stats["skipped"] += result["skipped_duplicate"]
-                        stats["failed"] += result["failed"]
-                        for d in (result.get("details", {}).get("imported", []) or []):
-                            review_total += d.get("reviews_count", 0)
-                            sku_total += d.get("skus_count", 0)
-                        # 子批次间释放引用
-                        del batch_products, batch_dicts
 
-                    cat_imported += imported_now
-                    tag = "[A]" if platform == "amazon" else "[e]"
-                    _log(f"  {tag} +{imported_now}新品 | 评论{review_total} SKU{sku_total}")
-                    need = ppk - cat_imported
+                    if items:
+                        dl_results = await asyncio.gather(*[_dl_limited(u, i, p.id)
+                            for p in products[:need]
+                            for i, u in enumerate(p.images[:3])], return_exceptions=True)
 
-                # 追踪低产关键词
-                if imported_now == 0:
-                    dry_kws += 1
-                else:
-                    dry_kws = 0
+                        dl_idx = 0
+                        ready_products = []
+                        for p in products[:need]:
+                            uploaded = []
+                            for i in range(min(3, len(p.images))):
+                                r = dl_results[dl_idx]
+                                dl_idx += 1
+                                if isinstance(r, str) and r:
+                                    uploaded.append(r)
+                            if not uploaded:
+                                continue
+                            p.cos_images = uploaded
+                            ready_products.append(p)
 
-                await asyncio.sleep(PRODUCT_DELAY)
+                        # 分批入库，控制每批内存
+                        for batch_start in range(0, len(ready_products), IMPORT_BATCH_SIZE):
+                            batch_products = ready_products[batch_start:batch_start+IMPORT_BATCH_SIZE]
+                            batch_dicts = [p.to_dict() for p in batch_products]
+                            result = import_batch(batch_dicts, subcat_name=subcat)
+                            imported_now += result["imported"]
+                            stats["imported"] += result["imported"]
+                            stats["skipped"] += result["skipped_duplicate"]
+                            stats["failed"] += result["failed"]
+                            for d in (result.get("details", {}).get("imported", []) or []):
+                                review_total += d.get("reviews_count", 0)
+                                sku_total += d.get("skus_count", 0)
+                            # 子批次间释放引用
+                            del batch_products, batch_dicts
+
+                        cat_imported += imported_now
+                        tag = "[A]" if platform == "amazon" else "[e]"
+                        _log(f"  {tag} +{imported_now}新品 | 评论{review_total} SKU{sku_total}")
+                        need = ppk - cat_imported
+
+                    # 追踪低产关键词
+                    if imported_now == 0:
+                        dry_kws += 1
+                    else:
+                        dry_kws = 0
+
+                    await asyncio.sleep(PRODUCT_DELAY)
 
             if cat_imported == 0:
                 _log(f"  ⚠️ {subcat} 未采集到")
@@ -492,15 +493,37 @@ if __name__ == "__main__":
                 pass
             i += 1
 
-    # 分片:抽取该进程负责的品类
+    # 查询零商品品类，优先采集
+    zero_cat_names = set()
+    try:
+        import pymysql as _mysql
+        _c = _mysql.connect(host='127.0.0.1', port=3306, user='root', password='Root@123', database='mall')
+        _cur = _c.cursor()
+        _cur.execute("""SELECT cl.NAME FROM T_MALL_CATEGORY c
+            JOIN T_MALL_CATEGORY_LANG cl ON c.UUID = cl.CATEGORY_ID AND cl.LANG='en'
+            WHERE c.TYPE=1 AND c.STATUS=1
+            AND c.UUID NOT IN (SELECT DISTINCT CATEGORY_ID FROM T_MALL_SYSTEM_GOODS WHERE IS_SHELF=1)""")
+        zero_cat_names = set(row[0] for row in _cur.fetchall())
+        _c.close()
+    except Exception:
+        pass
+
+    # 分片：抽取该进程负责的品类，零商品优先
     import itertools
     cats = list(SUBCAT_KEYWORDS.items())
     shard_cats = dict(cats[shard_idx::shard_total])
+    # 零商品品类排前面，已有商品的随机排列
+    zero_items = [(k, v) for k, v in shard_cats.items() if k in zero_cat_names]
+    other_items = [(k, v) for k, v in shard_cats.items() if k not in zero_cat_names]
+    random.shuffle(zero_items)
+    random.shuffle(other_items)
     SUBCAT_KEYWORDS.clear()
-    SUBCAT_KEYWORDS.update(shard_cats)
+    SUBCAT_KEYWORDS.update(dict(zero_items + other_items))
     TOTAL = sum(len(v) for v in SUBCAT_KEYWORDS.values())
+    if zero_items:
+        print(f"零商品品类优先: {len(zero_items)}个 → 排在最前面")
 
-    # 更新分片相关的全局变量(必须通过__main__,因为直接运行时模块名不是full_scrape)
+    # 更新分片相关的全局变量(必须通过__main__，因为直接运行时模块名不是full_scrape)
     main_mod = sys.modules["__main__"]
     main_mod.SHARD_INDEX = shard_idx
     main_mod.SHARD_TOTAL = shard_total

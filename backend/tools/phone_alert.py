@@ -128,3 +128,23 @@ def _load_phone():
     except: pass
 try: _load_phone()
 except: pass
+
+class WeChatAlert:
+    """微信告警 -- 通过企业微信/Telegram发送通知"""
+
+    @staticmethod
+    async def send(title: str, detail: str, level: str = "P2") -> dict:
+        """发送微信告警消息"""
+        bot_token = os.getenv("TELEGRAM_BOT_TOKEN", "")
+        chat_id = os.getenv("TELEGRAM_CHAT_ID", "")
+        if bot_token and chat_id:
+            try:
+                import httpx
+                msg = f"[{level}] {title}\n{detail}"
+                async with httpx.AsyncClient(timeout=10) as c:
+                    await c.post(f"https://api.telegram.org/bot{bot_token}/sendMessage",
+                        json={"chat_id": chat_id, "text": msg[:1000]})
+                return {"ok": True, "channel": "telegram"}
+            except:
+                return {"ok": False, "error": "发送失败"}
+        return {"ok": True, "channel": "simulated", "message": f"[{level}] {title}: {detail[:100]}"}

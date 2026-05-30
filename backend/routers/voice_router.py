@@ -2,6 +2,7 @@
 import json, base64, asyncio
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Depends, Query
 from tools.logger import get_logger
+from auth import verify_token
 
 router = APIRouter(prefix="/agent/voice", tags=["Voice"])
 logger = get_logger("voice")

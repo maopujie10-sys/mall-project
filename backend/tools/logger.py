@@ -82,3 +82,5 @@ def error(msg, *args):
 
 def debug(msg, *args):
     get_logger().debug(msg, *args)
+
+logger = get_logger()

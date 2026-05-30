@@ -1,0 +1,183 @@
+[2026-05-29 23:15:12] [INFO ] [lifeform] 数字生命体v4启动, 间隔300s
+[2026-05-29 23:15:12] [INFO ] [lifeform] 数字生命体v4启动, 间隔300s
+[2026-05-29 23:15:12] [INFO ] [lifeform] 周期#1: 0个行动, 心情75.0%
+[2026-05-29 23:15:12] [INFO ] [lifeform] 周期#1: 0个行动, 心情75.0%
+[2026-05-29 23:20:13] [INFO ] [lifeform] 周期#2: 0个行动, 心情75.0%
+[2026-05-29 23:20:13] [INFO ] [lifeform] 周期#2: 0个行动, 心情75.0%
+[2026-05-29 23:23:24] [INFO ] [lifeform] 数字生命体v4启动, 间隔300s
+[2026-05-29 23:23:24] [INFO ] [lifeform] 数字生命体v4启动, 间隔300s
+[2026-05-29 23:23:24] [INFO ] [lifeform] 周期#1: 0个行动, 心情75.0%
+[2026-05-29 23:23:24] [INFO ] [lifeform] 周期#1: 0个行动, 心情75.0%
+[2026-05-29 23:28:25] [INFO ] [lifeform] 执行: check_system_health (原因: CPU=98.3%,需检查)
+[2026-05-29 23:28:25] [INFO ] [lifeform] 执行: check_system_health (原因: CPU=98.3%,需检查)
+[2026-05-29 23:28:25] [INFO ] [lifeform] 周期#2: 1个行动, 心情66.0%
+[2026-05-29 23:28:25] [INFO ] [lifeform] 周期#2: 1个行动, 心情66.0%
+[2026-05-29 23:33:25] [INFO ] [lifeform] 周期#3: 0个行动, 心情66.0%
+[2026-05-29 23:33:25] [INFO ] [lifeform] 周期#3: 0个行动, 心情66.0%
+[2026-05-29 23:34:17] [INFO ] [lifeform] 数字生命体v4启动, 间隔300s
+[2026-05-29 23:34:18] [INFO ] [lifeform] 数字生命体v4启动, 间隔300s
+[2026-05-29 23:34:18] [INFO ] [lifeform] 周期#1: 0个行动, 心情75.0%
+[2026-05-29 23:34:18] [INFO ] [lifeform] 周期#1: 0个行动, 心情75.0%
+[2026-05-29 23:34:33] [INFO ] [lifeform] 数字生命体v4启动, 间隔300s
+[2026-05-29 23:34:33] [INFO ] [lifeform] 数字生命体v4启动, 间隔300s
+[2026-05-29 23:34:33] [INFO ] [lifeform] 周期#1: 0个行动, 心情75.0%
+[2026-05-29 23:34:33] [INFO ] [lifeform] 周期#1: 0个行动, 心情75.0%
+[2026-05-29 23:35:20] [INFO ] [lifeform] 数字生命体v4启动, 间隔300s
+[2026-05-29 23:35:20] [INFO ] [lifeform] 执行: check_system_health (原因: CPU=89.1%,需检查)
+[2026-05-29 23:35:21] [INFO ] [lifeform] 数字生命体v4启动, 间隔300s
+[2026-05-29 23:35:21] [INFO ] [lifeform] 周期#1: 1个行动, 心情66.0%
+[2026-05-29 23:35:21] [INFO ] [lifeform] 周期#1: 0个行动, 心情75.0%
+[2026-05-29 23:37:33] [INFO ] [lifeform] 数字生命体v4启动, 间隔300s
+[2026-05-29 23:37:33] [INFO ] [lifeform] 数字生命体v4启动, 间隔300s
+[2026-05-29 23:37:33] [INFO ] [lifeform] 执行: clean_docker_cache (原因: 磁盘=95.8%)
+[2026-05-29 23:37:33] [INFO ] [lifeform] 周期#1: 1个行动, 心情66.0%
+[2026-05-29 23:37:33] [INFO ] [lifeform] 执行: clean_docker_cache (原因: 磁盘=95.8%)
+[2026-05-29 23:37:33] [INFO ] [lifeform] 周期#1: 1个行动, 心情66.0%
+[2026-05-29 23:42:20] [INFO ] [lifeform] 数字生命体v4启动, 间隔300s
+[2026-05-29 23:42:20] [INFO ] [lifeform] 数字生命体v4启动, 间隔300s
+[2026-05-29 23:42:21] [INFO ] [lifeform] 周期#1: 0个行动, 心情75.0%
+[2026-05-29 23:42:21] [INFO ] [lifeform] 周期#1: 0个行动, 心情75.0%
+[2026-05-29 23:47:21] [INFO ] [lifeform] 周期#2: 0个行动, 心情75.0%
+[2026-05-29 23:47:21] [INFO ] [lifeform] 周期#2: 0个行动, 心情75.0%
+[2026-05-29 23:52:21] [INFO ] [lifeform] 周期#3: 0个行动, 心情75.0%
+[2026-05-29 23:52:21] [INFO ] [lifeform] 周期#3: 0个行动, 心情75.0%
+[2026-05-29 23:52:57] [INFO ] [lifeform] 数字生命体v4启动, 间隔300s
+[2026-05-29 23:52:57] [INFO ] [lifeform] 数字生命体v4启动, 间隔300s
+[2026-05-29 23:52:57] [INFO ] [lifeform] 周期#1: 0个行动, 心情75.0%
+[2026-05-29 23:52:57] [INFO ] [lifeform] 周期#1: 0个行动, 心情75.0%
+[2026-05-29 23:54:38] [INFO ] [lifeform] 数字生命体v4启动, 间隔300s
+[2026-05-29 23:54:38] [INFO ] [lifeform] 数字生命体v4启动, 间隔300s
+[2026-05-29 23:54:38] [INFO ] [lifeform] 周期#1: 0个行动, 心情75.0%
+[2026-05-29 23:54:38] [INFO ] [lifeform] 周期#1: 0个行动, 心情75.0%
+[2026-05-29 23:59:39] [INFO ] [lifeform] 周期#2: 0个行动, 心情75.0%
+[2026-05-29 23:59:39] [INFO ] [lifeform] 周期#2: 0个行动, 心情75.0%
+[2026-05-30 00:04:39] [INFO ] [lifeform] 周期#3: 0个行动, 心情75.0%
+[2026-05-30 00:04:39] [INFO ] [lifeform] 周期#3: 0个行动, 心情75.0%
+[2026-05-30 00:09:39] [INFO ] [lifeform] 周期#4: 0个行动, 心情75.0%
+[2026-05-30 00:09:39] [INFO ] [lifeform] 周期#4: 0个行动, 心情75.0%
+[2026-05-30 00:14:39] [INFO ] [lifeform] 周期#5: 0个行动, 心情75.0%
+[2026-05-30 00:14:40] [INFO ] [lifeform] 周期#5: 0个行动, 心情75.0%
+[2026-05-30 00:19:40] [INFO ] [lifeform] 执行: check_rotation_domains (原因: 定期轮值检查)
+[2026-05-30 00:19:40] [INFO ] [lifeform] 执行: check_rotation_domains (原因: 定期轮值检查)
+[2026-05-30 00:19:42] [INFO ] [lifeform] 周期#6: 1个行动, 心情74.0%
+[2026-05-30 00:19:42] [INFO ] [lifeform] 周期#6: 1个行动, 心情74.0%
+[2026-05-30 00:24:42] [INFO ] [lifeform] 周期#7: 0个行动, 心情74.0%
+[2026-05-30 00:24:42] [INFO ] [lifeform] 周期#7: 0个行动, 心情74.0%
+[2026-05-30 00:29:42] [INFO ] [lifeform] 周期#8: 0个行动, 心情74.0%
+[2026-05-30 00:29:42] [INFO ] [lifeform] 周期#8: 0个行动, 心情74.0%
+[2026-05-30 00:34:43] [INFO ] [lifeform] 周期#9: 0个行动, 心情74.0%
+[2026-05-30 00:34:43] [INFO ] [lifeform] 周期#9: 0个行动, 心情74.0%
+[2026-05-30 00:36:38] [INFO ] [lifeform] 数字生命体v4启动, 间隔300s
+[2026-05-30 00:36:38] [INFO ] [lifeform] 周期异常: DigitalLifeform.one_cycle() missing 1 required positional argument: 'cls'
+[2026-05-30 00:36:38] [INFO ] [lifeform] 数字生命体v4启动, 间隔300s
+[2026-05-30 00:36:38] [INFO ] [lifeform] 周期异常: DigitalLifeform.one_cycle() missing 1 required positional argument: 'cls'
+[2026-05-30 00:37:12] [INFO ] [lifeform] 数字生命体v4启动, 间隔300s
+[2026-05-30 00:37:12] [INFO ] [lifeform] 周期异常: DigitalLifeform.one_cycle() missing 1 required positional argument: 'cls'
+[2026-05-30 00:37:12] [INFO ] [lifeform] 数字生命体v4启动, 间隔300s
+[2026-05-30 00:37:12] [INFO ] [lifeform] 周期异常: DigitalLifeform.one_cycle() missing 1 required positional argument: 'cls'
+[2026-05-30 00:42:12] [INFO ] [lifeform] 周期异常: DigitalLifeform.one_cycle() missing 1 required positional argument: 'cls'
+[2026-05-30 00:42:12] [INFO ] [lifeform] 周期异常: DigitalLifeform.one_cycle() missing 1 required positional argument: 'cls'
+[2026-05-30 00:43:49] [INFO ] [lifeform] 数字生命体v4启动, 间隔300s
+[2026-05-30 00:43:49] [INFO ] [lifeform] 周期异常: DigitalLifeform.one_cycle() missing 1 required positional argument: 'cls'
+[2026-05-30 00:43:49] [INFO ] [lifeform] 数字生命体v4启动, 间隔300s
+[2026-05-30 00:43:49] [INFO ] [lifeform] 周期异常: DigitalLifeform.one_cycle() missing 1 required positional argument: 'cls'
+[2026-05-30 00:48:49] [INFO ] [lifeform] 周期异常: DigitalLifeform.one_cycle() missing 1 required positional argument: 'cls'
+[2026-05-30 00:48:49] [INFO ] [lifeform] 周期异常: DigitalLifeform.one_cycle() missing 1 required positional argument: 'cls'
+[2026-05-30 00:53:49] [INFO ] [lifeform] 周期异常: DigitalLifeform.one_cycle() missing 1 required positional argument: 'cls'
+[2026-05-30 00:53:49] [INFO ] [lifeform] 周期异常: DigitalLifeform.one_cycle() missing 1 required positional argument: 'cls'
+[2026-05-30 00:58:49] [INFO ] [lifeform] 周期异常: DigitalLifeform.one_cycle() missing 1 required positional argument: 'cls'
+[2026-05-30 00:58:49] [INFO ] [lifeform] 周期异常: DigitalLifeform.one_cycle() missing 1 required positional argument: 'cls'
+[2026-05-30 01:03:49] [INFO ] [lifeform] 周期异常: DigitalLifeform.one_cycle() missing 1 required positional argument: 'cls'
+[2026-05-30 01:03:49] [INFO ] [lifeform] 周期异常: DigitalLifeform.one_cycle() missing 1 required positional argument: 'cls'
+[2026-05-30 01:04:57] [INFO ] [lifeform] 数字生命体v4启动, 间隔300s
+[2026-05-30 01:04:57] [INFO ] [lifeform] 周期异常: DigitalLifeform.one_cycle() missing 1 required positional argument: 'cls'
+[2026-05-30 01:04:57] [INFO ] [lifeform] 数字生命体v4启动, 间隔300s
+[2026-05-30 01:04:57] [INFO ] [lifeform] 周期异常: DigitalLifeform.one_cycle() missing 1 required positional argument: 'cls'
+[2026-05-30 01:09:57] [INFO ] [lifeform] 周期异常: DigitalLifeform.one_cycle() missing 1 required positional argument: 'cls'
+[2026-05-30 01:09:57] [INFO ] [lifeform] 周期异常: DigitalLifeform.one_cycle() missing 1 required positional argument: 'cls'
+[2026-05-30 01:14:57] [INFO ] [lifeform] 周期异常: DigitalLifeform.one_cycle() missing 1 required positional argument: 'cls'
+[2026-05-30 01:14:57] [INFO ] [lifeform] 周期异常: DigitalLifeform.one_cycle() missing 1 required positional argument: 'cls'
+[2026-05-30 01:19:57] [INFO ] [lifeform] 周期异常: DigitalLifeform.one_cycle() missing 1 required positional argument: 'cls'
+[2026-05-30 01:19:57] [INFO ] [lifeform] 周期异常: DigitalLifeform.one_cycle() missing 1 required positional argument: 'cls'
+[2026-05-30 01:24:57] [INFO ] [lifeform] 周期异常: DigitalLifeform.one_cycle() missing 1 required positional argument: 'cls'
+[2026-05-30 01:24:57] [INFO ] [lifeform] 周期异常: DigitalLifeform.one_cycle() missing 1 required positional argument: 'cls'
+[2026-05-30 01:29:57] [INFO ] [lifeform] 周期异常: DigitalLifeform.one_cycle() missing 1 required positional argument: 'cls'
+[2026-05-30 01:29:57] [INFO ] [lifeform] 周期异常: DigitalLifeform.one_cycle() missing 1 required positional argument: 'cls'
+[2026-05-30 01:34:57] [INFO ] [lifeform] 周期异常: DigitalLifeform.one_cycle() missing 1 required positional argument: 'cls'
+[2026-05-30 01:34:57] [INFO ] [lifeform] 周期异常: DigitalLifeform.one_cycle() missing 1 required positional argument: 'cls'
+[2026-05-30 01:39:57] [INFO ] [lifeform] 周期异常: DigitalLifeform.one_cycle() missing 1 required positional argument: 'cls'
+[2026-05-30 01:39:57] [INFO ] [lifeform] 周期异常: DigitalLifeform.one_cycle() missing 1 required positional argument: 'cls'
+[2026-05-30 01:44:57] [INFO ] [lifeform] 周期异常: DigitalLifeform.one_cycle() missing 1 required positional argument: 'cls'
+[2026-05-30 01:44:57] [INFO ] [lifeform] 周期异常: DigitalLifeform.one_cycle() missing 1 required positional argument: 'cls'
+[2026-05-30 01:49:57] [INFO ] [lifeform] 周期异常: DigitalLifeform.one_cycle() missing 1 required positional argument: 'cls'
+[2026-05-30 01:49:57] [INFO ] [lifeform] 周期异常: DigitalLifeform.one_cycle() missing 1 required positional argument: 'cls'
+[2026-05-30 01:54:57] [INFO ] [lifeform] 周期异常: DigitalLifeform.one_cycle() missing 1 required positional argument: 'cls'
+[2026-05-30 01:54:57] [INFO ] [lifeform] 周期异常: DigitalLifeform.one_cycle() missing 1 required positional argument: 'cls'
+[2026-05-30 01:59:57] [INFO ] [lifeform] 周期异常: DigitalLifeform.one_cycle() missing 1 required positional argument: 'cls'
+[2026-05-30 01:59:57] [INFO ] [lifeform] 周期异常: DigitalLifeform.one_cycle() missing 1 required positional argument: 'cls'
+[2026-05-30 02:04:57] [INFO ] [lifeform] 周期异常: DigitalLifeform.one_cycle() missing 1 required positional argument: 'cls'
+[2026-05-30 02:04:57] [INFO ] [lifeform] 周期异常: DigitalLifeform.one_cycle() missing 1 required positional argument: 'cls'
+[2026-05-30 02:08:14] [INFO ] [lifeform] 数字生命体v4启动, 间隔300s
+[2026-05-30 02:08:14] [INFO ] [lifeform] 数字生命体v4启动, 间隔300s
+[2026-05-30 02:08:14] [INFO ] [lifeform] 周期异常: DigitalLifeform.one_cycle() missing 1 required positional argument: 'cls'
+[2026-05-30 02:08:14] [INFO ] [lifeform] 周期异常: DigitalLifeform.one_cycle() missing 1 required positional argument: 'cls'
+[2026-05-30 02:11:08] [INFO ] [lifeform] 数字生命体v4启动, 间隔300s
+[2026-05-30 02:11:08] [INFO ] [lifeform] 周期异常: DigitalLifeform.one_cycle() missing 1 required positional argument: 'cls'
+[2026-05-30 02:11:08] [INFO ] [lifeform] 数字生命体v4启动, 间隔300s
+[2026-05-30 02:11:08] [INFO ] [lifeform] 周期异常: DigitalLifeform.one_cycle() missing 1 required positional argument: 'cls'
+[2026-05-30 02:16:08] [INFO ] [lifeform] 周期异常: DigitalLifeform.one_cycle() missing 1 required positional argument: 'cls'
+[2026-05-30 02:16:08] [INFO ] [lifeform] 周期异常: DigitalLifeform.one_cycle() missing 1 required positional argument: 'cls'
+[2026-05-30 02:21:08] [INFO ] [lifeform] 周期异常: DigitalLifeform.one_cycle() missing 1 required positional argument: 'cls'
+[2026-05-30 02:21:08] [INFO ] [lifeform] 周期异常: DigitalLifeform.one_cycle() missing 1 required positional argument: 'cls'
+[2026-05-30 02:29:30] [INFO ] [lifeform] 数字生命体v4启动, 间隔300s
+[2026-05-30 02:29:30] [INFO ] [lifeform] 周期异常: DigitalLifeform.one_cycle() missing 1 required positional argument: 'cls'
+[2026-05-30 02:29:30] [INFO ] [lifeform] 数字生命体v4启动, 间隔300s
+[2026-05-30 02:29:30] [INFO ] [lifeform] 周期异常: DigitalLifeform.one_cycle() missing 1 required positional argument: 'cls'
+[2026-05-30 02:34:30] [INFO ] [lifeform] 周期异常: DigitalLifeform.one_cycle() missing 1 required positional argument: 'cls'
+[2026-05-30 02:34:30] [INFO ] [lifeform] 周期异常: DigitalLifeform.one_cycle() missing 1 required positional argument: 'cls'
+[2026-05-30 02:39:30] [INFO ] [lifeform] 周期异常: DigitalLifeform.one_cycle() missing 1 required positional argument: 'cls'
+[2026-05-30 02:39:30] [INFO ] [lifeform] 周期异常: DigitalLifeform.one_cycle() missing 1 required positional argument: 'cls'
+[2026-05-30 02:44:30] [INFO ] [lifeform] 周期异常: DigitalLifeform.one_cycle() missing 1 required positional argument: 'cls'
+[2026-05-30 02:44:30] [INFO ] [lifeform] 周期异常: DigitalLifeform.one_cycle() missing 1 required positional argument: 'cls'
+[2026-05-30 02:49:30] [INFO ] [lifeform] 周期异常: DigitalLifeform.one_cycle() missing 1 required positional argument: 'cls'
+[2026-05-30 02:49:30] [INFO ] [lifeform] 周期异常: DigitalLifeform.one_cycle() missing 1 required positional argument: 'cls'
+[2026-05-30 02:54:30] [INFO ] [lifeform] 周期异常: DigitalLifeform.one_cycle() missing 1 required positional argument: 'cls'
+[2026-05-30 02:54:30] [INFO ] [lifeform] 周期异常: DigitalLifeform.one_cycle() missing 1 required positional argument: 'cls'
+[2026-05-30 02:59:30] [INFO ] [lifeform] 周期异常: DigitalLifeform.one_cycle() missing 1 required positional argument: 'cls'
+[2026-05-30 02:59:30] [INFO ] [lifeform] 周期异常: DigitalLifeform.one_cycle() missing 1 required positional argument: 'cls'
+[2026-05-30 03:04:30] [INFO ] [lifeform] 周期异常: DigitalLifeform.one_cycle() missing 1 required positional argument: 'cls'
+[2026-05-30 03:04:30] [INFO ] [lifeform] 周期异常: DigitalLifeform.one_cycle() missing 1 required positional argument: 'cls'
+[2026-05-30 03:09:30] [INFO ] [lifeform] 周期异常: DigitalLifeform.one_cycle() missing 1 required positional argument: 'cls'
+[2026-05-30 03:09:30] [INFO ] [lifeform] 周期异常: DigitalLifeform.one_cycle() missing 1 required positional argument: 'cls'
+[2026-05-30 03:14:30] [INFO ] [lifeform] 周期异常: DigitalLifeform.one_cycle() missing 1 required positional argument: 'cls'
+[2026-05-30 03:14:30] [INFO ] [lifeform] 周期异常: DigitalLifeform.one_cycle() missing 1 required positional argument: 'cls'
+[2026-05-30 03:19:30] [INFO ] [lifeform] 周期异常: DigitalLifeform.one_cycle() missing 1 required positional argument: 'cls'
+[2026-05-30 03:19:30] [INFO ] [lifeform] 周期异常: DigitalLifeform.one_cycle() missing 1 required positional argument: 'cls'
+[2026-05-30 03:24:30] [INFO ] [lifeform] 周期异常: DigitalLifeform.one_cycle() missing 1 required positional argument: 'cls'
+[2026-05-30 03:24:30] [INFO ] [lifeform] 周期异常: DigitalLifeform.one_cycle() missing 1 required positional argument: 'cls'
+[2026-05-30 03:29:30] [INFO ] [lifeform] 周期异常: DigitalLifeform.one_cycle() missing 1 required positional argument: 'cls'
+[2026-05-30 03:29:30] [INFO ] [lifeform] 周期异常: DigitalLifeform.one_cycle() missing 1 required positional argument: 'cls'
+[2026-05-30 03:34:30] [INFO ] [lifeform] 周期异常: DigitalLifeform.one_cycle() missing 1 required positional argument: 'cls'
+[2026-05-30 03:34:30] [INFO ] [lifeform] 周期异常: DigitalLifeform.one_cycle() missing 1 required positional argument: 'cls'
+[2026-05-30 03:39:30] [INFO ] [lifeform] 周期异常: DigitalLifeform.one_cycle() missing 1 required positional argument: 'cls'
+[2026-05-30 03:39:30] [INFO ] [lifeform] 周期异常: DigitalLifeform.one_cycle() missing 1 required positional argument: 'cls'
+[2026-05-30 03:44:30] [INFO ] [lifeform] 周期异常: DigitalLifeform.one_cycle() missing 1 required positional argument: 'cls'
+[2026-05-30 03:44:30] [INFO ] [lifeform] 周期异常: DigitalLifeform.one_cycle() missing 1 required positional argument: 'cls'
+[2026-05-30 03:49:30] [INFO ] [lifeform] 周期异常: DigitalLifeform.one_cycle() missing 1 required positional argument: 'cls'
+[2026-05-30 03:49:30] [INFO ] [lifeform] 周期异常: DigitalLifeform.one_cycle() missing 1 required positional argument: 'cls'
+[2026-05-30 03:54:30] [INFO ] [lifeform] 周期异常: DigitalLifeform.one_cycle() missing 1 required positional argument: 'cls'
+[2026-05-30 03:54:30] [INFO ] [lifeform] 周期异常: DigitalLifeform.one_cycle() missing 1 required positional argument: 'cls'
+[2026-05-30 03:59:30] [INFO ] [lifeform] 周期异常: DigitalLifeform.one_cycle() missing 1 required positional argument: 'cls'
+[2026-05-30 03:59:30] [INFO ] [lifeform] 周期异常: DigitalLifeform.one_cycle() missing 1 required positional argument: 'cls'
+[2026-05-30 04:04:30] [INFO ] [lifeform] 周期异常: DigitalLifeform.one_cycle() missing 1 required positional argument: 'cls'
+[2026-05-30 04:04:30] [INFO ] [lifeform] 周期异常: DigitalLifeform.one_cycle() missing 1 required positional argument: 'cls'
+[2026-05-30 04:09:30] [INFO ] [lifeform] 周期异常: DigitalLifeform.one_cycle() missing 1 required positional argument: 'cls'
+[2026-05-30 04:09:30] [INFO ] [lifeform] 周期异常: DigitalLifeform.one_cycle() missing 1 required positional argument: 'cls'
+[2026-05-30 04:14:30] [INFO ] [lifeform] 周期异常: DigitalLifeform.one_cycle() missing 1 required positional argument: 'cls'
+[2026-05-30 04:14:30] [INFO ] [lifeform] 周期异常: DigitalLifeform.one_cycle() missing 1 required positional argument: 'cls'
+[2026-05-30 04:19:30] [INFO ] [lifeform] 周期异常: DigitalLifeform.one_cycle() missing 1 required positional argument: 'cls'
+[2026-05-30 04:19:30] [INFO ] [lifeform] 周期异常: DigitalLifeform.one_cycle() missing 1 required positional argument: 'cls'
+[2026-05-30 08:26:07] [INFO ] [lifeform] 数字生命体v4启动, 间隔300s
+[2026-05-30 08:26:07] [INFO ] [lifeform] 周期异常: DigitalLifeform.one_cycle() missing 1 required positional argument: 'cls'
+[2026-05-30 08:26:07] [INFO ] [lifeform] 数字生命体v4启动, 间隔300s
+[2026-05-30 08:26:07] [INFO ] [lifeform] 周期异常: DigitalLifeform.one_cycle() missing 1 required positional argument: 'cls'

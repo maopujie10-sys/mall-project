@@ -1,5 +1,6 @@
 """Text-to-SQL -- 自然语言查数据库"""
 import re, json
+from typing import Dict
 from tools.logger import get_logger
 
 logger = get_logger("text2sql")

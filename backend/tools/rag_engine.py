@@ -172,3 +172,5 @@ try:
     RAGEngine.load()
 except:
     pass
+
+rag = RAGEngine()

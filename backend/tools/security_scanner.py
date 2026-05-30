@@ -1,5 +1,6 @@
 """安全渗透自检引擎 -- AI定期扫描漏洞+自动修复+报告"""
 import os, re, subprocess, json, time
+from typing import Dict
 from tools.logger import get_logger
 
 logger = get_logger("secscan")

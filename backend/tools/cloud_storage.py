@@ -100,3 +100,14 @@ def get_signed_url(cos_key: str, expire: int = 3600) -> str:
     auth = _cos_sign("get", f"/{cos_key}", headers, expire)
     params = auth.replace("&", "&")
     return f"{COS_DOMAIN}/{cos_key}?{params}"
+
+async def get_cos_status() -> dict:
+    """获取COS连接状态"""
+    if not COS_SECRET_ID or not COS_SECRET_KEY:
+        return {"status": "未配置", "bucket": COS_BUCKET or "N/A", "region": COS_REGION or "N/A", "uploaded": 0, "usage": "0 MB"}
+    try:
+        async with httpx.AsyncClient(timeout=10) as cli:
+            r = await cli.head(f"{COS_BASE_URL}/", headers={"Host": COS_ENDPOINT, "Authorization": _cos_sign("head", "/", {"Host": COS_ENDPOINT})})
+            return {"status": "已连接" if r.status_code < 500 else "异常", "bucket": COS_BUCKET, "region": COS_REGION, "uploaded": 0, "usage": "0 MB"}
+    except:
+        return {"status": "未连接", "bucket": COS_BUCKET or "N/A", "region": COS_REGION or "N/A", "uploaded": 0, "usage": "0 MB"}
