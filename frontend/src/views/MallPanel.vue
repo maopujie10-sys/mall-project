@@ -20,7 +20,7 @@
               <div class="card-hd">
                 <span class="card-tt">閿€鍞秼鍔</span>
                 <span class="chart-tabs">
-                  <span v-for="(t,i) in ['浠婃棩','杩澶?,'杩?0澶?]" :key="i"
+                  <span v-for="(t,i) in ['今日','近7天','近30天']" :key="i"
                     class="ctab" :class="{on:chartR===i}" @click="switchChart(i)">{{t}}</span>
                 </span>
               </div>
