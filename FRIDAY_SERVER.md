@@ -15,7 +15,12 @@
 6. 客服自动回复 + 轮值域名监控
 
 ## 最近改动
-- 2026-05-30 22:10: [404路由修复] AI后端31个GET接口404全部修复（ASGI PathRewrite中间件）
+- 2026-05-30 23:00: [前端全量修复] 30+ Vue 文件编码损坏，前端构建成功（565模块），Docker部署完成
+  - **问题：** 电脑端 compact 格式转换导致 UTF-8 中文被替换为 `?`，破坏大量 Vue 模板引号匹配和字符串闭合
+  - **修复：** 缺失引号(~30处)、`\(`→`$t(`(8文件)、换行符`}\`nfunction`修复、未闭合字符串/标签损坏/三元表达式
+  - **关键文件：** FloatingAI.vue（最大修复量）、NeuralNetwork3D.vue、FloatingNav.vue、SuperInput.vue、KnowledgeGraph.vue
+  - **验证：** 565模块编译通过 ✅，dist → Docker 部署 ✅
+  - **Git：** 6ea6865
   - **根因：** 前端调用 `/agent/xxx/yyy`，后端路由结构不匹配（双挂载/前缀嵌套）
   - **修复：** 替换原有的 `BaseHTTPMiddleware` 修复（因Starlette限制无法改写scope）为原始ASGI中间件
   - **原理：** 缓冲响应 → 检测404 → 查映射表(`/app/route_map.json`，启动时自动生成307条) → 改写路径重新分发
