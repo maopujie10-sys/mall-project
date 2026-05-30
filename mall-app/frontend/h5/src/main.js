@@ -130,22 +130,22 @@ Vue.prototype.$textOmit = (text = '', num = 30) => {
 // start
 
 const firebaseConfig = {
-    apiKey: "AIzaSyCAfTDznXqUGIw8odfEwVgmCg_2KwWnRps",
-    authDomain: "fir-eb636.firebaseapp.com",
-    projectId: "fir-eb636",
-    storageBucket: "fir-eb636.appspot.com",
-    messagingSenderId: "270054984552",
-    appId: "1:270054984552:web:cdf4559c94bac0e24d64dd",
-    measurementId: "G-T6XQDEYV5R"
+    apiKey: process.env.VUE_APP_FIREBASE_API_KEY || '',
+    authDomain: process.env.VUE_APP_FIREBASE_AUTH_DOMAIN || '',
+    projectId: process.env.VUE_APP_FIREBASE_PROJECT_ID || '',
+    storageBucket: process.env.VUE_APP_FIREBASE_STORAGE_BUCKET || '',
+    messagingSenderId: process.env.VUE_APP_FIREBASE_MESSAGING_SENDER_ID || '',
+    appId: process.env.VUE_APP_FIREBASE_APP_ID || '',
+    measurementId: process.env.VUE_APP_FIREBASE_MEASUREMENT_ID || ''
 };
 try {
     const FirebaseApp = initializeApp(firebaseConfig);
     const analytics = getAnalytics(FirebaseApp);
     const messaging = getMessaging(FirebaseApp);
-    // 私钥  Xmy2tjgkBmpokpBHmgmNOs6Ez_rP_Fcsi8UQwV5HxF0
-    getToken(messaging, { vapidKey: "BOQ1p4ycdvk9bvgwjsBq2XiM1P50hjH5KN-LI13TY6t0wtF1vrxJYAuixdzGS1KjAm3M5SFCNGz7eY5OeNu2J4M" }); 
+    const vapidKey = process.env.VUE_APP_FIREBASE_VAPID_KEY || ''
+    if (vapidKey) getToken(messaging, { vapidKey });
 } catch (error) {
-    console.error('初始化失败'+error);
+    console.error('Firebase初始化失败: '+error);
 }
 
 // function requestPermission() {
