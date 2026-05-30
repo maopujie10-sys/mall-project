@@ -17,10 +17,11 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, defineAsyncComponent } from 'vue'
 import { useRoute } from 'vue-router'
 import { useSystemStore } from '@/stores/system'
-import NeuralNetwork3D from '@/components/NeuralNetwork3D.vue'
+
+const NeuralNetwork3D = defineAsyncComponent(() => import('@/components/NeuralNetwork3D.vue'))
 import FloatingNav from '@/components/FloatingNav.vue'
 import FloatingAI from '@/components/FloatingAI.vue'
 

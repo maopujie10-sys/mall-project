@@ -23,6 +23,12 @@ TEMPLATES = [
     {"id":"brainstorm","name":'',"category":'',"prompt":"{topic}10","icon":""},
 ]
 
+@router.get("")
+async def list_templates_root(category: str = '', _=Depends(verify_token)):
+    tmpls = TEMPLATES
+    if category: tmpls = [t for t in tmpls if t["category"] == category]
+    return {"ok":True,"templates":tmpls,"categories":list(set(t["category"] for t in TEMPLATES))}
+
 @router.get("/templates")
 async def list_templates(category: str = '', _=Depends(verify_token)):
     tmpls = TEMPLATES

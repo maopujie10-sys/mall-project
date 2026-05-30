@@ -138,6 +138,7 @@ export const useSystemStore = defineStore('system', () => {
     error,
     modeLabel,
     emergencyModeLabel,
+    fetchStatus,
     fetchMode,
     switchMode,
     triggerEmergencyKill,

@@ -146,10 +146,14 @@ const categories = reactive([
   }
 ])
 
+let isDragging = false
+let dragStartX = 0, dragStartY = 0, btnStartX = 0, btnStartY = 0
+let floatTimers = []
+
 function initPositions() {
   const isMobile = window.innerWidth <= 768
   if (isMobile) {
-    
+
     const orbSize = 48
     const gap = 6
     const totalWidth = 5 * orbSize + 4 * gap
@@ -186,10 +190,6 @@ const panelStyle = computed(() => {
   if (top + panelH > window.innerHeight - 20) top = window.innerHeight - panelH - 20
   return { left: left + 'px', top: top + 'px' }
 })
-
-let isDragging = false
-let dragStartX = 0, dragStartY = 0, btnStartX = 0, btnStartY = 0
-let floatTimers = []
 
 function startFloat() {
   const amp = 12, period = 8000
