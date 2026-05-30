@@ -307,7 +307,7 @@ class DesktopAgent:
         retry_count = 0
         while self.running:
             try:
-                self.ws = await websockets.connect(self.server_url, extra_headers=headers, ping_interval=30, ping_timeout=10)
+                self.ws = await websockets.connect(self.server_url, additional_headers=headers, ping_interval=30, ping_timeout=10)
                 print(f"[DesktopAgent] ✅ 已连接 {self.server_url} | Agent: {self.agent_id}")
                 retry_count = 0
                 await self._message_loop()

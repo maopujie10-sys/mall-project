@@ -1,4 +1,4 @@
-"""TikTokMall AI Agent 鎬绘帶 - FastAPI :9000"""
+﻿"""TikTokMall AI Agent 鎬绘帶 - FastAPI :9000"""
 from routers.code_deploy import router as code_deploy_router
 from routers.emergency_panel import router as emergency_panel_router
 from routers.prompt_templates import router as prompt_templates_router
@@ -247,7 +247,7 @@ app.include_router(pricing_router, prefix="/pricing")
 app.include_router(description_router, prefix="/description")
 app.include_router(fraud_router, prefix="/fraud")
 app.include_router(trace_router, prefix="/trace")
-app.include_router(ws_router, prefix="/ws")
+app.include_router(ws_router)
 app.include_router(gateway_router, prefix="/api")
 app.include_router(omni_router, prefix="/omni")
 app.include_router(vision_router, prefix="/vision")
