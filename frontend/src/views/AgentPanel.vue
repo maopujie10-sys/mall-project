@@ -19,11 +19,11 @@
         <div class="agent-stats">
           <div class="astat">
             <span class="astat-num">{{ agent.tasks }}</span>
-            <span class="astat-label">浠诲姟</span>
+            <span class="astat-label">任务</span>
           </div>
           <div class="astat">
             <span class="astat-num" style="color:#52c41a">{{ agent.successRate }}%</span>
-            <span class="astat-label">鎴愬姛鐜</span>
+            <span class="astat-label">成功率</span>
           </div>
         </div>
         <div class="agent-bar">
@@ -47,17 +47,17 @@ const agentDescriptions = {
   vision: '图片识别 · 视频分析 · OCR',
   trend: '热点监控 · 舆情分析 · 趋势预测',
   memory: '长期记忆 · 知识检索 · 经验学习',
-  heal: '寮傚父妫€娴?路 鑷姩淇 路 鏈嶅姟鎭㈠',
+  heal: '异常检测 · 自动修复 · 服务恢复',
 }
 
 const agents = ref([
-  { id:'master', name:'Master Agent', icon:'馃', status:'active', tasks:156, successRate:98.2, color:'#667eea' },
-  { id:'code', name:'Code Agent', icon:'馃捇', status:'active', tasks:89, successRate:94.5, color:'#52c41a' },
-  { id:'devops', name:'DevOps Agent', icon:'鈿欙笍', status:'active', tasks:234, successRate:99.1, color:'#1890ff' },
-  { id:'vision', name:'Vision Agent', icon:'馃憗锔?, status:'idle', tasks:45, successRate:91.3, color:'#faad14' },
-  { id:'trend', name:'Trend Agent', icon:'馃摗', status:'active', tasks:312, successRate:96.7, color:'#ff4d4f' },
-  { id:'memory', name:'Memory Agent', icon:'馃捑', status:'active', tasks:567, successRate:99.8, color:'#764ba2' },
-  { id:'heal', name:'Self-Healing', icon:'馃洝锔?, status:'idle', tasks:23, successRate:100, color:'#13c2c2' },
+  { id:'master', name:'Master Agent', icon:'🧠', status:'active', tasks:156, successRate:98.2, color:'#667eea' },
+  { id:'code', name:'Code Agent', icon:'💻', status:'active', tasks:89, successRate:94.5, color:'#52c41a' },
+  { id:'devops', name:'DevOps Agent', icon:'⚙️', status:'active', tasks:234, successRate:99.1, color:'#1890ff' },
+  { id:'vision', name:'Vision Agent', icon:'👁️', status:'idle', tasks:45, successRate:91.3, color:'#faad14' },
+  { id:'trend', name:'Trend Agent', icon:'📊', status:'active', tasks:312, successRate:96.7, color:'#ff4d4f' },
+  { id:'memory', name:'Memory Agent', icon:'💾', status:'active', tasks:567, successRate:99.8, color:'#764ba2' },
+  { id:'heal', name:'Self-Healing', icon:'🛡️', status:'idle', tasks:23, successRate:100, color:'#13c2c2' },
 ])
 
 function toggleAgent(id) {
