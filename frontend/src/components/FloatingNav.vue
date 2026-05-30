@@ -1,6 +1,6 @@
 <template>
   <div class="floating-nav-container">
-    <!-- 4 个分类光球 -->
+    <!-- 4\u4E2A\u5206\u7C7B\u5149\u7403 -->
     <div
       v-for="cat in categories"
       :key="cat.id"
@@ -23,28 +23,25 @@
       </div>
     </div>
 
-    <!-- 弹出菜单面板 -->
+    <!-- \u5F39\u51FA\u83DC\u5355\u9762\u677F -->
     <transition name="panel-fade">
       <div v-if="activeCat" class="category-panel" :style="panelStyle">
         <div class="panel-header">
           <span class="panel-icon">{{ activeCategory?.icon }}</span>
           <span class="panel-title">{{ activeCategory?.label }}</span>
-          <button class="panel-close" @click="activeCat = null">×</button>
+          <button class="panel-close" @click="activeCat = null">\u00D7</button>
         </div>
         <div class="panel-body">
           <router-link
             v-for="item in activeCategory?.items"
-            :key="item.to"
-            :to="item.to"
+            :key="item.to + item.label"
+            :to="item.to ? { name: item.to } : ''"
             class="panel-item"
-            @click="activeCat = null"
+            @click="item.action ? handleAction(item.action) : (activeCat = null)"
           >
             <span class="item-icon">{{ item.icon }}</span>
             <span class="item-label">{{ item.label }}</span>
           </router-link>
-        </div>
-        <div class="panel-footer">
-          <div class="footer-line"></div>
         </div>
       </div>
     </transition>
@@ -53,90 +50,93 @@
 
 <script setup>
 import { ref, reactive, computed } from 'vue'
+import { useRouter } from 'vue-router'
 
+const router = useRouter()
 const activeCat = ref(null)
 
 const categories = reactive([
   {
-    id: 'ai', icon: '🧠', label: 'AI 智能', x: 0, y: 0, dragging: false,
+    id: 'core', icon: '\u{1F9E0}', label: 'AI\u6838\u5FC3', x: 0, y: 0, dragging: false,
     items: [
-      { to: 'friday', icon: '🧠', label: 'Friday 大脑' },
-      { to: '', icon: '💬', label: 'AI 对话', action: 'openChat' },
-      { to: 'agents', icon: '🤖', label: 'Agent 调度' },
-      { to: 'models', icon: '🔬', label: '模型中心' },
-      { to: 'memory', icon: '💾', label: '记忆中心' },
-      { to: 'trends', icon: '📈', label: 'AI 监控' },
-      { to: 'video', icon: '🎬', label: '视觉分析' },
-      { to: 'plugins', icon: '🧩', label: '技能市场' },
-      { to: 'skill-market', icon: '🧩', label: '技能商店' },
-      { to: 'ai-brain', icon: '🧠', label: 'AI大脑' },
-      { to: 'evolution', icon: '🌱', label: '进化报告' },
-      { to: 'ocr', icon: '🔍', label: 'OCR识别' },
-      { to: 'voice-chat', icon: '🎙️', label: '语音对话' },
-      { to: 'agent-collab', icon: '🤝', label: 'Agent协作' },
-      { to: 'knowledge', icon: '📚', label: '知识中心' },
-      { to: 'code-deploy', icon: '⚡', label: 'AI代码部署' },
-      { to: 'recommend', icon: '🎯', label: '推荐引擎' },
-      { to: 'content-factory', icon: '🏭', label: 'AI内容工厂' },
+      { to: 'friday', icon: '\u{1F9E0}', label: 'Friday \u5927\u8111' },
+      { to: '', icon: '\u{1F4AC}', label: 'AI \u5BF9\u8BDD', action: 'openChat' },
+      { to: 'ai-brain', icon: '\u{1F9E0}', label: 'AI \u5927\u8111' },
+      { to: 'agents', icon: '\u{1F916}', label: 'Agent \u5217\u8868' },
+      { to: 'models', icon: '\u{1F52C}', label: '\u6A21\u578B\u4E2D\u5FC3' },
+      { to: 'memory', icon: '\u{1F4BE}', label: '\u8BB0\u5FC6\u4E2D\u5FC3' },
+      { to: 'evolution', icon: '\u{1F331}', label: '\u8FDB\u5316\u62A5\u544A' },
+      { to: 'knowledge', icon: '\u{1F4DA}', label: '\u77E5\u8BC6\u4E2D\u5FC3' },
+      { to: 'memory-sync', icon: '\u{1F504}', label: '\u8DE8\u5E73\u53F0\u8BB0\u5FC6' },
+      { to: 'voice-chat', icon: '\u{1F399}', label: '\u8BED\u97F3\u5BF9\u8BDD' },
+      { to: 'video', icon: '\u{1F3AC}', label: '\u89C6\u9891\u5206\u6790' },
+      { to: 'ocr', icon: '\u{1F50D}', label: 'OCR \u8BC6\u522B' },
+      { to: 'agent-collab', icon: '\u{1F91D}', label: 'Agent \u534F\u4F5C' },
+      { to: 'skill-market', icon: '\u{1F9E9}', label: '\u6280\u80FD\u5E02\u573A' },
+      { to: 'capabilities', icon: '\u{1F527}', label: 'AI\u80FD\u529B\u72B6\u6001' },
+      { to: 'advanced-ai', icon: '\u{1F680}', label: '\u9AD8\u7EA7AI' },
+      { to: 'ai-tools', icon: '\u{1F527}', label: 'AI\u5DE5\u5177\u7BB1' },
+      { to: 'workflow', icon: '\u{1F3AF}', label: '\u5DE5\u4F5C\u6D41\u7F16\u8F91\u5668' },
     ]
   },
   {
-    id: 'mall', icon: '🏬', label: '商城运营', x: 0, y: 0, dragging: false,
+    id: 'data', icon: '\u{1F4CA}', label: '\u6570\u636E\u76D1\u63A7', x: 0, y: 0, dragging: false,
     items: [
-      { to: 'dashboard', icon: '📊', label: '运营总览' },
-      { to: 'mall', icon: '🏬', label: '商城管理' },
-      { to: 'customer', icon: '💬', label: '客服系统' },
-      { to: 'image-process', icon: '🖼️', label: '商品图处理' },
-      { to: 'multilang', icon: '🌍', label: '商品发布' },
-      { to: 'order-alert', icon: '🔔', label: '订单预警' },
-      { to: 'virtual', icon: '🎮', label: '虚拟数据' },
-      { to: 'batch-upload', icon: '📋', label: '批量上架' },
-      { to: 'auto-reply', icon: '🤖', label: '自动回复' },
-      { to: 'predict', icon: '📈', label: '预测分析' },
-      { to: 'competitor', icon: '🕵️', label: '竞品监控' },
-      { to: 'customer-profile', icon: '👥', label: '客户画像' },
-      { to: 'text2sql', icon: '🗄️', label: '自然语言查库' },
-      { to: 'ab-test', icon: '🧪', label: 'A/B测试' },
-      { to: 'ecommerce-ai', icon: '🤖', label: 'AI电商引擎' },
+      { to: 'dashboard', icon: '\u{1F4CA}', label: '\u6570\u636E\u603B\u89C8' },
+      { to: 'trends', icon: '\u{1F4C8}', label: '\u8D8B\u52BF\u76D1\u63A7' },
+      { to: 'scraper', icon: '\u{1F577}', label: '\u91C7\u96C6\u4E2D\u5FC3' },
+      { to: 'database', icon: '\u{1F5C4}', label: '\u6570\u636E\u5E93' },
+      { to: 'log-viewer', icon: '\u{1F4CB}', label: '\u65E5\u5FD7\u4E2D\u5FC3' },
+      { to: 'weekly-report', icon: '\u{1F4CA}', label: '\u8FD0\u8425\u5468\u62A5' },
+      { to: 'text2sql', icon: '\u{1F5C4}', label: '\u81EA\u7136\u8BED\u8A00\u67E5\u5E93' },
+      { to: 'competitor', icon: '\u{1F575}', label: '\u7ADE\u54C1\u76D1\u63A7' },
+      { to: 'customer-profile', icon: '\u{1F465}', label: '\u5BA2\u6237\u753B\u50CF' },
+      { to: 'predict', icon: '\u{1F4C8}', label: '\u9884\u6D4B\u5206\u6790' },
+      { to: 'recommend', icon: '\u{1F3AF}', label: '\u63A8\u8350\u5F15\u64CE' },
+      { to: 'ab-test', icon: '\u{1F9EA}', label: 'A/B\u6D4B\u8BD5' },
+      { to: 'virtual', icon: '\u{1F3AE}', label: '\u865A\u62DF\u6570\u636E' },
     ]
   },
   {
-    id: 'ops', icon: '🖥️', label: '运维监控', x: 0, y: 0, dragging: false,
+    id: 'ops', icon: '\u{1F6E1}', label: '\u5B89\u5168\u8FD0\u7EF4', x: 0, y: 0, dragging: false,
     items: [
-      { to: 'server', icon: '🖥️', label: '服务器' },
-      { to: 'docker', icon: '🐳', label: 'Docker' },
-      { to: 'network', icon: '🌐', label: '网络管理' },
-      { to: 'github', icon: '🐙', label: 'GitHub MCP' },
-      { to: 'rotation', icon: '🔄', label: '域名轮值' },
-      { to: 'database', icon: '🗄️', label: '数据库' },
-      { to: 'log-viewer', icon: '📋', label: '日志审计' },
-      { to: 'scraper', icon: '🕷️', label: '采集中心' },
-      { to: 'self-service', icon: '🔧', label: '自助服务' },
-      { to: 'nginx', icon: '🔧', label: 'Nginx管理' },
-      { to: 'tasks', icon: '📋', label: '任务中心' },
-      { to: 'weekly-report', icon: '📊', label: '运营周报' },
-      { to: 'files', icon: '📁', label: '文件管理' },
-      { to: 'site', icon: '🌐', label: '站点检测' },
-      { to: 'memory-sync', icon: '🔄', label: '跨平台记忆' },
+      { to: 'server', icon: '\u{1F5A5}', label: '\u670D\u52A1\u5668' },
+      { to: 'docker', icon: '\u{1F433}', label: 'Docker' },
+      { to: 'nginx', icon: '\u{1F527}', label: 'Nginx' },
+      { to: 'network', icon: '\u{1F310}', label: '\u7F51\u7EDC\u5DE5\u5177' },
+      { to: 'github', icon: '\u{1F419}', label: 'GitHub MCP' },
+      { to: 'rotation', icon: '\u{1F504}', label: '\u57DF\u540D\u8F6E\u503C' },
+      { to: 'site', icon: '\u{1F310}', label: '\u7AD9\u70B9\u68C0\u6D4B' },
+      { to: 'rollback', icon: '\u23EA', label: '\u5907\u4EFD\u56DE\u6EDA' },
+      { to: 'security', icon: '\u{1F512}', label: '\u5B89\u5168\u4E2D\u5FC3' },
+      { to: 'alert', icon: '\u{1F514}', label: '\u544A\u8B66\u4E2D\u5FC3' },
+      { to: 'self-healing', icon: '\u{1FA7A}', label: '\u5F02\u5E38\u81EA\u6108' },
+      { to: 'emergency', icon: '\u{1F6A8}', label: '\u6025\u6551\u9762\u677F' },
+      { to: 'security-scan', icon: '\u{1F6E1}', label: '\u5B89\u5168\u626B\u63CF' },
+      { to: 'approval', icon: '\u2705', label: '\u5BA1\u6279\u4E2D\u5FC3' },
+      { to: 'audit', icon: '\u{1F4CB}', label: '\u5BA1\u8BA1\u65E5\u5FD7' },
+      { to: 'key-manager', icon: '\u{1F511}', label: 'API Key\u7BA1\u7406' },
+      { to: 'user-manager', icon: '\u{1F465}', label: '\u7528\u6237\u7BA1\u7406' },
+      { to: 'phone', icon: '\u{1F4DE}', label: 'AI\u7535\u8BDD\u52A9\u7406' },
+      { to: 'tasks', icon: '\u{1F4CB}', label: '\u4EFB\u52A1\u4E2D\u5FC3' },
+      { to: 'self-service', icon: '\u{1F527}', label: '\u81EA\u52A9\u670D\u52A1' },
     ]
   },
   {
-    id: 'security', icon: '🛡️', label: '安全告警', x: 0, y: 0, dragging: false,
+    id: 'mall', icon: '\u{1F3EC}', label: '\u5546\u57CE\u8FD0\u8425', x: 0, y: 0, dragging: false,
     items: [
-      { to: 'security', icon: '🔒', label: '安全中心' },
-      { to: 'alert', icon: '🔔', label: '告警中心' },
-      { to: 'self-healing', icon: '🩺', label: '异常自愈' },
-      { to: 'emergency', icon: '🚨', label: '急救面板' },
-      { to: 'phone', icon: '📞', label: 'AI 电话' },
-      { to: 'rollback', icon: '⏪', label: '备份回滚' },
-      { to: 'approval', icon: '✅', label: '审批中心' },
-      { to: 'audit', icon: '📋', label: '审计日志' },
-      { to: 'security-scan', icon: '🛡️', label: '安全扫描' },
-      { to: 'capabilities', icon: '🔧', label: 'AI能力状态' },
-      { to: 'key-manager', icon: '🔑', label: 'API Key管理' },
-      { to: 'advanced-ai', icon: '🚀', label: '高级AI' },
-      { to: 'ai-tools', icon: '🔧', label: 'AI工具箱' },
-      { to: 'user-manager', icon: '👥', label: '用户管理' },
+      { to: 'mall', icon: '\u{1F3EC}', label: '\u5546\u57CE\u7BA1\u7406' },
+      { to: 'customer', icon: '\u{1F4AC}', label: '\u5BA2\u670D\u7CFB\u7EDF' },
+      { to: 'ecommerce-ai', icon: '\u{1F916}', label: 'AI\u7535\u5546\u5F15\u64CE' },
+      { to: 'image-process', icon: '\u{1F5BC}', label: '\u5546\u54C1\u56FE\u5904\u7406' },
+      { to: 'multilang', icon: '\u{1F30D}', label: '\u591A\u8BED\u8A00\u53D1\u5E03' },
+      { to: 'batch-upload', icon: '\u{1F4CB}', label: '\u6279\u91CF\u4E0A\u67B6' },
+      { to: 'auto-reply', icon: '\u{1F916}', label: '\u81EA\u52A8\u56DE\u590D' },
+      { to: 'order-alert', icon: '\u{1F514}', label: '\u8BA2\u5355\u9884\u8B66' },
+      { to: 'content-factory', icon: '\u{1F3ED}', label: 'AI\u5185\u5BB9\u5DE5\u5382' },
+      { to: 'code-deploy', icon: '\u26A1', label: 'AI\u4EE3\u7801\u90E8\u7F72' },
+      { to: 'files', icon: '\u{1F4C1}', label: '\u6587\u4EF6\u7BA1\u7406' },
+      { to: 'plugins', icon: '\u{1F9E9}', label: '\u63D2\u4EF6\u7CFB\u7EDF' },
     ]
   }
 ])
