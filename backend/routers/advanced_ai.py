@@ -1,4 +1,4 @@
-"""楂樼骇AI寮曟搸 -- 瀹炴椂璇煶鎵撴柇 / 瑙嗛娴佸垎鏋?/ 娣卞害鐮旂┒ / 鏁版嵁鍙鍖?/ 鏂囦欢瀵煎嚭 / 缃戦〉鎶撳彇 / 娴忚鍣ㄨ嚜鍔ㄥ寲 / 闀夸笂涓嬫枃"""
+"""妤傛楠嘇I瀵洘鎼?-- 鐎圭偞妞傜拠顓㈢叾閹垫挻鏌?/ 鐟欏棝顣跺ù浣稿瀻閺?/ 濞ｅ崬瀹抽惍鏃傗敀 / 閺佺増宓侀崣顖濐潒閸?/ 閺傚洣娆㈢€电厧鍤?/ 缂冩垿銆夐幎鎾冲絿 / 濞村繗顫嶉崳銊ㄥ殰閸斻劌瀵?/ 闂€澶哥瑐娑撳鏋?""
 import json, os, re, io, base64, asyncio, tempfile, subprocess
 from pathlib import Path
 from datetime import datetime
@@ -9,35 +9,35 @@ from auth import verify_token
 from config import OPENAI_API_KEY, OPENAI_BASE_URL, DEEPSEEK_API_KEY
 import os
 DEEPSEEK_BASE_URL = os.getenv("DEEPSEEK_BASE_URL", "https://api.deepseek.com/v1")
-# 妯″瀷璺敱: deepseek-寮€澶寸殑璧癉eepSeek, 鍏朵粬璧癘penAI
+# 濡€崇€风捄顖滄暠: deepseek-瀵偓婢跺娈戠挧鐧塭epSeek, 閸忔湹绮挧鐧榩enAI
 CHEAP_MODEL = os.getenv("CHEAP_MODEL", "deepseek-chat")
 SMART_MODEL = os.getenv("SMART_MODEL", "gpt-4o")
-# ===== 妯″瀷甯傚満 -- AI鑷繁閫夋ā鍨?=====
+# ===== 濡€崇€风敮鍌氭簚 -- AI閼奉亜绻侀柅澶嬆侀崹?=====
 AVAILABLE_MODELS = {
-    # 渚垮疁姊槦 (绠€鍗曚换鍔?
-    "deepseek-chat":       {"provider": "deepseek", "cost": "0.14/1M",  "strength": "鏃ュ父瀵硅瘽/绠€鍗曟搷浣?蹇€熷搷搴?},
-    CHEAP_MODEL:       {"provider": "openai",   "cost": "0.50/1M",  "strength": "鍒嗙被/鍒ゆ柇/绠€鍗曞喅绛?},
-    # 鎬т环姣旀闃?(鏅€氫换鍔?
-    CHEAP_MODEL:         {"provider": "openai",   "cost": "0.15/1M",  "strength": "瑙嗚鐞嗚В/澶氭ā鎬?蹇€熸帹鐞?},
-    "deepseek-reasoner":   {"provider": "deepseek", "cost": "0.55/1M",  "strength": "娣卞害鎺ㄧ悊/澶嶆潅鍒嗘瀽"},
-    # 楂樼姊槦 (澶嶆潅浠诲姟)
-    "gpt-4o":              {"provider": "openai",   "cost": "2.50/1M",  "strength": "楂樼簿搴﹁瑙?澶嶆潅鍐崇瓥/澶氭楠?},
-    "claude-3-5-sonnet":   {"provider": "openai",   "cost": "3.00/1M",  "strength": "浠ｇ爜鐢熸垚/闀挎枃鏈垎鏋?},
+    # 娓氬灝鐤佸顖炴Е (缁犫偓閸楁洑鎹㈤崝?
+    "deepseek-chat":       {"provider": "deepseek", "cost": "0.14/1M",  "strength": "閺冦儱鐖剁€电鐦?缁犫偓閸楁洘鎼锋担?韫囶偊鈧喎鎼锋惔?},
+    CHEAP_MODEL:       {"provider": "openai",   "cost": "0.50/1M",  "strength": "閸掑棛琚?閸掋倖鏌?缁犫偓閸楁洖鍠呯粵?},
+    # 閹傜幆濮ｆ梹顫梼?(閺咁噣鈧矮鎹㈤崝?
+    CHEAP_MODEL:         {"provider": "openai",   "cost": "0.15/1M",  "strength": "鐟欏棜顫庨悶鍡毿?婢舵碍膩閹?韫囶偊鈧喐甯归悶?},
+    "deepseek-reasoner":   {"provider": "deepseek", "cost": "0.55/1M",  "strength": "濞ｅ崬瀹抽幒銊ф倞/婢跺秵娼呴崚鍡樼€?},
+    # 妤傛顏顖炴Е (婢跺秵娼呮禒璇插)
+    "gpt-4o":              {"provider": "openai",   "cost": "2.50/1M",  "strength": "妤傛绨挎惔锕侇潒鐟?婢跺秵娼呴崘宕囩摜/婢舵碍顒炴?},
+    "claude-3-5-sonnet":   {"provider": "openai",   "cost": "3.00/1M",  "strength": "娴狅絿鐖滈悽鐔稿灇/闂€鎸庢瀮閺堫剙鍨庨弸?},
 }
 
 def pick_model(task_complexity="auto", need_vision=False, step_count=0):
-    """AI鑷姩閫夋ā鍨? 鏍规嵁浠诲姟澶嶆潅搴︺€佹槸鍚﹂渶瑕佽瑙夈€佸綋鍓嶆楠ゆ暟"""
+    """AI閼奉亜濮╅柅澶嬆侀崹? 閺嶈宓佹禒璇插婢跺秵娼呮惔锔衡偓浣规Ц閸氾箓娓剁憰浣筋潒鐟欏鈧礁缍嬮崜宥嗩劄妤犮倖鏆?""
     if task_complexity == "simple" or (step_count > 0 and step_count <= 3):
-        return CHEAP_MODEL  # 榛樿渚垮疁妯″瀷
+        return CHEAP_MODEL  # 姒涙顓绘笟鍨杹濡€崇€?
     elif task_complexity == "hard" or step_count > 5:
-        return SMART_MODEL  # 榛樿鑱槑妯″瀷
+        return SMART_MODEL  # 姒涙顓婚懕顏呮濡€崇€?
     elif need_vision:
-        return CHEAP_MODEL if OPENAI_KEY else CHEAP_MODEL  # 瑙嗚浠诲姟闇€瑕佸妯℃€佹ā鍨?
+        return CHEAP_MODEL if OPENAI_KEY else CHEAP_MODEL  # 鐟欏棜顫庢禒璇插闂団偓鐟曚礁顦垮Ο鈩冣偓浣鼓侀崹?
     return CHEAP_MODEL
 
 
 router = APIRouter(prefix="/agent/advanced", tags=["AdvancedAI"])
-# 澶歱rovider
+# 婢舵rovider
 OPENAI_KEY = OPENAI_API_KEY
 DEEPSEEK_KEY = DEEPSEEK_API_KEY
 DS_BASE_URL = DEEPSEEK_BASE_URL
@@ -45,9 +45,9 @@ BASE_URL = OPENAI_BASE_URL or "https://api.openai.com/v1"
 
 async def _call_ai(messages, model=None, max_tokens=1000, temperature=0.7):
     if model is None: model = CHEAP_MODEL
-    """澶歱rovider AI璋冪敤 - 鑷姩璺敱DeepSeek/OpenAI"""
+    """婢舵rovider AI鐠嬪啰鏁?- 閼奉亜濮╃捄顖滄暠DeepSeek/OpenAI"""
     import httpx
-    # 鏍规嵁妯″瀷鍚嶈嚜鍔ㄩ€夋嫨provider
+    # 閺嶈宓佸Ο鈥崇€烽崥宥堝殰閸斻劑鈧瀚╬rovider
     if model.startswith("deepseek"):
         key = DEEPSEEK_KEY
         base = DS_BASE_URL
@@ -61,7 +61,7 @@ async def _call_ai(messages, model=None, max_tokens=1000, temperature=0.7):
         elif DEEPSEEK_KEY:
             key = DEEPSEEK_KEY; base = DS_BASE_URL
         else:
-            return "闇€瑕侀厤缃瓵PI Key"
+            return "闂団偓鐟曚線鍘ょ純鐡礟I Key"
     
     async with httpx.AsyncClient(timeout=120) as c:
         r = await c.post(f"{base}/chat/completions",
@@ -69,12 +69,12 @@ async def _call_ai(messages, model=None, max_tokens=1000, temperature=0.7):
             json={"model":model,"messages":messages,"max_tokens":max_tokens,"temperature":temperature})
         if r.status_code == 200:
             return r.json().get("choices",[{}])[0].get("message",{}).get("content","")
-        return f"API閿欒:{r.status_code}"
+        return f"API闁挎瑨顕?{r.status_code}"
 
-# ===== 1. 瀹炴椂璇煶鎵撴柇 WebSocket =====
+# ===== 1. 鐎圭偞妞傜拠顓㈢叾閹垫挻鏌?WebSocket =====
 @router.websocket("/voice/live")
 async def live_voice(ws: WebSocket):
-    """瀹炴椂璇煶瀵硅瘽 -- 鏀寔鎵撴柇/鎯呮劅/鑷劧瀵硅瘽"""
+    """鐎圭偞妞傜拠顓㈢叾鐎电鐦?-- 閺€顖涘瘮閹垫挻鏌?閹懏鍔?閼奉亞鍔х€电鐦?""
     await ws.accept()
     conversation = []
     current_task = None
@@ -107,7 +107,7 @@ async def live_voice(ws: WebSocket):
             if msg_type == "ping":
                 await ws.send_json({"type":"pong"})
             elif msg_type == "interrupt":
-                # 鐢ㄦ埛鎵撴柇褰撳墠鍥炲
+                # 閻劍鍩涢幍鎾存焽瑜版挸澧犻崶鐐差槻
                 if current_task and not current_task.done():
                     current_task.cancel()
                 await ws.send_json({"type":"interrupted"})
@@ -115,9 +115,9 @@ async def live_voice(ws: WebSocket):
                 text = data.get("text","")
                 if not text: continue
                 conversation.append({"role":"user","content":text})
-                await ws.send_json({"type":"status","text":"鎬濊€冧腑..."})
+                await ws.send_json({"type":"status","text":"閹繆鈧啩鑵?.."})
                 
-                msgs = [{"role":"system","content":"浣犳槸Friday AI鍔╂墜.鐢ㄨ嚜鐒剁殑鍙ｈ鍥炲,甯﹂€傚綋鐨勬儏鎰?鍙互绗戙€佸徆姘斻€佹儕璁?鍥炲绠€娲佽嚜鐒?鍍忔湅鍙嬭亰澶?涓嶈鐢╩arkdown."}]
+                msgs = [{"role":"system","content":"娴ｇ姵妲窮riday AI閸斺晜澧?閻劏鍤滈悞鍓佹畱閸欙綀顕㈤崶鐐差槻,鐢箓鈧倸缍嬮惃鍕剰閹?閸欘垯浜掔粭鎴欌偓浣稿締濮樻柣鈧焦鍎曠拋?閸ョ偛顦茬粻鈧ú浣藉殰閻?閸嶅繑婀呴崣瀣喊婢?娑撳秷顩﹂悽鈺゛rkdown."}]
                 msgs.extend(conversation[-15:])
                 
                 current_task = asyncio.create_task(stream_ai_reply(msgs))
@@ -128,24 +128,24 @@ async def live_voice(ws: WebSocket):
                 except asyncio.CancelledError:
                     await ws.send_json({"type":"interrupted"})
             elif msg_type == "emotion":
-                # 瀹㈡埛绔娴嬪埌鐨勬儏缁?
-                await ws.send_json({"type":"status","text":"宸叉劅鐭ユ儏缁? "+data.get("emotion","neutral")})
+                # 鐎广垺鍩涚粩顖涱梾濞村鍩岄惃鍕剰缂?
+                await ws.send_json({"type":"status","text":"瀹稿弶鍔呴惌銉﹀剰缂? "+data.get("emotion","neutral")})
     except WebSocketDisconnect:
         pass
 
-# ===== 2. 瀹炴椂瑙嗛甯у垎鏋?=====
+# ===== 2. 鐎圭偞妞傜憴鍡涱暥鐢冨瀻閺?=====
 class FrameRequest(BaseModel):
     image_base64: str
     context: str = ""
 
 @router.post("/vision/live")
 async def live_vision(req: FrameRequest, _=Depends(verify_token)):
-    """瀹炴椂瑙嗛甯у垎鏋?-- 杩炵画甯х悊瑙?""
-    prompt = "浣犳鍦ㄧ湅瀹炴椂瑙嗛娴?璇风敤涓€鍙ヨ瘽鎻忚堪鐢婚潰鍐呭,濡傛灉鏈夊€煎緱娉ㄦ剰鐨勫彉鍖栬鎸囧嚭."
-    if req.context: prompt = f"涔嬪墠浣犵湅鍒?{req.context}\n缁х画瑙傚療:"
+    """鐎圭偞妞傜憴鍡涱暥鐢冨瀻閺?-- 鏉╃偟鐢荤敮褏鎮婄憴?""
+    prompt = "娴ｇ姵顒滈崷銊ф箙鐎圭偞妞傜憴鍡涱暥濞?鐠囬鏁ゆ稉鈧崣銉ㄧ樈閹诲繗鍫悽濠氭桨閸愬懎顔?婵″倹鐏夐張澶娾偓鐓庣繁濞夈劍鍓伴惃鍕綁閸栨牞顕幐鍥у毉."
+    if req.context: prompt = f"娑斿澧犳担鐘垫箙閸?{req.context}\n缂佈呯敾鐟欏倸鐧?"
     
     result = await _call_ai([
-        {"role":"system","content":"浣犳槸瀹炴椂瑙嗛鍒嗘瀽AI.绠€娲佹弿杩扮敾闈?"},
+        {"role":"system","content":"娴ｇ姵妲哥€圭偞妞傜憴鍡涱暥閸掑棙鐎紸I.缁犫偓濞蹭焦寮挎潻鎵暰闂?"},
         {"role":"user","content":[
             {"type":"text","text":prompt},
             {"type":"image_url","image_url":{"url":f"data:image/jpeg;base64,{req.image_base64}"}}
@@ -153,73 +153,73 @@ async def live_vision(req: FrameRequest, _=Depends(verify_token)):
     ], model=CHEAP_MODEL, max_tokens=200)
     return {"ok":True,"description":result}
 
-# ===== 3. 娣卞害鐮旂┒ Agent =====
+# ===== 3. 濞ｅ崬瀹抽惍鏃傗敀 Agent =====
 class ResearchRequest(BaseModel):
     topic: str
-    depth: int = 2  # 鐮旂┒娣卞害 1-3
+    depth: int = 2  # 閻梻鈹掑ǎ鍗炲 1-3
 
 @router.post("/research")
 async def deep_research(req: ResearchRequest, _=Depends(verify_token)):
-    """澶氭鑷富鐮旂┒ -- 鎼滅储->鍒嗘瀽->缁煎悎->鎶ュ憡"""
+    """婢舵碍顒為懛顏冨瘜閻梻鈹?-- 閹兼粎鍌?>閸掑棙鐎?>缂佺厧鎮?>閹躲儱鎲?""
     import httpx
     
-    # Step 1: 鐢熸垚鎼滅储瀛愰棶棰?
-    questions_prompt = f"灏嗙爺绌朵富棰樻媶鍒嗕负{min(req.depth*2,5)}涓叿浣撳瓙闂,鍙繑鍥為棶棰樺垪琛?姣忚涓€涓?\n涓婚:{req.topic}"
+    # Step 1: 閻㈢喐鍨氶幖婊呭偍鐎涙劙妫舵０?
+    questions_prompt = f"鐏忓棛鐖虹粚鏈靛瘜妫版ɑ濯堕崚鍡曡礋{min(req.depth*2,5)}娑擃亜鍙挎担鎾崇摍闂傤噣顣?閸欘亣绻戦崶鐐烘６妫版ê鍨悰?濮ｅ繗顢戞稉鈧稉?\n娑撳顣?{req.topic}"
     sub_questions = await _call_ai([{"role":"user","content":questions_prompt}], max_tokens=300)
     questions = [q.strip().lstrip('0123456789.-) ') for q in sub_questions.split('\n') if q.strip()][:5]
     
-    # Step 2: 鎼滅储姣忎釜瀛愰棶棰?
+    # Step 2: 閹兼粎鍌ㄥВ蹇庨嚋鐎涙劙妫舵０?
     findings = []
     for q in questions[:req.depth*2]:
         try:
             async with httpx.AsyncClient(timeout=15) as c:
                 r = await c.get("https://html.duckduckgo.com/html/",
                     params={"q": q}, headers={"User-Agent":"Mozilla/5.0"})
-                # 鎻愬彇鎽樿
+                # 閹绘劕褰囬幗妯款洣
                 snippets = []
                 for m in re.finditer(r'class="result__snippet"[^>]*>([^<]+)', r.text):
                     snippets.append(m.group(1).strip())
                 summary_text = " ".join(snippets[:3])[:500]
                 if summary_text:
-                    # Step 3: AI鍒嗘瀽姣忎釜瀛愰棶棰?
+                    # Step 3: AI閸掑棙鐎藉В蹇庨嚋鐎涙劙妫舵０?
                     analysis = await _call_ai([
-                        {"role":"user","content":f"瀛愰棶棰?{q}\n鎼滅储缁撴灉:{summary_text}\n璇风敤2-3鍙ヨ瘽鎬荤粨鍏抽敭鍙戠幇."}
+                        {"role":"user","content":f"鐎涙劙妫舵０?{q}\n閹兼粎鍌ㄧ紒鎾寸亯:{summary_text}\n鐠囬鏁?-3閸欍儴鐦介幀鑽ょ波閸忔娊鏁崣鎴犲箛."}
                     ], max_tokens=200)
                     findings.append({"question":q,"sources":len(snippets),"finding":analysis})
-        except: findings.append({"question":q,"sources":0,"finding":"鎼滅储澶辫触"})
+        except: findings.append({"question":q,"sources":0,"finding":"閹兼粎鍌ㄦ径杈Е"})
     
-    # Step 4: 缁煎悎鎶ュ憡
+    # Step 4: 缂佺厧鎮庨幎銉ユ啞
     findings_text = "\n".join([f"## {f['question']}\n{f['finding']}" for f in findings])
     report = await _call_ai([
-        {"role":"system","content":"浣犳槸璧勬繁鐮旂┒鍛?鏍规嵁浠ヤ笅鐮旂┒鍙戠幇,鐢熸垚涓€浠界粨鏋勫寲鐨勭爺绌舵姤鍛?瑕佹湁鎽樿銆佸叧閿彂鐜般€佺粨璁?"},
-        {"role":"user","content":f"鐮旂┒涓婚:{req.topic}\n\n鐮旂┒鍙戠幇:\n{findings_text}\n\n璇风敓鎴愬畬鏁寸爺绌舵姤鍛?"}
+        {"role":"system","content":"娴ｇ姵妲哥挧鍕箒閻梻鈹掗崨?閺嶈宓佹禒銉ょ瑓閻梻鈹掗崣鎴犲箛,閻㈢喐鍨氭稉鈧禒鐣岀波閺嬪嫬瀵查惃鍕埡缁岃埖濮ら崨?鐟曚焦婀侀幗妯款洣閵嗕礁鍙ч柨顔煎絺閻滆埇鈧胶绮ㄧ拋?"},
+        {"role":"user","content":f"閻梻鈹掓稉濠氼暯:{req.topic}\n\n閻梻鈹掗崣鎴犲箛:\n{findings_text}\n\n鐠囬鏁撻幋鎰暚閺佸鐖虹粚鑸靛Г閸?"}
     ], max_tokens=2000)
     
     return {"ok":True,"topic":req.topic,"questions":questions,"findings":findings,"report":report}
 
-# ===== 4. 鏁版嵁鍙鍖?+ CSV鍒嗘瀽 =====
+# ===== 4. 閺佺増宓侀崣顖濐潒閸?+ CSV閸掑棙鐎?=====
 class DataAnalyzeRequest(BaseModel):
     csv_data: str = ""
-    question: str = "鍒嗘瀽鏁版嵁骞剁粰鍑烘礊瀵?
+    question: str = "閸掑棙鐎介弫鐗堝祦楠炲墎绮伴崙鐑樼鐎?
 
 @router.post("/data/analyze")
 async def analyze_data(req: DataAnalyzeRequest, _=Depends(verify_token)):
-    """涓婁紶CSV->AI鑷姩鍒嗘瀽->鏂囨湰+鍥捐〃鏁版嵁"""
+    """娑撳﹣绱禖SV->AI閼奉亜濮╅崚鍡樼€?>閺傚洦婀?閸ユ崘銆冮弫鐗堝祦"""
     if not req.csv_data:
-        return {"ok":False,"error":"闇€瑕丆SV鏁版嵁"}
+        return {"ok":False,"error":"闂団偓鐟曚竼SV閺佺増宓?}
     
-    # 瑙ｆ瀽CSV
+    # 鐟欙絾鐎紺SV
     import csv as csv_mod
     reader = csv_mod.reader(io.StringIO(req.csv_data[:50000]))
     rows = list(reader)
-    if not rows: return {"ok":False,"error":"CSV涓虹┖"}
+    if not rows: return {"ok":False,"error":"CSV娑撹櫣鈹?}
     
     headers = rows[0]
-    data_rows = rows[1:21]  # 鍓?0琛?
+    data_rows = rows[1:21]  # 閸?0鐞?
     row_count = len(rows) - 1
     col_count = len(headers)
     
-    # 鍩烘湰缁熻
+    # 閸╃儤婀扮紒鐔活吀
     stats = {"rows":row_count,"columns":col_count,"headers":headers}
     numeric_cols = []
     for ci, h in enumerate(headers):
@@ -228,33 +228,33 @@ async def analyze_data(req: DataAnalyzeRequest, _=Depends(verify_token)):
             numeric_cols.append({"name":h,"index":ci,"min":min(vals),"max":max(vals),"avg":round(sum(vals)/len(vals),2),"count":len(vals)})
         except: pass
     
-    # AI鍒嗘瀽
+    # AI閸掑棙鐎?
     preview = "\n".join([",".join(r) for r in [headers]+data_rows[:10]])
-    prompt = f"""CSV鏁版嵁({row_count}琛?{col_count}鍒?:
-鏍囬: {headers}
-缁熻: {json.dumps(numeric_cols,ensure_ascii=False)}
-鍓?0琛? {preview[:1000]}
+    prompt = f"""CSV閺佺増宓?{row_count}鐞?{col_count}閸?:
+閺嶅洭顣? {headers}
+缂佺喕顓? {json.dumps(numeric_cols,ensure_ascii=False)}
+閸?0鐞? {preview[:1000]}
 
-鐢ㄦ埛闂: {req.question}
+閻劍鍩涢梻顕€顣? {req.question}
 
-璇风粰鍑?1)鏁版嵁姒傝 2)鍏抽敭娲炲療 3)寮傚父鍙戠幇 4)寤鸿.绠€娲佷笓涓?"""
+鐠囬绮伴崙?1)閺佺増宓佸鍌濐潔 2)閸忔娊鏁ú鐐茬檪 3)瀵倸鐖堕崣鎴犲箛 4)瀵ら缚顔?缁犫偓濞蹭椒绗撴稉?"""
     
     insight = await _call_ai([{"role":"user","content":prompt}], max_tokens=800)
     
-    # 鐢熸垚ECharts閰嶇疆
+    # 閻㈢喐鍨欵Charts闁板秶鐤?
     chart_config = None
     if numeric_cols:
         nc = numeric_cols[0]
         chart_config = {
-            "type":"bar","title":f"{nc['name']}鍒嗗竷",
+            "type":"bar","title":f"{nc['name']}閸掑棗绔?,
             "labels":["min","avg","max"],
             "values":[nc["min"],nc["avg"],nc["max"]],
-            "suggestion":"鍙敤鏇村鍒楀仛鎶樼嚎鍥?楗煎浘"
+            "suggestion":"閸欘垳鏁ら弴鏉戭樋閸掓浠涢幎妯煎殠閸?妤楃厧娴?
         }
     
     return {"ok":True,"stats":stats,"numeric_columns":numeric_cols,"insight":insight,"chart":chart_config}
 
-# ===== 5. 鏂囦欢瀵煎嚭 (PDF/Excel/Markdown) =====
+# ===== 5. 閺傚洣娆㈢€电厧鍤?(PDF/Excel/Markdown) =====
 class ExportRequest(BaseModel):
     content: str
     format: str = "md"  # md | html | txt
@@ -262,7 +262,7 @@ class ExportRequest(BaseModel):
 
 @router.post("/export")
 async def export_file(req: ExportRequest, _=Depends(verify_token)):
-    """瀵煎嚭AI鐢熸垚鐨勫唴瀹逛负鏂囦欢"""
+    """鐎电厧鍤瑼I閻㈢喐鍨氶惃鍕敶鐎归€涜礋閺傚洣娆?""
     export_dir = Path(__file__).parent.parent / "data" / "exports"
     export_dir.mkdir(parents=True, exist_ok=True)
     
@@ -284,21 +284,21 @@ h1{{color:#667eea}} pre{{background:#f5f5f5;padding:12px;border-radius:8px}}</st
 
 @router.get("/download/{filename}")
 async def download_file(filename: str):
-    """涓嬭浇瀵煎嚭鏂囦欢"""
+    """娑撳娴囩€电厧鍤弬鍥︽"""
     fpath = Path(__file__).parent.parent / "data" / "exports" / filename
     if not fpath.exists():
-        return {"ok":False,"error":"鏂囦欢涓嶅瓨鍦?}
+        return {"ok":False,"error":"閺傚洣娆㈡稉宥呯摠閸?}
     media_types = {".md":"text/markdown",".html":"text/html",".txt":"text/plain",".csv":"text/csv",".json":"application/json"}
     ext = fpath.suffix
     return FileResponse(fpath, media_type=media_types.get(ext,"application/octet-stream"), filename=filename)
 
-# ===== 6. 缃戦〉鍐呭鎶撳彇+鎬荤粨 =====
+# ===== 6. 缂冩垿銆夐崘鍛啇閹舵挸褰?閹崵绮?=====
 class ScrapeRequest(BaseModel):
     url: str
 
 @router.post("/scrape")
 async def scrape_url(req: ScrapeRequest, _=Depends(verify_token)):
-    """鎶撳彇缃戦〉鍐呭骞禔I鎬荤粨"""
+    """閹舵挸褰囩純鎴︺€夐崘鍛啇楠炵I閹崵绮?""
     import httpx
     try:
         async with httpx.AsyncClient(timeout=20) as c:
@@ -307,16 +307,16 @@ async def scrape_url(req: ScrapeRequest, _=Depends(verify_token)):
                 return {"ok":False,"error":f"HTTP {r.status_code}"}
             
             html = r.text
-            # 绠€鏄撴鏂囨彁鍙?
+            # 缁犫偓閺勬挻顒滈弬鍥ㄥ絹閸?
             text = re.sub(r'<script[^>]*>.*?</script>','',html,flags=re.DOTALL|re.I)
             text = re.sub(r'<style[^>]*>.*?</style>','',text,flags=re.DOTALL|re.I)
             text = re.sub(r'<[^>]+>',' ',text)
             text = re.sub(r'\s+',' ',text).strip()[:8000]
             
-            # AI鎬荤粨
+            # AI閹崵绮?
             summary = await _call_ai([
-                {"role":"system","content":"浣犳槸缃戦〉鎬荤粨涓撳.鐢?-5鍙ヨ瘽鎬荤粨鏍稿績鍐呭,鎻愬彇鍏抽敭淇℃伅."},
-                {"role":"user","content":f"URL: {req.url}\n\n鍐呭:\n{text[:5000]}"}
+                {"role":"system","content":"娴ｇ姵妲哥純鎴︺€夐幀鑽ょ波娑撴挸顔?閻?-5閸欍儴鐦介幀鑽ょ波閺嶇绺鹃崘鍛啇,閹绘劕褰囬崗鎶芥暛娣団剝浼?"},
+                {"role":"user","content":f"URL: {req.url}\n\n閸愬懎顔?\n{text[:5000]}"}
             ], max_tokens=300)
             
             title_match = re.search(r'<title[^>]*>([^<]+)</title>', html, re.I)
@@ -326,47 +326,47 @@ async def scrape_url(req: ScrapeRequest, _=Depends(verify_token)):
     except Exception as e:
         return {"ok":False,"error":str(e)}
 
-# ===== 7. AI娴忚鍣ˋgent -- 鑷劧璇█鎿嶆帶娴忚鍣?=====
+# ===== 7. AI濞村繗顫嶉崳藡gent -- 閼奉亞鍔х拠顓♀枅閹垮秵甯跺ù蹇氼潔閸?=====
 class BrowserAgentRequest(BaseModel):
-    command: str  # 鑷劧璇█鎸囦护
+    command: str  # 閼奉亞鍔х拠顓♀枅閹稿洣鎶?
     headless: bool = True
     max_steps: int = 10
 
 @router.post("/browser/agent")
 async def browser_agent(req: BrowserAgentRequest, _=Depends(verify_token)):
-    """AI娴忚鍣ˋgent -- 鑷劧璇█->姝ラ鎷嗚В->Playwright鎵ц->AI瑙嗚鐞嗚В"""
+    """AI濞村繗顫嶉崳藡gent -- 閼奉亞鍔х拠顓♀枅->濮濄儵顎冮幏鍡毿?>Playwright閹笛嗩攽->AI鐟欏棜顫庨悶鍡毿?""
     import httpx
     
-    # Step 1: AI鎷嗚В浠诲姟涓烘楠?
-    plan_prompt = f"""浣犳槸涓€涓祻瑙堝櫒鑷姩鍖栦笓瀹?灏嗕互涓嬩换鍔℃媶瑙ｄ负鍏蜂綋鐨勬祻瑙堝櫒鎿嶄綔姝ラ.
-杩斿洖JSON鏁扮粍,姣忔鏍煎紡: {{"action":"navigate/click/type/wait/screenshot/extract/scroll","target":"閫夋嫨鍣ㄦ垨URL","value":"杈撳叆鍊兼垨璇存槑","reason":"涓轰粈涔堣繖姝?}}
+    # Step 1: AI閹峰棜袙娴犺濮熸稉鐑橆劄妤?
+    plan_prompt = f"""娴ｇ姵妲告稉鈧稉顏呯セ鐟欏牆娅掗懛顏勫З閸栨牔绗撶€?鐏忓棔浜掓稉瀣╂崲閸斺剝濯剁憴锝勮礋閸忚渹缍嬮惃鍕セ鐟欏牆娅掗幙宥勭稊濮濄儵顎?
+鏉╂柨娲朖SON閺佹壆绮?濮ｅ繑顒為弽鐓庣础: {{"action":"navigate/click/type/wait/screenshot/extract/scroll","target":"闁瀚ㄩ崳銊﹀灗URL","value":"鏉堟挸鍙嗛崐鍏煎灗鐠囧瓨妲?,"reason":"娑撹桨绮堟稊鍫ｇ箹濮?}}
 
-浠诲姟: {req.command}
+娴犺濮? {req.command}
 
-瑙勫垯:
-- navigate: 鎵撳紑URL 
-- click: 鐐瑰嚮鍏冪礌(鐢ㄦ枃鏈垨CSS閫夋嫨鍣?
-- type: 杈撳叆鏂囨湰(鍏坈lick鍐峵ype)
-- wait: 绛夊緟(绉?
-- screenshot: 鎴浘
-- extract: 鎻愬彇椤甸潰鏁版嵁(璇存槑瑕佹彁鍙栦粈涔?
-- scroll: 鍚戜笅婊氬姩
+鐟欏嫬鍨?
+- navigate: 閹垫挸绱慤RL 
+- click: 閻愮懓鍤崗鍐(閻劍鏋冮張顒佸灗CSS闁瀚ㄩ崳?
+- type: 鏉堟挸鍙嗛弬鍥ㄦ拱(閸忓潏lick閸愬车ype)
+- wait: 缁涘绶?缁?
+- screenshot: 閹搭亜娴?
+- extract: 閹绘劕褰囨い鐢告桨閺佺増宓?鐠囧瓨妲戠憰浣瑰絹閸欐牔绮堟稊?
+- scroll: 閸氭垳绗呭姘З
 
-鍙繑鍥濲SON鏁扮粍,涓嶈鍏朵粬鍐呭.鏈€澶歿req.max_steps}姝?"""
+閸欘亣绻戦崶婵睸ON閺佹壆绮?娑撳秷顩﹂崗鏈电铂閸愬懎顔?閺堚偓婢舵req.max_steps}濮?"""
 
     plan_text = await _call_ai([{"role":"user","content":plan_prompt}], max_tokens=800, temperature=0.3)
     
-    # 瑙ｆ瀽姝ラ
+    # 鐟欙絾鐎藉銉╊€?
     steps = []
     try:
         json_match = re.search(r'\[.*\]', plan_text, re.DOTALL)
         if json_match:
             steps = json.loads(json_match.group())
     except:
-        # Fallback: 绠€鍗曚换鍔＄洿鎺ユ墽琛?
-        steps = [{"action":"navigate","target":"https://www.google.com/search?q="+req.command.replace(" ","+"),"reason":"鎼滅储"}]
+        # Fallback: 缁犫偓閸楁洑鎹㈤崝锛勬纯閹恒儲澧界悰?
+        steps = [{"action":"navigate","target":"https://www.google.com/search?q="+req.command.replace(" ","+"),"reason":"閹兼粎鍌?}]
     
-    # Step 2: Playwright鎵ц
+    # Step 2: Playwright閹笛嗩攽
     results = []
     screenshots = []
     
@@ -406,14 +406,14 @@ async def browser_agent(req: BrowserAgentRequest, _=Depends(verify_token)):
                 script_lines.append(f"try:\n    page.screenshot(path='/tmp/agent_shot_{i}.png', full_page=False)\n    outputs.append({{'step':{i},'action':'screenshot','ok':True,'file':'/tmp/agent_shot_{i}.png'}})\nexcept Exception as e:\n    outputs.append({{'step':{i},'action':'screenshot','ok':False,'error':str(e)}})")
             
             elif action == "extract":
-                # 鎻愬彇椤甸潰鏂囨湰
+                # 閹绘劕褰囨い鐢告桨閺傚洦婀?
                 script_lines.append(f"try:\n    text = page.inner_text('body')[:3000]\n    title = page.title()\n    outputs.append({{'step':{i},'action':'extract','ok':True,'title':title,'text':text}})\nexcept Exception as e:\n    outputs.append({{'step':{i},'action':'extract','ok':False,'error':str(e)}})")
             
             elif action == "scroll":
                 script_lines.append(f"try:\n    page.evaluate('window.scrollBy(0,800)')\n    outputs.append({{'step':{i},'action':'scroll','ok':True}})\nexcept Exception as e:\n    outputs.append({{'step':{i},'action':'scroll','ok':False,'error':str(e)}})")
             
             else:
-                script_lines.append(f"outputs.append({{'step':{i},'action':'{action}','ok':False,'error':'鏈煡鎿嶄綔'}})")
+                script_lines.append(f"outputs.append({{'step':{i},'action':'{action}','ok':False,'error':'閺堫亞鐓￠幙宥勭稊'}})")
         
         script_lines.append("final_screenshot = '/tmp/agent_final.png'")
         script_lines.append("try:\n    page.screenshot(path=final_screenshot, full_page=False)\nexcept:\n    final_screenshot = None")
@@ -429,13 +429,13 @@ async def browser_agent(req: BrowserAgentRequest, _=Depends(verify_token)):
         result = subprocess.run(["python3", tmp], capture_output=True, text=True, timeout=60)
         os.unlink(tmp)
         
-        # 瑙ｆ瀽缁撴灉
+        # 鐟欙絾鐎界紒鎾寸亯
         for line in result.stdout.split('\n'):
             if line.startswith('RESULTS:'):
                 try: results = json.loads(line[8:].strip())
                 except: pass
         
-        # 璇诲彇鎴浘
+        # 鐠囪褰囬幋顏勬禈
         for i in range(len(steps)):
             shot_path = f"/tmp/agent_shot_{i}.png"
             if os.path.exists(shot_path):
@@ -454,11 +454,11 @@ async def browser_agent(req: BrowserAgentRequest, _=Depends(verify_token)):
                 os.unlink(final_shot_path)
             except: pass
         
-        # Step 3: AI鎬荤粨鎵ц缁撴灉
+        # Step 3: AI閹崵绮ㄩ幍褑顢戠紒鎾寸亯
         result_summary = json.dumps([{"step":r.get("step"),"action":r.get("action"),"ok":r.get("ok"),"detail":str(r)[:200]} for r in results], ensure_ascii=False)
         summary = await _call_ai([
-            {"role":"system","content":"浣犳槸娴忚鍣ㄨ嚜鍔ㄥ寲缁撴灉鍒嗘瀽甯?绠€鏄庢€荤粨鎵ц缁撴灉,鎻愬彇鍏抽敭鏁版嵁鍜屽彂鐜?"},
-            {"role":"user","content":f"浠诲姟: {req.command}\n姝ラ璁″垝: {plan_text[:500]}\n鎵ц缁撴灉: {result_summary}\n\n璇风敤3-5鍙ヨ瘽鎬荤粨瀹屾垚浜嗕粈涔?鎻愬彇浜嗗摢浜涘叧閿俊鎭?"}
+            {"role":"system","content":"娴ｇ姵妲稿ù蹇氼潔閸ｃ劏鍤滈崝銊ュ缂佹挻鐏夐崚鍡樼€界敮?缁犫偓閺勫孩鈧崵绮ㄩ幍褑顢戠紒鎾寸亯,閹绘劕褰囬崗鎶芥暛閺佺増宓侀崪灞藉絺閻?"},
+            {"role":"user","content":f"娴犺濮? {req.command}\n濮濄儵顎冪拋鈥冲灊: {plan_text[:500]}\n閹笛嗩攽缂佹挻鐏? {result_summary}\n\n鐠囬鏁?-5閸欍儴鐦介幀鑽ょ波鐎瑰本鍨氭禍鍡曠矆娑?閹绘劕褰囨禍鍡楁憿娴滄稑鍙ч柨顔讳繆閹?"}
         ], max_tokens=300)
         
         return {
@@ -474,36 +474,36 @@ async def browser_agent(req: BrowserAgentRequest, _=Depends(verify_token)):
         }
         
     except subprocess.TimeoutExpired:
-        return {"ok": False, "error": "娴忚鍣ㄦ搷浣滆秴鏃?60绉?", "plan": steps}
+        return {"ok": False, "error": "濞村繗顫嶉崳銊︽惙娴ｆ粏绉撮弮?60缁?", "plan": steps}
     except Exception as e:
         return {"ok": False, "error": str(e), "plan": steps}
 
-# ===== 娴忚鍣ˋgent蹇嵎浠诲姟 =====
+# ===== 濞村繗顫嶉崳藡gent韫囶偅宓庢禒璇插 =====
 @router.post("/browser/quick")
 async def browser_quick(req: dict, _=Depends(verify_token)):
-    """蹇嵎娴忚鍣ㄤ换鍔?-- 绔炲搧閲囬泦/鍟嗗搧鎴浘/椤甸潰鐩戞帶"""
+    """韫囶偅宓庡ù蹇氼潔閸ｃ劋鎹㈤崝?-- 缁旂偛鎼ч柌鍥肠/閸熷棗鎼ч幋顏勬禈/妞ょ敻娼伴惄鎴炲付"""
     task_type = req.get("type","")
     url = req.get("url","")
     selector = req.get("selector","")
     
     commands = {
-        "screenshot": f"鎵撳紑 {url} 骞舵埅鍥?,
-        "prices": f"鎵撳紑 {url} 鎻愬彇鎵€鏈変环鏍间俊鎭?,
-        "products": f"鎵撳紑 {url} 鎻愬彇鍟嗗搧鍒楄〃(鍚嶇О+浠锋牸+閾炬帴)",
-        "monitor": f"鎵撳紑 {url} 鎴浘骞舵彁鍙栭〉闈富瑕佸彉鍖?,
-        "login_check": f"鎵撳紑 {url} 妫€鏌ユ槸鍚﹂渶瑕佺櫥褰?,
+        "screenshot": f"閹垫挸绱?{url} 楠炶埖鍩呴崶?,
+        "prices": f"閹垫挸绱?{url} 閹绘劕褰囬幍鈧張澶夌幆閺嶉棿淇婇幁?,
+        "products": f"閹垫挸绱?{url} 閹绘劕褰囬崯鍡楁惂閸掓銆?閸氬秶袨+娴犻攱鐗?闁剧偓甯?",
+        "monitor": f"閹垫挸绱?{url} 閹搭亜娴橀獮鑸靛絹閸欐牠銆夐棃顫瘜鐟曚礁褰夐崠?,
+        "login_check": f"閹垫挸绱?{url} 濡偓閺屻儲妲搁崥锕傛付鐟曚胶娅ヨぐ?,
     }
     
-    cmd = commands.get(task_type, req.get("command", f"鎵撳紑 {url}"))
+    cmd = commands.get(task_type, req.get("command", f"閹垫挸绱?{url}"))
     req_obj = BrowserAgentRequest(command=cmd, headless=True, max_steps=8)
     return await browser_agent(req_obj, _)
-# ===== 8. 闀夸笂涓嬫枃璁板繂鍘嬬缉 =====
+# ===== 8. 闂€澶哥瑐娑撳鏋冪拋鏉跨箓閸樺缂?=====
 class MemoryRequest(BaseModel):
     conversation_id: str = ""
 
 @router.post("/memory/compress")
 async def compress_memory(req: MemoryRequest, _=Depends(verify_token)):
-    """鍘嬬缉闀垮璇濅负鎽樿 -- 绐佺牬涓婁笅鏂囬檺鍒?""
+    """閸樺缂夐梹鍨嚠鐠囨繀璐熼幗妯款洣 -- 缁愪胶鐗稉濠佺瑓閺傚洭妾洪崚?""
     try:
         from routers.agent_chat import _cdb
         c = _cdb()
@@ -511,12 +511,12 @@ async def compress_memory(req: MemoryRequest, _=Depends(verify_token)):
         c.close()
         
         if len(msgs) < 20:
-            return {"ok":True,"compressed":False,"message":"瀵硅瘽杈冪煭,鏃犻渶鍘嬬缉"}
+            return {"ok":True,"compressed":False,"message":"鐎电鐦芥潏鍐叚,閺冪娀娓堕崢瀣級"}
         
         full_text = "\n".join([f"{r[0]}: {r[1][:200]}" for r in msgs])
         summary = await _call_ai([
-            {"role":"system","content":"浣犳槸瀵硅瘽鎽樿涓撳.灏嗕互涓嬮暱瀵硅瘽鍘嬬缉涓虹畝娲佹憳瑕?淇濈暀鍏抽敭淇℃伅銆佸喅绛栥€佸緟鍔炰簨椤?"},
-            {"role":"user","content":f"瀵硅瘽({len(msgs)}鏉℃秷鎭?:\n{full_text[:4000]}\n\n璇风敓鎴愭憳瑕?涓嶈秴杩?00瀛?."}
+            {"role":"system","content":"娴ｇ姵妲哥€电鐦介幗妯款洣娑撴挸顔?鐏忓棔浜掓稉瀣毐鐎电鐦介崢瀣級娑撹櫣鐣濆ú浣规喅鐟?娣囨繄鏆€閸忔娊鏁穱鈩冧紖閵嗕礁鍠呯粵鏍モ偓浣哥窡閸旂偘绨ㄦい?"},
+            {"role":"user","content":f"鐎电鐦?{len(msgs)}閺夆剝绉烽幁?:\n{full_text[:4000]}\n\n鐠囬鏁撻幋鎰喅鐟?娑撳秷绉存潻?00鐎?."}
         ], max_tokens=400)
         
         return {"ok":True,"compressed":True,"original_messages":len(msgs),"summary":summary}
@@ -525,12 +525,12 @@ async def compress_memory(req: MemoryRequest, _=Depends(verify_token)):
 
 
 
-# ===== 8.5 杩滅▼鐢佃剳鎺у埗 WebSocket =====
+# ===== 8.5 鏉╂粎鈻奸悽浣冨壋閹貉冨煑 WebSocket =====
 connected_remotes = {}  # {client_id: websocket}
 
 @router.websocket("/remote/ws")
 async def remote_control_ws(ws: WebSocket):
-    """杩滅▼鐢佃剳鎺у埗WebSocket - 鏈湴Agent杩炴帴鍚?AI鍙搷鎺ф湰鍦扮數鑴?""
+    """鏉╂粎鈻奸悽浣冨壋閹貉冨煑WebSocket - 閺堫剙婀碅gent鏉╃偞甯撮崥?AI閸欘垱鎼烽幒褎婀伴崷鎵暩閼?""
     await ws.accept()
     client_id = None
     try:
@@ -541,7 +541,7 @@ async def remote_control_ws(ws: WebSocket):
                 client_id = data.get("client_id","unknown")
                 hostname = data.get("hostname","")
                 connected_remotes[client_id] = ws
-                await ws.send_json({"type":"registered","client_id":client_id,"message":"宸叉敞鍐?})
+                await ws.send_json({"type":"registered","client_id":client_id,"message":"瀹稿弶鏁為崘?})
                 for cid, cws in connected_remotes.items():
                     try: await cws.send_json({"type":"peer_update","clients":list(connected_remotes.keys())})
                     except: pass
@@ -575,7 +575,7 @@ async def execute_remote(req: dict, _=Depends(verify_token)):
     action = req.get("action","")
     params = req.get("params",{})
     if client_id not in connected_remotes:
-        return {"ok":False,"error":f"瀹㈡埛绔?{client_id} 鏈繛鎺?,"available":list(connected_remotes.keys())}
+        return {"ok":False,"error":f"鐎广垺鍩涚粩?{client_id} 閺堫亣绻涢幒?,"available":list(connected_remotes.keys())}
     try:
         ws = connected_remotes[client_id]
         await ws.send_json({"type":"execute","action":action,"params":params})
@@ -584,13 +584,13 @@ async def execute_remote(req: dict, _=Depends(verify_token)):
         connected_remotes.pop(client_id, None)
         return {"ok":False,"error":str(e)}
 
-# ===== 鏈湴Agent涓嬭浇 v2.0 =====
+# ===== 閺堫剙婀碅gent娑撳娴?v2.0 =====
 async def download_agent_script():
-    """涓嬭浇鏈湴Agent鑴氭湰 v2.0 - 浜虹被绾х數鑴戞搷鎺?""
+    """娑撳娴囬張顒€婀碅gent閼存碍婀?v2.0 - 娴滆櫣琚痪褏鏁搁懘鎴炴惙閹?""
     script = '''
-Friday AI 鏈湴鏅鸿兘Agent v2.0 -- 浜虹被绾х數鑴戞搷鎺?
-鑳藉姏: 瑙嗚鐞嗚В - 鏅鸿兘瀹氫綅 - 浠诲姟鎷嗚В - 鑷籂閿?- 澶氬簲鐢ㄦ搷鎺?
-鐢ㄦ硶: pip install websockets pyautogui pillow psutil playwright pytesseract opencv-python
+Friday AI 閺堫剙婀撮弲楦垮厴Agent v2.0 -- 娴滆櫣琚痪褏鏁搁懘鎴炴惙閹?
+閼宠棄濮? 鐟欏棜顫庨悶鍡毿?- 閺呴缚鍏樼€规矮缍?- 娴犺濮熼幏鍡毿?- 閼奉亞绫傞柨?- 婢舵艾绨查悽銊︽惙閹?
+閻劍纭? pip install websockets pyautogui pillow psutil playwright pytesseract opencv-python
       playwright install chromium
       python friday_agent.py
 import asyncio, json, base64, os, sys, io, subprocess, re, time
@@ -598,14 +598,14 @@ from pathlib import Path
 from datetime import datetime
 import socket
 
-# ===== 閰嶇疆 =====
+# ===== 闁板秶鐤?=====
 SERVER = os.getenv("FRIDAY_SERVER", "wss://tiktook.eu.cc/agent/advanced/remote/ws")
 CLIENT_ID = socket.gethostname()
-VISION_ENABLED = True  # 鏄惁鍚敤瑙嗚鐞嗚В(鎴浘鍙戠粰鏈嶅姟鍣ˋI鍒嗘瀽)
+VISION_ENABLED = True  # 閺勵垰鎯侀崥顖滄暏鐟欏棜顫庨悶鍡毿?閹搭亜娴橀崣鎴犵舶閺堝秴濮熼崳藡I閸掑棙鐎?
 
-# ===== 鎴浘 =====
+# ===== 閹搭亜娴?=====
 def screenshot_to_base64():
-    """鎴彇鍏ㄥ睆 -> base64"""
+    """閹搭亜褰囬崗銊ョ潌 -> base64"""
     try:
         from PIL import ImageGrab
         img = ImageGrab.grab()
@@ -615,28 +615,28 @@ def screenshot_to_base64():
     except Exception as e:
         return None
 
-# ===== 鏅鸿兘鍏冪礌瀹氫綅 =====
+# ===== 閺呴缚鍏橀崗鍐鐎规矮缍?=====
 def find_element(description, screenshot_b64=None):
     """
-    鏅鸿兘鏌ユ壘灞忓箷鍏冪礌,鏀寔澶氱鏂瑰紡:
-    - "鍧愭爣:500,400" -> 鐩存帴杩斿洖鍧愭爣
-    - "鏂囨湰:鐧诲綍" -> OCR鏌ユ壘鍖呭惈"鐧诲綍"鐨勬枃瀛椾綅缃?
-    - "鍥剧墖:button.png" -> 鍥惧儚妯℃澘鍖归厤
-    - "鍖哄煙:宸︿笂瑙? -> 杩斿洖棰勮鍖哄煙鍧愭爣
-    杩斿洖 {"x":int, "y":int, "method":str} 鎴?None
+    閺呴缚鍏橀弻銉﹀鐏炲繐绠烽崗鍐,閺€顖涘瘮婢舵氨顫掗弬鐟扮础:
+    - "閸ф劖鐖?500,400" -> 閻╁瓨甯存潻鏂挎礀閸ф劖鐖?
+    - "閺傚洦婀?閻ц缍? -> OCR閺屻儲澹橀崠鍛儓"閻ц缍?閻ㄥ嫭鏋冪€涙ぞ缍呯純?
+    - "閸ュ墽澧?button.png" -> 閸ユ儳鍎氬Ο鈩冩緲閸栧綊鍘?
+    - "閸栧搫鐓?瀹革缚绗傜憴? -> 鏉╂柨娲栨０鍕啎閸栧搫鐓欓崸鎰垼
+    鏉╂柨娲?{"x":int, "y":int, "method":str} 閹?None
     """
     if not description:
         return None
     
     desc = str(description).strip()
     
-    # 鏂瑰紡1: 鐩存帴鍧愭爣
-    coord_match = re.match(r'鍧愭爣[::]\s*(\d+)\s*[,,]\s*(\d+)', desc)
+    # 閺傜懓绱?: 閻╁瓨甯撮崸鎰垼
+    coord_match = re.match(r'閸ф劖鐖::]\s*(\d+)\s*[,,]\s*(\d+)', desc)
     if coord_match:
         return {"x": int(coord_match.group(1)), "y": int(coord_match.group(2)), "method": "coordinate"}
     
-    # 鏂瑰紡2: OCR鏂囧瓧鏌ユ壘
-    text_match = re.match(r'鏂囨湰[::]\s*(.+)', desc)
+    # 閺傜懓绱?: OCR閺傚洤鐡ч弻銉﹀
+    text_match = re.match(r'閺傚洦婀癧::]\s*(.+)', desc)
     if text_match:
         target_text = text_match.group(1).strip()
         try:
@@ -647,22 +647,22 @@ def find_element(description, screenshot_b64=None):
             
             img = ImageGrab.grab()
             img_np = np.array(img)
-            # OCR鑾峰彇鎵€鏈夋枃瀛椾綅缃?
+            # OCR閼惧嘲褰囬幍鈧張澶嬫瀮鐎涙ぞ缍呯純?
             data = pytesseract.image_to_data(img_np, lang='chi_sim+eng', output_type=pytesseract.Output.DICT)
             for i, text in enumerate(data['text']):
                 if target_text in text:
                     x = data['left'][i] + data['width'][i] // 2
                     y = data['top'][i] + data['height'][i] // 2
-                    if data['conf'][i] > 30:  # 缃俊搴?30%
+                    if data['conf'][i] > 30:  # 缂冾喕淇婃惔?30%
                         return {"x": x, "y": y, "method": f"ocr:{text}", "confidence": data['conf'][i]}
         except ImportError:
-            pass  # OCR涓嶅彲鐢?闄嶇骇
+            pass  # OCR娑撳秴褰查悽?闂勫秶楠?
         except Exception:
             pass
-        return None  # 鎵句笉鍒版枃瀛?
+        return None  # 閹靛彞绗夐崚鐗堟瀮鐎?
     
-    # 鏂瑰紡3: 鍥惧儚妯℃澘鍖归厤
-    img_match = re.match(r'鍥剧墖[::]\s*(.+)', desc)
+    # 閺傜懓绱?: 閸ユ儳鍎氬Ο鈩冩緲閸栧綊鍘?
+    img_match = re.match(r'閸ュ墽澧朳::]\s*(.+)', desc)
     if img_match:
         template_path = img_match.group(1).strip()
         try:
@@ -675,13 +675,13 @@ def find_element(description, screenshot_b64=None):
             pass
         return None
     
-    # 鏂瑰紡4: 璇箟鍖哄煙
+    # 閺傜懓绱?: 鐠囶厺绠熼崠鍝勭厵
     area_map = {
-        "宸︿笂瑙?: (100, 100), "鍙充笂瑙?: (1820, 100),
-        "宸︿笅瑙?: (100, 980), "鍙充笅瑙?: (1820, 980),
-        "灞忓箷涓ぎ": (960, 540), "寮€濮嬭彍鍗?: (50, 1030),
-        "浠诲姟鏍?: (960, 1050), "妗岄潰涓績": (960, 540),
-        "鍏抽棴鎸夐挳": (1880, 10), "鏈€灏忓寲": (1840, 10),
+        "瀹革缚绗傜憴?: (100, 100), "閸欏厖绗傜憴?: (1820, 100),
+        "瀹革缚绗呯憴?: (100, 980), "閸欏厖绗呯憴?: (1820, 980),
+        "鐏炲繐绠锋稉顓炪亷": (960, 540), "瀵偓婵褰嶉崡?: (50, 1030),
+        "娴犺濮熼弽?: (960, 1050), "濡楀矂娼版稉顓炵妇": (960, 540),
+        "閸忔娊妫撮幐澶愭尦": (1880, 10), "閺堚偓鐏忓繐瀵?: (1840, 10),
     }
     for area_name, (ax, ay) in area_map.items():
         if area_name in desc:
@@ -689,16 +689,16 @@ def find_element(description, screenshot_b64=None):
     
     return None
 
-# ===== 鍔ㄤ綔鎵ц =====
+# ===== 閸斻劋缍旈幍褑顢?=====
 async def execute_action(action, params, ws=None):
-    """鎵ц鍗曚釜鎿嶆帶鍔ㄤ綔,杩斿洖缁撴灉"""
+    """閹笛嗩攽閸楁洑閲滈幙宥嗗付閸斻劋缍?鏉╂柨娲栫紒鎾寸亯"""
     try:
         if action == "screenshot":
             b64 = screenshot_to_base64()
             return {"ok": True, "screenshot": b64, "action": action}
         
         elif action == "click":
-            # 鏅鸿兘瀹氫綅浼樺厛
+            # 閺呴缚鍏樼€规矮缍呮导妯哄帥
             target_desc = params.get("target", "")
             pos = find_element(target_desc) if target_desc else None
             
@@ -707,14 +707,14 @@ async def execute_action(action, params, ws=None):
             elif "x" in params and "y" in params:
                 x, y = params["x"], params["y"]
             else:
-                return {"ok": False, "error": "闇€瑕佸潗鏍囨垨鍏冪礌鎻忚堪", "action": action}
+                return {"ok": False, "error": "闂団偓鐟曚礁娼楅弽鍥ㄥ灗閸忓啰绀岄幓蹇氬牚", "action": action}
             
             import pyautogui
-            pyautogui.moveTo(x, y, duration=0.3)  # 浜虹被鍖栫Щ鍔?
+            pyautogui.moveTo(x, y, duration=0.3)  # 娴滆櫣琚崠鏍╅崝?
             time.sleep(0.1)
             pyautogui.click()
             result = {"ok": True, "action": action, "clicked": [x, y], "method": pos["method"] if pos else "coordinate"}
-            # 鐐瑰嚮鍚庤嚜鍔ㄦ埅鍥鹃獙璇?
+            # 閻愮懓鍤崥搴ゅ殰閸斻劍鍩呴崶楣冪崣鐠?
             if VISION_ENABLED:
                 result["screenshot_after"] = screenshot_to_base64()
             return result
@@ -739,19 +739,19 @@ async def execute_action(action, params, ws=None):
         
         elif action == "type_text":
             text = params.get("text", "")
-            # 鏀寔涓枃杈撳叆
+            # 閺€顖涘瘮娑擃厽鏋冩潏鎾冲弳
             import pyautogui, pyperclip
             try:
                 pyperclip.copy(text)
                 pyautogui.hotkey('ctrl', 'v')
             except ImportError:
-                pyautogui.write(text, interval=0.05)  # 浜虹被鍖栨墦瀛楅€熷害
+                pyautogui.write(text, interval=0.05)  # 娴滆櫣琚崠鏍ㄥⅵ鐎涙鈧喎瀹?
             return {"ok": True, "action": action, "typed": text[:50]}
         
         elif action == "press_key":
             key = params.get("key", "")
             import pyautogui
-            # 鏀寔缁勫悎閿?
+            # 閺€顖涘瘮缂佸嫬鎮庨柨?
             if "+" in key:
                 keys = [k.strip() for k in key.split("+")]
                 pyautogui.hotkey(*keys)
@@ -782,7 +782,7 @@ async def execute_action(action, params, ws=None):
             return {"ok": True, "action": action, "dragged": [x1,y1,x2,y2]}
         
         elif action == "wait":
-            seconds = min(params.get("seconds", 1), 30)  # 鏈€澶氱瓑30绉?
+            seconds = min(params.get("seconds", 1), 30)  # 閺堚偓婢舵氨鐡?0缁?
             await asyncio.sleep(seconds)
             return {"ok": True, "action": action, "waited": seconds}
         
@@ -804,7 +804,7 @@ async def execute_action(action, params, ws=None):
                 subprocess.Popen(app, shell=True)
             else:
                 subprocess.Popen([app])
-            await asyncio.sleep(1.5)  # 绛夊簲鐢ㄥ惎鍔?
+            await asyncio.sleep(1.5)  # 缁涘绨查悽銊ユ儙閸?
             result = {"ok": True, "action": action, "opened": app}
             if VISION_ENABLED:
                 result["screenshot_after"] = screenshot_to_base64()
@@ -846,14 +846,14 @@ async def execute_action(action, params, ws=None):
             return {"ok": True, "action": action}
         
         elif action == "browser_task":
-            # 濮旀墭缁橮laywright鎵ц
+            # 婵梹澧紒姗甽aywright閹笛嗩攽
             command = params.get("command", "")
             try:
                 from playwright.async_api import async_playwright
                 async with async_playwright() as p:
                     browser = await p.chromium.launch(headless=False)
                     page = await browser.new_page()
-                    # 绠€鍖栫増:璁〢I鍏堟媶姝ラ
+                    # 缁犫偓閸栨牜澧?鐠併€閸忓牊濯跺銉╊€?
                     await page.goto("https://www.google.com")
                     await page.fill('textarea[name="q"]', command)
                     await page.press('textarea[name="q"]', "Enter")
@@ -862,57 +862,57 @@ async def execute_action(action, params, ws=None):
                     await browser.close()
                     return {"ok": True, "action": action, "result": text[:2000]}
             except ImportError:
-                return {"ok": False, "error": "Playwright鏈畨瑁?, "action": action}
+                return {"ok": False, "error": "Playwright閺堫亜鐣ㄧ憗?, "action": action}
         
         else:
-            return {"ok": False, "error": f"鏈煡鎿嶄綔: {action}", "action": action}
+            return {"ok": False, "error": f"閺堫亞鐓￠幙宥勭稊: {action}", "action": action}
     
     except Exception as e:
         return {"ok": False, "error": str(e), "action": action}
 
-# ===== 涓诲惊鐜?=====
+# ===== 娑撹鎯婇悳?=====
 async def main():
     import websockets
     print(f"\n{'='*60}")
-    print(f"  Friday AI 鏈湴 Agent v2.0")
-    print(f"  瀹㈡埛绔疘D: {CLIENT_ID}")
-    print(f"  鏈嶅姟鍣?   {SERVER}")
-    print(f"  瑙嗚鐞嗚В: {'鉁?鍚敤' if VISION_ENABLED else '鉂?鍏抽棴'}")
+    print(f"  Friday AI 閺堫剙婀?Agent v2.0")
+    print(f"  鐎广垺鍩涚粩鐤楧: {CLIENT_ID}")
+    print(f"  閺堝秴濮熼崳?   {SERVER}")
+    print(f"  鐟欏棜顫庨悶鍡毿? {'閴?閸氼垳鏁? if VISION_ENABLED else '閴?閸忔娊妫?}")
     print(f"{'='*60}\n")
     
-    # 妫€鏌ヤ緷璧?
+    # 濡偓閺屻儰绶风挧?
     deps_ok = True
     try:
         import pyautogui
-        print(f"  鉁?pyautogui {pyautogui.__version__ if hasattr(pyautogui,'__version__') else 'OK'}")
+        print(f"  閴?pyautogui {pyautogui.__version__ if hasattr(pyautogui,'__version__') else 'OK'}")
     except ImportError:
-        print(f"  鉂?pyautogui 鏈畨瑁?)
+        print(f"  閴?pyautogui 閺堫亜鐣ㄧ憗?)
         deps_ok = False
     try:
         import PIL
-        print(f"  鉁?Pillow OK")
+        print(f"  閴?Pillow OK")
     except ImportError:
-        print(f"  鉂?Pillow 鏈畨瑁?)
+        print(f"  閴?Pillow 閺堫亜鐣ㄧ憗?)
         deps_ok = False
     try:
         import pytesseract
-        print(f"  鉁?pytesseract OK (鏂囧瓧璇嗗埆)")
+        print(f"  閴?pytesseract OK (閺傚洤鐡х拠鍡楀焼)")
     except ImportError:
-        print(f"  鈿狅笍  pytesseract 鏈畨瑁?(鏂囧瓧鏌ユ壘闄嶇骇)")
+        print(f"  閳跨媴绗? pytesseract 閺堫亜鐣ㄧ憗?(閺傚洤鐡ч弻銉﹀闂勫秶楠?")
     try:
         import cv2
-        print(f"  鉁?OpenCV OK (鍥惧儚鍖归厤)")
+        print(f"  閴?OpenCV OK (閸ユ儳鍎氶崠褰掑帳)")
     except ImportError:
-        print(f"  鈿狅笍  OpenCV 鏈畨瑁?(鍥惧儚鍖归厤闄嶇骇)")
+        print(f"  閳跨媴绗? OpenCV 閺堫亜鐣ㄧ憗?(閸ユ儳鍎氶崠褰掑帳闂勫秶楠?")
     
     if not deps_ok:
-        print(f"\n  璇峰畨瑁呯己澶变緷璧? pip install pyautogui pillow\n")
+        print(f"\n  鐠囧嘲鐣ㄧ憗鍛繁婢跺彉绶风挧? pip install pyautogui pillow\n")
     
     while True:
         try:
-            print(f"[杩炴帴] 姝ｅ湪杩炴帴 {SERVER} ...")
+            print(f"[鏉╃偞甯碷 濮濓絽婀潻鐐村复 {SERVER} ...")
             async with websockets.connect(SERVER, ping_interval=20, ping_timeout=10) as ws:
-                # 娉ㄥ唽
+                # 濞夈劌鍞?
                 await ws.send(json.dumps({
                     "type": "register",
                     "client_id": CLIENT_ID,
@@ -920,9 +920,9 @@ async def main():
                     "version": "2.0",
                     "capabilities": ["screenshot", "click", "type", "scroll", "ocr", "vision"]
                 }))
-                print(f"[娉ㄥ唽] 鉁?宸叉敞鍐屽埌鏈嶅姟鍣?)
+                print(f"[濞夈劌鍞絔 閴?瀹稿弶鏁為崘灞藉煂閺堝秴濮熼崳?)
                 
-                # 蹇冭烦
+                # 韫囧啳鐑?
                 async def heartbeat():
                     while True:
                         await asyncio.sleep(25)
@@ -932,7 +932,7 @@ async def main():
                             break
                 asyncio.create_task(heartbeat())
                 
-                # 鎸囦护寰幆
+                # 閹稿洣鎶ゅ顏嗗箚
                 async for msg in ws:
                     data = json.loads(msg)
                     msg_type = data.get("type", "")
@@ -941,11 +941,11 @@ async def main():
                         action = data.get("action", "")
                         params = data.get("params", {})
                         task_id = data.get("task_id", "")
-                        print(f"\n[鎵ц] {action} | {str(params)[:80]}")
+                        print(f"\n[閹笛嗩攽] {action} | {str(params)[:80]}")
                         
                         result = await execute_action(action, params, ws)
                         
-                        # 杩斿洖缁撴灉
+                        # 鏉╂柨娲栫紒鎾寸亯
                         response = {
                             "type": "result",
                             "task_id": task_id,
@@ -957,11 +957,11 @@ async def main():
                         }
                         await ws.send(json.dumps(response, ensure_ascii=False))
                         
-                        status = "鉁? if result.get("ok") else "鉂?
-                        print(f"[缁撴灉] {status} {str(result)[:120]}")
+                        status = "閴? if result.get("ok") else "閴?
+                        print(f"[缂佹挻鐏塢 {status} {str(result)[:120]}")
                     
                     elif msg_type == "vision_request":
-                        # 鏈嶅姟鍣ㄨ姹傛埅鍥剧敤浜嶢I瑙嗚鍒嗘瀽
+                        # 閺堝秴濮熼崳銊嚞濮瑰倹鍩呴崶鍓ф暏娴滃盯I鐟欏棜顫庨崚鍡樼€?
                         shot = screenshot_to_base64()
                         await ws.send(json.dumps({
                             "type": "vision_response",
@@ -970,18 +970,18 @@ async def main():
                         }))
                     
                     elif msg_type == "pong":
-                        pass  # 蹇冭烦鍝嶅簲
+                        pass  # 韫囧啳鐑﹂崫宥呯安
                     
                     elif msg_type == "registered":
-                        print(f"[鏈嶅姟鍣╙ {data.get('message', 'OK')}")
+                        print(f"[閺堝秴濮熼崳鈺?{data.get('message', 'OK')}")
                     
                     else:
-                        print(f"[鏈煡娑堟伅] {msg_type}")
+                        print(f"[閺堫亞鐓″☉鍫熶紖] {msg_type}")
         
         except websockets.exceptions.ConnectionClosed:
-            print(f"[鏂紑] 杩炴帴鍏抽棴,5绉掑悗閲嶈繛...")
+            print(f"[閺傤厼绱慮 鏉╃偞甯撮崗鎶芥４,5缁夋帒鎮楅柌宥堢箾...")
         except Exception as e:
-            print(f"[閿欒] {str(e)[:200]}, 5绉掑悗閲嶈繛...")
+            print(f"[闁挎瑨顕 {str(e)[:200]}, 5缁夋帒鎮楅柌宥堢箾...")
         
         await asyncio.sleep(5)
 
@@ -989,34 +989,34 @@ if __name__ == "__main__":
     try:
         asyncio.run(main())
     except KeyboardInterrupt:
-        print(f"\n[閫€鍑篯 Agent宸插仠姝?)
+        print(f"\n[闁偓閸戠 Agent瀹告彃浠犲?)
     except Exception as e:
-        print(f"\n[鑷村懡閿欒] {e}")'''
+        print(f"\n[閼锋潙鎳￠柨娆掝嚖] {e}")'''
     return {
         "ok": True,
         "version": "2.0",
         "filename": "friday_agent.py",
         "script": script,
         "instructions": "pip install websockets pyautogui pillow psutil playwright pytesseract opencv-python pyperclip && playwright install chromium && python friday_agent.py",
-        "capabilities": ["鎴浘+瑙嗚鐞嗚В","鏅鸿兘鍏冪礌瀹氫綅(OCR/鍥惧儚/鍧愭爣)","21绉嶅姩浣?,"鍙屽嚮/鍙抽敭/鎷栨嫿","蹇嵎閿?,"绐楀彛绠＄悊","娴忚鍣ㄨ嚜鍔ㄥ寲","绯荤粺鍛戒护","鑷籂閿?]
+        "capabilities": ["閹搭亜娴?鐟欏棜顫庨悶鍡毿?,"閺呴缚鍏橀崗鍐鐎规矮缍?OCR/閸ユ儳鍎?閸ф劖鐖?","21缁夊秴濮╂担?,"閸欏苯鍤?閸欐娊鏁?閹锋牗瀚?,"韫囶偅宓庨柨?,"缁愭褰涚粻锛勬倞","濞村繗顫嶉崳銊ㄥ殰閸斻劌瀵?,"缁崵绮洪崨鎴掓姢","閼奉亞绫傞柨?]
     }
 
 
-# ===== 浜哄舰Agent(鍗囩骇鐗?=====
+# ===== 娴滃搫鑸癆gent(閸楀洨楠囬悧?=====
 @router.post("/agent/human")
 async def human_like_agent(req: dict, _=Depends(verify_token)):
-    """浜虹被绾х數鑴戞搷鎺?- 鏅鸿兘璺敱: 浠ｇ爜浠诲姟鐩存帴鎵ц, GUI浠诲姟瑙嗚鎿嶆帶, 鑷姩鐪侀挶"""
+    """娴滆櫣琚痪褏鏁搁懘鎴炴惙閹?- 閺呴缚鍏樼捄顖滄暠: 娴狅絿鐖滄禒璇插閻╁瓨甯撮幍褑顢? GUI娴犺濮熺憴鍡氼潕閹垮秵甯? 閼奉亜濮╅惇渚€鎸?""
     command = req.get("command","")
     target = req.get("target","server")
     max_cycles = req.get("max_cycles", 8)
     action_log = []
     
-    # ===== 绗?姝? 浠诲姟鏅鸿兘鍒嗙被 =====
-    classify_prompt = f"""鍒ゆ柇杩欎釜浠诲姟灞炰簬鍝竴绫?鍙洖澶嶄竴涓瘝:
-- "code": 浠ｇ爜/鏂囦欢/鏈嶅姟鍣?鍛戒护/鏁版嵁澶勭悊 (涓嶉渶瑕佺湅灞忓箷)
-- "gui": 鎿嶆帶妗岄潰搴旂敤/GUI/娴忚鍣?闇€瑕佺湅灞忓箷
-浠诲姟: {command}
-鍒嗙被:"""
+    # ===== 缁?濮? 娴犺濮熼弲楦垮厴閸掑棛琚?=====
+    classify_prompt = f"""閸掋倖鏌囨潻娆庨嚋娴犺濮熺仦鐐扮艾閸濐亙绔寸猾?閸欘亜娲栨径宥勭娑擃亣鐦?
+- "code": 娴狅絿鐖?閺傚洣娆?閺堝秴濮熼崳?閸涙垝鎶?閺佺増宓佹径鍕倞 (娑撳秹娓剁憰浣烘箙鐏炲繐绠?
+- "gui": 閹垮秵甯跺宀勬桨鎼存梻鏁?GUI/濞村繗顫嶉崳?闂団偓鐟曚胶婀呯仦蹇撶
+娴犺濮? {command}
+閸掑棛琚?"""
     
     task_type = (await _call_ai(
         [{"role":"user","content":classify_prompt}],
@@ -1024,11 +1024,11 @@ async def human_like_agent(req: dict, _=Depends(verify_token)):
     )).strip().lower()
     
     if "code" in task_type:
-        # ===== 浠ｇ爜/鏈嶅姟鍣ㄤ换鍔? 闆舵埅鍥?鐩存帴鎵ц =====
-        code_prompt = f"""浣犳槸鏈嶅姟鍣ㄧ鐞咥I.瀹屾垚杩欎釜浠诲姟,鍥炲JSON:
-{{"steps":[{{"action":"run_command|read_file|write_file|search|done","params":{{}},"reason":"涓轰粈涔?}}],"summary":"鎬荤粨"}}
-鍙敤鎿嶄綔: run_command(鎵цshell), read_file(璇绘枃浠?, write_file(鍐欐枃浠?, search(鎼滅储鍐呭), done(瀹屾垚)
-浠诲姟: {command}
+        # ===== 娴狅絿鐖?閺堝秴濮熼崳銊ゆ崲閸? 闂嗚埖鍩呴崶?閻╁瓨甯撮幍褑顢?=====
+        code_prompt = f"""娴ｇ姵妲搁張宥呭閸ｃ劎顓搁悶鍜.鐎瑰本鍨氭潻娆庨嚋娴犺濮?閸ョ偛顦睯SON:
+{{"steps":[{{"action":"run_command|read_file|write_file|search|done","params":{{}},"reason":"娑撹桨绮堟稊?}}],"summary":"閹崵绮?}}
+閸欘垳鏁ら幙宥勭稊: run_command(閹笛嗩攽shell), read_file(鐠囩粯鏋冩禒?, write_file(閸愭瑦鏋冩禒?, search(閹兼粎鍌ㄩ崘鍛啇), done(鐎瑰本鍨?
+娴犺濮? {command}
 JSON:"""
         
         plan = await _call_ai(
@@ -1058,12 +1058,12 @@ JSON:"""
                         with open(path,"r",errors="ignore") as f:
                             results.append(f"[read] {path}: {f.read()[:2000]}")
                     else:
-                        results.append(f"[read] {path}: 鏂囦欢涓嶅瓨鍦?)
+                        results.append(f"[read] {path}: 閺傚洣娆㈡稉宥呯摠閸?)
                 elif a == "write_file":
                     path = p.get("path",""); txt = p.get("content","")
                     os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
                     with open(path,"w") as f: f.write(txt)
-                    results.append(f"[write] {path}: 宸插啓鍏len(txt)}瀛楃")
+                    results.append(f"[write] {path}: 瀹告彃鍟撻崗顨乴en(txt)}鐎涙顑?)
                 elif a == "search":
                     import glob
                     pattern = p.get("pattern","*")
@@ -1072,11 +1072,11 @@ JSON:"""
                 elif a == "done":
                     break
             except Exception as e:
-                results.append(f"[{a}] 閿欒: {str(e)[:200]}")
+                results.append(f"[{a}] 闁挎瑨顕? {str(e)[:200]}")
         
-        # 鍋氫竴娆℃渶缁堟€荤粨 (渚垮疁妯″瀷)
+        # 閸嬫矮绔村▎鈩冩付缂佸牊鈧崵绮?(娓氬灝鐤佸Ο鈥崇€?
         summary = await _call_ai([
-            {"role":"user","content":f"浠诲姟:{command}\n鎵ц缁撴灉:\n"+'\n'.join(results)+"\n\n璇蜂竴鍙ヨ瘽鎬荤粨瀹屾垚鎯呭喌."}
+            {"role":"user","content":f"娴犺濮?{command}\n閹笛嗩攽缂佹挻鐏?\n"+'\n'.join(results)+"\n\n鐠囪渹绔撮崣銉ㄧ樈閹崵绮ㄧ€瑰本鍨氶幆鍛枌."}
         ], model=CHEAP_MODEL, max_tokens=100, temperature=0)
         
         token_estimate = len(classify_prompt) + len(plan) + len(summary) + 300
@@ -1084,22 +1084,22 @@ JSON:"""
             "ok":True, "completed":True, "mode":"code", "cycles":len(action_log),
             "log":action_log, "results":results, "final_result":summary,
             "token_saved": True, "estimated_tokens": token_estimate,
-            "vs_visual_mode": f"鐪佷簡绾(max_cycles*1500 - token_estimate)//1000}k tokens"
+            "vs_visual_mode": f"閻椒绨＄痪顩?max_cycles*1500 - token_estimate)//1000}k tokens"
         }
     
-    # ===== GUI浠诲姟: 瑙嗚鎿嶆帶(浼樺寲鐗? =====
-    system_prompt = """浣犳槸鐢佃剳鎿嶆帶AI.鐪嬪埌鎴浘鍚庡洖澶岼SON: {"observation":"鐪嬪埌浜嗕粈涔?,"thought":"鎬濊€?,"action":"鎿嶄綔鍚?,"target":"鍏冪礌鎻忚堪(鏂囨湰:xxx/鍧愭爣:x,y)","params":{},"confidence":0.8}
-鎿嶄綔: click|double_click|type_text|press_key|scroll|move|wait|open_app|close_window|switch_window|select_all|copy|paste|undo|save|run_command|done|fail
-鍘熷垯: 鐢╰arget鎻忚堪鍏冪礌(濡?鏂囨湰:鐧诲綍"), 鎿嶄綔鍚庨獙璇? 鍗′綇鎹㈢瓥鐣?"""
+    # ===== GUI娴犺濮? 鐟欏棜顫庨幙宥嗗付(娴兼ê瀵查悧? =====
+    system_prompt = """娴ｇ姵妲搁悽浣冨壋閹垮秵甯禔I.閻鍩岄幋顏勬禈閸氬骸娲栨径宀糞ON: {"observation":"閻鍩屾禍鍡曠矆娑?,"thought":"閹繆鈧?,"action":"閹垮秳缍旈崥?,"target":"閸忓啰绀岄幓蹇氬牚(閺傚洦婀?xxx/閸ф劖鐖?x,y)","params":{},"confidence":0.8}
+閹垮秳缍? click|double_click|type_text|press_key|scroll|move|wait|open_app|close_window|switch_window|select_all|copy|paste|undo|save|run_command|done|fail
+閸樼喎鍨? 閻⑩暟arget閹诲繗鍫崗鍐(婵?閺傚洦婀?閻ц缍?), 閹垮秳缍旈崥搴ㄧ崣鐠? 閸椻€茬秶閹广垻鐡ラ悾?"""
     
     cycle = 0
     last_screenshot = None
-    last_action = None  # 閬垮厤閲嶅鎴浘
+    last_action = None  # 闁灝鍘ら柌宥咁槻閹搭亜娴?
     
     while cycle < max_cycles:
         cycle += 1
         
-        # 鍙湪蹇呰鏃舵埅鍥?(杩炵画鎵撳瓧/鎸夐敭鍚庝笉闇€瑕?
+        # 閸欘亜婀箛鍛邦洣閺冭埖鍩呴崶?(鏉╃偟鐢婚幍鎾崇摟/閹稿鏁崥搴濈瑝闂団偓鐟?
         need_screenshot = last_action not in ("type_text","press_key","wait")
         
         screenshot_b64 = None
@@ -1129,19 +1129,19 @@ JSON:"""
                 except: pass
         
         if not screenshot_b64 and cycle == 1:
-            return {"ok":False,"error":"鏃犳硶鑾峰彇灞忓箷鎴浘","cycle":cycle}
+            return {"ok":False,"error":"閺冪姵纭堕懢宄板絿鐏炲繐绠烽幋顏勬禈","cycle":cycle}
         if not screenshot_b64:
-            action_log.append({"cycle":cycle,"error":"鎴浘澶辫触"}); break
+            action_log.append({"cycle":cycle,"error":"閹搭亜娴樻径杈Е"}); break
         
         last_screenshot = screenshot_b64
         
-        # 妯″瀷閫夋嫨: 鍓?姝ョ敤CHEAP_MODEL(榛樿deepseek-chat), 鍗′綇浜嗙敤SMART_MODEL
+        # 濡€崇€烽柅澶嬪: 閸?濮濄儳鏁HEAP_MODEL(姒涙顓籨eepseek-chat), 閸椻€茬秶娴滃棛鏁MART_MODEL
         use_model = pick_model(need_vision=True, step_count=cycle)
-        user_prompt = f"浠诲姟: {command}\n绗瑊cycle}/{max_cycles}姝?\n涔嬪墠鎿嶄綔: {json.dumps(action_log[-3:],ensure_ascii=False)}\n鍒嗘瀽鎴浘,鐢╰arget鎻忚堪鍏冪礌."
+        user_prompt = f"娴犺濮? {command}\n缁楃憡cycle}/{max_cycles}濮?\n娑斿澧犻幙宥勭稊: {json.dumps(action_log[-3:],ensure_ascii=False)}\n閸掑棙鐎介幋顏勬禈,閻⑩暟arget閹诲繗鍫崗鍐."
         
         ai_response = await _call_ai([
             {"role":"system","content":system_prompt},
-            {"role":"user","content":[{"type":"text","text":user_prompt},{"type":"image_url","image_url":{"url":f"data:image/png;base64,{screenshot_b64}","detail":"low"}}]}  # low detail = 鏇翠究瀹?
+            {"role":"user","content":[{"type":"text","text":user_prompt},{"type":"image_url","image_url":{"url":f"data:image/png;base64,{screenshot_b64}","detail":"low"}}]}  # low detail = 閺囩繝绌剁€?
         ], model=use_model, max_tokens=300, temperature=0.3)
         
         decision = {}
@@ -1151,7 +1151,7 @@ JSON:"""
         except: pass
         
         if not decision:
-            action_log.append({"cycle":cycle,"error":"瑙ｆ瀽澶辫触"}); continue
+            action_log.append({"cycle":cycle,"error":"鐟欙絾鐎芥径杈Е"}); continue
         
         action = decision.get("action","screenshot")
         params = decision.get("params",{})
@@ -1162,7 +1162,7 @@ JSON:"""
         if action == "done":
             return {"ok":True,"completed":True,"mode":"gui","cycles":cycle,"log":action_log,"result":params.get("summary",""),"screenshot":last_screenshot,"model":CHEAP_MODEL,"estimated_tokens":cycle*500}
         if action == "fail":
-            return {"ok":False,"error":params.get("reason","浠诲姟澶辫触"),"mode":"gui","cycles":cycle,"log":action_log}
+            return {"ok":False,"error":params.get("reason","娴犺濮熸径杈Е"),"mode":"gui","cycles":cycle,"log":action_log}
         
         if target == "server":
             try:
@@ -1189,16 +1189,16 @@ JSON:"""
             except Exception as e:
                 action_log[-1]["error"] = str(e)[:100]
     
-    return {"ok":False,"error":"杈惧埌鏈€澶у惊鐜鏁?,"mode":"gui","cycles":cycle,"log":action_log,"screenshot":last_screenshot,"estimated_tokens":cycle*500}
+    return {"ok":False,"error":"鏉堟儳鍩岄張鈧径褍鎯婇悳顖涱偧閺?,"mode":"gui","cycles":cycle,"log":action_log,"screenshot":last_screenshot,"estimated_tokens":cycle*500}
 
 @router.post("/agent/quick")
 async def quick_agent_action(req: dict, _=Depends(verify_token)):
     client_id = req.get("client_id","")
     action = req.get("action","")
     params = req.get("params",{})
-    actions_help = {"screenshot":"鎴彇灞忓箷","open_url":"鎵撳紑缃戝潃","click":"鍗曞嚮","double_click":"鍙屽嚮","right_click":"鍙抽敭","type_text":"杈撳叆鏂囧瓧","press_key":"鎸夐敭","run_command":"杩愯鍛戒护","get_info":"绯荤粺淇℃伅","open_app":"鎵撳紑搴旂敤","scroll":"婊氳疆","move_mouse":"绉诲姩榧犳爣","close_window":"鍏抽棴绐楀彛","switch_window":"鍒囨崲绐楀彛","select_all":"鍏ㄩ€?,"copy":"澶嶅埗","paste":"绮樿创","undo":"鎾ら攢","save":"淇濆瓨","browser_task":"娴忚鍣ㄤ换鍔?}
-    if not client_id: return {"ok":False,"error":"璇锋寚瀹歝lient_id","available_clients":list(connected_remotes.keys()),"actions":actions_help}
-    if client_id not in connected_remotes: return {"ok":False,"error":f"瀹㈡埛绔?{client_id} 鏈繛鎺?,"available":list(connected_remotes.keys())}
+    actions_help = {"screenshot":"閹搭亜褰囩仦蹇撶","open_url":"閹垫挸绱戠純鎴濇絻","click":"閸楁洖鍤?,"double_click":"閸欏苯鍤?,"right_click":"閸欐娊鏁?,"type_text":"鏉堟挸鍙嗛弬鍥х摟","press_key":"閹稿鏁?,"run_command":"鏉╂劘顢戦崨鎴掓姢","get_info":"缁崵绮烘穱鈩冧紖","open_app":"閹垫挸绱戞惔鏃傛暏","scroll":"濠婃俺鐤?,"move_mouse":"缁夎濮╂Η鐘崇垼","close_window":"閸忔娊妫寸粣妤€褰?,"switch_window":"閸掑洦宕茬粣妤€褰?,"select_all":"閸忋劑鈧?,"copy":"婢跺秴鍩?,"paste":"缁鍒?,"undo":"閹俱倝鏀?,"save":"娣囨繂鐡?,"browser_task":"濞村繗顫嶉崳銊ゆ崲閸?}
+    if not client_id: return {"ok":False,"error":"鐠囬攱瀵氱€规瓭lient_id","available_clients":list(connected_remotes.keys()),"actions":actions_help}
+    if client_id not in connected_remotes: return {"ok":False,"error":f"鐎广垺鍩涚粩?{client_id} 閺堫亣绻涢幒?,"available":list(connected_remotes.keys())}
     if action == "screenshot":
         ws = connected_remotes[client_id]
         await ws.send_json({"type":"execute","action":"screenshot","params":{}})
@@ -1207,35 +1207,35 @@ async def quick_agent_action(req: dict, _=Depends(verify_token)):
                 data = await asyncio.wait_for(ws.receive_json(), timeout=3.0)
                 if data.get("type") == "result" and data.get("screenshot"): return {"ok":True,"action":action,"screenshot":data.get("screenshot")}
             except: break
-        return {"ok":False,"error":"鎴浘瓒呮椂"}
+        return {"ok":False,"error":"閹搭亜娴樼搾鍛"}
     return await execute_remote(req, _)
 
 @router.get("/agent/actions")
 async def list_actions(_=Depends(verify_token)):
-    return {"ok":True,"actions":{"screenshot":"鎴彇灞忓箷","open_url":"鎵撳紑缃戝潃","click":"鍗曞嚮","double_click":"鍙屽嚮","right_click":"鍙抽敭","type_text":"杈撳叆鏂囧瓧","press_key":"鎸夐敭","run_command":"杩愯绯荤粺鍛戒护","get_info":"绯荤粺淇℃伅","open_app":"鎵撳紑搴旂敤","scroll":"婊氳疆","move_mouse":"绉诲姩榧犳爣","drag":"鎷栨嫿","wait":"绛夊緟","close_window":"鍏抽棴绐楀彛","switch_window":"鍒囨崲绐楀彛","select_all":"鍏ㄩ€?,"copy":"澶嶅埗","paste":"绮樿创","undo":"鎾ら攢","save":"淇濆瓨","browser_task":"AI娴忚鍣ㄤ换鍔?}}
+    return {"ok":True,"actions":{"screenshot":"閹搭亜褰囩仦蹇撶","open_url":"閹垫挸绱戠純鎴濇絻","click":"閸楁洖鍤?,"double_click":"閸欏苯鍤?,"right_click":"閸欐娊鏁?,"type_text":"鏉堟挸鍙嗛弬鍥х摟","press_key":"閹稿鏁?,"run_command":"鏉╂劘顢戠化鑽ょ埠閸涙垝鎶?,"get_info":"缁崵绮烘穱鈩冧紖","open_app":"閹垫挸绱戞惔鏃傛暏","scroll":"濠婃俺鐤?,"move_mouse":"缁夎濮╂Η鐘崇垼","drag":"閹锋牗瀚?,"wait":"缁涘绶?,"close_window":"閸忔娊妫寸粣妤€褰?,"switch_window":"閸掑洦宕茬粣妤€褰?,"select_all":"閸忋劑鈧?,"copy":"婢跺秴鍩?,"paste":"缁鍒?,"undo":"閹俱倝鏀?,"save":"娣囨繂鐡?,"browser_task":"AI濞村繗顫嶉崳銊ゆ崲閸?}}
 
-# ===== 缁熶竴娴忚鍣ˋgent =====
+# ===== 缂佺喍绔村ù蹇氼潔閸Ｋ媑ent =====
 @router.post("/browser/unified")
 async def unified_browser(req: dict, _=Depends(verify_token)):
     command = req.get("command","")
     target = req.get("target","server")
     if target == "server" or target in list(connected_remotes.keys()):
         if target != "server":
-            if target not in connected_remotes: return {"ok":False,"error":f"瀹㈡埛绔?{target} 鏈繛鎺?}
+            if target not in connected_remotes: return {"ok":False,"error":f"鐎广垺鍩涚粩?{target} 閺堫亣绻涢幒?}
             ws = connected_remotes[target]
             await ws.send_json({"type":"execute","action":"browser_task","params":{"command":command}})
             return {"ok":True,"sent_to":target,"command":command}
         else:
             req_obj = BrowserAgentRequest(command=command, headless=True, max_steps=10)
             return await browser_agent(req_obj, _)
-    return {"ok":False,"error":"鏈煡鐩爣","available_targets":["server"]+list(connected_remotes.keys())}
+    return {"ok":False,"error":"閺堫亞鐓￠惄顔界垼","available_targets":["server"]+list(connected_remotes.keys())}
 
 
 
-# ===== 8.7 妯″瀷甯傚満API =====
+# ===== 8.7 濡€崇€风敮鍌氭簚API =====
 @router.get("/models")
 async def list_models(_=Depends(verify_token)):
-    """鍒楀嚭鎵€鏈夊彲鐢ˋI妯″瀷鍙婁环鏍?""
+    """閸掓鍤幍鈧張澶婂讲閻⑺婭濡€崇€烽崣濠佺幆閺?""
     available = {}
     for name, info in AVAILABLE_MODELS.items():
         key = DEEPSEEK_KEY if info["provider"] == "deepseek" else OPENAI_KEY
@@ -1245,46 +1245,59 @@ async def list_models(_=Depends(verify_token)):
         "models": available,
         "current_cheap": CHEAP_MODEL,
         "current_smart": SMART_MODEL,
-        "config_hint": "鐜鍙橀噺: CHEAP_MODEL / SMART_MODEL / DEEPSEEK_API_KEY / OPENAI_API_KEY"
+        "config_hint": "閻滎垰顣ㄩ崣姗€鍣? CHEAP_MODEL / SMART_MODEL / DEEPSEEK_API_KEY / OPENAI_API_KEY"
     }
 
 @router.post("/models/test")
 async def test_model(req: dict, _=Depends(verify_token)):
-    """娴嬭瘯鎸囧畾妯″瀷鏄惁鍙敤"""
+    """濞村鐦幐鍥х暰濡€崇€烽弰顖氭儊閸欘垳鏁?""
     model = req.get("model", CHEAP_MODEL)
     try:
-        result = await _call_ai([{"role":"user","content":"鍥炲OK"}], model=model, max_tokens=10, temperature=0)
-        return {"ok": True, "model": model, "response": result[:50], "status": "鍙敤" if "OK" in result else "寮傚父"}
+        result = await _call_ai([{"role":"user","content":"閸ョ偛顦睴K"}], model=model, max_tokens=10, temperature=0)
+        return {"ok": True, "model": model, "response": result[:50], "status": "閸欘垳鏁? if "OK" in result else "瀵倸鐖?}
     except Exception as e:
         return {"ok": False, "model": model, "error": str(e)[:200]}
 
-# ===== 9. AI閫氱煡鎺ㄩ€?=====
+# ===== 9. AI闁氨鐓￠幒銊┾偓?=====
 @router.post("/notify")
 async def send_notification(req: dict, _=Depends(verify_token)):
-    """鎺ㄩ€侀€氱煡鍒版墍鏈夎繛鎺ョ殑瀹㈡埛绔?""
+    """閹恒劑鈧線鈧氨鐓￠崚鐗堝閺堝绻涢幒銉ф畱鐎广垺鍩涚粩?""
     title = req.get("title","Friday AI")
     body = req.get("body","")
     url = req.get("url","/ai/")
     
-    # 閫氳繃WebSocket骞挎挱閫氱煡
+    # 闁俺绻僕ebSocket楠炴寧鎸遍柅姘辩叀
     try:
         from routers.ws_router import manager
         await manager.broadcast(json.dumps({
             "type":"notification",
             "title":title,"body":body,"url":url,"time":datetime.now().isoformat()
         }))
-        return {"ok":True,"message":"閫氱煡宸插箍鎾?}
+        return {"ok":True,"message":"闁氨鐓″鎻掔畭閹?}
     except Exception as e:
         return {"ok":False,"error":str(e)}
 
 @router.post("/agent/human/correct")
 async def human_agent_correct(command: str = "", target: str = "server", _=Depends(verify_token)):
-    """人形Agent自纠错"""
+    """浜哄舰Agent鑷籂閿?""
+    try:
+        from agents.multi_model import ModelRouter
+        resp = ModelRouter.smart_chat(messages=[{"role":"user","content":f"鎿嶄綔澶辫触: {command}銆傚垎鏋愬師鍥犵粰淇鎸囦护,鍙繑鍥炲懡浠ゃ€?}], mode="smart")
+        corrected = resp.get("content","") if isinstance(resp,dict) else str(resp)
+        import subprocess, shlex
+        result = subprocess.run(corrected.strip().split(), capture_output=True, text=True, timeout=60)
+        return {"ok":True,"corrected":corrected.strip(),"stdout":result.stdout[:2000]}
+    except Exception as e:
+        return {"ok":False,"error":str(e)}
+
+@router.post("/agent/human/correct")
+async def human_agent_correct(command: str = "", target: str = "server", _=Depends(verify_token)):
+    """人形Agent自纠错 — 执行失败后自动诊断重试"""
     try:
         from agents.multi_model import ModelRouter
         resp = ModelRouter.smart_chat(messages=[{"role":"user","content":f"操作失败: {command}。分析原因给修正指令,只返回命令。"}], mode="smart")
         corrected = resp.get("content","") if isinstance(resp,dict) else str(resp)
-        import subprocess, shlex
+        import subprocess
         result = subprocess.run(corrected.strip().split(), capture_output=True, text=True, timeout=60)
         return {"ok":True,"corrected":corrected.strip(),"stdout":result.stdout[:2000]}
     except Exception as e:
