@@ -1,6 +1,6 @@
 # 🖥️ Friday AI OS — 服务器端 AI 记忆
 
-> 最后更新: 2026-05-30 10:30 | 运行环境: server | 任务: 全量审计修复完成
+> 最后更新: 2026-05-30 13:00 | 运行环境: server | 任务: 部署修复完成，AI面板正常运行
 
 ## 🧬 当前人格
 - 类型: 均衡型 · 全面发展
@@ -15,6 +15,26 @@
 6. 客服自动回复 + 轮值域名监控
 
 ## 最近改动
+
+### 2026-05-30 13:00: 部署修复4连 — Agent成功启动 (71e3294)
+
+**问题链：**
+1. **main.py 编码损坏** — 2处 `\n` 换行符被编码污染为字面字符串 `` `n ``（第160行和第266行），SyntaxError 阻止启动
+2. **Frontend nginx 权限** — USER nginx 无权限写 /run/nginx.pid，两次尝试修复（conf.d不能写pid指令 → -g 参数与主配置重复）→ 最终方案：移除USER nginx，依赖nginx标准安全模型（worker nginx用户，master root）
+3. **registry.py Desktop handler 误入列表** — 14个 `async def` 函数被错误放在 `tools = [` 列表内部，Python AST 不允许函数定义在列表字面量中 → 移到 `tools = [` 之前
+4. **4个BOM文件** — registry.py等含 UTF-8 BOM 头 → 清除
+5. **BACKUP_DIR 不匹配** — config.py 默认 `/app/../backups`(=/backups) 与卷挂载 `/app/backups` 不匹配 → docker-compose 添加 `BACKUP_DIR=/app/backups` 环境变量
+6. **logs/backups 目录权限** — 卷挂载目录属root，容器内appuser(UID 1000)无写权限 → `chown -R 1000:1000`
+
+**验证：**
+- Python `ast.parse()` 全量扫描 180+ 文件，0语法错误 ✅
+- mall-ai-frontend: HTTP 200，Nginx正常运行 ✅
+- mall-ai-agent: `/agent/health` 返回 `{"status":"ok"}` ✅
+- 容器状态: 2个容器 Up + healthy ✅
+
+**Commits:** ff71bba → 1e3f57b → 12228cf → b53a5b2 → 71e3294
+
+---
 
 ### 2026-05-30: 全量审计6轮修复 — 全部完成 (8 commits: 6e6346d..c4d789b)
 
