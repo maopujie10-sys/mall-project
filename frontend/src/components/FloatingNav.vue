@@ -116,6 +116,7 @@ const categories = reactive([
   {
     id: 'mall', icon: '\u{1F3EC}', label: '\u5546\u57CE\u8FD0\u8425', x: 0, y: 0, dragging: false,
     items: [
+      { to: 'ai-brain', icon: '\u{1F9E0}', label: '\u5546\u57CE\u5927\u8111' },
       { to: 'mall', icon: '\u{1F3EC}', label: '\u5546\u57CE\u7BA1\u7406' },
       { to: 'customer', icon: '\u{1F4AC}', label: '\u5BA2\u670D\u7CFB\u7EDF' },
       { to: 'ecommerce-ai', icon: '\u{1F916}', label: 'AI\u7535\u5546\u5F15\u64CE' },
