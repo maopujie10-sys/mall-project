@@ -1,5 +1,30 @@
 # 操作日志
 
+## 2026-05-31 08:20 — Container Logs 500修复（安装docker CLI+挂载socket+修复GID）
+
+**问题：** `/agent/docker/containers/{name}/logs` 返回500，容器内无docker CLI且未挂载docker socket。
+
+**修复：**
+- 安装 docker CLI：`apt-get install -y docker.io`（以root身份执行）
+- 将容器提交为新镜像 `mall-ai-agent:fixed`
+- 停旧容器 → 重建 `mall-ai-agent` 并挂载 `/var/run/docker.sock`
+- 修复 docker 组 GID 不匹配：容器内 GID=102 → 宿主机 GID=120
+- 效果：Container Logs 和 Docker Containers 均正常工作
+
+**验证：** AI全量测试 **170/170 ALL GOOD** ✅
+
+**问题：** 全量AI测试发现12条路由404（ASGI中间件仅处理GET，POST路径映射缺失 + workflow路由顺序问题）
+
+**修复：**
+- `workflow_router.py` — /templates 移至 /{wf_id} 前，修复路由顺序抢占
+- `main.py` — _build_route_map() 新增19条手动路由映射
+- `routers/route_fixes.py` — 新建POST别名路由（security/token + rotation/check）
+- 效果：12条404→200，AI全量测试169/170通过
+
+**新增规则：**
+- 服务器AI正式命名为"龙一"，后续AI依次为龙二、龙三
+- 写入AI记忆和FRIDAY_SERVER.md
+
 ## 2026-05-30 23:00 — 前端编码损坏全量修复（30+ Vue 文件）
 
 **问题：** 电脑端 compact 格式转换将 UTF-8 中文替换为 `?`，大量破坏 Vue 模板中的字符串常量和引号匹配，构建失败（~370 模块）。

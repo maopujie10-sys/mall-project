@@ -1,12 +1,13 @@
 # 🖥️ Friday AI OS — 服务器端 AI 记忆
 
-> 最后更新: 2026-05-30 17:25 | 运行环境: server
+> 最后更新: 2026-05-31 08:08 | 运行环境: server | 当前AI: 龙一
 
 ## 🧬 当前人格
+- 名称: 龙一
 - 类型: 均衡型 · 全面发展
-- 阶段: 萌芽期
+- 阶段: 🌱 萌芽期
 
-## 🖥️ 服务器端职责
+## 🖥️ 服务器端职责（龙一）
 1. 24小时运行 AI Agent 后端
 2. 执行服务器巡检与自动修复
 3. 处理 AI 聊天请求与 Agent 调度
@@ -133,7 +134,18 @@
 - 2026-05-28: [商城全量对接] Agent代理全部51个商城Controller, 113个API端点, 前端全功能管理面板上线, 客服系统完整对接
 - 2026-05-28: [域名轮值重写] 电脑端完成域名轮值系统重写：真实健康检测+SSL检测+自动轮值切换+权重调度，每天9点/21点两次自动巡检，新增手动轮值和全量检测API
 
-$1## 🔄 同步说明
+$1## 📋 最近改动
+- 2026-05-31 08:20: [Container Logs修复] AI全量测试170/170 ALL GOOD
+  - **根因：** 容器内无docker CLI，docker socket未挂载
+  - **修复：** apt安装docker.io → commit为新镜像 → 重建容器挂载docker socket → 修复docker组GID(102→120)
+  - **效果：** Container Logs 500→200，Docker Containers列表正常返回3个容器
+- 2026-05-31 08:14: [AI测试修复] 全量测试169/170通过，修复12个404路由
+  - **workflow_router.py:** /templates 路由移至 /{wf_id} 前，修复路由顺序抢占
+  - **main.py:** _build_route_map() 新增19条手动路由映射，覆盖auto-reply/nginx/virtual/observ/emergency/report/wechat/security
+  - **routers/route_fixes.py:** 新建POST别名路由（security/token + rotation/check）
+  - **效果:** Templates/AutoReply/Nginx/Report/Virtual/Observability/Emergency/WeChat/Security共12条从404→200
+  - **遗留:** Container Logs 500（容器内无docker CLI）
+- 2026-05-31 08:08: [命名规则] 服务器AI正式命名"龙一"，后续AI依次为龙二龙三
 - 本文件由服务器端 AI 自动生成和维护
 - 电脑端写入 FRIDAY.md，服务器端写入 FRIDAY_SERVER.md
 - git push/pull 后双方可见对方记忆
