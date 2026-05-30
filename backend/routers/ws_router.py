@@ -1,4 +1,4 @@
-"""Dashboard WebSocket -- 实时推送系统指标+告警+订单+生命体状态"""
+﻿"""Dashboard WebSocket -- 实时推送系统指标+告警+订单+生命体状态"""
 import asyncio, json
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from websocket_manager import ws_manager
@@ -69,3 +69,33 @@ async def alerts_websocket(ws: WebSocket):
 async def ws_stats():
     """WebSocket连接统计"""
     return {"ok": True, "connections": ws_manager.count()}
+
+# ===== Desktop Control WebSocket =====
+
+@router.websocket("/ws/desktop")
+async def desktop_websocket(ws: WebSocket):
+    """桌面控制WebSocket -- 本地desktop_agent_local.py连接此端点"""
+    from agents.desktop_agent import desktop_control
+    agent_id = ws.headers.get("x-agent-id", f"desktop_{id(ws)}")
+    token = ws.headers.get("authorization", "").replace("Bearer ", "")
+    from auth import verify_token_raw
+    if not verify_token_raw(token):
+        await ws.accept()
+        await ws.send_text(json.dumps({"type": "error", "message": "认证失败"}))
+        await ws.close()
+        return
+    await desktop_control.connect(ws, agent_id)
+    try:
+        while True:
+            try:
+                data = await asyncio.wait_for(ws.receive_text(), timeout=60)
+                msg = json.loads(data) if data else {}
+                await desktop_control.handle_message(agent_id, msg)
+            except asyncio.TimeoutError:
+                await ws.send_text(json.dumps({"type": "ping"}))
+    except WebSocketDisconnect:
+        pass
+    except Exception as e:
+        logger.info(f"Desktop WS异常: {e}")
+    finally:
+        await desktop_control.disconnect(agent_id)
