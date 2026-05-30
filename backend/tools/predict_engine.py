@@ -1,4 +1,4 @@
-"""预测引擎 -- 时序预测(销量/流量/库存/异常)"""
+"""妫板嫭绁村鏇熸惛 -- 閺冭泛绨０鍕ゴ(闁库偓闁?濞翠線鍣?鎼存挸鐡?瀵倸鐖?"""
 import time, json, asyncio
 from collections import defaultdict
 from typing import List, Dict
@@ -7,39 +7,39 @@ from tools.logger import get_logger
 logger = get_logger("predict")
 
 class PredictEngine:
-    """AI预测引擎 -- 移动平均 + 趋势 + 异常检测"""
+    """AI妫板嫭绁村鏇熸惛 -- 缁夎濮╅獮鍐叉綆 + 鐡掑濞?+ 瀵倸鐖跺Λ鈧ù?""
     _history: Dict[str, List[Dict]] = defaultdict(list)
 
     @classmethod
     def record(cls, metric: str, value: float, tags: Dict = None):
-        """记录指标数据点"""
+        """鐠佹澘缍嶉幐鍥ㄧ垼閺佺増宓侀悙?""
         cls._history[metric].append({
             "time": time.time(), "value": value, "tags": tags or {}
         })
-        # 保留最近1000条
+        # 娣囨繄鏆€閺堚偓鏉?000閺?
         if len(cls._history[metric]) > 1000:
             cls._history[metric] = cls._history[metric][-1000:]
 
     @classmethod
     def predict(cls, metric: str, horizon: int = 7) -> Dict:
-        """预测未来N个周期"""
+        """妫板嫭绁撮張顏呮降N娑擃亜鎳嗛張?""
         data = cls._history.get(metric, [])
         if len(data) < 3:
-            return {"ok": False, "error": f"数据不足({len(data)}点), 需要至少3个数据点", "predictions": []}
+            return {"ok": False, "error": f"閺佺増宓佹稉宥堝喕({len(data)}閻?, 闂団偓鐟曚浇鍤︾亸?娑擃亝鏆熼幑顔惧仯", "predictions": []}
 
         values = [d["value"] for d in data]
 
-        # Holt-Winters 三重指数平滑
-        alpha, beta, gamma = 0.3, 0.1, 0.1  # 平滑系数
+        # Holt-Winters 娑撳鍣搁幐鍥ㄦ殶楠炶櫕绮?
+        alpha, beta, gamma = 0.3, 0.1, 0.1  # 楠炶櫕绮︾化缁樻殶
         period = min(7, len(values) // 2)
         if period < 2: period = 2
 
-        # 初始化
+        # 閸掓繂顫愰崠?
         level = values[0]
         trend = (sum(values[period:2*period]) - sum(values[:period])) / (period * period) if len(values) >= 2*period else 0
         seasonals = [values[i] - level for i in range(period)] if len(values) >= period else [0]
 
-        # 拟合历史
+        # 閹风喎鎮庨崢鍡楀蕉
         fitted = []
         for t in range(len(values)):
             s_idx = t % period
@@ -52,7 +52,7 @@ class PredictEngine:
             seasonals[s_idx] = gamma * (values[t] - level) + (1 - gamma) * seasonals[s_idx]
             fitted.append(level + trend + seasonals[s_idx])
 
-        # 预测
+        # 妫板嫭绁?
         predictions = []
         last_level = level
         last_trend = trend
@@ -65,13 +65,13 @@ class PredictEngine:
             last_level = last_level + last_trend
             predictions.append(round(max(0, pred), 2))
 
-        # 趋势百分比
+        # 鐡掑濞嶉惂鎯у瀻濮?
         recent_fit_avg = sum(fitted[-min(5,len(fitted)):]) / min(5,len(fitted)) if fitted else values[-1]
         old_avg = sum(values[:max(1,len(values)//3)]) / max(1,len(values)//3)
         trend = (recent_fit_avg - old_avg) / max(abs(old_avg), 1) * 100
         ma = level
 
-        # 异常检测
+        # 瀵倸鐖跺Λ鈧ù?
         recent = values[-10:] if len(values) >= 10 else values
         mean = sum(recent) / len(recent)
         std = (sum((v - mean) ** 2 for v in recent) / len(recent)) ** 0.5
@@ -89,7 +89,7 @@ class PredictEngine:
 
     @classmethod
     def _detect_seasonal(cls, values: List[float], max_period: int = 7) -> List[float]:
-        """简单季节性检测"""
+        """缁犫偓閸楁洖顒滈懞鍌涒偓褎顥呭ù?""
         if len(values) < 14:
             return []
         for period in range(3, min(max_period + 1, len(values) // 3)):
@@ -109,7 +109,7 @@ class PredictEngine:
 
     @classmethod
     def save(cls):
-        """持久化到SQLite"""
+        """鎸佷箙鍖栧埌SQLite"""
         from tools.memory_store import memory_store
         import json
         data = {k: v[-200:] for k, v in cls._history.items()}
@@ -117,7 +117,7 @@ class PredictEngine:
 
     @classmethod
     def load(cls):
-        """从SQLite恢复"""
+        """浠嶴QLite鎭㈠"""
         from tools.memory_store import memory_store
         import json
         try:
@@ -127,6 +127,28 @@ class PredictEngine:
             return True
         except:
             return False
+
+
+    @classmethod
+    def forecast_sales(cls, days: int = 7) -> Dict:
+        '''销量预测 — 移动平均+趋势'''
+        sales_data = cls._history.get('sales', [])
+        if len(sales_data) < 3:
+            return {'ok': False, 'error': '数据不足'}
+        recent = sales_data[-14:]
+        avg = sum(recent) / len(recent)
+        trend = (sum(recent[-3:])/3) / (sum(recent[:3])/3) if len(recent)>=6 else 1.0
+        forecast = [round(avg * (trend**i), 0) for i in range(1, days+1)]
+        return {'ok': True, 'forecast': forecast, 'avg': round(avg,1), 'trend': round(trend,2)}
+
+    @classmethod
+    def detect_anomaly(cls, metric: str = 'sales') -> Dict:
+        '''异常检测 — 3-sigma'''
+        data = cls._history.get(metric, [])
+        if len(data) < 10: return {'ok': False}
+        avg = sum(data)/len(data); std = (sum((x-avg)**2 for x in data)/len(data))**0.5
+        latest = data[-1]; z = (latest-avg)/std if std>0 else 0
+        return {'ok': True, 'latest': latest, 'avg': round(avg,1), 'z_score': round(z,2), 'anomaly': abs(z)>2.5}
 
 predict_engine = PredictEngine()
 

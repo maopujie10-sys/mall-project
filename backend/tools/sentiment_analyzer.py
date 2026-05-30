@@ -1,4 +1,4 @@
-"""情感分析 + 客户画像"""
+"""鎯呮劅鍒嗘瀽 + 瀹㈡埛鐢诲儚"""
 import re
 from typing import Dict
 from collections import Counter, defaultdict
@@ -7,29 +7,29 @@ from tools.logger import get_logger
 logger = get_logger("sentiment")
 
 class SentimentAnalyzer:
-    """情感分析 + 客户画像引擎"""
+    """鎯呮劅鍒嗘瀽 + 瀹㈡埛鐢诲儚寮曟搸"""
 
-    POSITIVE = {"好","棒","赞","满意","喜欢","快","便宜","实惠","品质","推荐","nice","good","great","excellent","优秀","完美","惊喜","超值","舒适","方便","实用","耐用","漂亮","精致","时尚","划算","热情","耐心","专业","靠谱","稳定","流畅","安全","高效","省心","放心","物美价廉","好评","五星","回购","给力","牛","爱了","绝了","yyds","awesome","amazing","fantastic","love","wonderful","perfect","best"}
-    NEGATIVE = {"差","烂","慢","贵","坑","假","退","投诉","垃圾","坏","问题","失望","bad","poor","terrible","worst","糟","破","劣质","难用","丑陋","粗糙","敷衍","冷漠","忽悠","骗子","假货","破损","瑕疵","过期","变质","异味","掉色","缩水","卡顿","闪退","崩溃","死机","发热","噪音","费电","不值","后悔","踩雷","差评","恶心","无语","awful","horrible","disappointed","hate","waste"}
-    URGENT = {"急","马上","立刻","赶紧","快","紧急","退款","报警","投诉"}
+    POSITIVE = {"濂?,"妫?,"璧?,"婊℃剰","鍠滄","蹇?,"渚垮疁","瀹炴儬","鍝佽川","鎺ㄨ崘","nice","good","great","excellent","浼樼","瀹岀編","鎯婂枩","瓒呭€?,"鑸掗€?,"鏂逛究","瀹炵敤","鑰愮敤","婕備寒","绮捐嚧","鏃跺皻","鍒掔畻","鐑儏","鑰愬績","涓撲笟","闈犺氨","绋冲畾","娴佺晠","瀹夊叏","楂樻晥","鐪佸績","鏀惧績","鐗╃編浠峰粔","濂借瘎","浜旀槦","鍥炶喘","缁欏姏","鐗?,"鐖变簡","缁濅簡","yyds","awesome","amazing","fantastic","love","wonderful","perfect","best"}
+    NEGATIVE = {"宸?,"鐑?,"鎱?,"璐?,"鍧?,"鍋?,"閫€","鎶曡瘔","鍨冨溇","鍧?,"闂","澶辨湜","bad","poor","terrible","worst","绯?,"鐮?,"鍔ｈ川","闅剧敤","涓戦檵","绮楃硻","鏁疯","鍐锋紶","蹇芥偁","楠楀瓙","鍋囪揣","鐮存崯","鐟曠柕","杩囨湡","鍙樿川","寮傚懗","鎺夎壊","缂╂按","鍗￠】","闂€€","宕╂簝","姝绘満","鍙戠儹","鍣煶","璐圭數","涓嶅€?,"鍚庢倲","韪╅浄","宸瘎","鎭跺績","鏃犺","awful","horrible","disappointed","hate","waste"}
+    URGENT = {"鎬?,"椹笂","绔嬪埢","璧剁揣","蹇?,"绱ф€?,"閫€娆?,"鎶ヨ","鎶曡瘔"}
 
-    # 否定词(反转情感)
-    NEGATORS = {"不","没","无","非","别","未","否","莫","休"}
+    # 鍚﹀畾璇?鍙嶈浆鎯呮劅)
+    NEGATORS = {"涓?,"娌?,"鏃?,"闈?,"鍒?,"鏈?,"鍚?,"鑾?,"浼?}
 
-    # 程度词(权重调整)
-    INTENSIFIERS = {"很":1.5,"非常":1.8,"特别":2.0,"太":1.6,"极":2.0,"超级":2.0,
-                    "有点":0.5,"稍微":0.6,"略微":0.5,"不太":0.4}
+    # 绋嬪害璇?鏉冮噸璋冩暣)
+    INTENSIFIERS = {"寰?:1.5,"闈炲父":1.8,"鐗瑰埆":2.0,"澶?:1.6,"鏋?:2.0,"瓒呯骇":2.0,
+                    "鏈夌偣":0.5,"绋嶅井":0.6,"鐣ュ井":0.5,"涓嶅お":0.4}
 
     @classmethod
     def analyze(cls, text: str) -> Dict:
-        """分析文本情感"""
+        """鍒嗘瀽鏂囨湰鎯呮劅"""
         words = set(re.findall(r'[\u4e00-\u9fff]+|[a-zA-Z]+', text.lower()))
 
         pos = len(words & cls.POSITIVE)
         neg = len(words & cls.NEGATIVE)
         urgent = len(words & cls.URGENT)
 
-        # 否定词处理: 否定词+正面词=负面
+        # 鍚﹀畾璇嶅鐞? 鍚﹀畾璇?姝ｉ潰璇?璐熼潰
         negated = False
         weighted_pos = 0
         weighted_neg = 0
@@ -66,13 +66,13 @@ class SentimentAnalyzer:
 
     @classmethod
     def build_profile(cls, user_id: str, messages: list) -> Dict:
-        """构建客户画像"""
+        """鏋勫缓瀹㈡埛鐢诲儚"""
         all_text = " ".join(messages)
         words = re.findall(r'[\u4e00-\u9fff]+', all_text)
 
         interests = Counter()
-        categories = {"价格":["价格","钱","便宜","贵","优惠","打折"],"品质":["品质","质量","好","差","正品"],
-                      "物流":["物流","快递","发货","收到","包裹"],"服务":["服务","客服","态度","回复"]}
+        categories = {"浠锋牸":["浠锋牸","閽?,"渚垮疁","璐?,"浼樻儬","鎵撴姌"],"鍝佽川":["鍝佽川","璐ㄩ噺","濂?,"宸?,"姝ｅ搧"],
+                      "鐗╂祦":["鐗╂祦","蹇€?,"鍙戣揣","鏀跺埌","鍖呰９"],"鏈嶅姟":["鏈嶅姟","瀹㈡湇","鎬佸害","鍥炲"]}
 
         for cat, keywords in categories.items():
             interests[cat] = sum(all_text.count(k) for k in keywords)

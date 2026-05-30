@@ -1,68 +1,70 @@
-"""AI内容工厂 -- 商品描述+营销文案+社媒帖子+翻译"""
-import json, re
+"""AI内容工厂 — 营销文案/社媒帖子/商品描述/多语言"""
+from typing import Dict, List
 from tools.logger import get_logger
 
-logger = get_logger("content_factory")
+logger = get_logger("content")
 
 class ContentFactory:
     """AI内容生成工厂"""
 
     @classmethod
-    async def generate_product_desc(cls, product_info: dict) -> str:
+    async def generate_product_desc(cls, product: dict, style: str = "professional", lang: str = "zh") -> str:
         """生成商品描述"""
         try:
             from agents.multi_model import ModelRouter
-            resp = await ModelRouter.smart_chat(messages=[{"role":"user","content":f"为以下商品写一段有吸引力的描述(100-200字),突出卖点:\n名称:{product_info.get('name','')}\n品类:{product_info.get('category','')}\n价格:{product_info.get('price','')}\n特点:{product_info.get('features','')}"}], mode="fast")
-            return resp.get("content", "")
-        except Exception as e:
-            logger.error(f"生成商品描述失败: {e}")
-            return f"【{product_info.get('name','')}】高品质{product_info.get('category','')},价格{product_info.get('price','')},{product_info.get('features','')}"
+            prompt = f"""为以下商品生成{style}风格的{'中文' if lang=='zh' else 'English'}描述(150-300字):
+商品名: {product.get('name','')}
+价格: {product.get('price','')}
+品类: {product.get('category','')}
+特点: {product.get('features','')}
+要求: 突出卖点,含SEO关键词,{'-' if lang!='zh' else ''}"""
+            resp = await ModelRouter.smart_chat_async(messages=[{"role":"user","content":prompt}], mode="creative")
+            return resp.get("content","") if isinstance(resp,dict) else str(resp)
+        except:
+            return f"{'【热卖推荐】' if lang=='zh' else '[Hot Sale] '}{product.get('name','')} - {'品质保证，限时优惠！' if lang=='zh' else 'Premium quality, limited offer!'}"
 
     @classmethod
-    async def generate_marketing_copy(cls, campaign: dict) -> str:
-        """生成营销文案"""
+    async def generate_campaign(cls, campaign: dict) -> str:
+        """生成营销活动文案"""
         try:
             from agents.multi_model import ModelRouter
-            resp = await ModelRouter.smart_chat(messages=[{"role":"user","content":f"为以下营销活动写一条吸引人的推广文案(50-100字),带emoji:\n活动:{campaign.get('name','')}\n优惠:{campaign.get('discount','')}\n目标人群:{campaign.get('audience','')}\n平台:{campaign.get('platform','全平台')}"}], mode="fast")
-            return resp.get("content", "")
+            name = campaign.get("name","")
+            discount = campaign.get("discount","")
+            prompt = f"为营销活动写一条吸引人的宣传文案(100-200字): 活动:{name}, 优惠:{discount}, 目标:提高转化率"
+            resp = await ModelRouter.smart_chat_async(messages=[{"role":"user","content":prompt}], mode="creative")
+            return resp.get("content","") if isinstance(resp,dict) else str(resp)
         except:
-            return f'🎉 {campaign.get("name","")}来啦!{campaign.get("discount","")},限时优惠!'
+            return f"🎉 {campaign.get('name','')}来啦!{campaign.get('discount','')},限时优惠!"
 
     @classmethod
     async def generate_social_post(cls, topic: dict) -> str:
-        """生成社媒帖子"""
+        """生成社交媒体帖子"""
         try:
             from agents.multi_model import ModelRouter
-            resp = await ModelRouter.smart_chat(messages=[{"role":"user","content":f"写一条社交媒体帖子(100-200字),带3-5个相关hashtag:\n主题:{topic.get('theme','')}\n风格:{topic.get('style','轻松活泼')}\n包含: {topic.get('include','')}"}], mode="fast")
-            return resp.get("content", "")
+            prompt = f"写一条社交媒体帖子(100-200字),带3-5个相关hashtag:\n主题:{topic.get('theme','')}\n风格:{topic.get('style','轻松活泼')}\n包含: {topic.get('include','')}"
+            resp = await ModelRouter.smart_chat_async(messages=[{"role":"user","content":prompt}], mode="creative")
+            return resp.get("content","") if isinstance(resp,dict) else str(resp)
         except:
-            return f"📢 {topic.get('theme','')}\n{topic.get('include','')}\n#好物 #推荐 #跨境电商 #TikTokShop"
+            return f"🔥 {topic.get('theme','')} \n#热门 #推荐"
 
     @classmethod
-    async def translate_content(cls, text: str, target_lang: str = "en") -> str:
-        """翻译内容"""
-        lang_names = {"en":"英语","ja":"日语","ko":"韩语","fr":"法语","de":"德语","es":"西班牙语","ar":"阿拉伯语"}
+    async def generate_email(cls, data: dict) -> str:
+        """生成营销邮件"""
         try:
             from agents.multi_model import ModelRouter
-            resp = await ModelRouter.smart_chat(messages=[{"role":"user","content":f"将以下内容翻译成{lang_names.get(target_lang,target_lang)},保持格式:\n{text}"}], mode="fast")
-            return resp.get("content", "")
+            prompt = f"写一封营销邮件: 主题:{data.get('subject','')}, 受众:{data.get('audience','')}, 行动号召:{data.get('cta','')}"
+            resp = await ModelRouter.smart_chat_async(messages=[{"role":"user","content":prompt}], mode="creative")
+            return resp.get("content","") if isinstance(resp,dict) else str(resp)
         except:
-            return f"[翻译失败] {text}"
+            return f"Subject: {data.get('subject','')}\n\nCheck out our latest offer!"
 
     @classmethod
-    async def batch_generate(cls, products: list, task_type: str = "description") -> list:
+    async def batch_generate(cls, products: List[dict], style: str = "professional") -> List[Dict]:
         """批量生成"""
         results = []
-        for p in products:
-            if task_type == "description":
-                text = await cls.generate_product_desc(p)
-            elif task_type == "marketing":
-                text = await cls.generate_marketing_copy(p)
-            elif task_type == "social":
-                text = await cls.generate_social_post(p)
-            else:
-                text = ""
-            results.append({"input": p, "output": text})
+        for p in products[:20]:
+            desc = await cls.generate_product_desc(p, style)
+            results.append({"name": p.get("name",""), "description": desc})
         return results
 
 content_factory = ContentFactory()

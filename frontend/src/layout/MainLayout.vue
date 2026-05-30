@@ -64,8 +64,7 @@ function openFloatingChat() {
   const btn = document.querySelector('.ai-float-btn')
   if (btn) btn.click()
 }
-// 监听路由变化，有内容时显示叠层
-let contentTimer = null
+// 鐩戝惉璺敱鍙樺寲锛屾湁鍐呭鏃舵樉绀哄彔灞?let contentTimer = null
 function showContent() {
   const overlay = document.querySelector('.content-overlay')
   if (overlay) overlay.classList.add('has-content')
@@ -73,8 +72,7 @@ function showContent() {
 function hideContent() {
   const overlay = document.querySelector('.content-overlay')
   if (overlay && window.location.hash === '' && window.location.pathname === '/ai/' || window.location.pathname === '/ai/friday') {
-    // 首页不显示内容
-  } else if (overlay) {
+    // 棣栭〉涓嶆樉绀哄唴瀹?  } else if (overlay) {
     overlay.classList.add('has-content')
   }
 }
@@ -90,7 +88,7 @@ onMounted(async () => {
 })
 </script>
 <style>
-/* ===== 科幻全屏布局 ===== */
+/* ===== 绉戝够鍏ㄥ睆甯冨眬 ===== */
 .sci-fi-shell {
   width: 100vw; height: 100vh;
   overflow: hidden;
@@ -98,12 +96,12 @@ onMounted(async () => {
   background: #0a0a1a;
 }
 
-.neural-bg {
+.neural-bg { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 0;
   position: fixed; inset: 0;
   z-index: 0;
 }
 
-.content-overlay {
+.content-overlay { position: fixed; inset: 0; z-index: 1; pointer-events: none;
   position: fixed; inset: 0;
   z-index: 10;
   pointer-events: none;
@@ -113,7 +111,7 @@ onMounted(async () => {
   pointer-events: all;
 }
 
-/* 页面切换动画 */
+/* 椤甸潰鍒囨崲鍔ㄧ敾 */
 .page-fade-enter-active { transition: opacity 0.3s, transform 0.3s; }
 .page-fade-leave-active { transition: opacity 0.15s, transform 0.15s; }
 .page-fade-enter-from { opacity: 0; transform: translateY(10px); }
@@ -123,7 +121,7 @@ onMounted(async () => {
 
 
 
-/* 3D大脑联动脉冲 */
+/* 3D澶ц剳鑱斿姩鑴夊啿 */
 .neural-bg.brain-active {
   filter: brightness(1.15) saturate(1.2);
   transition: filter 0.5s ease;

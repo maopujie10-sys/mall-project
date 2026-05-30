@@ -1,4 +1,4 @@
-"""消息网关 -- 统一多平台接入: 微信/企微/钉钉/Telegram/Slack"""
+"""娑堟伅缃戝叧 -- 缁熶竴澶氬钩鍙版帴鍏? 寰俊/浼佸井/閽夐拤/Telegram/Slack"""
 import json, hashlib, os, httpx
 from config import AGENT_TOKEN
 from datetime import datetime
@@ -9,7 +9,7 @@ from tools.logger import get_logger
 logger = get_logger("gateway")
 router = APIRouter(prefix="/gateway", tags=["Gateway"])
 
-# 平台配置
+# 骞冲彴閰嶇疆
 PLATFORMS = {
     "wechat": {"token": os.getenv("WECHAT_TOKEN", ""), "aes_key": os.getenv("WECHAT_AES_KEY", "")},
     "wecom": {"corp_id": os.getenv("WECOM_CORP_ID", ""), "secret": os.getenv("WECOM_SECRET", ""), "agent_id": os.getenv("WECOM_AGENT_ID", "")},
@@ -20,17 +20,17 @@ PLATFORMS = {
 }
 
 class MessageGateway:
-    """统一消息网关"""
+    """缁熶竴娑堟伅缃戝叧"""
     
     @staticmethod
     async def handle_message(platform: str, user_id: str, text: str, extra: dict = None) -> dict:
-        """统一处理入口: 任何平台消息 -> AI回复"""
+        """缁熶竴澶勭悊鍏ュ彛: 浠讳綍骞冲彴娑堟伅 -> AI鍥炲"""
         logger.info(f"[{platform}] {user_id}: {text[:100]}")
         try:
-            # 调用AI对话
+            # 璋冪敤AI瀵硅瘽
             from routers.agent_chat import agent_chat as _chat
             from routers.agent_chat import ChatRequest
-            # 简化调用 -- 直接走HTTP内部调用
+            # 绠€鍖栬皟鐢?-- 鐩存帴璧癏TTP鍐呴儴璋冪敤
             async with httpx.AsyncClient() as client:
                 r = await client.post(
                     "http://127.0.0.1:9000/agent/chat",
@@ -42,12 +42,12 @@ class MessageGateway:
                     data = r.json(); reply_text = data.get("response") or data.get("reply") or str(data)[:500]; return {"ok": True, "reply": reply_text}
         except Exception as e:
             logger.info(f"Gateway AI call error: {e}")
-        return {"ok": False, "reply": "抱歉,我暂时无法处理您的请求.请稍后再试."}
+        return {"ok": False, "reply": "鎶辨瓑,鎴戞殏鏃舵棤娉曞鐞嗘偍鐨勮姹?璇风◢鍚庡啀璇?"}
 
-# ===== 微信公众号 =====
+# ===== 寰俊鍏紬鍙?=====
 @router.get("/wechat")
 async def wechat_verify(signature: str = "", timestamp: str = "", nonce: str = "", echostr: str = ""):
-    """微信服务器验证"""
+    """寰俊鏈嶅姟鍣ㄩ獙璇?""
     token = PLATFORMS["wechat"]["token"]
     if not token:
         return PlainTextResponse("not configured")
@@ -59,7 +59,7 @@ async def wechat_verify(signature: str = "", timestamp: str = "", nonce: str = "
 
 @router.post("/wechat")
 async def wechat_message(request: Request):
-    """接收微信公众号消息"""
+    """鎺ユ敹寰俊鍏紬鍙锋秷鎭?""
     try:
         body = await request.body()
         import xml.etree.ElementTree as ET
@@ -85,10 +85,10 @@ async def wechat_message(request: Request):
         logger.info(f"WeChat error: {e}")
     return PlainTextResponse("success")
 
-# ===== 企业微信 =====
+# ===== 浼佷笟寰俊 =====
 @router.post("/wecom")
 async def wecom_message(request: Request):
-    """企业微信消息回调"""
+    """浼佷笟寰俊娑堟伅鍥炶皟"""
     try:
         data = await request.json()
         msg_type = data.get("MsgType", "")
@@ -104,10 +104,10 @@ async def wecom_message(request: Request):
     except: pass
     return JSONResponse({"errcode": 0})
 
-# ===== 钉钉 =====
+# ===== 閽夐拤 =====
 @router.post("/dingtalk")
 async def dingtalk_message(request: Request):
-    """钉钉机器人回调"""
+    """閽夐拤鏈哄櫒浜哄洖璋?""
     try:
         data = await request.json()
         text = data.get("text", {}).get("content", "")
@@ -115,8 +115,7 @@ async def dingtalk_message(request: Request):
         session = data.get("sessionWebhook", "")
         if text:
             result = await MessageGateway.handle_message("dingtalk", sender, text)
-            # 回复到钉钉
-            if session:
+            # 鍥炲鍒伴拤閽?            if session:
                 async with httpx.AsyncClient() as client:
                     await client.post(session, json={
                         "msgtype": "text",
@@ -139,7 +138,7 @@ async def telegram_webhook(token: str, request: Request):
         text = msg.get("text", "")
         if text and chat_id:
             result = await MessageGateway.handle_message("telegram", str(chat_id), text)
-            # 回复
+            # 鍥炲
             async with httpx.AsyncClient() as client:
                 await client.post(
                     f"https://api.telegram.org/bot{token}/sendMessage",
@@ -155,10 +154,10 @@ async def slack_event(request: Request):
     """Slack Events API"""
     try:
         data = await request.json()
-        # URL验证
+        # URL楠岃瘉
         if data.get("type") == "url_verification":
             return JSONResponse({"challenge": data.get("challenge")})
-        # 消息事件
+        # 娑堟伅浜嬩欢
         event = data.get("event", {})
         if event.get("type") == "app_mention":
             text = event.get("text", "").replace("<@BOT_ID>", "").strip()

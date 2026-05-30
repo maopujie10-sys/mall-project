@@ -1,5 +1,5 @@
-"""Memory Sync Engine -- 跨设备/跨AI记忆同步
-通过Git仓库同步FRIDAY.md + memory/目录,实现电脑和服务器AI共享记忆"""
+"""Memory Sync Engine -- 璺ㄨ澶?璺ˋI璁板繂鍚屾
+閫氳繃Git浠撳簱鍚屾FRIDAY.md + memory/鐩綍,瀹炵幇鐢佃剳鍜屾湇鍔″櫒AI鍏变韩璁板繂"""
 
 import os
 import json
@@ -14,11 +14,42 @@ FRIDAY_LOCAL = ROOT / "FRIDAY.md"
 FRIDAY_SERVER = ROOT / "FRIDAY_SERVER.md"
 
 class MemorySync:
-    """记忆同步引擎"""
+    """璁板繂鍚屾寮曟搸"""
+
+    @classmethod
+    def push_to_wechat(cls, message: str) -> dict:
+        """推送记忆到微信"""
+        try:
+            import os, httpx
+            token = os.getenv("WECHAT_TOKEN","")
+            if not token: return {"ok":False,"error":"未配置WECHAT_TOKEN"}
+            resp = httpx.post(f"https://api.weixin.qq.com/cgi-bin/message/custom/send?access_token={token}", json={"touser":"admin","msgtype":"text","text":{"content":f"[Friday记忆] {message[:500]}"}}, timeout=10)
+            return {"ok":resp.status_code==200,"platform":"wechat"}
+        except Exception as e: return {"ok":False,"error":str(e)}
+
+    @classmethod
+    def push_to_telegram(cls, message: str) -> dict:
+        """推送记忆到Telegram"""
+        try:
+            import os, httpx
+            token = os.getenv("TELEGRAM_BOT_TOKEN","")
+            if not token: return {"ok":False,"error":"未配置TELEGRAM_BOT_TOKEN"}
+            resp = httpx.post(f"https://api.telegram.org/bot{token}/sendMessage", json={"chat_id":os.getenv("TELEGRAM_CHAT_ID",""),"text":f"[Friday记忆] {message[:1000]}"}, timeout=10)
+            return {"ok":resp.status_code==200,"platform":"telegram"}
+        except Exception as e: return {"ok":False,"error":str(e)}
+
+    @classmethod
+    def sync_all_platforms(cls, message: str) -> dict:
+        """同步到所有平台"""
+        results = {}
+        results["wechat"] = cls.push_to_wechat(message)
+        results["telegram"] = cls.push_to_telegram(message)
+        results["local"] = cls.sync_push({"message":message,"timestamp":__import__("time").time()})
+        return {"ok":True,"results":results}
 
     @staticmethod
     def _run_git(args: list, timeout: int = 15) -> tuple:
-        """执行git命令"""
+        """鎵цgit鍛戒护"""
         try:
             result = subprocess.run(
                 ["git"] + args,
@@ -34,7 +65,7 @@ class MemorySync:
 
     @staticmethod
     def identify_self() -> str:
-        """识别当前运行环境:local(电脑)或 server(服务器)"""
+        """璇嗗埆褰撳墠杩愯鐜:local(鐢佃剳)鎴?server(鏈嶅姟鍣?"""
         hostname = os.uname().nodename if hasattr(os, "uname") else os.getenv("COMPUTERNAME", "unknown")
         if any(kw in hostname.lower() for kw in ["server", "vps", "cloud", "ecs", "prod"]):
             return "server"
@@ -42,50 +73,50 @@ class MemorySync:
 
     @staticmethod
     def generate_friday_md() -> str:
-        """生成FRIDAY.md -- AI自我描述文档"""
+        """鐢熸垚FRIDAY.md -- AI鑷垜鎻忚堪鏂囨。"""
         identity = MemorySync.identify_self()
-        emoji = "💻" if identity == "local" else "🖥️"
+        emoji = "馃捇" if identity == "local" else "馃枼锔?
 
-        content = f"""# {emoji} Friday AI OS -- 数字生命体档案
+        content = f"""# {emoji} Friday AI OS -- 鏁板瓧鐢熷懡浣撴。妗?
 
-> 自动生成于 {datetime.now().strftime('%Y-%m-%d %H:%M')} | 运行环境: {identity}
+> 鑷姩鐢熸垚浜?{datetime.now().strftime('%Y-%m-%d %H:%M')} | 杩愯鐜: {identity}
 
-## 🧬 AI人格画像
+## 馃К AI浜烘牸鐢诲儚
 
 """
-        # 如果人格引擎可用
+        # 濡傛灉浜烘牸寮曟搸鍙敤
         try:
             from tools.memory_personality import PersonalityEngine
             personality = PersonalityEngine.get_personality()
-            content += f"- **人格类型**: {personality.get('personality_type', '萌芽期')}\n"
-            content += f"- **主导特质**: {personality.get('dominant_name', '')}\n"
-            content += f"- **进化阶段**: {personality.get('evolution_stage', '🌱 萌芽期')}\n"
-            content += f"- **交互次数**: {personality.get('total_interactions', 0)}\n"
-            content += f"- **近7日活跃**: {personality.get('recent_7d_interactions', 0)}次\n"
+            content += f"- **浜烘牸绫诲瀷**: {personality.get('personality_type', '钀岃娊鏈?)}\n"
+            content += f"- **涓诲鐗硅川**: {personality.get('dominant_name', '')}\n"
+            content += f"- **杩涘寲闃舵**: {personality.get('evolution_stage', '馃尡 钀岃娊鏈?)}\n"
+            content += f"- **浜や簰娆℃暟**: {personality.get('total_interactions', 0)}\n"
+            content += f"- **杩?鏃ユ椿璺?*: {personality.get('recent_7d_interactions', 0)}娆n"
 
             if personality.get('traits'):
-                content += "\n### 人格维度\n\n"
+                content += "\n### 浜烘牸缁村害\n\n"
                 for key, info in sorted(personality['traits'].items(), key=lambda x: x[1]['value'], reverse=True):
-                    bar = "█" * int(info['value'] * 20) + "░" * (20 - int(info['value'] * 20))
+                    bar = "鈻? * int(info['value'] * 20) + "鈻? * (20 - int(info['value'] * 20))
                     content += f"- {info['icon']} **{info['name']}**: {bar} {info['value']:.0%}\n"
         except Exception as e:
-            content += f"\n*(人格引擎暂不可用: {e})*\n"
+            content += f"\n*(浜烘牸寮曟搸鏆備笉鍙敤: {e})*\n"
 
         content += f"""
-## 📋 最近上下文
+## 馃搵 鏈€杩戜笂涓嬫枃
 
 """
-        # 添加上下文记忆
+        # 娣诲姞涓婁笅鏂囪蹇?
         try:
             from tools.memory_personality import PersonalityEngine
             context = PersonalityEngine.get_context()
             for item in context[:10]:
                 content += f"- [{item['category']}] **{item['key']}**: {item['value'][:200]}\n"
         except Exception:
-            content += "*(暂无上下文记忆)*\n"
+            content += "*(鏆傛棤涓婁笅鏂囪蹇?*\n"
 
         content += f"""
-## 📝 最近日记
+## 馃摑 鏈€杩戞棩璁?
 
 """
         try:
@@ -94,43 +125,43 @@ class MemorySync:
             for j in journals:
                 content += f"- **{j['date']}** {j.get('mood','')} -- {j.get('summary','')[:150] if j.get('summary') else ''}\n"
         except Exception:
-            content += "*(暂无日记)*\n"
+            content += "*(鏆傛棤鏃ヨ)*\n"
 
         content += f"""
-## 🔄 同步说明
+## 馃攧 鍚屾璇存槑
 
-- 本文件由 AI 自动生成和维护
-- 电脑端写入 `FRIDAY.md`,服务器端写入 `FRIDAY_SERVER.md`
-- git push/pull 后双方可见对方记忆
-- `memory/` 目录存放详细日记和交接文档
+- 鏈枃浠剁敱 AI 鑷姩鐢熸垚鍜岀淮鎶?
+- 鐢佃剳绔啓鍏?`FRIDAY.md`,鏈嶅姟鍣ㄧ鍐欏叆 `FRIDAY_SERVER.md`
+- git push/pull 鍚庡弻鏂瑰彲瑙佸鏂硅蹇?
+- `memory/` 鐩綍瀛樻斁璇︾粏鏃ヨ鍜屼氦鎺ユ枃妗?
 
 ---
-*Friday AI OS v3.0 - 超级AI数字生命体*
+*Friday AI OS v3.0 - 瓒呯骇AI鏁板瓧鐢熷懡浣?
 """
         return content
 
     @staticmethod
     def export_memory_files() -> dict:
-        """导出memory/目录下的Markdown文件"""
+        """瀵煎嚭memory/鐩綍涓嬬殑Markdown鏂囦欢"""
         MEMORY_DIR.mkdir(exist_ok=True)
         files_created = []
 
-        # 导出最新日记
+        # 瀵煎嚭鏈€鏂版棩璁?
         try:
             from tools.memory_personality import PersonalityEngine
             journals = PersonalityEngine.get_journal_history(7)
             for j in journals:
                 filename = f"daily-{j['date']}.md"
                 filepath = MEMORY_DIR / filename
-                md = f"# 📝 Friday AI 日记 -- {j['date']}\n\n"
-                md += f"心情: {j.get('mood', '😐')}\n\n"
-                md += f"## 摘要\n{j.get('summary', '')}\n\n"
+                md = f"# 馃摑 Friday AI 鏃ヨ -- {j['date']}\n\n"
+                md += f"蹇冩儏: {j.get('mood', '馃槓')}\n\n"
+                md += f"## 鎽樿\n{j.get('summary', '')}\n\n"
                 if j.get('highlights'):
-                    md += "## 亮点\n"
+                    md += "## 浜偣\n"
                     for h in json.loads(j['highlights']) if isinstance(j['highlights'], str) else j['highlights']:
                         md += f"- {h}\n"
                 if j.get('learnings'):
-                    md += "## 学到的\n"
+                    md += "## 瀛﹀埌鐨刓n"
                     for l in json.loads(j['learnings']) if isinstance(j['learnings'], str) else j['learnings']:
                         md += f"- {l}\n"
                 filepath.write_text(md, encoding="utf-8")
@@ -138,21 +169,21 @@ class MemorySync:
         except Exception as e:
             pass
 
-        # 导出HANDOFF
+        # 瀵煎嚭HANDOFF
         try:
             from tools.memory_personality import PersonalityEngine
             handoff = PersonalityEngine.generate_handoff()
             filepath = MEMORY_DIR / "handoff.md"
-            md = "# 🤝 AI HANDOFF 交接文档\n\n"
-            md += f"生成时间: {handoff.get('generated_at', '')}\n\n"
-            md += "## 人格状态\n"
+            md = "# 馃 AI HANDOFF 浜ゆ帴鏂囨。\n\n"
+            md += f"鐢熸垚鏃堕棿: {handoff.get('generated_at', '')}\n\n"
+            md += "## 浜烘牸鐘舵€乗n"
             p = handoff.get('personality', {})
-            md += f"- 类型: {p.get('type', '')}\n"
-            md += f"- 阶段: {p.get('stage', '')}\n\n"
-            md += "## 关键上下文\n"
+            md += f"- 绫诲瀷: {p.get('type', '')}\n"
+            md += f"- 闃舵: {p.get('stage', '')}\n\n"
+            md += "## 鍏抽敭涓婁笅鏂嘰n"
             for ctx in handoff.get('key_context', []):
                 md += f"- [{ctx['category']}] {ctx['key']}: {ctx['value'][:150]}\n"
-            md += "\n## 下一步建议\n"
+            md += "\n## 涓嬩竴姝ュ缓璁甛n"
             for step in handoff.get('next_steps', []):
                 md += f"- {step}\n"
             filepath.write_text(md, encoding="utf-8")
@@ -164,18 +195,18 @@ class MemorySync:
 
     @staticmethod
     def sync_push() -> dict:
-        """推送到GitHub -- 共享记忆给另一端的AI"""
+        """鎺ㄩ€佸埌GitHub -- 鍏变韩璁板繂缁欏彟涓€绔殑AI"""
         identity = MemorySync.identify_self()
 
-        # 生成文档
+        # 鐢熸垚鏂囨。
         friday_content = MemorySync.generate_friday_md()
         target_file = FRIDAY_LOCAL if identity == "local" else FRIDAY_SERVER
         target_file.write_text(friday_content, encoding="utf-8")
 
-        # 导出memory
+        # 瀵煎嚭memory
         export_result = MemorySync.export_memory_files()
 
-        # Git操作
+        # Git鎿嶄綔
         results = []
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M")
 
@@ -185,7 +216,7 @@ class MemorySync:
 
         # git commit
         if ok:
-            msg = f"[Friday AI {identity}] 记忆同步 -- {timestamp}"
+            msg = f"[Friday AI {identity}] 璁板繂鍚屾 -- {timestamp}"
             ok, out, err = MemorySync._run_git(["commit", "-m", msg, "--allow-empty"])
             results.append({"step": "commit", "ok": ok, "detail": out or err})
 
@@ -204,34 +235,34 @@ class MemorySync:
 
     @staticmethod
     def sync_pull() -> dict:
-        """从GitHub拉取 -- 获取另一端AI的最新记忆"""
+        """浠嶨itHub鎷夊彇 -- 鑾峰彇鍙︿竴绔疉I鐨勬渶鏂拌蹇?""
         # git pull
         ok, out, err = MemorySync._run_git(["pull", "origin", "HEAD"], timeout=30)
 
         result = {"step": "pull", "ok": ok, "detail": out or err}
 
-        # 读取另一端FRIDAY
+        # 璇诲彇鍙︿竴绔疐RIDAY
         identity = MemorySync.identify_self()
         other_file = FRIDAY_SERVER if identity == "local" else FRIDAY_LOCAL
         other_memory = ""
         if other_file.exists():
             other_memory = other_file.read_text(encoding="utf-8")[:2000]
 
-        # 读取memory目录
+        # 璇诲彇memory鐩綍
         memory_files = []
         if MEMORY_DIR.exists():
             for f in MEMORY_DIR.glob("*.md"):
                 memory_files.append({
                     "name": f.name,
                     "size": f.stat().st_size,
-                    "preview": f.read_text(encoding="utf-8")[:300] if f.stat().st_size < 10000 else "(文件较大)"
+                    "preview": f.read_text(encoding="utf-8")[:300] if f.stat().st_size < 10000 else "(鏂囦欢杈冨ぇ)"
                 })
 
         return {
             "ok": ok,
             "identity": identity,
             "other_identity": "server" if identity == "local" else "local",
-            "other_friday_preview": other_memory[:500] if other_memory else "(对方还没有FRIDAY文件)",
+            "other_friday_preview": other_memory[:500] if other_memory else "(瀵规柟杩樻病鏈塅RIDAY鏂囦欢)",
             "memory_files": memory_files,
             "git_result": result,
         }

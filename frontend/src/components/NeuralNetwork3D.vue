@@ -1,474 +1,434 @@
 <template>
-  <div ref="container" class="nn3d-container">
+  <div ref="container" class="nn3d-container" @dblclick="openChat">
     <div class="nn-overlay">
-      <div class="nn-status">🧠 数字生命体· 运行中</div>
-      <div class="nn-info" v-if="hoveredNode">节点: {{ hoveredNode }} | 活跃连接: {{ connectionCount }}</div>
+      <div class="nn-status">🧬 数字生命体 · {{ statusText }}</div>
+      <div class="nn-info" v-if="speaking">正在回应...</div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from "vue"
+import { ref, computed, onMounted, onBeforeUnmount } from "vue"
 import * as THREE from "three"
-import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js"
 import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js"
 import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js"
 import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass.js"
 
 const container = ref(null)
-const hoveredNode = ref("")
-const connectionCount = ref(0)
+const speaking = ref(false)
+const statusText = computed(() => speaking.value ? '对话中' : '运行中')
 
-let scene, camera, renderer, controls, composer, animFrameId
-let core, coreGlow, nodes = [], connections = [], energyParticles = []
-let brainWaves = [], dataStreams = [], thoughtParticles = [], energyRings = []
-let raycaster, mouse, selectedNode = null
-let clock = new THREE.Clock()
+let scene, camera, renderer, composer, animFrameId, clock
+let headFrame, headGlow, leftEye, rightEye, leftPupil, rightPupil
+let mouthGroup, mouthTop, mouthBottom
+let haloRings = [], neuralLines = [], ambientParticles = []
+let raycaster, mouse, mouseTarget = new THREE.Vector2()
 
+function emit(event, detail) { window.dispatchEvent(new CustomEvent(event, { detail })) }
+function openChat() { emit('brain:openChat') }
 
-function generateOrganicNetwork() {
-  const nodeCount = 180
-  const nodes = []
-  
-  for (let i = 0; i < 30; i++) {
-    const theta = Math.random() * Math.PI * 2
-    const phi = Math.acos(2 * Math.random() - 1)
-    const r = 1.5 + Math.random() * 1.5
-    nodes.push({
-      x: r * Math.sin(phi) * Math.cos(theta),
-      y: r * Math.sin(phi) * Math.sin(theta) * 0.6,
-      z: r * Math.cos(phi),
-      size: 0.12 + Math.random() * 0.1,
-      type: "core", active: true, phase: Math.random() * Math.PI * 2, speed: 0.3 + Math.random() * 0.5
+// ===== 创建全息人脸 =====
+function createHolographicFace() {
+  const group = new THREE.Group()
+
+  // --- 头部轮廓光环 ---
+  const headGeo = new THREE.SphereGeometry(2.2, 64, 48)
+  const headMat = new THREE.MeshBasicMaterial({
+    color: 0x4488ff,
+    transparent: true,
+    opacity: 0.08,
+    wireframe: true,
+    depthWrite: false
+  })
+  headFrame = new THREE.Mesh(headGeo, headMat)
+  group.add(headFrame)
+
+  // 头部外侧光晕
+  const glowGeo = new THREE.SphereGeometry(2.4, 64, 48)
+  const glowMat = new THREE.ShaderMaterial({
+    uniforms: {
+      uTime: { value: 0 },
+      uColor: { value: new THREE.Color(0x4488ff) }
+    },
+    vertexShader: `
+      varying vec3 vNormal; varying vec3 vPosition;
+      void main() {
+        vNormal = normalize(normalMatrix * normal);
+        vPosition = position;
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+      }`,
+    fragmentShader: `
+      varying vec3 vNormal; varying vec3 vPosition;
+      uniform float uTime; uniform vec3 uColor;
+      void main() {
+        float fresnel = pow(1.0 - abs(dot(vNormal, vec3(0.0, 0.0, 1.0))), 3.0);
+        float scanline = sin(vPosition.y * 20.0 + uTime * 2.0) * 0.5 + 0.5;
+        float alpha = fresnel * 0.25 + scanline * 0.05;
+        gl_FragColor = vec4(uColor, alpha);
+      }`,
+    transparent: true,
+    depthWrite: false
+  })
+  headGlow = new THREE.Mesh(glowGeo, glowMat)
+  group.add(headGlow)
+
+  // --- 神经网络光环（3个绕头部旋转的环）---
+  for (let i = 0; i < 3; i++) {
+    const ringGeo = new THREE.TorusGeometry(2.6 + i * 0.15, 0.015, 16, 80)
+    const ringMat = new THREE.MeshBasicMaterial({
+      color: new THREE.Color().setHSL(0.6 + i * 0.08, 0.9, 0.5 + i * 0.2),
+      transparent: true,
+      opacity: 0.6,
+      depthWrite: false
     })
+    const ring = new THREE.Mesh(ringGeo, ringMat)
+    ring.rotation.x = Math.PI / 3 + i * 0.5
+    ring.rotation.y = i * 0.7
+    ring.userData = { speed: 0.3 + i * 0.15, axis: i % 2 === 0 ? 'y' : 'x', baseOpacity: 0.6 }
+    group.add(ring)
+    haloRings.push(ring)
   }
-  for (let i = 0; i < 60; i++) {
-    const theta = Math.random() * Math.PI * 2
-    const r = 3 + Math.random() * 2.5
-    nodes.push({
-      x: r * Math.cos(theta),
-      y: (Math.random() - 0.5) * 4,
-      z: r * Math.sin(theta) * 0.5,
-      size: 0.08 + Math.random() * 0.12,
-      type: "mid", active: Math.random() > 0.2, phase: Math.random() * Math.PI * 2, speed: 0.2 + Math.random() * 0.4
-    })
-  }
-  
-  for (let i = 0; i < 90; i++) {
-    const theta = Math.random() * Math.PI * 2
-    const r = 5.5 + Math.random() * 3
-    nodes.push({
-      x: r * Math.cos(theta),
-      y: (Math.random() - 0.5) * 6,
-      z: (Math.random() - 0.5) * 3,
-      size: 0.05 + Math.random() * 0.1,
-      type: "outer", active: Math.random() > 0.4, phase: Math.random() * Math.PI * 2, speed: 0.1 + Math.random() * 0.3
-    })
-  }
-  
-  const conns = []
-  for (let i = 0; i < nodes.length; i++) {
-    for (let j = i + 1; j < nodes.length; j++) {
-      const dx = nodes[i].x - nodes[j].x, dy = nodes[i].y - nodes[j].y, dz = nodes[i].z - nodes[j].z
-      const dist = Math.sqrt(dx * dx + dy * dy + dz * dz)
-      if (dist < 4 && Math.random() > 0.85) {
-        conns.push({ from: nodes[i], to: nodes[j], dist, active: Math.random() > 0.3, phase: Math.random() * Math.PI * 2 })
-      }
+
+  // --- 左眼 ---
+  const eyeGeo = new THREE.SphereGeometry(0.35, 32, 32)
+  const eyeMat = new THREE.MeshBasicMaterial({
+    color: 0xffffff,
+    transparent: true,
+    opacity: 0.95,
+    depthWrite: false
+  })
+  leftEye = new THREE.Mesh(eyeGeo, eyeMat)
+  leftEye.position.set(-0.6, 0.3, 1.8)
+  group.add(leftEye)
+
+  // 左眼瞳孔
+  const pupilGeo = new THREE.SphereGeometry(0.18, 16, 16)
+  const pupilMat = new THREE.MeshBasicMaterial({ color: 0x112244 })
+  leftPupil = new THREE.Mesh(pupilGeo, pupilMat)
+  leftPupil.position.z = 0.22
+  leftEye.add(leftPupil)
+
+  // 左眼光环
+  const eyeRingGeo = new THREE.TorusGeometry(0.38, 0.02, 16, 32)
+  const eyeRingMat = new THREE.MeshBasicMaterial({ color: 0x88bbff, transparent: true, opacity: 0.7, depthWrite: false })
+  const leftEyeRing = new THREE.Mesh(eyeRingGeo, eyeRingMat)
+  leftEye.add(leftEyeRing)
+
+  // --- 右眼 ---
+  rightEye = new THREE.Mesh(eyeGeo.clone(), eyeMat.clone())
+  rightEye.position.set(0.6, 0.3, 1.8)
+  group.add(rightEye)
+
+  rightPupil = new THREE.Mesh(pupilGeo.clone(), pupilMat.clone())
+  rightPupil.position.z = 0.22
+  rightEye.add(rightPupil)
+
+  const rightEyeRing = new THREE.Mesh(eyeRingGeo.clone(), eyeRingMat.clone())
+  rightEye.add(rightEyeRing)
+
+  // --- 嘴巴 ---
+  mouthGroup = new THREE.Group()
+  mouthGroup.position.set(0, -0.5, 2.0)
+
+  // 上唇
+  const mouthTopGeo = new THREE.TorusGeometry(0.5, 0.03, 8, 32, Math.PI)
+  const mouthMat = new THREE.MeshBasicMaterial({ color: 0x88ccff, transparent: true, opacity: 0.8, depthWrite: false })
+  mouthTop = new THREE.Mesh(mouthTopGeo, mouthMat)
+  mouthGroup.add(mouthTop)
+
+  // 下唇
+  const mouthBottomGeo = new THREE.TorusGeometry(0.5, 0.03, 8, 32, Math.PI)
+  mouthBottom = new THREE.Mesh(mouthBottomGeo, mouthMat.clone())
+  mouthBottom.rotation.z = Math.PI
+  mouthGroup.add(mouthBottom)
+
+  group.add(mouthGroup)
+
+  // --- 面部神经网络线 ---
+  for (let i = 0; i < 12; i++) {
+    const pts = []
+    const segments = 30
+    const startAngle = (i / 12) * Math.PI * 2
+    const startR = 2.0
+    const endR = 2.1
+    for (let j = 0; j <= segments; j++) {
+      const t = j / segments
+      const angle = startAngle + t * 0.6
+      const r = startR + Math.sin(t * Math.PI) * 0.3
+      pts.push(new THREE.Vector3(
+        Math.cos(angle) * r,
+        -1.2 + t * 2.0,
+        Math.sin(angle) * r * 0.6
+      ))
     }
+    const lineGeo = new THREE.BufferGeometry().setFromPoints(pts)
+    const lineMat = new THREE.LineBasicMaterial({
+      color: new THREE.Color().setHSL(0.6 + i * 0.03, 0.8, 0.5),
+      transparent: true,
+      opacity: 0.3,
+      depthWrite: false
+    })
+    const line = new THREE.Line(lineGeo, lineMat)
+    line.userData = { phase: i * 0.5, speed: 0.3 + Math.random() * 0.4 }
+    group.add(line)
+    neuralLines.push(line)
   }
-  return { nodes, conns }
+
+  return group
 }
 
+// ===== 初始化场景 =====
 function initScene() {
   const isMobile = window.innerWidth < 768
   const el = container.value
-  const w = el.clientWidth, h = el.clientHeight
-  
+  const w = el.clientWidth
+  const h = el.clientHeight
+
   scene = new THREE.Scene()
-  camera = new THREE.PerspectiveCamera(50, w / h, 0.1, 100)
-  camera.position.set(16, 8, 18)
+
+  camera = new THREE.PerspectiveCamera(45, w / h, 0.1, 100)
+  camera.position.set(0, 0, 8)
 
   renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: "high-performance" })
   renderer.setSize(w, h)
   renderer.setPixelRatio(isMobile ? 1 : Math.min(window.devicePixelRatio, 2))
   renderer.toneMapping = THREE.ACESFilmicToneMapping
-  renderer.toneMappingExposure = 1.2
+  renderer.toneMappingExposure = 1.3
   el.appendChild(renderer.domElement)
 
-  
+  // 后期处理
   composer = new EffectComposer(renderer)
   composer.addPass(new RenderPass(scene, camera))
-  const bloomPass = new UnrealBloomPass(new THREE.Vector2(w, h), isMobile ? 0.3 : 0.6, 0.2, isMobile ? 0.05 : 0.1)
+  const bloomPass = new UnrealBloomPass(new THREE.Vector2(w, h), 0.5, 0.3, 0.2)
   composer.addPass(bloomPass)
 
-  controls = new OrbitControls(camera, renderer.domElement)
-  controls.enableDamping = true
-  controls.dampingFactor = 0.06
-  controls.autoRotate = true
-  controls.autoRotateSpeed = 0.8
-  controls.minDistance = 5
-  controls.maxDistance = 35
-  controls.target.set(0, 0, 0)
-
-  
-  const ambient = new THREE.AmbientLight(0x222244, 0.8)
-  scene.add(ambient)
-  const dirLight = new THREE.DirectionalLight(0x8888ff, 1.5)
-  dirLight.position.set(8, 15, 10)
-  scene.add(dirLight)
-  const rimLight = new THREE.DirectionalLight(0x13c2c2, 0.8)
-  rimLight.position.set(-10, -5, -8)
-  scene.add(rimLight)
-
-  
+  // 星空背景
   const starsGeo = new THREE.BufferGeometry()
-  const starCount = 4000
+  const starCount = 3000
   const positions = new Float32Array(starCount * 3)
   const starColors = new Float32Array(starCount * 3)
-  const starSizes = new Float32Array(starCount)
   for (let i = 0; i < starCount; i++) {
-    positions[i * 3] = (Math.random() - 0.5) * 100
-    positions[i * 3 + 1] = (Math.random() - 0.5) * 100
-    positions[i * 3 + 2] = (Math.random() - 0.5) * 100
-    const c = new THREE.Color().setHSL(0.65 + Math.random() * 0.15, 0.6, 0.3 + Math.random() * 0.4)
-    starColors[i * 3] = c.r; starColors[i * 3 + 1] = c.g; starColors[i * 3 + 2] = c.b
-    starSizes[i] = 0.02 + Math.random() * 0.08
+    const theta = Math.random() * Math.PI * 2
+    const phi = Math.acos(2 * Math.random() - 1)
+    const r = 12 + Math.random() * 20
+    positions[i * 3] = r * Math.sin(phi) * Math.cos(theta)
+    positions[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta)
+    positions[i * 3 + 2] = r * Math.cos(phi)
+    const c = new THREE.Color().setHSL(0.6 + Math.random() * 0.15, 0.4, 0.2 + Math.random() * 0.5)
+    starColors[i * 3] = c.r
+    starColors[i * 3 + 1] = c.g
+    starColors[i * 3 + 2] = c.b
   }
-  starsGeo.setAttribute("position", new THREE.BufferAttribute(positions, 3))
-  starsGeo.setAttribute("color", new THREE.BufferAttribute(starColors, 3))
-  starsGeo.setAttribute("size", new THREE.BufferAttribute(starSizes, 1))
-  const starsMat = new THREE.PointsMaterial({ size: 0.06, vertexColors: true, transparent: true, opacity: 0.8, blending: THREE.AdditiveBlending, depthWrite: false })
+  starsGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3))
+  starsGeo.setAttribute('color', new THREE.BufferAttribute(starColors, 3))
+  const starsMat = new THREE.PointsMaterial({
+    size: 0.05,
+    vertexColors: true,
+    transparent: true,
+    opacity: 0.9,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false
+  })
   scene.add(new THREE.Points(starsGeo, starsMat))
 
-  
-  const coreGeo = new THREE.IcosahedronGeometry(0.8, 3)
-  const coreMat = new THREE.MeshPhongMaterial({
-    color: 0x667eea, emissive: 0x3344aa, emissiveIntensity: 0.5,
-    shininess: 100, transparent: true, opacity: 0.95
-  })
-  core = new THREE.Mesh(coreGeo, coreMat)
-  scene.add(core)
-  
-  // AI之眼 — 内核心
-  const pupilGeo = new THREE.SphereGeometry(0.25, 32, 32)
-  const pupilMat = new THREE.MeshBasicMaterial({ color: 0xffffff })
-  const pupil = new THREE.Mesh(pupilGeo, pupilMat)
-  pupil.name = 'aiPupil'
-  scene.add(pupil)
+  // 环境光
+  scene.add(new THREE.AmbientLight(0x222244, 0.5))
 
-  
-  const glowGeo = new THREE.IcosahedronGeometry(1.2, 2)
-  const glowMat = new THREE.MeshBasicMaterial({
-    color: 0x667eea, transparent: true, opacity: 0.12, wireframe: true
-  })
-  coreGlow = new THREE.Mesh(glowGeo, glowMat)
-  scene.add(coreGlow)
+  // 全息人脸
+  const face = createHolographicFace()
+  scene.add(face)
 
-  for (let i = 0; i < 3; i++) {
-    const ringGeo = new THREE.TorusGeometry(1.8 + i * 0.6, 0.02, 16, 48)
-    const ringMat = new THREE.MeshBasicMaterial({
-      color: i === 0 ? 0x667eea : i === 1 ? 0x13c2c2 : 0x7c3aed,
-      transparent: true, opacity: 0.25 - i * 0.05
+  // 漂浮粒子
+  const pGeo = new THREE.SphereGeometry(0.04, 4, 4)
+  for (let i = 0; i < 60; i++) {
+    const pMat = new THREE.MeshBasicMaterial({
+      color: new THREE.Color().setHSL(0.55 + Math.random() * 0.2, 0.9, 0.6),
+      transparent: true,
+      opacity: 0,
+      depthWrite: false
     })
-    const ring = new THREE.Mesh(ringGeo, ringMat)
-    ring.rotation.x = Math.PI / 3 + i * 0.4
-    ring.rotation.y = i * 0.8
-    scene.add(ring)
-    dataStreams.push({ mesh: ring, speed: 0.2 + i * 0.1, axis: i % 2 === 0 ? "y" : "x" })
-  }
-
-  
-  for (let i = 0; i < 4; i++) {
-    const pts = []
-    const segments = 40
-    const radius = 2.8 + i * 0.5
-    for (let j = 0; j <= segments; j++) {
-      const t = j / segments * Math.PI * 2
-      pts.push(new THREE.Vector3(
-        Math.cos(t) * radius,
-        Math.sin(t * 3 + i) * 0.6,
-        Math.sin(t) * radius
-      ))
+    const p = new THREE.Mesh(pGeo, pMat)
+    p.position.set(
+      (Math.random() - 0.5) * 10,
+      (Math.random() - 0.5) * 10,
+      (Math.random() - 0.5) * 6
+    )
+    p.userData = {
+      life: Math.random(),
+      speed: 0.2 + Math.random() * 0.5,
+      baseX: p.position.x,
+      baseY: p.position.y,
+      baseZ: p.position.z,
+      amplitude: 0.3 + Math.random() * 0.8
     }
-    const geo = new THREE.BufferGeometry().setFromPoints(pts)
-    const mat = new THREE.LineBasicMaterial({
-      color: i % 2 === 0 ? 0x667eea : 0x13c2c2,
-      transparent: true, opacity: 0.08 + i * 0.02
-    })
-    const line = new THREE.Line(geo, mat)
-    scene.add(line)
-    brainWaves.push({ mesh: line, speed: 0.3 + i * 0.1, phase: i * 0.8, amplitude: 0.6 + i * 0.2 })
+    scene.add(p)
+    ambientParticles.push(p)
   }
 
-  
+  // 鼠标追踪
   raycaster = new THREE.Raycaster()
   mouse = new THREE.Vector2()
-  const net = generateOrganicNetwork()
+}
 
-  const nodeColors = { core: 0x667eea, mid: 0x13c2c2, outer: 0x7c3aed }
-  const nodeEmissive = { core: 0x3344aa, mid: 0x0d9488, outer: 0x5b21b6 }
-
-  net.nodes.forEach((n, idx) => {
-    const color = n.active ? nodeColors[n.type] : 0x222244
-    const size = n.active ? n.size : n.size * 0.5
-    const geo = new THREE.SphereGeometry(size, 12, 12)
-    const mat = new THREE.MeshPhongMaterial({
-      color, emissive: n.active ? nodeEmissive[n.type] : 0x000000,
-      emissiveIntensity: n.active ? 0.3 : 0,
-      transparent: true, opacity: n.active ? 0.9 : 0.2,
-      shininess: 60
-    })
-    const mesh = new THREE.Mesh(geo, mat)
-    mesh.position.set(n.x, n.y, n.z)
-    mesh.userData = { index: idx, type: n.type, name: `神经元#${idx + 1}`, typeName: n.type === "core" ? "鏍稿績" : n.type === "mid" ? "处理层" : "感知层" }
-    scene.add(mesh)
-    nodes.push(mesh)
-  })
-
-  
-  connectionCount.value = net.conns.length
-  net.conns.forEach((c) => {
-    if (!c.active) return
-    const from = new THREE.Vector3(c.from.x, c.from.y, c.from.z)
-    const to = new THREE.Vector3(c.to.x, c.to.y, c.to.z)
-    const mid = new THREE.Vector3(
-      (from.x + to.x) / 2 + (Math.random() - 0.5) * 0.5,
-      (from.y + to.y) / 2 + (Math.random() - 0.5) * 0.5,
-      (from.z + to.z) / 2 + (Math.random() - 0.5) * 0.5
-    )
-    const curve = new THREE.QuadraticBezierCurve3(from, mid, to)
-    const pts = curve.getPoints(16)
-    const geo = new THREE.BufferGeometry().setFromPoints(pts)
-    const mat = new THREE.LineBasicMaterial({
-      color: 0x667eea, transparent: true, opacity: 0.04 + Math.random() * 0.06
-    })
-    const line = new THREE.Line(geo, mat)
-    scene.add(line)
-    connections.push(line)
-
-    
-    if (Math.random() > 0.6) {
-      const pGeo = new THREE.SphereGeometry(0.03, 6, 6)
-      const pMat = new THREE.MeshBasicMaterial({ color: 0x88ccff, transparent: true, opacity: 0.6 })
-      const particle = new THREE.Mesh(pGeo, pMat)
-      particle.userData = { curve, progress: Math.random(), speed: 0.2 + Math.random() * 0.4 }
-            scene.add(particle)
-      energyParticles.push(particle)
-    }
-  })
-  
-  // 智能体粒子 — 从核心喷出的"思维"粒子
-  const thoughtGeo = new THREE.SphereGeometry(0.08, 4, 4)
-  for (let i = 0; i < 40; i++) {
-    const mat = new THREE.MeshBasicMaterial({ color: new THREE.Color().setHSL(0.6 + Math.random() * 0.2, 0.8, 0.6), transparent: true, opacity: 0 })
-    const particle = new THREE.Mesh(thoughtGeo, mat)
-    particle.position.set(0, 0, 0)
-    particle.life = 0
-    scene.add(particle)
-    thoughtParticles.push(particle)
-  }
-  
-  // 能量波纹环
-  for (let i = 0; i < 3; i++) {
-    const ringGeo = new THREE.TorusGeometry(1, 0.02, 16, 64)
-    const ringMat = new THREE.MeshBasicMaterial({ color: new THREE.Color().setHSL(0.6 + i * 0.1, 0.9, 0.5 + i * 0.15), transparent: true, opacity: 0.3 })
-    const ring = new THREE.Mesh(ringGeo, ringMat)
-    ring.rotation.x = Math.PI / 2 + i * 0.5
-    ring.userData = { speed: 0.5 + i * 0.3 }
-    ring.material.opacity = 0.1
-    ring.scale.set(0.5, 0.5, 0.5)
-    scene.add(ring)
-    energyRings.push(ring)
-  }
-  }
-
+// ===== 动画循环 =====
 function animate() {
   animFrameId = requestAnimationFrame(animate)
-  const t = clock.getElapsedTime()
-  const delta = clock.getDelta()
 
-  
-  core.rotation.x += 0.003
-  core.rotation.y += 0.005
-  const thinkingBoost = window._brainThinking ? 2.5 : 1; const heartbeat = 1 + 0.12 * Math.sin(t * 1.5 * thinkingBoost)
-  core.scale.set(heartbeat, heartbeat, heartbeat)
-  core.material.emissiveIntensity = 0.4 + 0.5 * Math.sin(t * 1.5)
-  
-  // AI之眼 — 四处观察
-  const p = scene.getObjectByName('aiPupil')
-  if (p) {
-    p.position.x = Math.sin(t * 0.7) * 0.15
-    p.position.y = Math.cos(t * 0.5) * 0.1
-    p.position.z = Math.cos(t * 0.6) * 0.15
-    const ps = 1 + 0.1 * Math.sin(t * 2)
-    p.scale.set(ps, ps, ps)
+  const t = clock.getElapsedTime()
+  const speakingBoost = speaking.value ? 2.5 : 1
+
+  // 更新全息着色器时间
+  if (headGlow?.material?.uniforms) {
+    headGlow.material.uniforms.uTime.value = t
   }
 
-  
-  coreGlow.rotation.x += 0.002
-  coreGlow.rotation.z += 0.003
-  coreGlow.material.opacity = 0.08 + 0.06 * Math.sin(t * 1.2)
+  // 头部缓慢旋转
+  headFrame.rotation.y += 0.002
+  headFrame.rotation.x = Math.sin(t * 0.3) * 0.05
 
-  
-  dataStreams.forEach((s, i) => {
-    if (s.axis === "y") s.mesh.rotation.y += s.speed * 0.01
-    else s.mesh.rotation.x += s.speed * 0.01
-    s.mesh.material.opacity = 0.15 + 0.1 * Math.sin(t * s.speed + i)
+  // 光晕跟随
+  headGlow.rotation.y = headFrame.rotation.y
+  headGlow.rotation.x = headFrame.rotation.x
+
+  // 光环旋转
+  haloRings.forEach(ring => {
+    const s = ring.userData.speed * speakingBoost
+    if (ring.userData.axis === 'y') ring.rotation.y += s * 0.01
+    else ring.rotation.x += s * 0.01
+    ring.material.opacity = ring.userData.baseOpacity + Math.sin(t * s) * 0.15
   })
 
-  
-  brainWaves.forEach((bw) => {
-    const positions = bw.mesh.geometry.attributes.position
-    if (!positions) return
-    const array = positions.array
-    const count = positions.count
-    const radius = 2.8 + brainWaves.indexOf(bw) * 0.5
-    for (let i = 0; i < count; i++) {
-      const progress = i / count * Math.PI * 2
-      const wave = Math.sin(progress * 3 + t * bw.speed + bw.phase) * bw.amplitude
-      const angle = progress + t * bw.speed * 0.1
-      array[i * 3] = Math.cos(angle) * (radius + wave * 0.3)
-      array[i * 3 + 1] = Math.sin(progress * 3 + t * bw.speed + bw.phase) * bw.amplitude
-      array[i * 3 + 2] = Math.sin(angle) * (radius + wave * 0.3)
-    }
-    positions.needsUpdate = true
+  // 眼睛追踪鼠标
+  const eyeTargetX = mouseTarget.x * 0.15
+  const eyeTargetY = mouseTarget.y * 0.1
+  leftPupil.position.x += (eyeTargetX - leftPupil.position.x) * 0.1
+  leftPupil.position.y += (eyeTargetY - leftPupil.position.y) * 0.1
+  rightPupil.position.x += (eyeTargetX - rightPupil.position.x) * 0.1
+  rightPupil.position.y += (eyeTargetY - rightPupil.position.y) * 0.1
+
+  // 眨眼
+  const blinkCycle = Math.sin(t * 0.3)
+  const blink = blinkCycle > 0.95 ? (blinkCycle - 0.95) * 20 : 1
+  leftEye.scale.y = blink
+  rightEye.scale.y = blink
+
+  // 嘴巴动画（说话时开合）
+  if (speaking.value) {
+    const mouthOpen = 0.1 + Math.abs(Math.sin(t * 8)) * 0.25 + Math.abs(Math.sin(t * 13)) * 0.15
+    mouthTop.position.y = mouthOpen
+    mouthBottom.position.y = -mouthOpen
+    mouthGroup.children.forEach(m => {
+      m.material.opacity = 0.6 + Math.abs(Math.sin(t * 8)) * 0.4
+    })
+  } else {
+    const breathe = Math.sin(t * 0.8) * 0.02
+    mouthTop.position.y += (breathe - mouthTop.position.y) * 0.1
+    mouthBottom.position.y += (-breathe - mouthBottom.position.y) * 0.1
+  }
+
+  // 神经网络线脉冲
+  neuralLines.forEach((line, i) => {
+    line.material.opacity = 0.15 + Math.sin(t * line.userData.speed + line.userData.phase) * 0.15 + (speaking.value ? 0.2 : 0)
   })
 
-  
-  nodes.forEach((n, i) => {
-    const breathe = 1 + 0.06 * Math.sin(t * 0.6 + i * 0.2)
-    n.scale.set(breathe, breathe, breathe)
-    if (n === selectedNode) {
-      n.material.emissiveIntensity = 0.6 + 0.4 * Math.sin(t * 2)
-    }
+  // 漂浮粒子
+  ambientParticles.forEach(p => {
+    p.userData.life += p.userData.speed * 0.005
+    if (p.userData.life > 1) p.userData.life = 0
+    const l = p.userData.life
+    p.material.opacity = Math.sin(l * Math.PI) * 0.6
+    p.position.x = p.userData.baseX + Math.sin(t * 0.5 + l * 4) * p.userData.amplitude
+    p.position.y = p.userData.baseY + Math.cos(t * 0.7 + l * 3) * p.userData.amplitude
+    p.position.z = p.userData.baseZ + Math.sin(t * 0.6 + l * 2) * p.userData.amplitude * 0.5
   })
 
-  
-  energyParticles.forEach((p) => {
-    p.userData.progress += 0.005 * p.userData.speed
-    if (p.userData.progress > 1) p.userData.progress = 0
-    const pt = p.userData.curve.getPoint(p.userData.progress)
-    p.position.copy(pt)
-    p.material.opacity = 0.3 + 0.5 * Math.sin(p.userData.progress * Math.PI)
-    const s = 1 + 0.5 * Math.sin(p.userData.progress * Math.PI)
-    p.scale.set(s, s, s)
-  })
+  // 相机微动
+  camera.position.x = Math.sin(t * 0.15) * 0.3 + mouseTarget.x * 0.4
+  camera.position.y = Math.cos(t * 0.2) * 0.2 - mouseTarget.y * 0.3
+  camera.lookAt(0, 0, 0)
 
-    // 智能体粒子流 — 从核心向外喷射
-  thoughtParticles.forEach((p, i) => {
-    p.life -= (window._brainThinking ? 0.012 : 0.003)
-    if (p.life <= 0) {
-      p.position.set(
-        (Math.random() - 0.5) * 0.3,
-        (Math.random() - 0.5) * 0.3,
-        (Math.random() - 0.5) * 0.3
-      )
-      p.life = 1
-      p.material.opacity = 0
-    }
-    p.position.y += 0.02 * (1 - p.life)
-    p.position.x += (Math.random() - 0.5) * 0.01
-    p.material.opacity = Math.sin(p.life * Math.PI) * 0.8
-    const s = 0.3 + p.life * 0.7
-    p.scale.set(s, s, s)
-  })
-  
-  // 能量波纹 — 周期性外扩
-  energyRings.forEach((ring, i) => {
-    const ringSpeed = (window._brainSpeaking ? 2.5 : 1) * ring.userData.speed; ring.scale.x += 0.003 * ringSpeed
-    ring.scale.y += 0.003 * ring.userData.speed
-    ring.scale.z += 0.003 * ring.userData.speed
-    ring.material.opacity = Math.max(0, ring.material.opacity - (window._brainSpeaking ? 0.001 : 0.002))
-    if (ring.scale.x > 8 || ring.material.opacity <= 0) {
-      ring.scale.set(0.5, 0.5, 0.5)
-      ring.material.opacity = 0.6
-    }
-  })
-
-  controls.update()
   composer.render()
 }
 
+// ===== 鼠标事件 =====
 function onMouseMove(e) {
   const rect = container.value.getBoundingClientRect()
-  mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1
-  mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1
-  raycaster.setFromCamera(mouse, camera)
-  const intersects = raycaster.intersectObjects(nodes)
-  if (intersects.length > 0) {
-    const obj = intersects[0].object
-    hoveredNode.value = `${obj.userData.name} (${obj.userData.typeName})`
-    container.value.style.cursor = "pointer"
-    obj.material.emissiveIntensity = 0.8
-  } else {
-    hoveredNode.value = ""
-    container.value.style.cursor = "default"
-    nodes.forEach(n => { if (n !== selectedNode) n.material.emissiveIntensity = 0.3 })
-  }
+  mouseTarget.x = ((e.clientX - rect.left) / rect.width) * 2 - 1
+  mouseTarget.y = -((e.clientY - rect.top) / rect.height) * 2 + 1
 }
 
-function onClick(e) {
-  raycaster.setFromCamera(mouse, camera)
-  const intersects = raycaster.intersectObjects(nodes)
-  if (intersects.length > 0) {
-    const obj = intersects[0].object
-    selectedNode = selectedNode === obj ? null : obj
-  } else {
-    selectedNode = null
-  }
-}
-
+// ===== 响应式 =====
 function resize() {
   if (!container.value) return
-  const w = container.value.clientWidth, h = container.value.clientHeight
+  const w = container.value.clientWidth
+  const h = container.value.clientHeight
   camera.aspect = w / h
   camera.updateProjectionMatrix()
   renderer.setSize(w, h)
   composer.setSize(w, h)
 }
 
+// ===== 全局事件监听 =====
+function onBrainSpeaking() { speaking.value = true; setTimeout(() => { speaking.value = false }, 2500) }
+
 onMounted(() => {
+  clock = new THREE.Clock()
   initScene()
   animate()
-  window.addEventListener("resize", resize)
-  container.value.addEventListener("mousemove", onMouseMove)
-  container.value.addEventListener("click", onClick)
-  container.value.addEventListener("dblclick", () => { window.dispatchEvent(new CustomEvent('brain:openChat')) })
-  window._brainThinking = false; window._brainSpeaking = false; window.addEventListener('brain:thinking', (e) => { window._brainThinking = e.detail !== false; if (!window._brainThinking) { setTimeout(() => { window._brainThinking = false }, 500) } })
-  window.addEventListener('brain:speaking', () => { window._brainSpeaking = true; setTimeout(() => { window._brainSpeaking = false }, 2000) })
-  window.addEventListener('brain:idle', () => { window._brainThinking = false; window._brainSpeaking = false })
+
+  container.value.addEventListener('mousemove', onMouseMove)
+  window.addEventListener('resize', resize)
+  window.addEventListener('brain:speaking', onBrainSpeaking)
 })
+
 onBeforeUnmount(() => {
   cancelAnimationFrame(animFrameId)
+  container.value?.removeEventListener('mousemove', onMouseMove)
+  window.removeEventListener('resize', resize)
+  window.removeEventListener('brain:speaking', onBrainSpeaking)
   renderer?.dispose()
   composer?.dispose()
-  window.removeEventListener("resize", resize)
-  if (container.value) {
-    container.value.removeEventListener("mousemove", onMouseMove)
-    container.value.removeEventListener("click", onClick)
-  }
 })
 </script>
 
 <style scoped>
-.nn3d-container { position: absolute; inset: 0;
-  width: 100%; height: 100%; min-height: 400px; border-radius: 16px; overflow: hidden;
+.nn3d-container {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
   background: radial-gradient(ellipse at center, #0a0d2a 0%, #050816 100%);
-  position: relative; cursor: default;
+  cursor: pointer;
+}
+.nn3d-container canvas {
+  display: block;
 }
 .nn-overlay {
-  position: absolute; top: 0; left: 0; right: 0; z-index: 10;
-  display: flex; justify-content: space-between; align-items: flex-start;
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  pointer-events: none;
 }
 .nn-status {
-  font-size: 11px; padding: 6px 14px; margin: 12px; border-radius: 20px;
-  background: rgba(102,126,234,0.15); backdrop-filter: blur(8px);
-  color: rgba(255,255,255,0.8); border: 1px solid rgba(102,126,234,0.2);
-  letter-spacing: 0.5px;
+  font-size: 13px;
+  color: rgba(150, 200, 255, 0.8);
+  text-shadow: 0 0 12px rgba(100, 150, 255, 0.5);
+  letter-spacing: 3px;
 }
 .nn-info {
-  font-size: 11px; padding: 6px 14px; margin: 12px; border-radius: 20px;
-  background: rgba(0,0,0,0.4); backdrop-filter: blur(8px);
-  color: rgba(255,255,255,0.6);
+  font-size: 11px;
+  color: rgba(100, 200, 255, 0.6);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
 }
 </style>

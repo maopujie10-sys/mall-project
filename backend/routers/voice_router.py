@@ -1,123 +1,118 @@
-"""语音对话 WebSocket -- 实时音频->STT->LLM->TTS"""
-import json, base64, asyncio
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Depends, Query
+"""实时语音对话 API — WebSocket STT→LLM→TTS"""
+import json, base64, io, wave, asyncio
+from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Depends, UploadFile, File
+from pydantic import BaseModel
 from tools.logger import get_logger
 from auth import verify_token
 
 router = APIRouter(prefix="/agent/voice", tags=["Voice"])
 logger = get_logger("voice")
 
+class TTSRequest(BaseModel):
+    text: str
+    voice: str = "alloy"
+
+@router.post("/tts")
+async def text_to_speech(req: TTSRequest, _=Depends(verify_token)):
+    """文字转语音"""
+    try:
+        from agents.multi_model import ModelRouter
+        import httpx
+        api_key = ModelRouter.get_key("openai")
+        if api_key:
+            async with httpx.AsyncClient(timeout=30) as client:
+                resp = await client.post("https://api.openai.com/v1/audio/speech", json={
+                    "model": "tts-1", "input": req.text, "voice": req.voice
+                }, headers={"Authorization": f"Bearer {api_key}"})
+                if resp.status_code == 200:
+                    audio_b64 = base64.b64encode(resp.content).decode()
+                    return {"ok": True, "audio": audio_b64, "format": "mp3"}
+        return {"ok": False, "error": "TTS服务不可用"}
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+@router.post("/stt")
+async def speech_to_text(file: UploadFile = File(...), _=Depends(verify_token)):
+    """语音转文字 STT"""
+    try:
+        audio_bytes = await file.read()
+        from agents.multi_model import ModelRouter
+        import httpx
+        api_key = ModelRouter.get_key("openai")
+        if api_key:
+            async with httpx.AsyncClient(timeout=60) as client:
+                resp = await client.post("https://api.openai.com/v1/audio/transcriptions", data={
+                    "model": "whisper-1", "language": "zh"
+                }, files={"file": (file.filename or "audio.webm", audio_bytes, file.content_type or "audio/webm")}, headers={"Authorization": f"Bearer {api_key}"})
+                if resp.status_code == 200:
+                    data = resp.json()
+                    return {"ok": True, "text": data.get("text", ""), "language": data.get("language", "zh")}
+        # 回退: DeepSeek暂不支持STT, 返回提示
+        return {"ok": False, "error": "STT需要OpenAI API Key,请在后台配置"}
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
 @router.websocket("/ws")
 async def voice_websocket(ws: WebSocket):
-    """实时语音对话WebSocket"""
+    """WebSocket 实时语音对话"""
     await ws.accept()
     logger.info("语音WebSocket已连接")
-    
     try:
         while True:
             data = await ws.receive_json()
             msg_type = data.get("type", "")
-            
-            if msg_type == "ping":
-                await ws.send_json({"type": "pong"})
-                continue
-            
-            if msg_type == "voice":
-                audio_b64 = data.get("audio_b64", "")
-                fmt = data.get("fmt", "webm")
-                
-                # 状态: 正在处理
-                await ws.send_json({"type": "status", "message": "正在识别语音..."})
-                
-                # 调用AI处理语音消息
-                try:
-                    from routers.agent_chat import agent_chat, ChatRequest
-                    # 将音频作为文本消息处理(浏览器端做STT)
-                    text = data.get("text", "")
-                    if not text:
-                        # 没有文本则用音频base64作为消息
-                        text = "[语音消息]"
-                    
-                    await ws.send_json({"type": "user_text", "text": text})
-                    await ws.send_json({"type": "status", "message": "AI思考中..."})
-                    
-                    result = await agent_chat(ChatRequest(message=text, history=[]))
-                    reply = result.get("response", "收到")
-                    
-                    await ws.send_json({"type": "reply_text", "text": reply})
-                    await ws.send_json({"type": "status", "message": "生成语音..."})
-                    
-                    # 生成TTS音频(使用浏览器端speechSynthesis,这里返回文本即可)
-                    await ws.send_json({
-                        "type": "voice_reply",
-                        "text": reply,
-                        "audio_b64": None  # 浏览器端用speechSynthesis朗读
-                    })
-                    
-                except Exception as e:
-                    logger.error(f"语音处理错误: {e}")
-                    await ws.send_json({"type": "error", "message": f"处理失败: {str(e)}"})
-            
+            if msg_type == "stt":
+                audio_b64 = data.get("audio", "")
+                if audio_b64:
+                    try:
+                        audio_bytes = base64.b64decode(audio_b64)
+                        from agents.multi_model import ModelRouter
+                        import httpx
+                        api_key = ModelRouter.get_key("openai")
+                        if api_key:
+                            async with httpx.AsyncClient(timeout=60) as client:
+                                resp = await client.post("https://api.openai.com/v1/audio/transcriptions", data={"model": "whisper-1", "language": "zh"}, files={"file": ("audio.webm", audio_bytes, "audio/webm")}, headers={"Authorization": f"Bearer {api_key}"})
+                                if resp.status_code == 200:
+                                    text = resp.json().get("text", "")
+                                    await ws.send_json({"type": "stt_result", "text": text})
+                                    # 继续LLM
+                                    if text:
+                                        from agents.multi_model import ModelRouter
+                                        llm_resp = ModelRouter.smart_chat(messages=[{"role":"user","content":text}], mode="fast")
+                                        reply = llm_resp.get("content", "") if isinstance(llm_resp, dict) else str(llm_resp)
+                                        await ws.send_json({"type": "llm", "text": reply})
+                                        # TTS
+                                        tts_key = ModelRouter.get_key("openai")
+                                        if tts_key:
+                                            async with httpx.AsyncClient(timeout=30) as client2:
+                                                tts_resp = await client2.post("https://api.openai.com/v1/audio/speech", json={"model":"tts-1","input":reply[:500],"voice":"alloy"}, headers={"Authorization":f"Bearer {tts_key}"})
+                                                if tts_resp.status_code == 200:
+                                                    tts_b64 = base64.b64encode(tts_resp.content).decode()
+                                                    await ws.send_json({"type":"tts","audio":tts_b64})
+                        else:
+                            await ws.send_json({"type":"error","text":"语音服务需要OpenAI API Key"})
+                    except Exception as e:
+                        await ws.send_json({"type":"error","text":str(e)})
             elif msg_type == "text":
-                # 纯文本模式
                 text = data.get("text", "")
-                await ws.send_json({"type": "user_text", "text": text})
-                await ws.send_json({"type": "status", "message": "AI思考中..."})
-                
-                try:
-                    from routers.agent_chat import agent_chat, ChatRequest
-                    result = await agent_chat(ChatRequest(message=text, history=[]))
-                    reply = result.get("response", "收到")
-                    await ws.send_json({"type": "reply_text", "text": reply})
-                    await ws.send_json({"type": "voice_reply", "text": reply, "audio_b64": None})
-                except Exception as e:
-                    await ws.send_json({"type": "error", "message": str(e)})
-                    
+                if text:
+                    from agents.multi_model import ModelRouter
+                    resp = ModelRouter.smart_chat(messages=[{"role":"user","content":text}], mode="fast")
+                    reply = resp.get("content","") if isinstance(resp,dict) else str(resp)
+                    await ws.send_json({"type":"llm","text":reply})
+                    tts_key = ModelRouter.get_key("openai")
+                    if tts_key:
+                        import httpx
+                        async with httpx.AsyncClient(timeout=30) as client:
+                            tts_resp = await client.post("https://api.openai.com/v1/audio/speech", json={"model":"tts-1","input":reply[:500],"voice":"alloy"}, headers={"Authorization":f"Bearer {tts_key}"})
+                            if tts_resp.status_code == 200:
+                                tts_b64 = base64.b64encode(tts_resp.content).decode()
+                                await ws.send_json({"type":"tts","audio":tts_b64})
     except WebSocketDisconnect:
         logger.info("语音WebSocket断开")
     except Exception as e:
-        logger.error(f"语音WebSocket异常: {e}")
+        logger.error(f"语音WebSocket错误: {e}")
         try:
-            await ws.send_json({"type": "error", "message": str(e)})
+            await ws.send_json({"type":"error","text":str(e)})
         except:
             pass
-
-# ===== ????? =====
-from pydantic import BaseModel
-
-class MultimodalRequest(BaseModel):
-    video_path: str = ""
-    video_url: str = ""
-    audio_path: str = ""
-    audio_url: str = ""
-    image_b64: str = ""
-    questions: list = None
-    frames: int = 5
-
-@router.post("/video/analyze")
-async def analyze_video(req: MultimodalRequest, _=Depends(verify_token)):
-    """????: ?????+AI????+????"""
-    from tools.multimodal_engine import multimodal_engine
-    return await multimodal_engine.analyze_video(
-        video_path=req.video_path,
-        video_url=req.video_url,
-        frames=req.frames
-    )
-
-@router.post("/audio/analyze")
-async def analyze_audio(req: MultimodalRequest, _=Depends(verify_token)):
-    """????: ???+????"""
-    from tools.multimodal_engine import multimodal_engine
-    return await multimodal_engine.analyze_audio(
-        audio_path=req.audio_path,
-        audio_url=req.audio_url
-    )
-
-@router.post("/image/deep-understand")
-async def deep_image_understand(req: MultimodalRequest, _=Depends(verify_token)):
-    """??????: ??+OCR+????+??"""
-    from tools.multimodal_engine import multimodal_engine
-    return await multimodal_engine.deep_image_understanding(
-        image_b64=req.image_b64,
-        questions=req.questions
-    )
