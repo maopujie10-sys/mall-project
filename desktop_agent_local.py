@@ -1,4 +1,4 @@
-﻿"""Desktop Agent v1 -- AI控制电脑
+"""Desktop Agent v1 -- AI控制电脑
 通过WebSocket接收服务器指令, pyautogui+pynput执行真实桌面操作
 运行方式: python desktop_agent_local.py --server wss://你的服务器/ws/desktop --token YOUR_TOKEN
 """
@@ -307,7 +307,7 @@ class DesktopAgent:
         retry_count = 0
         while self.running:
             try:
-                self.ws = await websockets.connect(self.server_url, additional_headers=headers, ping_interval=30, ping_timeout=10)
+                self.ws = await websockets.connect(self.server_url, extra_headers=headers, ping_interval=30, ping_timeout=10)
                 print(f"[DesktopAgent] ✅ 已连接 {self.server_url} | Agent: {self.agent_id}")
                 retry_count = 0
                 await self._message_loop()

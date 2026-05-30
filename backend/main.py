@@ -1,5 +1,21 @@
-﻿"""TikTokMall AI Agent 鎬绘帶 - FastAPI :9000"""
+"""TikTokMall AI Agent 鎬绘帶 - FastAPI :9000"""
 from routers.code_deploy import router as code_deploy_router
+from routers.mall_tools import router as mall_tools_router
+from routers.rotation_panel import router as rotation_panel_router
+from routers.server_panel import router as server_panel_router
+from routers.scraper import router as scraper_router
+from routers.alert import router as alert_router
+from routers.rollback_center import router as rollback_center_router
+from routers.site_check import router as site_check_router
+from routers.system_mode import router as system_mode_router
+from routers.health import router as health_router
+from routers.notify import router as notify_router
+from routers.restart import router as restart_router
+from routers.self_service import router as self_service_router
+from routers.sql_executor import router as sql_executor_router
+from routers.status import router as status_router
+from routers.task_queue import router as task_queue_router
+from routers.virtual import router as virtual_router
 from routers.emergency_panel import router as emergency_panel_router
 from routers.prompt_templates import router as prompt_templates_router
 from routers.semantic_search import router as semantic_search_router
@@ -88,7 +104,7 @@ app.add_middleware(
     allow_headers=["X-Agent-Token", "Content-Type", "Authorization"],
 )
 
-app.include_router(auth_router, prefix="/auth")
+app.include_router(auth_router)
 
 # === 璺敱妯″潡 ===
 from routers.vector_router import router as vector_router
@@ -143,8 +159,6 @@ from routers.gateway_router import router as gateway_router
 from routers.omni_router import router as omni_router
 
 # === 鍏ㄨ兘AI鍗囩骇 v5 ===
-from routers.vision_router import router as vision_router
-from routers.video_call_router import router as video_call_router
 from routers.voice_router import router as voice_router
 from routers.tools_router import router as tools_router
 from routers.advanced_ai import router as advanced_router
@@ -159,7 +173,8 @@ from routers.abtest_router import router as abtest_router
 from routers.security_scan_router import router as security_scan_router
 from routers.capabilities_router import router as capabilities_router
 from routers.key_router import router as key_router
-from routers.wechat_admin import router as wechat_admin_router`nfrom routers.ecommerce_ai import router as ecommerce_ai_router
+from routers.wechat_admin import router as wechat_admin_router
+from routers.ecommerce_ai import router as ecommerce_ai_router
 # === 钀藉湴椤佃疆鍊?===
 ROTATION_DOMAINS = [
     "chxhx.eu.cc", "drrgr.eu.cc", "drrimrf.eu.cc", "drriiu.eu.cc",
@@ -207,41 +222,41 @@ app.include_router(docker_panel.router, prefix="/docker-panel")
 app.include_router(virtual_data_router, prefix="/virtual-data")
 app.include_router(mall_brain_router, prefix="/mall-brain")
 app.include_router(evolution_router, prefix="/evolution")
-app.include_router(friday_router, prefix="/friday")
+app.include_router(friday_router)
 app.include_router(devops_agent_router.router, prefix="/devops")
 app.include_router(memory_router.router, prefix="/memory")
 app.include_router(heal_router.router, prefix="/heal")
 app.include_router(ssl_router, prefix="/ssl")
-app.include_router(scheduler_api_router, prefix="/scheduler_api")
-app.include_router(weekly_report_router, prefix="/weekly_report")
+app.include_router(scheduler_api_router)
+app.include_router(weekly_report_router)
 app.include_router(log_manager_router, prefix="/logs")
 app.include_router(archive_router, prefix="/archive")
 app.include_router(customer_ai_router, prefix="/customer")
 app.include_router(obs_router, prefix="/obs")
-app.include_router(db_router, prefix="/db")
-app.include_router(audit_router, prefix="/audit")
-app.include_router(network_router, prefix="/network")
-app.include_router(settings_router, prefix="/settings")
+app.include_router(db_router)
+app.include_router(audit_router)
+app.include_router(network_router)
+app.include_router(settings_router)
 app.include_router(dashboard_router, prefix="/dashboard")
 app.include_router(daily_report.router)
-app.include_router(notification_router, prefix="/notification")
-app.include_router(phone_router, prefix="/phone")
+app.include_router(notification_router)
+app.include_router(phone_router)
 app.include_router(image_router, prefix="/image")
 app.include_router(translate_router, prefix="/translate")
 app.include_router(excel_router, prefix="/excel")
 app.include_router(auto_reply_router, prefix="/auto-reply")
 app.include_router(order_alert_router, prefix="/order-alert")
-app.include_router(plugin_router, prefix="/plugins")
+app.include_router(plugin_router)
 app.include_router(lifeform_router, prefix="/lifeform")
-app.include_router(workflow_router, prefix="/workflow")
-app.include_router(user_auth_router, prefix="/user_auth")
+app.include_router(workflow_router)
+app.include_router(user_auth_router)
 app.include_router(inspect_router, prefix="/inspect")
 app.include_router(knowledge_router, prefix="/knowledge")
 app.include_router(competitor_router, prefix="/competitor")
 app.include_router(vector_router, prefix="/vector")
 app.include_router(backup_router, prefix="/backup")
 app.include_router(copy_router, prefix="/copy")
-app.include_router(github_router, prefix="/github")
+app.include_router(github_router)
 # 鏂板璺敱
 app.include_router(pricing_router, prefix="/pricing")
 app.include_router(description_router, prefix="/description")
@@ -249,11 +264,9 @@ app.include_router(fraud_router, prefix="/fraud")
 app.include_router(trace_router, prefix="/trace")
 app.include_router(ws_router)
 app.include_router(gateway_router, prefix="/api")
-app.include_router(omni_router, prefix="/omni")
-app.include_router(vision_router, prefix="/vision")
-app.include_router(video_call_router, prefix="/video")
+app.include_router(omni_router)
 app.include_router(voice_router, prefix="/voice")
-app.include_router(tools_router, prefix="/tools")
+app.include_router(tools_router)
 app.include_router(advanced_router, prefix="/advanced")
 app.include_router(collab_router, prefix="/collab")
 app.include_router(rag_router, prefix="/rag")
@@ -262,16 +275,33 @@ app.include_router(recommend_router, prefix="/recommend")
 app.include_router(content_router, prefix="/content")
 app.include_router(sentiment_router, prefix="/sentiment")
 app.include_router(text2sql_router, prefix="/text2sql")
-app.include_router(abtest_router, prefix="/abtest")
-app.include_router(security_scan_router, prefix="/security_scan")
-app.include_router(capabilities_router, prefix="/capabilities")
+app.include_router(abtest_router)
+app.include_router(security_scan_router)
+app.include_router(capabilities_router)
 app.include_router(key_router, prefix="/keys")
-app.include_router(wechat_admin_router, prefix="/agent/wechat")`napp.include_router(ecommerce_ai_router, prefix="/ecommerce_ai")
+app.include_router(wechat_admin_router, prefix="/agent/wechat")
+app.include_router(ecommerce_ai_router)
 
 app.include_router(code_deploy_router, prefix="/agent/deploy")
 app.include_router(emergency_panel_router, prefix="/agent/emergency")
-app.include_router(prompt_templates_router, prefix="/prompt_templates")
-app.include_router(semantic_search_router, prefix="/semantic_search")
+app.include_router(prompt_templates_router)
+app.include_router(semantic_search_router)
+app.include_router(mall_tools_router)  # /tools/mall - 商城管理
+app.include_router(rotation_panel_router, prefix="/rotation")
+app.include_router(server_panel_router, prefix="/server")
+app.include_router(scraper_router, prefix="/agent/scraper")
+app.include_router(alert_router, prefix="/alert")
+app.include_router(rollback_center_router, prefix="/rollback")
+app.include_router(site_check_router, prefix="/site")
+app.include_router(system_mode_router, prefix="/system")
+app.include_router(notify_router, prefix="/agent/notify")
+app.include_router(self_service_router, prefix="/self-service")
+app.include_router(sql_executor_router, prefix="/sql-executor")
+app.include_router(task_queue_router, prefix="/tasks")
+app.include_router(virtual_router, prefix="/agent/docker")
+app.include_router(restart_router, prefix="/agent/restart")
+app.include_router(status_router, prefix="/agent/status")
+app.include_router(health_router, prefix="/agent/health-check")
 @app.get("/agent", include_in_schema=False)
 async def dashboard():
     from fastapi.responses import HTMLResponse
