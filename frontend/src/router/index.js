@@ -75,6 +75,7 @@ const routes = [
       { path: 'user-manager', name: 'UserManager', component: () => import('@/views/UserManager.vue'), meta: { title: '用户管理' } },
       { path: 'advanced-ai', name: 'AdvancedAI', component: () => import('@/views/AdvancedAI.vue'), meta: { title: '高级AI' } },
       { path: 'ai-tools', name: 'AITools', component: () => import('@/views/AITools.vue'), meta: { title: 'AI工具箱' } },
+      { path: 'wechat-config', name: 'WechatConfig', component: () => import('@/views/WechatConfig.vue'), meta: { title: '微信管理' } },
       { path: 'ecommerce-ai', name: 'EcommerceAI', component: () => import('@/views/EcommerceAI.vue'), meta: { title: 'AI电商引擎' } },    ],
   },
 ]

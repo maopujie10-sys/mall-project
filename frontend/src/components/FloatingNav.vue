@@ -118,6 +118,7 @@ const categories = reactive([
       { to: 'key-manager', icon: '\u{1F511}', label: 'API Key\u7BA1\u7406' },
       { to: 'user-manager', icon: '\u{1F465}', label: '\u7528\u6237\u7BA1\u7406' },
       { to: 'phone', icon: '\u{1F4DE}', label: 'AI\u7535\u8BDD\u52A9\u7406' },
+      { to: 'wechat-config', icon: '\u{1F4F1}', label: '\u5FAE\u4FE1\u7BA1\u7406' },
       { to: 'tasks', icon: '\u{1F4CB}', label: '\u4EFB\u52A1\u4E2D\u5FC3' },
       { to: 'self-service', icon: '\u{1F527}', label: '\u81EA\u52A9\u670D\u52A1' },
     ]
