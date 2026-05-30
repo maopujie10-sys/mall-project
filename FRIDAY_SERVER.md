@@ -16,6 +16,17 @@
 
 ## 最近改动
 
+### 2026-05-30 13:50: 商城全栈修复 — Data Dubbo恢复 + 落地页路由 (f4dcb77)
+
+**修复：**
+1. **data webapp Dubbo提供者恢复：** Redis故障期间data webapp启动失败(PartyLoadCacheService初始化时Redis连接池获取失败)。Redis恢复后touch web.xml触发Tomcat重部署，ZK中LogService/UserDataService/SysLogService等20+个提供者已注册(dubbo://172.18.0.1:20880)。管理员登录+仪表盘正常。
+2. **落地页/api/r路由跳转修复：** Nginx landing.conf 3个server块添加 `location = /api/r`，按flag参数302重定向(pc→/pc/, spc→/seller/, ldy→/promote/)。落地页所有CTA按钮恢复正常。
+3. **Redis持久化临时修复：** `stop-writes-on-bgsave-error no` 绕过RDB失败阻塞写入。
+
+**文件变更：** deploy/landing.conf (+24行，3个server块各添/api/r规则)
+
+**采集状态：** 4 shard运行中，PPK=80，总计约164个类目完成。
+
 ### 2026-05-30 13:00: 部署修复4连 — Agent成功启动 (71e3294)
 
 **问题链：**
