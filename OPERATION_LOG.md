@@ -1,5 +1,21 @@
 # 操作日志
 
+## 2026-05-30 09:27 — 修复8个文件中文编码污染 + Docker重建
+
+**原因：** 电脑端compact格式转换导致UTF-8中文双重编码(mojibake)，4个Python文件语法错误阻塞Agent启动。
+
+**修复文件：**
+- `backend/tools/predict_engine.py` — U+20AC非法字符 → 重写全部中文
+- `backend/tools/recommend_engine.py` — invalid syntax → 重写全部中文
+- `backend/tools/abtest_engine.py` — unterminated string → 重写全部中文
+- `backend/tools/key_manager.py` — U+FF04全角＄ → 重写全部中文
+- `backend/routers/notify.py` — 4处字符串乱码修复
+- `backend/routers/weekly_report.py` — 1处注释乱码修复
+- `backend/routers/autopilot.py` — 12处乱码 → 重写整个文件
+- `frontend/src/views/KeyManager.vue` — 模板标签损坏 → 重写整个模板
+
+**验证：** 全部Python compile通过，Docker构建成功，容器正常运行。
+
 ## 2026-05-29 11:18 — 采集管道重构：评论+SKU变体+断点续传+OOM防护
 
 **原因：** 上次全速采集导致内存耗尽、服务器重启。重构为慢速+内存安全版本。
