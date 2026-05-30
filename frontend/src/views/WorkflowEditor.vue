@@ -41,14 +41,14 @@ import { agentApi } from '@/api/index'
 
 const workflowName = ref(''); const canvasRef = ref(null); const nodes = ref([]); const edges = ref([])
 const nodeTypes = {
-  trigger: { label: '', color: '#4CAF50', inputs: 0, outputs: 1 },
+  trigger: { label: 'Trigger', color: '#4CAF50', inputs: 0, outputs: 1 },
   ai_task: { label: 'AI', color: '#2196F3', inputs: 1, outputs: 1 },
-  data_fetch: { label: '', color: '#FF9800', inputs: 1, outputs: 1 },
-  data_process: { label: '', color: '#9C27B0', inputs: 1, outputs: 1 },
-  condition: { label: '', color: '#F44336', inputs: 1, outputs: 2 },
-  notification: { label: '', color: '#00BCD4', inputs: 1, outputs: 1 },
-  action: { label: '', color: '#795548', inputs: 1, outputs: 1 },
-  end: { label: '', color: '#607D8B', inputs: 1, outputs: 0 },
+  data_fetch: { label: 'Data Fetch', color: '#FF9800', inputs: 1, outputs: 1 },
+  data_process: { label: 'Process', color: '#9C27B0', inputs: 1, outputs: 1 },
+  condition: { label: 'Condition', color: '#F44336', inputs: 1, outputs: 2 },
+  notification: { label: 'Notify', color: '#00BCD4', inputs: 1, outputs: 1 },
+  action: { label: 'Action', color: '#795548', inputs: 1, outputs: 1 },
+  end: { label: 'End', color: '#607D8B', inputs: 1, outputs: 0 },
 }
 let connectingFrom = null
 

@@ -1,4 +1,4 @@
-''"AI -- ''"
+"""AI Workflow Engine - Template-based and AI-generated workflow execution"""
 import asyncio, json, re
 from datetime import datetime
 from state import state
@@ -7,63 +7,62 @@ from tools.registry import registry
 class WorkflowEngine:
     workflows = {}
 
-    
     TEMPLATES = {
-        '': {"steps": [
-            {"tool":"product.list","params":{"status":"low_stock"},"desc":''},
-            {"tool":"product.batch_offline","params":{},"desc":'',"risk":"L3"},
-            {"tool":"report.generate","params":{"type":"offline_report"},"desc":''},
+        "Clear Dead Inventory": {"steps": [
+            {"tool":"product.list","params":{"status":"low_stock"},"desc":"Find low-stock products"},
+            {"tool":"product.batch_offline","params":{},"desc":"Batch offline dead products","risk":"L3"},
+            {"tool":"report.generate","params":{"type":"offline_report"},"desc":"Generate offline report"},
         ]},
-        '': {"steps": [
-            {"tool":"db.backup","params":{},"desc":'',"risk":"L3"},
-            {"tool":"file.archive","params":{"type":"backup"},"desc":''},
+        "Daily Backup Routine": {"steps": [
+            {"tool":"db.backup","params":{},"desc":"Backup database","risk":"L3"},
+            {"tool":"file.archive","params":{"type":"backup"},"desc":"Archive backup files"},
         ]},
-        '': {"steps": [
-            {"tool":"git.pull","params":{},"desc":'',"risk":"L3"},
-            {"tool":"docker.build","params":{"service":"all"},"desc":'',"risk":"L3"},
-            {"tool":"docker.deploy","params":{"service":"all"},"desc":'',"risk":"L4"},
+        "Deploy Pipeline": {"steps": [
+            {"tool":"git.pull","params":{},"desc":"Pull latest code","risk":"L3"},
+            {"tool":"docker.build","params":{"service":"all"},"desc":"Build Docker images","risk":"L3"},
+            {"tool":"docker.deploy","params":{"service":"all"},"desc":"Deploy services","risk":"L4"},
         ]},
-        '': {"steps": [
-            {"tool":"server.status","params":{},"desc":''},
-            {"tool":"docker.ps","params":{},"desc":"Docker"},
-            {"tool":"nginx.status","params":{},"desc":"Nginx"},
-            {"tool":"db.status","params":{},"desc":''},
-            {"tool":"rotation.domains","params":{},"desc":''},
+        "System Health Check": {"steps": [
+            {"tool":"server.status","params":{},"desc":"Check server status"},
+            {"tool":"docker.ps","params":{},"desc":"Check Docker containers"},
+            {"tool":"nginx.status","params":{},"desc":"Check Nginx status"},
+            {"tool":"db.status","params":{},"desc":"Check database status"},
+            {"tool":"rotation.domains","params":{},"desc":"Check domain rotation"},
         ]},
-        "SSL": {"steps": [
-            {"tool":"ssl.status","params":{},"desc":"SSL"},
-            {"tool":"ssl.renew","params":{},"desc":'',"risk":"L3"},
+        "SSL Certificate Renewal": {"steps": [
+            {"tool":"ssl.status","params":{},"desc":"Check SSL status"},
+            {"tool":"ssl.renew","params":{},"desc":"Renew SSL certificate","risk":"L3"},
         ]},
-        '': {"steps": [
-            {"tool":"docker.prune","params":{},"desc":"Docker","risk":"L2"},
-            {"tool":"disk.cleanup","params":{"keep_days":7},"desc":"/"},
+        "System Cleanup": {"steps": [
+            {"tool":"docker.prune","params":{},"desc":"Prune Docker resources","risk":"L2"},
+            {"tool":"disk.cleanup","params":{"keep_days":7},"desc":"Clean old temp files"},
         ]},
-        '': {"steps": [
-            {"tool":"server.metrics","params":{},"desc":''},
-            {"tool":"docker.scale","params":{"replicas":3},"desc":'',"risk":"L4"},
+        "Auto Scale Up": {"steps": [
+            {"tool":"server.metrics","params":{},"desc":"Get server metrics"},
+            {"tool":"docker.scale","params":{"replicas":3},"desc":"Scale to 3 replicas","risk":"L4"},
         ]},
     }
 
     @classmethod
     async def parse_and_execute(cls, user_input: str) -> dict:
-        ''",''"
-        # 1. 
+        """Parse user intent and execute matching workflow template"""
+        # 1. Match template by keyword
         matched = None
         for keyword, wf in cls.TEMPLATES.items():
-            if keyword in user_input:
-                matched = {"name": f"{keyword}", "steps": wf["steps"]}
+            if keyword.lower() in user_input.lower():
+                matched = {"name": keyword, "steps": wf["steps"]}
                 break
         
-        # 2. ,AI
+        # 2. No match - try AI plan generation
         if not matched:
             try:
                 from tools.ai_client import call_ai
                 tools_list = [{"name": t.name, "desc": t.description, "risk": t.risk_level} 
                              for t in registry.list_all()[:30]]
-                ai_prompt = f''": {json.dumps(tools_list,ensure_ascii=False)}
-: {user_input}
-JSON: {{"name":'',"steps":[{{"tool":'',"params":{{}},"desc":'',"risk":"L1-L4"}}]}}
-JSON.''"
+                ai_prompt = f"""Available tools: {json.dumps(tools_list, ensure_ascii=False)}
+User request: {user_input}
+Generate a JSON workflow plan: {{"name":"plan name","steps":[{{"tool":"tool_name","params":{{}},"desc":"step desc","risk":"L1-L4"}}]}}
+Output ONLY the JSON."""
                 ai_plan = await call_ai([{"role":"user","content":ai_prompt}], max_tokens=400, temperature=0.2)
                 try:
                     j = json.loads(re.search(r'\{[^{}]*"steps"[^{}]*\}', ai_plan, re.DOTALL).group())
@@ -74,10 +73,10 @@ JSON.''"
                 pass
 
             if not matched:
-                return {"ok": False, "error": ",: ////SSL//", 
+                return {"ok": False, "error": "No matching workflow found",
                         "suggestions": list(cls.TEMPLATES.keys())}
         
-        # 3. ID
+        # 3. Execute steps
         wf_id = f"wf_{int(datetime.now().timestamp())}"
         cls.workflows[wf_id] = matched
         
@@ -87,7 +86,7 @@ JSON.''"
             try:
                 tool_result = await registry.execute(step["tool"], **(step.get("params", {})))
                 step_result["status"] = "done" if tool_result.get("ok", False) else "failed"
-                step_result["result"] = tool_result.get("result", tool_result.get("error", ''))
+                step_result["result"] = tool_result.get("result", tool_result.get("error", ""))
             except Exception as e:
                 step_result["status"] = "failed"
                 step_result["error"] = str(e)[:200]
@@ -108,8 +107,8 @@ JSON.''"
     
     @classmethod
     def get_status(cls, wf_id: str) -> dict:
-        ''''''
+        """Get workflow execution status"""
         wf = cls.workflows.get(wf_id)
         if not wf:
-            return {"ok": False, "error": ''}
+            return {"ok": False, "error": "Workflow not found"}
         return {"ok": True, "workflow": wf}

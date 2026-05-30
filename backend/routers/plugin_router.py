@@ -11,55 +11,48 @@ router = APIRouter(prefix="/agent/plugins", tags=["Plugins"])
 
 # =====  =====
 SKILLS_MARKETPLACE = [
-    
-    {"id":"server-monitor","name":" ","version":"2.0","desc":"CPU////","author":"Friday","category":'',"stars":95,"downloads":1280,"tags":["server","monitor","cpu","memory"]},
-    {"id":"docker-manager","name":" Docker","version":"1.5","desc":":///","author":"Friday","category":'',"stars":88,"downloads":960,"tags":["docker","container"]},
-    {"id":"nginx-manager","name":" Nginx","version":"1.3","desc":"Nginx//reload/","author":"Friday","category":'',"stars":82,"downloads":720,"tags":["nginx","web"]},
-    {"id":"site-checker","name":" ","version":"1.1","desc":"/SSL","author":"Friday","category":'',"stars":76,"downloads":540,"tags":["site","ssl","uptime"]},
-    {"id":"alert-center","name":" ","version":"1.2","desc":"://","author":"Friday","category":'',"stars":79,"downloads":610,"tags":["alert","notify"]},
-
-    
-    {"id":"auto-backup","name":" ","version":"1.0","desc":"/","author":"Friday","category":'',"stars":91,"downloads":1100,"tags":["backup","cron"]},
-    {"id":"scraper-engine","name":" ","version":"2.1","desc":"7","author":"Friday","category":'',"stars":86,"downloads":890,"tags":["scraper","product","ebay"]},
-    {"id":"auto-pilot","name":" ","version":"1.2","desc":"AI","author":"Friday","category":'',"stars":83,"downloads":670,"tags":["ops","auto","cron"]},
-    {"id":"cron-manager","name":" ","version":"1.0","desc":"Cron/","author":"Friday","category":'',"stars":78,"downloads":520,"tags":["cron","schedule","timer"]},
-    {"id":"batch-ops","name":" ","version":"1.1","desc":"//","author":"Friday","category":'',"stars":74,"downloads":430,"tags":["batch","bulk"]},
-
-    
-    {"id":"security-center","name":" ","version":"2.0","desc":"IP//","author":"Friday","category":'',"stars":90,"downloads":1050,"tags":["security","firewall","audit"]},
-    {"id":"approval-flow","name":" ","version":"1.3","desc":"/","author":"Friday","category":'',"stars":85,"downloads":780,"tags":["approval","review","audit"]},
-    {"id":"risk-scanner","name":" ","version":"1.1","desc":'',"author":"Friday","category":'',"stars":77,"downloads":490,"tags":["risk","scan","vulnerability"]},
-    {"id":"emergency-kill","name":" ","version":"1.0","desc":"AI/","author":"Friday","category":'',"stars":93,"downloads":1350,"tags":["emergency","kill","safety"]},
-
-    
-    {"id":"mall-manager","name":" ","version":"3.0","desc":"142////","author":"Friday","category":'',"stars":97,"downloads":2100,"tags":["mall","shop","ecommerce"]},
-    {"id":"mall-brain","name":" AI","version":"1.5","desc":"AI//","author":"Friday","category":'',"stars":89,"downloads":920,"tags":["ai","brain","analysis"]},
-    {"id":"customer-service","name":" ","version":"1.2","desc":"//","author":"Friday","category":'',"stars":80,"downloads":580,"tags":["cs","ticket","support"]},
-    {"id":"marketing-tools","name":" ","version":"1.0","desc":"//","author":"Friday","category":'',"stars":75,"downloads":450,"tags":["marketing","coupon","promo"]},
-    {"id":"data-analytics","name":" ","version":"1.1","desc":'',"author":"Friday","category":'',"stars":81,"downloads":630,"tags":["analytics","report","stats"]},
-
-    # AI/
-    {"id":"ai-chat","name":" AI","version":"2.0","desc":"AI(Ollama/DeepSeek/Claude/GPT)","author":"Friday","category":"AI","stars":96,"downloads":3200,"tags":["chat","ai","llm"]},
-    {"id":"vision-agent","name":" ","version":"1.2","desc":"OCR//","author":"Friday","category":"AI","stars":84,"downloads":"760","tags":["ocr","vision","image"]},
-    {"id":"trend-agent","name":" ","version":"1.1","desc":"YouTube/X/Google","author":"Friday","category":"AI","stars":79,"downloads":540,"tags":["trend","social","hot"]},
-    {"id":"code-agent","name":" ","version":"1.0","desc":"///API","author":"Friday","category":"AI","stars":73,"downloads":390,"tags":["code","dev","api"]},
-    {"id":"playwright-agent","name":" ","version":"1.3","desc":"Playwright//","author":"Friday","category":"AI","stars":87,"downloads":840,"tags":["playwright","browser","crawl"]},
-
-    # /
-    {"id":"rotation-system","name":" ","version":"2.0","desc":"//","author":"Friday","category":'',"stars":92,"downloads":1150,"tags":["rotation","domain","dns"]},
-    {"id":"ssl-manager","name":" SSL","version":"1.2","desc":"//(acme.sh)","author":"Friday","category":'',"stars":86,"downloads":880,"tags":["ssl","cert","https"]},
-    {"id":"dns-manager","name":" DNS","version":"0.8","desc":"DNS","author":"Friday","category":'',"stars":68,"downloads":320,"tags":["dns","domain","resolve"]},
-
-    
-    {"id":"db-manager","name":" ","version":"1.1","desc":"MySQL///","author":"Friday","category":'',"stars":83,"downloads":710,"tags":["db","mysql","sql"]},
-    {"id":"log-viewer","name":" ","version":"1.0","desc":'',"author":"Friday","category":'',"stars":76,"downloads":480,"tags":["log","debug","trace"]},
-    {"id":"file-manager","name":" ","version":"1.0","desc":"///","author":"Friday","category":'',"stars":80,"downloads":560,"tags":["file","upload","manager"]},
-    {"id":"api-explorer","name":" API","version":"0.9","desc":"API","author":"Friday","category":'',"stars":72,"downloads":410,"tags":["api","docs","swagger"]},
-    {"id":"git-manager","name":" Git","version":"0.7","desc":"Git//","author":"Friday","category":'',"stars":65,"downloads":280,"tags":["git","version","code"]},
-
-    
-    {"id":"team-collab","name":" ","version":"0.6","desc":"/","author":"Friday","category":'',"stars":60,"downloads":210,"tags":["team","user","collab"]},
-    {"id":"skill-devkit","name":" ","version":"0.5","desc":"/SDK","author":"Friday","category":'',"stars":55,"downloads":150,"tags":["sdk","devkit","extend"]},
+    # Server Ops
+    {"id":"server-monitor","name":"Server Monitor","version":"2.0","desc":"CPU/RAM/Disk real-time monitoring dashboard","author":"Friday","category":"Server Ops","stars":95,"downloads":1280,"tags":["server","monitor","cpu","memory"]},
+    {"id":"docker-manager","name":"Docker Manager","version":"1.5","desc":"Container start/stop/logs/image management","author":"Friday","category":"Server Ops","stars":88,"downloads":960,"tags":["docker","container"]},
+    {"id":"nginx-manager","name":"Nginx Manager","version":"1.3","desc":"Nginx config editor, reload, log viewer","author":"Friday","category":"Server Ops","stars":82,"downloads":720,"tags":["nginx","web"]},
+    {"id":"site-checker","name":"Site Checker","version":"1.1","desc":"Website uptime/SSL certificate monitoring","author":"Friday","category":"Server Ops","stars":76,"downloads":540,"tags":["site","ssl","uptime"]},
+    {"id":"alert-center","name":"Alert Center","version":"1.2","desc":"Multi-channel alert notification system","author":"Friday","category":"Server Ops","stars":79,"downloads":610,"tags":["alert","notify"]},
+    # Automation
+    {"id":"auto-backup","name":"Auto Backup","version":"1.0","desc":"Scheduled database and file backups","author":"Friday","category":"Automation","stars":91,"downloads":1100,"tags":["backup","cron"]},
+    {"id":"scraper-engine","name":"Scraper Engine","version":"2.1","desc":"7-platform product scraping engine","author":"Friday","category":"Automation","stars":86,"downloads":890,"tags":["scraper","product","ebay"]},
+    {"id":"auto-pilot","name":"Auto Pilot","version":"1.2","desc":"AI-driven automatic operations scheduling","author":"Friday","category":"Automation","stars":83,"downloads":670,"tags":["ops","auto","cron"]},
+    {"id":"cron-manager","name":"Cron Manager","version":"1.0","desc":"Visual Cron job editor and scheduler","author":"Friday","category":"Automation","stars":78,"downloads":520,"tags":["cron","schedule","timer"]},
+    {"id":"batch-ops","name":"Batch Operations","version":"1.1","desc":"Batch product edit/price update/import","author":"Friday","category":"Automation","stars":74,"downloads":430,"tags":["batch","bulk"]},
+    # Security
+    {"id":"security-center","name":"Security Center","version":"2.0","desc":"IP blacklist, firewall rules, audit logs","author":"Friday","category":"Security","stars":90,"downloads":1050,"tags":["security","firewall","audit"]},
+    {"id":"approval-flow","name":"Approval Flow","version":"1.3","desc":"Multi-level approval workflow for operations","author":"Friday","category":"Security","stars":85,"downloads":780,"tags":["approval","review","audit"]},
+    {"id":"risk-scanner","name":"Risk Scanner","version":"1.1","desc":"Vulnerability scan and risk assessment","author":"Friday","category":"Security","stars":77,"downloads":490,"tags":["risk","scan","vulnerability"]},
+    {"id":"emergency-kill","name":"Emergency Kill Switch","version":"1.0","desc":"AI-driven one-click emergency shutdown","author":"Friday","category":"Security","stars":93,"downloads":1350,"tags":["emergency","kill","safety"]},
+    # Mall / E-commerce
+    {"id":"mall-manager","name":"Mall Manager","version":"3.0","desc":"Full mall management: 142 products, orders, customers","author":"Friday","category":"Mall","stars":97,"downloads":2100,"tags":["mall","shop","ecommerce"]},
+    {"id":"mall-brain","name":"Mall Brain AI","version":"1.5","desc":"AI product health analysis and auto-replacement","author":"Friday","category":"Mall","stars":89,"downloads":920,"tags":["ai","brain","analysis"]},
+    {"id":"customer-service","name":"Customer Service","version":"1.2","desc":"Ticket management and auto-reply system","author":"Friday","category":"Mall","stars":80,"downloads":580,"tags":["cs","ticket","support"]},
+    {"id":"marketing-tools","name":"Marketing Tools","version":"1.0","desc":"Coupon, promotion, and campaign manager","author":"Friday","category":"Mall","stars":75,"downloads":450,"tags":["marketing","coupon","promo"]},
+    {"id":"data-analytics","name":"Data Analytics","version":"1.1","desc":"Sales reports, trends, and KPI dashboards","author":"Friday","category":"Mall","stars":81,"downloads":630,"tags":["analytics","report","stats"]},
+    # AI Agents
+    {"id":"ai-chat","name":"AI Chat","version":"2.0","desc":"Multi-model AI chat (Ollama/DeepSeek/Claude/GPT)","author":"Friday","category":"AI","stars":96,"downloads":3200,"tags":["chat","ai","llm"]},
+    {"id":"vision-agent","name":"Vision Agent","version":"1.2","desc":"OCR text recognition and image analysis","author":"Friday","category":"AI","stars":84,"downloads":760,"tags":["ocr","vision","image"]},
+    {"id":"trend-agent","name":"Trend Agent","version":"1.1","desc":"YouTube/X/Google hot trend monitoring","author":"Friday","category":"AI","stars":79,"downloads":540,"tags":["trend","social","hot"]},
+    {"id":"code-agent","name":"Code Agent","version":"1.0","desc":"AI code generation, review, and API scaffolding","author":"Friday","category":"AI","stars":73,"downloads":390,"tags":["code","dev","api"]},
+    {"id":"playwright-agent","name":"Playwright Agent","version":"1.3","desc":"Headless browser automation and scraping","author":"Friday","category":"AI","stars":87,"downloads":840,"tags":["playwright","browser","crawl"]},
+    # Infrastructure
+    {"id":"rotation-system","name":"Rotation System","version":"2.0","desc":"Domain rotation with health checks and failover","author":"Friday","category":"Infrastructure","stars":92,"downloads":1150,"tags":["rotation","domain","dns"]},
+    {"id":"ssl-manager","name":"SSL Manager","version":"1.2","desc":"SSL certificate monitoring and auto-renewal (acme.sh)","author":"Friday","category":"Infrastructure","stars":86,"downloads":880,"tags":["ssl","cert","https"]},
+    {"id":"dns-manager","name":"DNS Manager","version":"0.8","desc":"DNS record management and propagation check","author":"Friday","category":"Infrastructure","stars":68,"downloads":320,"tags":["dns","domain","resolve"]},
+    # Developer Tools
+    {"id":"db-manager","name":"DB Manager","version":"1.1","desc":"MySQL database browser, query, and export","author":"Friday","category":"DevTools","stars":83,"downloads":710,"tags":["db","mysql","sql"]},
+    {"id":"log-viewer","name":"Log Viewer","version":"1.0","desc":"Real-time log streaming and search","author":"Friday","category":"DevTools","stars":76,"downloads":480,"tags":["log","debug","trace"]},
+    {"id":"file-manager","name":"File Manager","version":"1.0","desc":"Server file browser, upload, edit, and delete","author":"Friday","category":"DevTools","stars":80,"downloads":560,"tags":["file","upload","manager"]},
+    {"id":"api-explorer","name":"API Explorer","version":"0.9","desc":"Interactive API documentation and testing tool","author":"Friday","category":"DevTools","stars":72,"downloads":410,"tags":["api","docs","swagger"]},
+    {"id":"git-manager","name":"Git Manager","version":"0.7","desc":"Git repo browser, commit history, and diff viewer","author":"Friday","category":"DevTools","stars":65,"downloads":280,"tags":["git","version","code"]},
+    # Collaboration
+    {"id":"team-collab","name":"Team Collaboration","version":"0.6","desc":"Multi-user workspace and permission management","author":"Friday","category":"Collaboration","stars":60,"downloads":210,"tags":["team","user","collab"]},
+    {"id":"skill-devkit","name":"Skill DevKit","version":"0.5","desc":"Skill development SDK and debugger","author":"Friday","category":"Collaboration","stars":55,"downloads":150,"tags":["sdk","devkit","extend"]},
 ]
 
 # =====  =====

@@ -42,7 +42,7 @@ const installedSkills=computed(()=>skills.value.filter(s=>s.installed))
 
 onMounted(async()=>{
   try{
-    const r=await agentApi.get("/plugins/marketplace")
+    const r=await agentApi.get("/agent/plugins/marketplace")
     if(r?.data?.ok)skills.value=(r.data.plugins||r.data.skills||[]).map(s=>({...s,installed:false,_loading:false}))
   }catch(e){
     // Fallback: 
@@ -59,7 +59,7 @@ onMounted(async()=>{
     ].map(s=>({...s,installed:false,_loading:false}))
   }
   try{
-    const r2=await agentApi.get("/plugins/installed")
+    const r2=await agentApi.get("/agent/plugins/installed/packages")
     if(r2?.data?.ok)installed.value=r2.data.plugins||[]
   }catch(e){}
 })
@@ -67,7 +67,7 @@ onMounted(async()=>{
 async function install(skill){
   skill._loading=true
   try{
-    const r=await agentApi.post("/plugins/install",{name:skill.name})
+    const r=await agentApi.post("/agent/plugins/install",{plugin_id:skill.id})
     if(r?.data?.ok){skill.installed=true;ElMessage.success(` ${skill.display_name}`)}
     else ElMessage.error(r?.data?.error||'')
   }catch(e){ElMessage.error(e.message)}
@@ -76,7 +76,7 @@ async function install(skill){
 async function uninstall(skill){
   skill._loading=true
   try{
-    const r=await agentApi.post("/plugins/uninstall",{name:skill.name})
+    const r=await agentApi.post("/agent/plugins/uninstall",{plugin_id:skill.id})
     if(r?.data?.ok){skill.installed=false;ElMessage.success(` ${skill.display_name}`)}
     else ElMessage.error(r?.data?.error||'')
   }catch(e){ElMessage.error(e.message)}
