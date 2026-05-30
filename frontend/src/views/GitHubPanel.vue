@@ -2,7 +2,7 @@
   <div class="gh-panel">
     <div class="page-header">
       <div><h2>馃悪 GitHub MCP</h2><p>浠撳簱绠＄悊 / Issues / PRs / Actions / 鎻愪氦</p></div>
-      <el-tag :type="configured ? 'success' : 'danger'" size="small">{{ configured ? '宸查厤缃? : '鏈厤缃甌oken' }}</el-tag>
+      <el-tag :type="configured ? 'success' : 'danger'" size="small">{{ configured ? '宸查厤缃' : '鏈厤缃甌oken' }}</el-tag>
     </div>
 
     <el-tabs v-model="tab" type="border-card">

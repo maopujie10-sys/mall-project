@@ -18,7 +18,7 @@
           <el-table-column prop="caller" label="鏉ョ數鍙风爜" width="140" />
           <el-table-column prop="intent" label="鎰忓浘" width="120" />
           <el-table-column prop="duration_sec" label="鏃堕暱(绉?" width="90" />
-          <el-table-column label="鐘舵€?><template #default="{row}"><el-tag :type="row.resolved?'success':'warning'">{{ row.resolved?'宸茶В鍐?:'寰呭鐞? }}</el-tag></template></el-table-column>
+          <el-table-column label="鐘舵€?><template #default="{row}"><el-tag :type="row.resolved?'success':'warning'">{{ row.resolved''宸茶В鍐':'寰呭鐞' }}</el-tag></template></el-table-column>
           <el-table-column prop="note" label="澶囨敞" min-width="150" />
         </el-table>
       </el-tab-pane>

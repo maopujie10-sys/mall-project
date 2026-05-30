@@ -63,7 +63,7 @@
         <el-table-column prop="id" label="寮傚父ID" width="120"/>
         <el-table-column prop="result.action" label="鎿嶄綔"/>
         <el-table-column label="鐘舵€? width="100">
-          <template #default="{row}"><el-tag :type="row.result.fixed ? 'success' : 'danger'" size="small">{{ row.result.fixed ? '宸蹭慨澶? : '澶辫触' }}</el-tag></template>
+          <template #default="{row}"><el-tag :type="row.result.fixed ? 'success' : 'danger'" size="small">{{ row.result.fixed ? '宸蹭慨澶' : '澶辫触' }}</el-tag></template>
         </el-table-column>
       </el-table>
     </el-card>
@@ -82,7 +82,7 @@
         <el-table-column prop="status" label="鐘舵€? width="100">
           <template #default="{row}">
             <el-tag :type="row.status==='resolved'?'success':row.status==='open'?'danger':'warning'" size="small">
-              {{ row.status === 'resolved' ? '宸茶В鍐? : row.status === 'open' ? '寰呭鐞? : '澶勭悊涓? }}
+              {{ row.status === 'resolved' ' '宸茶В鍐' : row.status === 'open' ' '寰呭鐞' : '澶勭悊涓' }}
             </el-tag>
           </template>
         </el-table-column>

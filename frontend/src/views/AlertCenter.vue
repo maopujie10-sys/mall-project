@@ -30,7 +30,7 @@
         <el-table-column prop="source" label="鏉ユ簮" width="80" />
         <el-table-column label="鐘舵€? width="80">
           <template #default="{row}">
-            <el-tag :type="row.resolved ? 'info' : 'danger'" size="small">{{ row.resolved ? '宸茶В鍐? : '鏈В鍐? }}</el-tag>
+            <el-tag :type="row.resolved ? 'info' : 'danger'" size="small">{{ row.resolved ' '宸茶В鍐' : '鏈В鍐' }}</el-tag>
           </template>
         </el-table-column>
         <el-table-column label="鎿嶄綔" width="100">

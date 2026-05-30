@@ -37,7 +37,7 @@
                         <button class="header-btn" @click="toggleVoiceInput" :title="voiceActive ? '鍋滄璇煶' : '璇煶杈撳叆'" :class="{ active: voiceActive }">馃帳</button>
             <button class="header-btn" @click="toggleVoiceCall" :title="voiceCallActive ? '鍏抽棴鏈楄' : '鏈楄鍥炲'" :class="{ active: voiceCallActive }">馃攰</button>
                         <button class="header-btn" @click="toggleExpand" :title="chatExpanded ? '缂╁皬' : '鎵╁ぇ'">
-              {{ chatExpanded ? '鈯? : '鈯? }}
+              {{ chatExpanded ' '鈯' : '鈯' }}
             </button>
             <button class="header-btn" @click="minimizeChat" title="鏈€灏忓寲">鈭</button>
             <button class="header-btn close-btn" @click="closeChat" title="鍏抽棴">脳</button>

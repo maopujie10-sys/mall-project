@@ -47,7 +47,7 @@
         <el-table-column label="鐘舵€? width="90">
           <template #default="{row}">
             <el-tag :type="row.status==='running'?'success':'warning'" size="small">
-              {{ row.status==='running'?'杩愯涓?:'宸叉殏鍋? }}
+              {{ row.status==='running'''杩愯涓':'宸叉殏鍋' }}
             </el-tag>
           </template>
         </el-table-column>

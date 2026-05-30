@@ -46,7 +46,7 @@
                 @click="s.installed ? null : installSkill(s)"
                 :disabled="s.installed || installing === s.id"
                 :loading="installing === s.id"
-              >{{ s.installed ? '鉁?宸插畨瑁? : '馃摜 瀹夎' }}</el-button>
+              >{{ s.installed ? '鉁?宸插畨瑁' : '馃摜 瀹夎' }}</el-button>
             </el-card>
           </el-col>
         </el-row>
@@ -92,7 +92,7 @@
                 :disabled="isCommunityInstalled(s.id) || communityInstalling === s.id"
                 :loading="communityInstalling === s.id"
                 @click="installCommunity(s)"
-              >{{ isCommunityInstalled(s.id) ? '鉁?宸插畨瑁? : '馃摜 瀹夎' }}</el-button>
+              >{{ isCommunityInstalled(s.id) ? '鉁?宸插畨瑁' : '馃摜 瀹夎' }}</el-button>
             </el-card>
           </el-col>
         </el-row>
@@ -114,7 +114,7 @@
           </el-table-column>
           <el-table-column label="鏉ユ簮" width="80">
             <template #default="{row}">
-              <el-tag v-if="row.id" size="small" :type="row._source==='package'?'warning':'default'">{{ row._source==='package'?'鍖?:'鍐呯疆' }}</el-tag>
+              <el-tag v-if="row.id" size="small" :type="row._source==='package'?'warning':'default'">{{ row._source==='package'?'鍖':'鍐呯疆' }}</el-tag>
             </template>
           </el-table-column>
           <el-table-column prop="desc" label="鎻忚堪" min-width="200" show-overflow-tooltip />

@@ -73,7 +73,7 @@
           <div style="display:flex;justify-content:space-between;align-items:center">
             <div><strong>{{ g.main }}</strong><el-tag size="small" style="margin-left:8px">鏉冮噸 {{ g.weight }}</el-tag></div>
             <div style="display:flex;gap:6px">
-              <el-button text size="small" :type="g.enabled!==false?'success':'info'" @click="toggleRotationGroup(g.id)">{{ g.enabled!==false?'宸插惎鐢?:'宸插仠鐢? }}</el-button>
+              <el-button text size="small" :type="g.enabled!==false?'success':'info'" @click="toggleRotationGroup(g.id)">{{ g.enabled!==false''宸插惎鐢':'宸插仠鐢' }}</el-button>
               <el-button text size="small" type="primary" @click="showAddSubDomain(g)">锛?瀛愬煙鍚</el-button>
             </div>
           </div>
