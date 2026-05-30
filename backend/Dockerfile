@@ -8,7 +8,7 @@ WORKDIR /app
 COPY . .
 
 # 彻底清理所有Python文件的UTF-8 BOM（在pip安装前）
-RUN python3 -c "
+RUN python3 << 'PYEOF'
 import os, glob
 count = 0
 for f in glob.glob('/app/**/*.py', recursive=True):
@@ -22,7 +22,7 @@ for f in glob.glob('/app/**/*.py', recursive=True):
     except:
         pass
 print(f'BOM cleaned: {count} files')
-"
+PYEOF
 
 # 安装系统依赖
 RUN apt-get update && apt-get install -y --no-install-recommends \
