@@ -38,9 +38,9 @@ const tab = ref("desc")
 const descName = ref(""); const descCat = ref(""); const descFeatures = ref(""); const descResult = ref("")
 const campName = ref(""); const campDiscount = ref(""); const mktResult = ref("")
 const transText = ref(""); const transLang = ref("en"); const transResult = ref("")
-async function genDesc() { try { const r = await agentApi.post("/agent/content/description", { name: descName.value, category: descCat.value, features: descFeatures.value }); if (r?.data?.ok) descResult.value = r.data.text } catch (e) { ElMessage.error(e.message) } }
-async function genMarketing() { try { const r = await agentApi.post("/agent/content/marketing", { name: campName.value, discount: campDiscount.value }); if (r?.data?.ok) mktResult.value = r.data.text } catch (e) { ElMessage.error(e.message) } }
-async function genTranslate() { try { const r = await agentApi.post("/agent/content/translate", { text: transText.value, target_lang: transLang.value }); if (r?.data?.ok) transResult.value = r.data.text } catch (e) { ElMessage.error(e.message) } }
+async function genDesc() { try { const r = await agentApi.post("/agent/content/description", { name: descName.value, category: descCat.value, features: descFeatures.value }); if (r?.ok) descResult.value = r.text } catch (e) { ElMessage.error(e.message) } }
+async function genMarketing() { try { const r = await agentApi.post("/agent/content/marketing", { name: campName.value, discount: campDiscount.value }); if (r?.ok) mktResult.value = r.text } catch (e) { ElMessage.error(e.message) } }
+async function genTranslate() { try { const r = await agentApi.post("/agent/content/translate", { text: transText.value, target_lang: transLang.value }); if (r?.ok) transResult.value = r.text } catch (e) { ElMessage.error(e.message) } }
 </script>
 <style scoped>
 .page-shell { max-width: 900px; margin: 0 auto; padding: 20px; }

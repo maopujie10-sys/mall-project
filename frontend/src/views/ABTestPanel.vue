@@ -11,5 +11,5 @@
 const expName=ref("");const variantA=ref("对照组");const variantB=ref("实验组");const exps=ref([]);
 async function createExp(){if(!expName.value)return;
 try{const r=await agentApi.post("/agent/abtest/create",{name:expName.value,variants:[variantA.value,variantB.value]});
-if(r?.data?.ok){ElMessage.success("实验创建: "+r.data.exp_id);exps.value.push({exp_id:r.data.exp_id,name:expName.value,status:"running"});expName.value=""}}catch(e){ElMessage.error(e.message)}}</script>
+if(r?.ok){ElMessage.success("实验创建: "+r.exp_id);exps.value.push({exp_id:r.exp_id,name:expName.value,status:"running"});expName.value=""}}catch(e){ElMessage.error(e.message)}}</script>
 <style scoped>.page-shell{max-width:900px;margin:0 auto;padding:20px;}.page-header{margin-bottom:16px;}.page-header h2{font-size:20px;color:#e0e0ff;margin:0;}.page-header p{font-size:12px;color:rgba(255,255,255,0.5);margin:4px 0;}.exp-item{display:flex;justify-content:space-between;padding:10px;background:rgba(102,126,234,0.06);border-radius:8px;margin-bottom:6px;font-size:13px;color:#e0e0e0;}@media(max-width:768px){.page-shell{padding:10px;}}</style>

@@ -67,8 +67,8 @@ const platforms = ref([
 async function loadStatus() {
   try {
     const r = await agentApi.get('/agent/keys/status')
-    if (r?.data?.ok) {
-      const caps = r.data.capabilities || {}
+    if (r?.ok) {
+      const caps = r.capabilities || {}
       if (caps.TELEGRAM_BOT_TOKEN?.ok) {
         platforms.value[0].connected = true
         platforms.value[0].status = 'Bot已连接'
@@ -81,10 +81,10 @@ async function loadStatus() {
   } catch {}
   try {
     const r = await agentApi.get('/agent/memory/stats')
-    if (r?.data?.ok) {
-      platforms.value[0].memoryCount = r.data.telegram || 0
-      platforms.value[1].memoryCount = r.data.wechat || 0
-      platforms.value[2].memoryCount = r.data.local || 0
+    if (r?.ok) {
+      platforms.value[0].memoryCount = r.telegram || 0
+      platforms.value[1].memoryCount = r.wechat || 0
+      platforms.value[2].memoryCount = r.local || 0
     }
   } catch {}
 }

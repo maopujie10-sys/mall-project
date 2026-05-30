@@ -32,11 +32,11 @@ import { ref } from "vue"; import { ElMessage } from "element-plus"; import { ag
 const userId = ref(""); const itemId = ref(""); const userRecs = ref([]); const simItems = ref([])
 async function recUser() {
   if (!userId.value) return
-  try { const r = await agentApi.get("/agent/recommend/for_user/" + userId.value); if (r?.data?.ok) userRecs.value = r.data.items } catch (e) { ElMessage.error(e.message) }
+  try { const r = await agentApi.get("/agent/recommend/for_user/" + userId.value); if (r?.ok) userRecs.value = r.items } catch (e) { ElMessage.error(e.message) }
 }
 async function recSimilar() {
   if (!itemId.value) return
-  try { const r = await agentApi.get("/agent/recommend/similar/" + itemId.value); if (r?.data?.ok) simItems.value = r.data.items } catch (e) { ElMessage.error(e.message) }
+  try { const r = await agentApi.get("/agent/recommend/similar/" + itemId.value); if (r?.ok) simItems.value = r.items } catch (e) { ElMessage.error(e.message) }
 }
 </script>
 <style scoped>

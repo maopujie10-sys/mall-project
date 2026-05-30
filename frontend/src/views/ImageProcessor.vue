@@ -20,7 +20,7 @@
   </div>
 </template>
 <script setup>
-import { ref } from "vue"; import { removeBg, addWatermark, batchProcess } from "@/api/image"
+import { ref } from "vue"; import { ElMessage } from "element-plus"; import { removeBg, addWatermark, batchProcess } from "@/api/image"
 const tab=ref("bg"); const imgUrl=ref(""); const imgFile=ref(null); const bgResult=ref(null)
 const wmUrl=ref(""); const wmText=ref("Friday AI"); const wmPos=ref("bottom-right")
 const batchUrls=ref(""); const batchOp=ref("remove_bg")

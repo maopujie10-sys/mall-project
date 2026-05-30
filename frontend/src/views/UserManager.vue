@@ -14,12 +14,12 @@
 <script setup>
 import {ref,onMounted} from "vue";import {ElMessage,ElMessageBox} from "element-plus";import {agentApi} from "@/api"
 const users=ref([]);const newUser=ref("");const newPass=ref("");const newRole=ref("viewer");const creating=ref(false)
-onMounted(async()=>{try{const r=await agentApi.get("/agent/auth/users");if(r?.data?.ok)users.value=r.data.users}catch(e){}})
+onMounted(async()=>{try{const r=await agentApi.get("/agent/auth/users");if(r?.ok)users.value=r.users}catch(e){}})
 async function createUser(){if(!newUser.value||!newPass.value)return ElMessage.warning("填写完整");creating.value=true
 try{const r=await agentApi.post("/agent/auth/users",{username:newUser.value,password:newPass.value,role:newRole.value})
-if(r?.data?.ok){ElMessage.success("创建成功");users.value.push({username:newUser.value,role:newRole.value,created_at:new Date().toISOString()});newUser.value="";newPass.value=""}}catch(e){ElMessage.error(e.message)}creating.value=false}
+if(r?.ok){ElMessage.success("创建成功");users.value.push({username:newUser.value,role:newRole.value,created_at:new Date().toISOString()});newUser.value="";newPass.value=""}}catch(e){ElMessage.error(e.message)}creating.value=false}
 async function roleAction(uname,cmd){if(cmd==="delete"){try{await ElMessageBox.confirm("确定删除用户 "+uname+"?","确认",{type:"warning"})}catch{return}}
 try{const isDel=cmd==="delete";const r=isDel?await agentApi.delete("/agent/auth/users/"+uname):await agentApi.patch("/agent/auth/users/"+uname+"/role",{role:cmd})
-if(r?.data?.ok){ElMessage.success(isDel?"已删除":"角色已更新");if(isDel)users.value=users.value.filter(u=>u.username!==uname);else{const u=users.value.find(u=>u.username===uname);if(u)u.role=cmd}}}catch(e){ElMessage.error(e.message)}}
+if(r?.ok){ElMessage.success(isDel?"已删除":"角色已更新");if(isDel)users.value=users.value.filter(u=>u.username!==uname);else{const u=users.value.find(u=>u.username===uname);if(u)u.role=cmd}}}catch(e){ElMessage.error(e.message)}}
 </script>
 <style scoped>.page-shell{max-width:900px;margin:0 auto;padding:20px}.page-header{margin-bottom:16px}.page-header h2{font-size:20px;color:#e0e0ff;margin:0}.page-header p{font-size:12px;color:rgba(255,255,255,.5);margin:4px 0}.user-row{display:flex;justify-content:space-between;align-items:center;padding:10px;background:rgba(102,126,234,.06);border-radius:8px;margin-bottom:6px}.user-name{color:#e0e0e0;font-size:14px;font-weight:600}.user-meta{font-size:11px;color:rgba(255,255,255,.4);margin-top:2px}@media(max-width:768px){.page-shell{padding:10px}}</style>

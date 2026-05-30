@@ -23,7 +23,7 @@
   </div>
 </template>
 <script setup>
-import { ref } from "vue"; import { parseExcel, batchPublish, getTemplate } from "@/api/excel"
+import { ref } from "vue"; import { ElMessage } from "element-plus"; import { parseExcel, batchPublish, getTemplate } from "@/api/excel"
 const uploadFile=ref(null); const products=ref([]); const fields=ref([]); const parsing=ref(false); const publishing=ref(false); const autoPricing=ref(true)
 async function doParse(){if(!uploadFile.value)return ElMessage.warning("请选择文件");parsing.value=true;try{const r=await parseExcel(uploadFile.value);if(r.ok){products.value=r.products||[];fields.value=r.fields||[];ElMessage.success(`解析到${r.rows}条商品`)}}catch(e){ElMessage.error(e.message)};parsing.value=false}
 function useSample(){products.value=[{name:"示例商品A",price:"99.00",category:"数码",stock:"100"},{name:"示例商品B",price:"199.00",category:"服饰",stock:"50"}];fields.value=["name","price","category","stock"]}

@@ -48,6 +48,7 @@
 </template>
 <script setup>
 import { ref, onMounted } from "vue"
+import { ElMessage } from "element-plus"
 import { getPhoneStatus, getPhoneLogs, getIVRMenu, simulateCall, getPhoneStats } from "@/api/phone"
 const tab = ref("logs"); const logs = ref([]); const ivrMenu = ref({}); const status = ref({}); const stats = ref({})
 const simulateDialog = ref(false); const simCall = ref({caller:"13800138000",intent:"鍟嗗搧鍜ㄨ",note:""})

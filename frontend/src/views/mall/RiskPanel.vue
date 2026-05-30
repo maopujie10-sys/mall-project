@@ -25,8 +25,8 @@
           <el-table-column prop="status" label="状态" width="80" />
           <el-table-column label="操作" width="160">
             <template #default="{row}">
-              <el-button size="small" link type="success" @click="auditLoan({uuid:row.uuid,approved:true})">通过</el-button>
-              <el-button size="small" link type="danger" @click="auditLoan({uuid:row.uuid,approved:false})">拒绝</el-button>
+              <el-button size="small" link type="success" @click="auditLoanItem({uuid:row.uuid,approved:true})">通过</el-button>
+              <el-button size="small" link type="danger" @click="auditLoanItem({uuid:row.uuid,approved:false})">拒绝</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -37,8 +37,8 @@
           <el-table-column prop="status" label="状态" width="80" />
           <el-table-column label="操作" width="160">
             <template #default="{row}">
-              <el-button size="small" link type="danger" @click="blockDomain({domain:row.domain})">封禁</el-button>
-              <el-button size="small" link type="success" @click="unblockDomain({domain:row.domain})">解封</el-button>
+              <el-button size="small" link type="danger" @click="blockD({domain:row.domain})">封禁</el-button>
+              <el-button size="small" link type="success" @click="unblockD({domain:row.domain})">解封</el-button>
             </template>
           </el-table-column>
         </el-table>

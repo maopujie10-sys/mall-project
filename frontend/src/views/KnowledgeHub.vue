@@ -51,8 +51,8 @@ async function uploadDoc(options) {
   try {
     const form=new FormData();form.append("file",options.file)
     const r=await agentApi.post("/rag/upload",form,{headers:{"Content-Type":"multipart/form-data"}})
-    if(r?.data?.ok){uploadResult.value=`✅ ${r.data.filename} 摄入成功 (${r.data.chunks||0}段)`;ElMessage.success("上传成功")}
-    else uploadResult.value=`❌ ${r?.data?.error||"失败"}`
+    if(r?.ok){uploadResult.value=`✅ ${r.filename} 摄入成功 (${r.chunks||0}段)`;ElMessage.success("上传成功")}
+    else uploadResult.value=`❌ ${r?.error||"失败"}`
   }catch(e){uploadResult.value="❌ "+e.message}
   loading.value=false
 }
@@ -61,14 +61,14 @@ async function askRag() {
   loading.value=true;ragAnswer.value="";ragSources.value=[]
   try {
     const r=await agentApi.post("/rag/ask",{question:question.value,top_k:5})
-    if(r?.data?.ok){ragAnswer.value=r.data.answer?.replace(/\n/g,"<br>");ragSources.value=r.data.sources||[]}
-    else ragAnswer.value=r?.data?.error||"无结果"
+    if(r?.ok){ragAnswer.value=r.answer?.replace(/\n/g,"<br>");ragSources.value=r.sources||[]}
+    else ragAnswer.value=r?.error||"无结果"
   }catch(e){ragAnswer.value="搜索失败: "+e.message}
   loading.value=false
 }
 async function loadStats() {
   loading.value=true
-  try {const r=await agentApi.get("/rag/stats");if(r?.data?.ok)stats.value=r.data}catch(e){}
+  try {const r=await agentApi.get("/rag/stats");if(r?.ok)stats.value=r}catch(e){}
   loading.value=false
 }
 async function ingestText() {
@@ -76,7 +76,7 @@ async function ingestText() {
   loading.value=true
   try {
     const r=await agentApi.post("/rag/ingest",{text:batchText.value,source:batchSource.value||"手动导入"})
-    if(r?.data?.ok){ElMessage.success(`摄入成功: ${r.data.doc_id}`);batchText.value=""}
+    if(r?.ok){ElMessage.success(`摄入成功: ${r.doc_id}`);batchText.value=""}
   }catch(e){ElMessage.error(e.message)}
   loading.value=false
 }

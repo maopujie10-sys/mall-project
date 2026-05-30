@@ -43,7 +43,7 @@ const installedSkills=computed(()=>skills.value.filter(s=>s.installed))
 onMounted(async()=>{
   try{
     const r=await agentApi.get("/plugins/marketplace")
-    if(r?.data?.ok)skills.value=(r.data.plugins||r.data.skills||[]).map(s=>({...s,installed:false,_loading:false}))
+    if(r?.ok)skills.value=(r.plugins||r.skills||[]).map(s=>({...s,installed:false,_loading:false}))
   }catch(e){
     // Fallback: 内置技能列表
     skills.value=[
@@ -60,7 +60,7 @@ onMounted(async()=>{
   }
   try{
     const r2=await agentApi.get("/plugins/installed")
-    if(r2?.data?.ok)installed.value=r2.data.plugins||[]
+    if(r2?.ok)installed.value=r2.plugins||[]
   }catch(e){}
 })
 

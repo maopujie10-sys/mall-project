@@ -45,8 +45,8 @@ async function runCollab() {
   running.value = true
   try {
     const res = await agentApi.post('/agent/collab/run', { goal: goal.value })
-    if (res?.data?.ok) {
-      task.value = res.data.task
+    if (res?.ok) {
+      task.value = res.task
       ElMessage.success(task.value.summary)
     } else {
       ElMessage.error('执行失败')
