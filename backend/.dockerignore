@@ -1,0 +1,13 @@
+__pycache__
+*.pyc
+.git
+*.bak
+chroma_data
+temp*
+test_*
+tmp_*
+logs/
+backups/
+state/
+memory/
+*.log

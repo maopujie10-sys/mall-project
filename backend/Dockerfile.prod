@@ -1,15 +1,14 @@
-﻿FROM python:3.11-slim
+FROM python:3.11-slim
 LABEL maintainer="TikTokMall"
 WORKDIR /app
 
-# 安装系统依赖
+# 瀹夎绯荤粺渚濊禆
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt && \
-    pip install --no-cache-dir pymysql sqlalchemy
+RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
