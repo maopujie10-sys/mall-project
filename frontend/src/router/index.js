@@ -36,7 +36,7 @@ const routes = [
       { path: "weekly-report", name: "WeeklyReport", component: () => import("@/views/WeeklyReport.vue"), meta: { title: "运营周报" } },
       { path: "log-viewer", name: "LogViewer", component: () => import("@/views/LogViewer.vue"), meta: { title: "日志中心" } },
       { path: "self-service", name: "SelfService", component: () => import("@/views/SelfService.vue"), meta: { title: "自助服务" } },
-      { path: "workflow", name: "WorkflowEditor", component: () => import("@/views/WorkflowEditor.vue"), meta: { title: "??????" } },
+      { path: "workflow", name: "WorkflowEditor", component: () => import("@/views/WorkflowEditor.vue"), meta: { title: "工作流编辑器" } },
 
       { path: "alert", name: "AlertCenter", component: () => import("@/views/AlertCenter.vue"), meta: { title: "告警中心" } },
       { path: "security", name: "SecurityPanel", component: () => import("@/views/SecurityPanel.vue"), meta: { title: "安全中心" } },
@@ -75,9 +75,7 @@ const routes = [
       { path: 'user-manager', name: 'UserManager', component: () => import('@/views/UserManager.vue'), meta: { title: '用户管理' } },
       { path: 'advanced-ai', name: 'AdvancedAI', component: () => import('@/views/AdvancedAI.vue'), meta: { title: '高级AI' } },
       { path: 'ai-tools', name: 'AITools', component: () => import('@/views/AITools.vue'), meta: { title: 'AI工具箱' } },
-      { path: 'ecommerce-ai', name: 'EcommerceAI', component: () => import('@/views/EcommerceAI.vue'), meta: { title: 'AI电商引擎' } },
-      { path: 'knowledge-hub', name: 'KnowledgeHub', component: () => import('@/views/KnowledgeHub.vue'), meta: { title: '知识库' } },
-    ],
+      { path: 'ecommerce-ai', name: 'EcommerceAI', component: () => import('@/views/EcommerceAI.vue'), meta: { title: 'AI电商引擎' } },    ],
   },
 ]
 

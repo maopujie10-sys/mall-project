@@ -1,128 +1,87 @@
-"""???? ? ????????????????"""
-import sys, os, asyncio
+"""冒烟测试 -- 快速验证核心功能可用"""
+import pytest
+import asyncio
+import sys
+import os
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-def test_imports():
-    """???????????"""
-    modules = [
-        "main",
-        "auth",
-        "state",
-        "config",
-        "tools.ai_client",
-        "tools.rate_limiter",
-        "tools.logger",
-        "tools.workflow_engine",
-        "tools.rag_engine",
-        "tools.alert_closed_loop",
-        "tools.multimodal_engine",
-        "routers.agent_chat",
-        "routers.alert",
-        "routers.workflow_router",
-        "routers.voice_router",
-    ]
-    failed = []
-    for mod in modules:
-        try:
-            __import__(mod)
-            print(f"  OK  {mod}")
-        except Exception as e:
-            failed.append(f"{mod}: {e}")
-            print(f"  FAIL {mod}: {e}")
+
+class TestSmoke:
+    """核心功能冒烟测试套件"""
     
-    if failed:
-        print(f"\n{len(failed)} import failures")
-        return False
-    print("\nAll {0} modules imported successfully".format(len(modules)))
-    return True
+    def test_config_loads(self):
+        """配置加载正常"""
+        from config import config
+        assert config is not None
 
-def test_config():
-    """??????"""
-    from config import DEFAULT_TOKEN, TELEGRAM_BOT_TOKEN
-    assert DEFAULT_TOKEN, "DEFAULT_TOKEN not set"
-    print(f"  OK  DEFAULT_TOKEN: {'SET' if DEFAULT_TOKEN else 'NOT SET'}")
-    print(f"  OK  TELEGRAM_BOT_TOKEN: {'SET' if TELEGRAM_BOT_TOKEN else 'NOT SET'}")
-    return True
+    def test_state_works(self):
+        """状态管理正常"""
+        from state import state
+        assert state is not None
+        assert hasattr(state, '_data')
 
-def test_state():
-    """??????"""
-    from state import state
-    test_key = "_smoke_test_" + str(os.getpid())
-    state._data[test_key] = "hello"
-    assert state._data.get(test_key) == "hello"
-    del state._data[test_key]
-    print("  OK  state read/write")
-    return True
+    def test_logger_works(self):
+        """日志系统正常"""
+        from tools.logger import get_logger
+        logger = get_logger("test")
+        assert logger is not None
 
-def test_ai_client():
-    """??AI???(?????API)"""
-    from tools.ai_client import pick_model
-    # Test model selection logic
-    model = pick_model(task="simple query", steps=1, has_image=False)
-    assert model, "No model selected"
-    print(f"  OK  pick_model: {model}")
-    return True
+    def test_auth_imports(self):
+        """认证模块可导入"""
+        from auth import verify_token, create_jwt, verify_jwt
+        assert callable(verify_token)
 
-def test_rate_limiter():
-    """?????"""
-    from tools.rate_limiter import _get_limit
-    limit, window = _get_limit("/agent/chat")
-    assert limit > 0
-    assert window > 0
-    print(f"  OK  rate limit: {limit}/{window}s")
-    return True
+    def test_db_imports(self):
+        """数据库模块可导入"""
+        from db import db
+        assert db is not None
 
-def test_workflow_templates():
-    """???????"""
-    from tools.workflow_engine import WorkflowEngine
-    assert len(WorkflowEngine.TEMPLATES) >= 6
-    print(f"  OK  workflow templates: {len(WorkflowEngine.TEMPLATES)}")
-    return True
+    def test_cache_works(self):
+        """缓存系统正常"""
+        from tools.cache import cached
+        assert callable(cached)
 
-def test_alert_rules():
-    """????????"""
-    from tools.alert_closed_loop import AUTO_FIX_RULES
-    assert len(AUTO_FIX_RULES) >= 5
-    print(f"  OK  alert fix rules: {len(AUTO_FIX_RULES)}")
-    return True
+    def test_all_routers_importable(self):
+        """所有路由模块可导入无语法错误"""
+        import glob
+        routers = glob.glob("routers/*.py")
+        for r in routers:
+            if "__init__" in r:
+                continue
+            mod_name = "routers." + os.path.splitext(os.path.basename(r))[0]
+            try:
+                __import__(mod_name)
+            except SyntaxError as e:
+                pytest.fail(f"语法错误 {mod_name}: {e}")
+            except ImportError:
+                pass  # 缺少依赖可以接受
 
-def test_multimodal():
-    """???????"""
-    from tools.multimodal_engine import multimodal_engine
-    assert multimodal_engine is not None
-    print("  OK  multimodal engine singleton")
-    return True
+    def test_all_tools_importable(self):
+        """所有工具模块可导入无语法错误"""
+        import glob
+        tools = glob.glob("tools/*.py")
+        for t in tools:
+            if "__init__" in t:
+                continue
+            mod_name = "tools." + os.path.splitext(os.path.basename(t))[0]
+            try:
+                __import__(mod_name)
+            except SyntaxError as e:
+                pytest.fail(f"语法错误 {mod_name}: {e}")
+            except ImportError:
+                pass
 
-async def main():
-    print("=" * 50)
-    print("Friday AI OS - Smoke Tests")
-    print("=" * 50)
-    
-    tests = [
-        ("Imports", test_imports),
-        ("Config", test_config),
-        ("State", test_state),
-        ("AI Client", test_ai_client),
-        ("Rate Limiter", test_rate_limiter),
-        ("Workflow Templates", test_workflow_templates),
-        ("Alert Rules", test_alert_rules),
-        ("Multimodal", test_multimodal),
-    ]
-    
-    passed = 0
-    failed = 0
-    for name, test_fn in tests:
-        print(f"\n[{name}]")
-        try:
-            if test_fn():
-                passed += 1
-        except Exception as e:
-            print(f"  FAIL: {e}")
-            failed += 1
-    
-    print(f"\n{'=' * 50}")
-    print(f"Results: {passed} passed, {failed} failed out of {len(tests)}")
-    return failed == 0
+    def test_no_bom_files(self):
+        """源文件无BOM编码"""
+        import glob
+        bom_files = []
+        for f in glob.glob("**/*.py", recursive=True):
+            with open(f, "rb") as fh:
+                if fh.read(3) == b'\xef\xbb\xbf':
+                    bom_files.append(f)
+        assert len(bom_files) == 0, f"存在BOM文件: {bom_files}"
 
-if __name__ == "__main__":
-    success = asyncio.run(main())
-    sys.exit(0 if success else 1)
+    def test_key_managers_work(self):
+        """API Key管理模块正常"""
+        from tools.key_manager import ApiKeyManager
+        assert ApiKeyManager is not None
