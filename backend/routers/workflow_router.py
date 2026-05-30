@@ -60,6 +60,15 @@ async def list_workflows(_=Depends(verify_token)):
     items = sorted(workflows.values(), key=lambda x: x.get("updated", ""), reverse=True)
     return {"ok": True, "workflows": items, "total": len(items)}
 
+@router.get("/templates")
+async def workflow_templates(_=Depends(verify_token)):
+    """Get built-in workflow templates"""
+    from tools.workflow_engine import WorkflowEngine
+    template_list = []
+    for name, wf in WorkflowEngine.TEMPLATES.items():
+        template_list.append({"name": name, "steps": len(wf["steps"]), "preview": [s["desc"] for s in wf["steps"]]})
+    return {"ok": True, "templates": template_list}
+
 @router.get("/{wf_id}")
 async def get_workflow(wf_id: str, _=Depends(verify_token)):
     """Get a specific workflow by ID"""
@@ -125,15 +134,6 @@ async def execute_nl_workflow(req: WorkflowNLRequest, _=Depends(verify_token)):
     """Execute workflow from natural language description"""
     from tools.workflow_engine import WorkflowEngine
     return await WorkflowEngine.parse_and_execute(req.message)
-
-@router.get("/templates")
-async def workflow_templates(_=Depends(verify_token)):
-    """Get built-in workflow templates"""
-    from tools.workflow_engine import WorkflowEngine
-    template_list = []
-    for name, wf in WorkflowEngine.TEMPLATES.items():
-        template_list.append({"name": name, "steps": len(wf["steps"]), "preview": [s["desc"] for s in wf["steps"]]})
-    return {"ok": True, "templates": template_list}
 
 @router.get("/history")
 async def workflow_history(_=Depends(verify_token)):

@@ -422,6 +422,42 @@ def _build_route_map():
     _m["/agent/nginx/sites"] = "/nginx-panel/nginx/sites"
     _m["/agent/describe/languages"] = "/description/agent/description/languages"
     _m["/agent/describe/styles"] = "/description/agent/description/styles"
+
+    #    (agent-)
+    MANUAL_MAP = {
+        # auto-reply
+        "/agent/auto-reply/rules": "/auto-reply/agent/autoreply/rules",
+        "/agent/auto-reply/stats": "/auto-reply/agent/autoreply/stats",
+        "/agent/auto-reply/conversations": "/auto-reply/agent/autoreply/conversations",
+        "/agent/auto-reply/reply": "/auto-reply/agent/autoreply/reply",
+        "/agent/auto-reply/rules/{rule_id}": "/auto-reply/agent/autoreply/rules/{rule_id}",
+        # nginx
+        "/agent/nginx/upstreams": "/nginx-panel/nginx/upstreams",
+        # virtual (short path)
+        "/agent/virtual/stats": "/virtual-data/agent/virtual/stats",
+        "/agent/virtual/scales": "/virtual-data/agent/virtual/scales",
+        "/agent/virtual/generate": "/virtual-data/agent/virtual/generate",
+        "/agent/virtual/dashboard": "/virtual-data/agent/virtual/dashboard",
+        "/agent/virtual/preview/users": "/virtual-data/agent/virtual/preview/users",
+        "/agent/virtual/realtime": "/virtual-data/agent/virtual/realtime",
+        # observability
+        "/agent/observability/metrics": "/obs/agent/observability/metrics",
+        "/agent/observability/dashboard": "/obs/agent/observability/dashboard",
+        # emergency
+        "/agent/emergency/diagnose": "/agent/emergency/agent/emergency/diagnose",
+        "/agent/emergency/quick-fix": "/agent/emergency/agent/emergency/quick-fix",
+        # report
+        "/agent/report/daily": "/report/daily",
+        "/agent/report/weekly/latest": "/report/weekly/latest",
+        # wechat wecom
+        "/agent/wechat/wecom/config": "/agent/wechat/agent/wechat/wecom/config",
+        # security
+        "/agent/security/token": "/security/agent/security/token",
+    }
+    for _k, _v in MANUAL_MAP.items():
+        if _k not in _m:
+            _m[_k] = _v
+
     return _m
 
 try:
@@ -430,6 +466,10 @@ try:
 except Exception as _e:
     print(f"[route_map] : {_e}")
 
-#    ASGI  
+#    ASGI
 app.add_middleware(_PathRewriteASGI)
+
+#   POST (ASGI GET)
+from routers.route_fixes import router as route_fixes_router
+app.include_router(route_fixes_router)
 
