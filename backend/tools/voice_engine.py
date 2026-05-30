@@ -1,4 +1,4 @@
-''" -- STT + TTS + WebSocket''"
+""" -- STT + TTS + WebSocket"""
 import os, json, base64, asyncio, httpx
 from io import BytesIO
 from tools.logger import get_logger

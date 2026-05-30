@@ -8,7 +8,7 @@
       </el-tab-pane>
       <el-tab-pane label=" " name="wm">
         <el-input v-model="wmUrl" placeholder="URL" style="margin-bottom:8px" />
-        <div style="display:flex;gap:8px;margin-bottom:8px"><el-input v-model="wmText" placeholder='' style="width:200px"/><el-select v-model="wmPos"><el-option v-for="p in ['top-left','top-right','bottom-left','bottom-right','center']" :key="p" :label="p" :value="p"/></el-select></div>
+        <div style="display:flex;gap:8px;margin-bottom:8px"><el-input v-model="wmText" placeholder='Enter...' style="width:200px"/><el-select v-model="wmPos"><el-option v-for="p in ['top-left','top-right','bottom-left','bottom-right','center']" :key="p" :label="p" :value="p"/></el-select></div>
         
       </el-tab-pane>
       <el-tab-pane label=" " name="batch">

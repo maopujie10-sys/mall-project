@@ -1,4 +1,4 @@
-''" + ''"
+""" + """
 import re
 from typing import Dict
 from collections import Counter, defaultdict

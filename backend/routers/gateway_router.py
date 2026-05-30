@@ -1,4 +1,4 @@
-''" -- : ///Telegram/Slack''"
+""" -- : ///Telegram/Slack"""
 import json, hashlib, os, httpx
 from config import AGENT_TOKEN
 from datetime import datetime

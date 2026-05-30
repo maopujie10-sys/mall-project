@@ -1,4 +1,4 @@
-''"Docker -- docker compose''"
+"""Docker -- docker compose"""
 from fastapi import APIRouter, Depends, HTTPException
 from auth import verify_token
 from risk import handle_risk

@@ -3,7 +3,7 @@
     <div class="page-header"><h2>{{ \('competitor.title') }}</h2><p>++</p></div>
     <el-card><template #header></template>
       <el-input v-model="targetUrl" placeholder="URL"/>
-      <el-input v-model="targetName" placeholder='' style="margin-top:8px"/>
+      <el-input v-model="targetName" placeholder='Enter...' style="margin-top:8px"/>
       <el-button type="primary" style="margin-top:8px" @click="addTarget" :loading="adding">OK</el-button>
     </el-card>
     <el-card style="margin-top:16px"><template #header><el-button size="small" @click="refreshReports" style="float:right">OK</el-button></template>

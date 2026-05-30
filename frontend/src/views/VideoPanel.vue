@@ -18,8 +18,8 @@
             <el-descriptions-item label=''>{{ result.fps || '-' }}</el-descriptions-item>
             <el-descriptions-item label=''>{{ result.hasAudio ? '' : '' }}</el-descriptions-item>
             <el-descriptions-item label=''>{{ result.language || '-' }}</el-descriptions-item>
-            <el-descriptions-item label='' :span="2">{{ result.summary || '-' }}</el-descriptions-item>
-            <el-descriptions-item label='' :span="2"><el-progress :percentage="result.hotScore||0" :color="(result.hotScore||0)>70?'#ff4d4f':(result.hotScore||0)>40?'#faad14':'#52c41a'' :stroke-width="8" /></el-descriptions-item>
+            <el-descriptions-item label='Status' :span="2">{{ result.summary || '-' }}</el-descriptions-item>
+            <el-descriptions-item label='Status' :span="2"><el-progress :percentage="result.hotScore||0" :color="(result.hotScore||0)>70?'#ff4d4f':(result.hotScore||0)>40?'#faad14':'#52c41a'' :stroke-width="8" /></el-descriptions-item>
           </el-descriptions>
         </el-card>
       </el-col>

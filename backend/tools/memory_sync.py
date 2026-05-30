@@ -1,5 +1,4 @@
-''"Memory Sync Engine -- ?I
-GitFRIDAY.md + memory/,AI''"
+"""Memory Sync Engine - Git-based FRIDAY.md sync"""
 
 import os
 import json

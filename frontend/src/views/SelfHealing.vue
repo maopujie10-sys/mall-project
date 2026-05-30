@@ -56,12 +56,12 @@
       <template #header> </template>
       <el-descriptions :column="3" border size="small">
         <el-descriptions-item :label="\('selfHeal.title')">{{ fixResult.attempted || 0 }}</el-descriptions-item>
-        <el-descriptions-item label="?>{{ fixResult.fixed || 0 }}</el-descriptions-item>
+        <el-descriptions-item label="">{{ fixResult.fixed || 0 }}</el-descriptions-item>
         <el-descriptions-item label=''>{{ fixResult.failed || 0 }}</el-descriptions-item>
       </el-descriptions>
       <el-table v-if="fixResult.results && fixResult.results.length" :data="fixResult.results" size="small" style="margin-top:12px">
         <el-table-column prop="id" label="ID" width="120"/>
-        <el-table-column prop="result.action" label=''/>
+        <el-table-column prop="result.action" label='OK'/>
         <el-table-column label="? width="100">
           <template #default="{row}"><el-tag :type="row.result.fixed ? 'success' : 'danger'' size="small">{{ row.result.fixed ? '? : '' }}</el-tag></template>
         </el-table-column>
@@ -71,13 +71,13 @@
     
     <el-card shadow="never">
       <template #header>  ({ historyDays }}?</template>
-      <el-table :data="anomalies" size="small" v-loading="historyLoading" empty-text="?>
+      <el-table :data="anomalies" size="small" v-loading="historyLoading" empty-text="">
         <el-table-column prop="id" label="ID" width="100"/>
         <el-table-column prop="severity" :label="\('selfHeal.title')" width="80">
           <template #default="{row}"><el-tag :type="sevType(row.severity)" size="small">{{ row.severity }}</el-tag></template>
         </el-table-column>
         <el-table-column prop="source" :label="\('selfHeal.title')" width="100"/>
-        <el-table-column prop="description" label='' min-width="200"/>
+        <el-table-column prop="description" label='Status' min-width="200"/>
         <el-table-column prop="detected_at" label="? width="170"/>
         <el-table-column prop="status" label="? width="100">
           <template #default="{row}">
@@ -86,7 +86,7 @@
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label='' width="120">
+        <el-table-column label='Status' width="120">
           <template #default="{row}">
             <el-button v-if="row.status !== 'resolved'' type="primary" size="small" link @click="doResolve(row.id)"></el-button>
           </template>

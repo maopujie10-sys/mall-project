@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="voice-shell">
     <div class="voice-header">
       <h2>Voice Chat</h2>

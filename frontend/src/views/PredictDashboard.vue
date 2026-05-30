@@ -18,7 +18,7 @@
       </el-col>
       <el-col :span="12">
         <el-card><template #header> </template>
-          <el-input v-model="forecastMetric" placeholder=''/>
+          <el-input v-model="forecastMetric" placeholder='Search...'/>
           <el-input-number v-model="horizon" :min="1" :max="30" style="margin-top:8px;width:100%"/>
           <el-button type="primary" style="margin-top:8px" @click="doForecast">{{ horizon }}</el-button>
           <div v-if="result" class="predict-result">

@@ -1,4 +1,4 @@
-''"API --  +  + ''"
+"""Omni API - Knowledge Graph + Business Engine + Smart Pricing"""
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from typing import Optional

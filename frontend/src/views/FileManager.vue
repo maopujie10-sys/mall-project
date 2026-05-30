@@ -1,7 +1,7 @@
 <template>
   <div class="file-manager">
     <div class="page-header">
-      <h2> ?/h2>
+      <h2>Control Panel</h2>
       -
     </div>
 
@@ -46,9 +46,9 @@
       <el-table-column prop="id" label="ID" width="140"/>
       <el-table-column prop="name" label="? min-width="200"/>
       <el-table-column prop="size_mb" label="(MB)" width="100"/>
-      <el-table-column prop="created_at" label='' width="170"/>
-      <el-table-column label="? width="80"><template #default="{row}"><el-tag :type="row.file_exists?'success':'danger'' size="small">{{ row.file_exists?'':'? }}</el-tag></template></el-table-column>
-      <el-table-column label='' width="100"><template #default="{row}"><el-button size="small" link type="danger" @click="doDeleteArchive(row.id)">OK</el-button></template></el-table-column>
+      <el-table-column prop="created_at" label='Status' width="170"/>
+      <el-table-column label="? width="80"><template #default="{row}"><el-tag :type="row.file_exists?'success':'danger' size="small">{{ row.file_exists?'':'? }}</el-tag></template></el-table-column>
+      <el-table-column label='Status' width="100"><template #default="{row}"><el-button size="small" link type="danger" @click="doDeleteArchive(row.id)">OK</el-button></template></el-table-column>
     </el-table>
 
     <!-- ?-->
@@ -68,8 +68,8 @@
         <template #default="{row}">{{ row.is_dir ? "-" : formatSize(row.size) }}</template>
       </el-table-column>
       <el-table-column prop="modified" :label="\('files.title')" width="160" />
-      <el-table-column prop="permissions" label='' width="80" />
-      <el-table-column label='' width="100" fixed="right">
+      <el-table-column prop="permissions" label='Status' width="80" />
+      <el-table-column label='Status' width="100" fixed="right">
         <template #default="{row}">
           <el-button v-if="!row.is_dir" text type="primary" size="small" @click="downloadFile(row.name)">OK</el-button>
           <el-button text type="danger" size="small" @click="deleteFile(row.name)">OK</el-button>

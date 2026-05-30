@@ -1,6 +1,6 @@
 <template><div class="page-shell"><div class="page-header"><h2> A/B</h2><p>++AI</p></div>
 <el-row :gutter="16"><el-col :span="12"><el-card><template #header> </template>
-<el-input v-model="expName" placeholder=''/><el-input v-model="variantA" placeholder="A" style="margin-top:8px"/>
+<el-input v-model="expName" placeholder='Search...'/><el-input v-model="variantA" placeholder="A" style="margin-top:8px"/>
 <el-input v-model="variantB" placeholder="B" style="margin-top:8px"/>
 <el-button type="primary" style="margin-top:8px" @click="createExp">OK</el-button></el-card></el-col>
 <el-col :span="12"><el-card><template #header> </template>

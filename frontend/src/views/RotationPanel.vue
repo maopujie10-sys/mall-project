@@ -1,8 +1,8 @@
 <template>
   <div class="page-container">
     <div class="page-header">
-      <h2>?/h2>
-      <p style="color:var(--text-muted);font-size:13px">?   ?/p>
+      <h2></h2>
+      <p style="color:var(--text-muted);font-size:13px">?  </p>
     </div>
     <el-alert v-if="error" :title="error" type="error" show-icon closable @close="error=null" style="margin-bottom:16px" />
 
@@ -24,7 +24,7 @@
     
     <el-card shadow="never">
       <el-table :data="domains" stripe size="small" style="width:100%">
-        <el-table-column label='' min-width="200">
+        <el-table-column label='Status' min-width="200">
           <template #default="{row}">
             <span style="display:flex;align-items:center;gap:8px">
               <span class="status-dot" :class="row.active?'online':'offline''><span class="dot">{{ \('rotation.title') }}</span></span>
@@ -32,24 +32,24 @@
             </span>
           </template>
         </el-table-column>
-        <el-table-column prop="type" label='' width="90">
+        <el-table-column prop="type" label='Status' width="90">
           <template #default="{row}"><el-tag size="small">{{ row.type||'? }}</el-tag></template>
         </el-table-column>
         <el-table-column prop="ip" label="IP" width="140" />
-        <el-table-column prop="latency" label='' width="80">
+        <el-table-column prop="latency" label='Status' width="80">
           <template #default="{row}"><span :style="{color:row.latency>800?'#ff4d4f':row.latency>300?'#faad14':'#52c41a'}">{{ row.latency }}ms</span></template>
         </el-table-column>
         <el-table-column prop="status" :label="\('rotation.title')" width="90">
           <template #default="{row}">
-            <el-tag :type="row.active?'success':row.status==='fail'?'danger':'info'' size="small">{{ row.active?'':row.status==='fail'?'':'' }}</el-tag>
+            <el-tag :type="row.active?'success':row.status==='fail'?'danger':'info' size="small">{{ row.active?'':row.status==='fail'?'':'' }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column label='' width="100">
+        <el-table-column label='Status' width="100">
           <template #default="{row}">
             <el-input-number v-model="row.weight" :min="1" :max="10" size="small" controls-position="right" style="width:80px" @change="(v)=>updateWeight(row,v)" />
           </template>
         </el-table-column>
-        <el-table-column label='' width="220">
+        <el-table-column label='Status' width="220">
           <template #default="{row}">
             <el-button text size="small" :type="row.active?'warning':'success'' @click="handleToggle(row)">{{ row.active?'':'' }}</el-button>
             <el-button text size="small" type="primary" @click="handleCheckOne(row)">?/el-button>
@@ -73,7 +73,7 @@
           <div style="display:flex;justify-content:space-between;align-items:center">
             <div><strong>{{ g.main }}</strong><el-tag size="small" style="margin-left:8px"> {{ g.weight }}</el-tag></div>
             <div style="display:flex;gap:6px">
-              <el-button text size="small" :type="g.enabled!==false?'success':'info'' @click="toggleRotationGroup(g.id)">{{ g.enabled!==false?'?:'? }}</el-button>
+              <el-button text size="small" :type="g.enabled!==false?'success':'info' @click="toggleRotationGroup(g.id)">{{ g.enabled!==false?'?:'? }}</el-button>
               <el-button text size="small" type="primary" @click="showAddSubDomain(g)">??/el-button>
             </div>
           </div>
@@ -100,7 +100,7 @@
             <el-option label="CDN" value="CDN" />
           </el-select>
         </el-form-item>
-        <el-form-item label="?-10?>
+        <el-form-item label="?-10">
           <el-input-number v-model="newDomain.weight" :min="1" :max="10" />
         </el-form-item>
       </el-form>
@@ -113,7 +113,7 @@
     <!-- ?-->
     <el-dialog v-model="subDialogVisible" :title=''?'+(subGroup?.main||'')+' ?" width="400px">
       <el-form label-position="top">
-        <el-form-item label="?>
+        <el-form-item label="">
           <el-input v-model="newSubDomain.host" placeholder="shop.example.com" />
         </el-form-item>
         <el-form-item label=''>

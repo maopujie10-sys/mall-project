@@ -1,4 +1,4 @@
-''"Mall -- //SKU/''"
+"""Mall -- //SKU/"""
 import hashlib
 import time
 import gc

@@ -1,10 +1,10 @@
 <template>
   <div class="skill-center">
     <div class="page-header">
-      <h2> ?/h2>
-      <p>       AI ?/p>
+      <h2>Control Panel</h2>
+      <p>       AI</p>
       <div class="header-stats">
-        <el-tag type="primary"> {{ totalSkills }} ?/el-tag>
+        <el-tag type="primary"> {{ totalSkills }} </el-tag>
         <el-tag type="success"> {{ installedCount }}</el-tag>
         <el-tag type="warning"> {{ communityCount }}</el-tag>
       </div>
@@ -12,11 +12,11 @@
 
     <el-tabs v-model="activeTab">
       <!-- Tab 1: ?-->
-      <el-tab-pane label='' name="market">
+      <el-tab-pane label='Status' name="market">
         <div class="toolbar">
           <el-input v-model="search" placeholder="..." clearable style="width:240px" size="small" />
           <el-select v-model="categoryFilter" :placeholder="\('plugin.search')" clearable style="width:140px" size="small">
-            <el-option v-for="c in categories" :key="c.category" :label="(c.icon||'') + '' + c.category + ' (' + c.count + ')'' :value="c.category" />
+            <el-option v-for="c in categories" :key="c.category" :label="(c.icon||'') + c.category + ' (' + c.count + ')' :value="c.category" />
           </el-select>
           <el-button @click="fetchMarket" size="small" :loading="loading">OK</el-button>
         </div>
@@ -54,7 +54,7 @@
       </el-tab-pane>
 
       <!-- Tab 2:  -->
-      <el-tab-pane label='' name="community">
+      <el-tab-pane label='Status' name="community">
         <div class="toolbar">
           <el-input v-model="communitySearch" placeholder="?.." clearable style="width:240px" size="small" />
           <el-select v-model="communityCategory" :placeholder="\('plugin.search')" clearable style="width:140px" size="small">
@@ -108,8 +108,8 @@
               <span style="font-weight:500">{{ row.name }}</span>
             </template>
           </el-table-column>
-          <el-table-column prop="version" label='' width="80" />
-          <el-table-column prop="category" label='' width="100">
+          <el-table-column prop="version" label='Status' width="80" />
+          <el-table-column prop="category" label='Status' width="100">
             <template #default="{row}"><el-tag size="small">{{ row.category }}</el-tag></template>
           </el-table-column>
           <el-table-column :label="\('plugin.title')" width="80">
@@ -117,13 +117,13 @@
               <el-tag v-if="row.id" size="small" :type="row._source==='package'?'warning':'default''>{{ row._source==='package'?'?:'' }}</el-tag>
             </template>
           </el-table-column>
-          <el-table-column prop="desc" label='' min-width="200" show-overflow-tooltip />
+          <el-table-column prop="desc" label='Status' min-width="200" show-overflow-tooltip />
           <el-table-column label="? width="90">
             <template #default="{row}">
               <el-switch v-model="row.enabled" @change="toggleSkill(row)" size="small" :disabled="row._source==='package'' />
             </template>
           </el-table-column>
-          <el-table-column label='' width="100" fixed="right">
+          <el-table-column label='Status' width="100" fixed="right">
             <template #default="{row}">
               <el-button v-if="row._source==='package'' text type="danger" size="small" @click="uninstallPackage(row)">OK</el-button>
               <el-button v-else text type="danger" size="small" @click="uninstallSkill(row)">OK</el-button>
@@ -137,7 +137,7 @@
       <el-tab-pane label=" ? name="publish">
         <el-card shadow="never">
           -
-          <p style="color:#999;font-size:13px">?skill.json + main.py ?ZIP ?/p>
+          <p style="color:#999;font-size:13px">?skill.json + main.py ?ZIP</p>
           <el-upload
             drag
             accept=".zip"

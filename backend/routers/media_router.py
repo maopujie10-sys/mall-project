@@ -1,4 +1,4 @@
-﻿"""AI Content Factory API - 100% Free Open Source Pipeline"""
+"""AI Content Factory API - 100% Free Open Source Pipeline"""
 from fastapi import APIRouter, Depends, UploadFile, File, Form
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
@@ -115,3 +115,48 @@ async def serve_video(video_id: str):
     path = os.path.join(MEDIA_DIR, f"{video_id}.mp4")
     if os.path.exists(path): return FileResponse(path, media_type="video/mp4")
     return {"ok":False,"error":"Not found"}
+
+# ---- Multi-Platform Publish ----
+class PublishReq(BaseModel):
+    title: str; description: str = ""; tags: str = ""
+    platforms: list = ["tiktok"]; video_id: str = ""
+    schedule: str = ""; ai_optimize: bool = True; ai_hashtags: bool = True
+
+@router.post("/publish")
+async def api_publish(req: PublishReq, video: UploadFile = File(None), _=Depends(verify_token)):
+    """Publish video to multiple short-video platforms"""
+    results = []
+    platforms_info = {
+        "tiktok": "TikTok", "youtube": "YouTube Shorts", "instagram": "Instagram Reels",
+        "facebook": "Facebook Reels", "snapchat": "Snapchat Spotlight",
+        "xiaohongshu": "RED", "kuaishou": "Kuaishou", "bilibili": "Bilibili"
+    }
+    
+    # Save uploaded video
+    video_path = None
+    if video:
+        import uuid, aiofiles
+        video_id = str(uuid.uuid4())[:8]
+        video_path = os.path.join(MEDIA_DIR, f"publish_{video_id}.mp4")
+        async with aiofiles.open(video_path, 'wb') as f:
+            await f.write(await video.read())
+    
+    for platform_id in req.platforms[:8]:
+        platform_name = platforms_info.get(platform_id, platform_id)
+        try:
+            result = await publish_to_platform(
+                platform=platform_id,
+                title=req.title,
+                description=req.description,
+                tags=req.tags,
+                video_path=video_path,
+                video_id=req.video_id,
+                schedule=req.schedule,
+                ai_optimize=req.ai_optimize,
+                ai_hashtags=req.ai_hashtags
+            )
+            results.append({"platform": platform_name, "status": "published", "url": result.get("url",""), "message": result.get("message","OK")})
+        except Exception as e:
+            results.append({"platform": platform_name, "status": "failed", "url": "", "message": str(e)})
+    
+    return {"ok": True, "results": results, "total": len(results)}

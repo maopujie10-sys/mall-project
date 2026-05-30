@@ -1,4 +1,4 @@
-''"AI  ''"
+"""AI  """
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from tools.logger import get_logger

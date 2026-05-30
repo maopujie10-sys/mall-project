@@ -9,7 +9,7 @@
           <el-option v-for="o in keyOptions" :key="o.value" :label="o.label" :value="o.value"/>
         </el-select></el-col>
         <el-col :span="10"><el-input v-model="newKey.value" placeholder="Key" type="password" show-password/></el-col>
-        <el-col :span="4"><el-input v-model="newKey.name" placeholder=''/></el-col>
+        <el-col :span="4"><el-input v-model="newKey.name" placeholder='Search...'/></el-col>
         <el-col :span="4"><el-button type="primary" @click="saveKey">OK</el-button></el-col>
       </el-row>
     </el-card>
@@ -17,16 +17,16 @@
     <!-- Key -->
     <el-card><template #header>  Key ({{keys.length}})</template>
       <el-table :data="keys" stripe size="small">
-        <el-table-column prop="name" label='' width="160"/>
-        <el-table-column prop="env_key" label='' width="180"/>
-        <el-table-column prop="provider" label='' width="80"/>
+        <el-table-column prop="name" label='Status' width="160"/>
+        <el-table-column prop="env_key" label='Status' width="180"/>
+        <el-table-column prop="provider" label='Status' width="80"/>
         <el-table-column label="Key" width="180"><template #default="{row}">
           <span :style="{color:row.has_value?'#4ade80':'#f87171'}">{{row.value_preview||''}}</span>
         </template></el-table-column>
-        <el-table-column label='' width="80"><template #default="{row}">
+        <el-table-column label='Status' width="80"><template #default="{row}">
           <el-switch v-model="row.active" @change="toggleKey(row)" size="small"/>
         </template></el-table-column>
-        <el-table-column label='' width="80"><template #default="{row}">
+        <el-table-column label='Status' width="80"><template #default="{row}">
           <el-button size="small" type="danger" @click="deleteKey(row)">OK</el-button>
         </template></el-table-column>
       </el-table>

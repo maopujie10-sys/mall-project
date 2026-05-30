@@ -1,4 +1,4 @@
-''" v2 -- CPU//////''"
+""" v2 -- CPU//////"""
 import os, psutil, shutil, subprocess
 from datetime import datetime, timedelta
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Query

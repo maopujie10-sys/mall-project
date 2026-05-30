@@ -42,7 +42,7 @@
       </template>
       <el-table :data="containers" stripe v-loading="loading" max-height="400">
         <el-table-column prop="name" :label="\('docker.title')" min-width="160" />
-        <el-table-column prop="image" label='' min-width="200" />
+        <el-table-column prop="image" label='Status' min-width="200" />
         <el-table-column prop="status" label="? min-width="180">
           <template #default="{ row }">
             <el-tag :type="row.status?.includes('Up') ? 'success' : 'danger'' size="small">
@@ -51,7 +51,7 @@
           </template>
         </el-table-column>
         <el-table-column prop="ports" :label="\('docker.title')" min-width="120" />
-        <el-table-column label='' width="100" fixed="right">
+        <el-table-column label='Status' width="100" fixed="right">
           <template #default="{ row }">
             <el-button size="small" type="warning" @click="restartContainer(row.name)" :loading="restarting === row.name">OK</el-button>
           </template>
@@ -64,7 +64,7 @@
         <el-card class="section-card">
           <template #header><span>{{ \('docker.title') }}</span></template>
           <el-table :data="images" stripe v-loading="loading" max-height="300">
-            <el-table-column prop="repo" label='' min-width="200" />
+            <el-table-column prop="repo" label='Status' min-width="200" />
             <el-table-column prop="tag" :label="\('docker.title')" width="100" />
             <el-table-column prop="size" :label="\('docker.title')" width="100" />
           </el-table>
@@ -75,8 +75,8 @@
           <template #header><span>{{ \('docker.title') }}</span></template>
           <el-table :data="networks" stripe v-loading="loading" max-height="300">
             <el-table-column prop="name" :label="\('docker.title')" min-width="160" />
-            <el-table-column prop="driver" label='' width="100" />
-            <el-table-column prop="scope" label='' width="80" />
+            <el-table-column prop="driver" label='Status' width="100" />
+            <el-table-column prop="scope" label='Status' width="80" />
           </el-table>
         </el-card>
       </el-col>

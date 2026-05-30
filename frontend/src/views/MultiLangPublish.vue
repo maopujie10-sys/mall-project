@@ -1,47 +1,164 @@
 <template>
-  <div class="multilang"><div class="page-header">-<p>///  </p></div>
+  <div class="mp-shell">
+    <div class="mp-header">
+      <h2>Multi-Platform Publisher</h2>
+      <p>Publish short videos to TikTok, YouTube Shorts, Instagram Reels & more</p>
+    </div>
+    
     <el-row :gutter="16">
-      <el-col :span="16">
-        <el-card><template #header>  -</template>
-          <el-form label-width="80">
-            <el-form-item label=''><el-input v-model="form.title" placeholder='' /></el-form-item>
-            <el-form-item label=''><el-input v-model="form.description" type="textarea" :rows="3" placeholder='' /></el-form-item>
-            <el-form-item label=''><el-input v-model="form.keywords" placeholder='' /></el-form-item>
-            <el-form-item label=''><el-input v-model="form.specs" placeholder=":,:L" /></el-form-item>
+      <el-col :xs="24" :md="16">
+        <!-- Video Upload -->
+        <el-card style="margin-bottom:12px">
+          <template #header>Upload Video</template>
+          <div v-if="!videoFile && !videoUrl" class="mp-upload-zone" @click="$refs.fileInput.click()">
+            <span style="font-size:40px">+</span>
+            <p>Click to upload or drag video here</p>
+            <p style="font-size:11px;color:rgba(255,255,255,.3)">MP4, MOV, AVI — max 500MB</p>
+          </div>
+          <div v-else class="mp-preview">
+            <video :src="videoPreviewUrl" controls style="width:100%;max-height:300px;border-radius:8px"/>
+            <el-button size="small" @click="videoFile=null;videoUrl=''" style="margin-top:8px">Remove</el-button>
+          </div>
+          <input ref="fileInput" type="file" accept="video/*" @change="onVideoFile" style="display:none"/>
+        </el-card>
+        
+        <!-- Video Info -->
+        <el-card style="margin-bottom:12px">
+          <template #header>Video Info</template>
+          <el-form label-position="top">
+            <el-form-item label="Title">
+              <el-input v-model="form.title" placeholder="Enter video title..." maxlength="150" show-word-limit/>
+            </el-form-item>
+            <el-form-item label="Description">
+              <el-input v-model="form.description" type="textarea" :rows="3" placeholder="Video description with hashtags..." maxlength="2200" show-word-limit/>
+            </el-form-item>
+            <el-form-item label="Tags">
+              <el-input v-model="form.tags" placeholder="tag1, tag2, tag3"/>
+            </el-form-item>
+            <el-form-item label="Schedule (optional)">
+              <el-date-picker v-model="form.schedule" type="datetime" placeholder="Publish later?" style="width:100%"/>
+            </el-form-item>
           </el-form>
         </el-card>
       </el-col>
-      <el-col :span="8">
-        <el-card><template #header> </template>
-          <el-checkbox-group v-model="targetLangs">
-            <el-checkbox v-for="l in languages" :key="l.code" :label="l.code" border style="width:100%;margin-bottom:6px">{{ l.icon }} {{ l.name }}</el-checkbox>
-          </el-checkbox-group>
-        </el-card>
-        <el-card style="margin-top:12px"><template #header> </template>
+      
+      <el-col :xs="24" :md="8">
+        <!-- Platforms -->
+        <el-card style="margin-bottom:12px">
+          <template #header>Target Platforms</template>
           <el-checkbox-group v-model="targetPlatforms">
-            <el-checkbox v-for="p in platforms" :key="p.id" :label="p.id" border style="width:100%;margin-bottom:6px">{{ p.icon }} {{ p.name }}</el-checkbox>
+            <el-checkbox v-for="p in platforms" :key="p.id" :label="p.id" border style="width:100%;margin-bottom:8px;padding:10px">
+              <span style="font-size:18px;margin-right:8px">{{ p.icon }}</span>
+              <span>{{ p.name }}</span>
+              <el-tag size="small" :type="p.status==='connected'?'success':'info'" style="margin-left:8px">{{ p.status==='connected'?'Ready':'Setup' }}</el-tag>
+            </el-checkbox>
           </el-checkbox-group>
         </el-card>
-        <el-button type="primary" style="width:100%;margin-top:12px;height:44px;font-size:16px" @click="doPublish" :loading="publishing"> +</el-button>
+        
+        <!-- AI Enhance -->
+        <el-card style="margin-bottom:12px">
+          <template #header>AI Enhance</template>
+          <el-checkbox v-model="aiOptimize" border style="width:100%;margin-bottom:8px">Auto-optimize title & description</el-checkbox>
+          <el-checkbox v-model="aiHashtags" border style="width:100%;margin-bottom:8px">Generate trending hashtags</el-checkbox>
+          <el-checkbox v-model="aiSchedule" border style="width:100%">Smart schedule (best posting time)</el-checkbox>
+        </el-card>
+        
+        <!-- Publish Button -->
+        <el-button type="primary" @click="doPublish" :loading="publishing" style="width:100%;height:48px;font-size:16px" :disabled="!videoFile&&!videoUrl">
+          {{ form.schedule ? 'Schedule Publish' : 'Publish Now' }}
+        </el-button>
       </el-col>
     </el-row>
-    <el-card v-if="publishResult" style="margin-top:16px">
-      <template #header> </template>
-      <el-table :data="publishResult.results||[]" size="small" stripe>
-        <el-table-column prop="platform" label='' width="100" />
-        <el-table-column prop="language" label='' width="80" />
-        <el-table-column prop="status" label='' width="80"><template #default="{row}"><el-tag :type="row.status==='published'?'success':'danger''>{{ row.status }}</el-tag></template></el-table-column>
-        <el-table-column prop="url" label='' min-width="200" show-overflow-tooltip />
+    
+    <!-- Results -->
+    <el-card v-if="results.length" style="margin-top:16px">
+      <template #header>Publish Results</template>
+      <el-table :data="results" size="small" stripe>
+        <el-table-column prop="platform" label="Platform" width="150"/>
+        <el-table-column prop="status" label="Status" width="100">
+          <template #default="{row}">
+            <el-tag :type="row.status==='published'?'success':row.status==='scheduled'?'warning':'danger'">{{ row.status }}</el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column prop="url" label="Link" min-width="200">
+          <template #default="{row}">
+            <a v-if="row.url" :href="row.url" target="_blank" style="color:#667eea">{{ row.url }}</a>
+            <span v-else style="color:rgba(255,255,255,.3)">—</span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="message" label="Note" min-width="150"/>
       </el-table>
     </el-card>
   </div>
 </template>
+
 <script setup>
-import { ref, onMounted } from "vue"; import { publishProduct, getLanguages, getPlatforms } from "@/api/translate"
-const form=ref({title:"2024T",description:'',keywords:"T,",specs:"://,:S/M/L/XL"})
-const targetLangs=ref(["en","ja","ko"]); const targetPlatforms=ref(["shopify","etsy"])
-const languages=ref([]); const platforms=ref([]); const publishing=ref(false); const publishResult=ref(null)
-onMounted(async()=>{try{const r=await getLanguages();if(r.ok)languages.value=r.languages}catch{};try{const r=await getPlatforms();if(r.ok)platforms.value=r.platforms}catch{}})
-async function doPublish(){if(!targetLangs.length||!targetPlatforms.length)return ElMessage.warning('Warning');publishing.value=true;try{const r=await publishProduct(form.value,targetLangs.value,targetPlatforms.value);if(r.ok){publishResult.value=r;ElMessage.success(`${r.results.length}`)}}catch(e){ElMessage.error(e.message)};publishing.value=false}
+import { ref } from "vue"; import { ElMessage } from "element-plus"; import { agentApi } from "@/api"
+
+const videoFile = ref(null); const videoUrl = ref(''); const videoPreviewUrl = ref('')
+const form = ref({ title: '', description: '', tags: '', schedule: null })
+const targetPlatforms = ref(['tiktok', 'youtube'])
+const aiOptimize = ref(true); const aiHashtags = ref(true); const aiSchedule = ref(false)
+const publishing = ref(false); const results = ref([])
+
+const platforms = ref([
+  { id: 'tiktok', name: 'TikTok', icon: '🎵', status: 'connected' },
+  { id: 'youtube', name: 'YouTube Shorts', icon: '▶️', status: 'connected' },
+  { id: 'instagram', name: 'Instagram Reels', icon: '📷', status: 'setup' },
+  { id: 'facebook', name: 'Facebook Reels', icon: '📘', status: 'setup' },
+  { id: 'snapchat', name: 'Snapchat Spotlight', icon: '👻', status: 'setup' },
+  { id: 'xiaohongshu', name: 'RED / Xiaohongshu', icon: '📕', status: 'setup' },
+  { id: 'kuaishou', name: 'Kuaishou', icon: '⚡', status: 'setup' },
+  { id: 'bilibili', name: 'Bilibili', icon: '📺', status: 'setup' },
+])
+
+function onVideoFile(e) {
+  const f = e.target.files?.[0]
+  if (!f) return
+  videoFile.value = f
+  videoPreviewUrl.value = URL.createObjectURL(f)
+  if (!form.value.title) form.value.title = f.name.replace(/\.[^.]+$/, '')
+}
+
+async function doPublish() {
+  if (!targetPlatforms.value.length) return ElMessage.warning('Select at least one platform')
+  if (!form.value.title) return ElMessage.warning('Enter a title')
+  
+  publishing.value = true; results.value = []
+  try {
+    const fd = new FormData()
+    if (videoFile.value) fd.append('file', videoFile.value)
+    else fd.append('video_url', videoUrl.value)
+    fd.append('title', form.value.title)
+    fd.append('description', form.value.description)
+    fd.append('tags', form.value.tags)
+    fd.append('platforms', JSON.stringify(targetPlatforms.value))
+    fd.append('ai_optimize', String(aiOptimize.value))
+    fd.append('ai_hashtags', String(aiHashtags.value))
+    if (form.value.schedule) fd.append('schedule', form.value.schedule.toISOString())
+    
+    const r = await agentApi.post("/agent/media/publish", fd, { headers: { 'Content-Type': 'multipart/form-data' } })
+    if (r?.data?.ok) {
+      results.value = r.data.results || []
+      const published = results.value.filter(x => x.status === 'published').length
+      const scheduled = results.value.filter(x => x.status === 'scheduled').length
+      ElMessage.success(`Published: ${published}, Scheduled: ${scheduled}`)
+    } else {
+      ElMessage.error(r?.data?.error || 'Publish failed')
+    }
+  } catch (e) { ElMessage.error(e.message) }
+  publishing.value = false
+}
 </script>
-<style scoped>.multilang{padding:20px}.page-header{margin-bottom:20px}.page-header h2{margin:0 0 4px}.page-header p{margin:0;color:#999;font-size:13px}</style>
+
+<style scoped>
+.mp-shell { max-width: 1100px; margin: 0 auto; padding: 20px; }
+.mp-header { margin-bottom: 16px; }
+.mp-header h2 { font-size: 22px; color: #e0e0ff; margin: 0; }
+.mp-header p { font-size: 13px; color: rgba(255,255,255,0.5); margin: 4px 0 0; }
+.mp-upload-zone { border: 2px dashed rgba(255,255,255,.2); border-radius: 12px; padding: 40px; text-align: center; cursor: pointer; transition: .2s; }
+.mp-upload-zone:hover { border-color: #667eea; background: rgba(102,126,234,.05); }
+.mp-upload-zone p { color: rgba(255,255,255,.5); margin: 4px 0 0; }
+.mp-preview video { background: #000; }
+@media (max-width: 768px) { .mp-shell { padding: 10px; } }
+</style>

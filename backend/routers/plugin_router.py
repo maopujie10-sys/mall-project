@@ -1,4 +1,4 @@
-''" API -- //// v2(30+)''"
+"""Plugin Marketplace API v2 - 30+ Skills"""
 from fastapi import APIRouter, Depends, HTTPException
 from auth import verify_token
 from risk import handle_risk

@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="vc-shell">
     <div class="vc-header">
       <h2>Video Call</h2>

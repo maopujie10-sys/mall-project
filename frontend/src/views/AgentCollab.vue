@@ -4,7 +4,7 @@
     <el-row :gutter="16">
       <el-col :span="14">
         <el-card><template #header> </template>
-          <el-input v-model="goal" placeholder='' type="textarea" :rows="3" />
+          <el-input v-model="goal" placeholder='Enter...' type="textarea" :rows="3" />
           
         </el-card>
         <el-card v-if="task" style="margin-top:16px"><template #header> </template>

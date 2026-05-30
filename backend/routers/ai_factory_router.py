@@ -1,4 +1,4 @@
-''"AI  API -- //''"
+"""AI  API -- //"""
 from fastapi import APIRouter, Depends, Query
 from pydantic import BaseModel
 from auth import verify_token

@@ -15,11 +15,11 @@
     <el-row :gutter="16" style="margin-bottom:20px">
       <el-col :span="12">
         <el-card shadow="never">
-          <template #header><div class="panel-header"><span>{{ \('aiBrain.title') }}</span><el-select v-model="filterStatus" size="small" style="width:120px"><el-option label='' value="all"/><el-option label='' value="hot"/><el-option label='' value="normal"/><el-option label='' value="cold"/><el-option label='' value="dead"/></el-select></div></template>
+          <template #header><div class="panel-header"><span>{{ \('aiBrain.title') }}</span><el-select v-model="filterStatus" size="small" style="width:120px"><el-option label='Status' value="all"/><el-option label='Status' value="hot"/><el-option label='Status' value="normal"/><el-option label='Status' value="cold"/><el-option label='Status' value="dead"/></el-select></div></template>
           <el-table :data="filteredProducts" stripe size="small" max-height="280">
-            <el-table-column prop="icon" label='' width="40"/><el-table-column prop="name" label='' min-width="180"/><el-table-column prop="category" label='' width="110"/><el-table-column prop="price" label='' width="100"/><el-table-column prop="sales" label='' width="80"/>
-            <el-table-column prop="stock" label='' width="80"/><el-table-column prop="status" label='' width="90"><template #default="{row}"><el-tag :type="row.statusType" size="small">{{ row.status }}</el-tag></template></el-table-column>
-            <el-table-column label='' width="80"><template #default="{row}"><el-button link type="primary" size="small" @click="handleReplace(row)" v-if="row.status===''">OK</el-button></template></el-table-column>
+            <el-table-column prop="icon" label='Status' width="40"/><el-table-column prop="name" label='Status' min-width="180"/><el-table-column prop="category" label='Status' width="110"/><el-table-column prop="price" label='Status' width="100"/><el-table-column prop="sales" label='Status' width="80"/>
+            <el-table-column prop="stock" label='Status' width="80"/><el-table-column prop="status" label='Status' width="90"><template #default="{row}"><el-tag :type="row.statusType" size="small">{{ row.status }}</el-tag></template></el-table-column>
+            <el-table-column label='Status' width="80"><template #default="{row}"><el-button link type="primary" size="small" @click="handleReplace(row)" v-if="row.status===''">OK</el-button></template></el-table-column>
           </el-table>
         </el-card>
       </el-col>

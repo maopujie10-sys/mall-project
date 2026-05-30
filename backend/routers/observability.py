@@ -1,4 +1,4 @@
-''" -- Prometheus + ''"
+""" -- Prometheus + """
 import time, psutil
 from datetime import datetime
 from fastapi import APIRouter, Depends

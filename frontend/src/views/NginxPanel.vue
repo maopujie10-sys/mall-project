@@ -42,7 +42,7 @@
         <el-card shadow="never"><template #header> </template>
           <el-table :data="sites" stripe size="small" max-height="300">
             <el-table-column prop="name" label="? min-width="140" />
-            <el-table-column prop="type" label='' width="80"><template #default="{row}"><el-tag size="small">{{ row.type }}</el-tag></template></el-table-column>
+            <el-table-column prop="type" label='Status' width="80"><template #default="{row}"><el-tag size="small">{{ row.type }}</el-tag></template></el-table-column>
             <el-table-column prop="date" :label="\('nginx.title')" width="100" />
           </el-table>
           <el-empty v-if="!sites.length" description='' />

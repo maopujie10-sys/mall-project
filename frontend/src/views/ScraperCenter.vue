@@ -16,10 +16,10 @@
         <el-card shadow="never">
           <template #header><div class="panel-header"><span>{{ \('scraper.title') }}</span><el-button text size="small" @click="refreshJobs">OK</el-button></div></template>
           <el-table :data="jobs" size="small" max-height="350">
-            <el-table-column prop="keyword" label='' min-width="120"/><el-table-column prop="platform" label='' width="110"><template #default="{ row }"><el-tag size="small">{{ row.platform }}</el-tag></template></el-table-column>
-            <el-table-column prop="collected" label='' width="80"/><el-table-column prop="imported" label='' width="80"/>
-            <el-table-column prop="status" label='' width="100"><template #default="{ row }"><el-tag :type="row.statusType" size="small">{{ row.status }}</el-tag></template></el-table-column>
-            <el-table-column label='' width="180"><template #default="{ row }"><el-button link type="primary" size="small" @click="previewProducts(row)">OK</el-button><el-button link type="success" size="small" @click="importToMall(row)">OK</el-button><el-button link type="danger" size="small" @click="removeJob(row.id)">OK</el-button></template></el-table-column>
+            <el-table-column prop="keyword" label='Status' min-width="120"/><el-table-column prop="platform" label='Status' width="110"><template #default="{ row }"><el-tag size="small">{{ row.platform }}</el-tag></template></el-table-column>
+            <el-table-column prop="collected" label='Status' width="80"/><el-table-column prop="imported" label='Status' width="80"/>
+            <el-table-column prop="status" label='Status' width="100"><template #default="{ row }"><el-tag :type="row.statusType" size="small">{{ row.status }}</el-tag></template></el-table-column>
+            <el-table-column label='Status' width="180"><template #default="{ row }"><el-button link type="primary" size="small" @click="previewProducts(row)">OK</el-button><el-button link type="success" size="small" @click="importToMall(row)">OK</el-button><el-button link type="danger" size="small" @click="removeJob(row.id)">OK</el-button></template></el-table-column>
           </el-table>
         </el-card>
       </el-col>
@@ -30,7 +30,7 @@
     <el-dialog v-model="showCreateDialog" title='' width="500px">
       <el-form :model="createForm" label-width="80px">
         <el-form-item label=''><el-select v-model="createForm.platform" style="width:100%"><el-option v-for="p in platforms" :key="p.name" :label="p.name" :value="p.name" /></el-select></el-form-item>
-        <el-form-item label=''><el-input v-model="createForm.keyword" placeholder=''/></el-form-item>
+        <el-form-item label=''><el-input v-model="createForm.keyword" placeholder='Search...'/></el-form-item>
       </el-form>
       <template #footer><el-button @click="showCreateDialog=false">OK</el-button><el-button type="primary" @click="createJob" :loading="loading">OK</el-button></template>
     </el-dialog>

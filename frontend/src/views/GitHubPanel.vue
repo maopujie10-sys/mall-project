@@ -40,7 +40,7 @@
           <el-table-column type="index" label="#" width="50" />
           <el-table-column prop="title" :label="\('github.title')" min-width="300" />
           <el-table-column prop="state" label="? width="80">
-            <template #default="{row}"><el-tag :type="row.state==='open'?'success':'info'' size="small">{{ row.state }}</el-tag></template>
+            <template #default="{row}"><el-tag :type="row.state==='open'?'success':'info' size="small">{{ row.state }}</el-tag></template>
           </el-table-column>
           <el-table-column prop="user" label="? width="100" />
           <el-table-column prop="created" :label="\('github.title')" width="100" />
@@ -76,7 +76,7 @@
     <el-dialog v-model="showCreateIssue" title=" Issue" width="500">
       <el-form label-width="60">
         <el-form-item :label="\('github.title')"><el-input v-model="issueTitle" placeholder="Issue " /></el-form-item>
-        <el-form-item :label="\('github.title')"><el-input v-model="issueBody" type="textarea" :rows="4" placeholder='' /></el-form-item>
+        <el-form-item :label="\('github.title')"><el-input v-model="issueBody" type="textarea" :rows="4" placeholder='Enter...' /></el-form-item>
       </el-form>
       <template #footer><el-button @click="showCreateIssue=false">OK</el-button><el-button type="primary" @click="doCreateIssue" :loading="creating">OK</el-button></template>
     </el-dialog>

@@ -4,16 +4,16 @@
     
     <el-tabs v-model="activeTab">
       
-      <el-tab-pane label='' name="mp">
+      <el-tab-pane label='Status' name="mp">
         <el-card>
           <template #header><span> (/)</span><el-button size="small" @click="testMp" :loading="testingMp" style="float:right">OK</el-button></template>
           <el-form :model="mpForm" label-width="100px" size="default">
             <el-form-item label=''><el-input v-model="mpForm.account_name" placeholder="Friday"/></el-form-item>
-            <el-form-item label=''><el-select v-model="mpForm.account_type"><el-option label='' value="service"/><el-option label='' value="subscription"/></el-select></el-form-item>
+            <el-form-item label=''><el-select v-model="mpForm.account_type"><el-option label='Status' value="service"/><el-option label='Status' value="subscription"/></el-select></el-form-item>
             <el-form-item label="AppID"><el-input v-model="mpForm.app_id" placeholder="wx..."/></el-form-item>
             <el-form-item label="AppSecret"><el-input v-model="mpForm.app_secret" type="password" placeholder="AppSecret" show-password/></el-form-item>
             <el-form-item label="Token"><el-input v-model="mpForm.token" placeholder="Token"/></el-form-item>
-            <el-form-item label="AES Key"><el-input v-model="mpForm.aes_key" type="password" placeholder='' show-password/></el-form-item>
+            <el-form-item label="AES Key"><el-input v-model="mpForm.aes_key" type="password" placeholder='Enter...' show-password/></el-form-item>
             <el-divider></el-divider>
             <el-form-item label=''><el-switch v-model="mpForm.auto_reply_enabled"/></el-form-item>
             <el-form-item label=''><el-input v-model="mpForm.welcome_message" type="textarea" :rows="2"/></el-form-item>
@@ -24,7 +24,7 @@
       </el-tab-pane>
 
       
-      <el-tab-pane label='' name="wecom">
+      <el-tab-pane label='Status' name="wecom">
         <el-card>
           <template #header><span>{{ \('wechat.title') }}</span><el-button size="small" @click="testWecom" :loading="testingWecom" style="float:right">OK</el-button></template>
           <el-form :model="wecomForm" label-width="100px">
@@ -39,7 +39,7 @@
       </el-tab-pane>
 
       
-      <el-tab-pane label='' name="license">
+      <el-tab-pane label='Status' name="license">
         <el-card>
           <template #header><span>{{ \('wechat.title') }}</span>-</template>
           <el-row :gutter="20">
@@ -64,7 +64,7 @@
       </el-tab-pane>
 
       
-      <el-tab-pane label='' name="menu">
+      <el-tab-pane label='Status' name="menu">
         <el-card>
           <template #header><span>{{ \('wechat.title') }}</span><el-button size="small" @click="pushMenu" :loading="pushing" style="float:right">OK</el-button></template>
           <el-alert title="35" type="info" :closable="false" style="margin-bottom:16px"/>
@@ -75,13 +75,13 @@
             </div>
             <el-input v-model="btn.name" placeholder="(8)" style="margin-bottom:8px" maxlength="8"/>
             <el-select v-model="btn.type" v-if="!btn.sub_buttons.length" style="width:100%;margin-bottom:8px">
-              <el-option label='' value="click"/><el-option label='' value="view"/>
+              <el-option label='Status' value="click"/><el-option label='Status' value="view"/>
             </el-select>
             <el-input v-model="btn.key" v-if="btn.type==='click' && !btn.sub_buttons.length" placeholder="Key" style="margin-bottom:8px"/>
             <el-input v-model="btn.url" v-if="btn.type==='view' && !btn.sub_buttons.length" placeholder="URL" style="margin-bottom:8px"/>
             <div v-if="btn.sub_buttons.length" style="margin-left:16px;margin-top:8px">
               <div v-for="(sub, j) in btn.sub_buttons" :key="j" style="display:flex;gap:8px;margin-bottom:6px;align-items:center">
-                <el-input v-model="sub.name" placeholder='' size="small" style="flex:1"/><el-select v-model="sub.type" size="small" style="width:90px"><el-option label='' value="click"/><el-option label='' value="view"/></el-select><el-input v-model="sub.key" v-if="sub.type==='click'' size="small" placeholder="Key" style="width:100px"/><el-input v-model="sub.url" v-if="sub.type==='view'' size="small" placeholder="URL" style="width:120px"/><el-button link type="danger" size="small" @click="btn.sub_buttons.splice(j,1)">x</el-button>
+                <el-input v-model="sub.name" placeholder='Enter...' size="small" style="flex:1"/><el-select v-model="sub.type" size="small" style="width:90px"><el-option label='Status' value="click"/><el-option label='Status' value="view"/></el-select><el-input v-model="sub.key" v-if="sub.type==='click'' size="small" placeholder="Key" style="width:100px"/><el-input v-model="sub.url" v-if="sub.type==='view'' size="small" placeholder="URL" style="width:120px"/><el-button link type="danger" size="small" @click="btn.sub_buttons.splice(j,1)">x</el-button>
               </div>
               <el-button size="small" @click="btn.sub_buttons.push({name:'',type:'click',key:'',url:''})" :disabled="btn.sub_buttons.length>=5">+</el-button>
             </div>
@@ -92,7 +92,7 @@
       </el-tab-pane>
 
       
-      <el-tab-pane label='' name="stats">
+      <el-tab-pane label='Status' name="stats">
         <el-card>
           <el-row :gutter="16">
             <el-col :span="6"><div class="stat-box"><div class="stat-num">{{ stats.total_messages }}</div><div class="stat-label">{{ \('wechat.title') }}</div></div></el-col>

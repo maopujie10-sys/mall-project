@@ -2,7 +2,7 @@
   <div class="page-shell">
     <div class="page-header">-<p>  AISQL  </p></div>
     <el-card><template #header> </template>
-      <el-input v-model="question" placeholder='' type="textarea" :rows="2"/>
+      <el-input v-model="question" placeholder='Enter...' type="textarea" :rows="2"/>
       
       <div v-if="result" class="sql-result">
         <div class="sql-explain">{{ result.explanation }}</div>

@@ -11,14 +11,14 @@
 -</el-tab-pane>
 
 <el-tab-pane label=" " name="copy">
-<el-input v-model="copyProduct" placeholder=''/>
+<el-input v-model="copyProduct" placeholder='Search...'/>
 <el-input v-model="copyFeatures" placeholder="/" style="margin-top:8px" type="textarea" :rows="2"/>
 <el-select v-model="copyPlatform" style="margin-top:8px"><el-option label="TikTok" value="TikTok"/><el-option label="Instagram" value="Instagram"/><el-option label="Facebook" value="Facebook"/></el-select>
 
 -</el-tab-pane>
 
 <el-tab-pane label=" " name="pricing">
-<el-input v-model="priceProduct" placeholder=''/>
+<el-input v-model="priceProduct" placeholder='Search...'/>
 <el-input-number v-model="priceCost" placeholder="()" :min="0" style="margin-top:8px;width:100%"/>
 <el-input-number v-model="priceMargin" placeholder="%" :min="0" :max="100" style="margin-top:8px;width:100%"/>
 <el-input v-model="compPrices" placeholder="(,: 39,45,50)" style="margin-top:8px"/>
@@ -26,8 +26,8 @@
 -</el-tab-pane>
 
 <el-tab-pane label=" " name="inventory">
-<el-input v-model="invProduct" placeholder=''/>
-<el-input-number v-model="invStock" placeholder='' :min="0" style="margin-top:8px;width:100%"/>
+<el-input v-model="invProduct" placeholder='Search...'/>
+<el-input-number v-model="invStock" placeholder='Enter...' :min="0" style="margin-top:8px;width:100%"/>
 <el-input-number v-model="invLead" placeholder="()" :min="1" style="margin-top:8px;width:100%"/>
 <el-input v-model="invSales" placeholder="30()" style="margin-top:8px"/>
 

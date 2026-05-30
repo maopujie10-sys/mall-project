@@ -1,4 +1,4 @@
-''"AI -- SEO++''"
+"""AI -- SEO++"""
 import os, httpx, json
 from datetime import datetime
 from typing import Optional

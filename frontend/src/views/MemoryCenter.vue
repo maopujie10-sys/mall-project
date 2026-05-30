@@ -8,23 +8,23 @@
       <el-col :span="6"><div class="metric-card"><div class="metric-label">{{ \('memory.title') }}</div><div class="metric-value" style="color:#faad14">{{ operationLogs.length }}</div></div></el-col>
     </el-row>
     <el-tabs v-model="activeTab">
-      <el-tab-pane label='' name="all">
+      <el-tab-pane label='Status' name="all">
         <div class="tab-toolbar">
           <el-input v-model="searchQuery" placeholder="..." style="width:280px" clearable @clear="refreshMemories" @keyup.enter="searchMem" />
-          <el-select v-model="filterCategory" placeholder='' style="width:140px" clearable @change="refreshMemories">
+          <el-select v-model="filterCategory" placeholder='Enter...' style="width:140px" clearable @change="refreshMemories">
             <el-option v-for="c in categories" :key="c" :label="c" :value="c" />
           </el-select>
           <el-button type="primary" @click="showAdd = true">OK</el-button>
         </div>
         <el-table :data="filteredMemories" stripe max-height="calc(100vh - 380px)">
           <el-table-column type="index" width="50" />
-          <el-table-column prop="title" label='' min-width="180" show-overflow-tooltip />
-          <el-table-column prop="category" label='' width="110">
+          <el-table-column prop="title" label='Status' min-width="180" show-overflow-tooltip />
+          <el-table-column prop="category" label='Status' width="110">
             <template #default="{row}"><el-tag :type="catType(row.category)" size="small">{{ row.category }}</el-tag></template>
           </el-table-column>
-          <el-table-column prop="content" label='' min-width="280" show-overflow-tooltip />
-          <el-table-column prop="created_at" label='' width="170" sortable />
-          <el-table-column label='' width="160" fixed="right">
+          <el-table-column prop="content" label='Status' min-width="280" show-overflow-tooltip />
+          <el-table-column prop="created_at" label='Status' width="170" sortable />
+          <el-table-column label='Status' width="160" fixed="right">
             <template #default="{row}">
               <el-button link type="primary" size="small" @click="viewMemory(row)">OK</el-button>
               <el-button link type="warning" size="small" @click="editMemory(row)">OK</el-button>
@@ -40,9 +40,9 @@
         <el-button v-if="showHandoffEdit" type="primary" @click="saveHandoff" :loading="saving" style="margin-top:12px">OK</el-button>
         <el-empty v-if="!handoffContent && !showHandoffEdit" description='' />
       </el-tab-pane>
-      <el-tab-pane label='' name="oplog">
+      <el-tab-pane label='Status' name="oplog">
         <el-timeline v-if="operationLogs.length">
-          <el-timeline-item v-for="log in operationLogs" :key="log.id" :timestamp="log.time" :type="log.level==='error'?'danger':log.level==='warn'?'warning':'primary'' placement="top">
+          <el-timeline-item v-for="log in operationLogs" :key="log.id" :timestamp="log.time" :type="log.level==='error'?'danger':log.level==='warn'?'warning':'primary' placement="top">
             <el-card shadow="hover"><p>{{ log.action }} - {{ log.detail }}</p><small v-if="log.file">{{ log.file }}</small></el-card>
           </el-timeline-item>
         </el-timeline>
@@ -51,7 +51,7 @@
     </el-tabs>
     <el-dialog v-model="showAdd" :title="editingId?'':''" width="560px">
       <el-form :model="form" label-width="70px">
-        <el-form-item label=''><el-input v-model="form.title" placeholder='' /></el-form-item>
+        <el-form-item label=''><el-input v-model="form.title" placeholder='Enter...' /></el-form-item>
         <el-form-item label=''><el-select v-model="form.category" style="width:100%"><el-option v-for="c in categories" :key="c" :label="c" :value="c" /></el-select></el-form-item>
         <el-form-item label=''><el-input v-model="form.content" type="textarea" :rows="8" placeholder="..." /></el-form-item>
       </el-form>

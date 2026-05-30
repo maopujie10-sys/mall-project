@@ -100,13 +100,13 @@
       </template>
       <el-table :data="historyTasks" style="width: 100%;" size="small" stripe>
         <el-table-column prop="name" :label="\('approval.title')" min-width="160" />
-        <el-table-column prop="risk" label='' width="90">
+        <el-table-column prop="risk" label='Status' width="90">
           <template #default="{ row }">
             <span class="risk-badge" :class="row.risk.toLowerCase()">{{ row.risk }}</span>
           </template>
         </el-table-column>
         <el-table-column prop="creator" label="? width="100" />
-        <el-table-column prop="result" label='' width="90">
+        <el-table-column prop="result" label='Status' width="90">
           <template #default="{ row }">
             <el-tag :type="row.result === '' ? 'success' : 'danger'' size="small" effect="light">
               {{ row.result }}
@@ -114,7 +114,7 @@
           </template>
         </el-table-column>
         <el-table-column prop="reviewer" label="? width="100" />
-        <el-table-column prop="time" label='' width="100" />
+        <el-table-column prop="time" label='Status' width="100" />
       </el-table>
     </el-card>
   </div>

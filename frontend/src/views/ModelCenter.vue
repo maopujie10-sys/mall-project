@@ -31,18 +31,18 @@
           <template #default="{row}"><span class="model-name">{{ row.icon }} {{ row.name }}</span></template>
         </el-table-column>
         <el-table-column prop="provider" label="? width="120"><template #default="{row}"><el-tag size="small">{{ row.provider }}</el-tag></template></el-table-column>
-        <el-table-column prop="type" label='' width="100"><template #default="{row}"><el-tag :type="row.type==='text'?'':'warning'' size="small">{{ row.type==='text'?'':'? }}</el-tag></template></el-table-column>
-        <el-table-column label='' width="120"><template #default="{row}"><el-progress :percentage="row.speed" :stroke-width="6" :color="speedColor(row.speed)" /></template></el-table-column>
-        <el-table-column label='' width="140"><template #default="{row}"><span class="cost"> {{ row.inputPrice }} /  {{ row.outputPrice }}</span></template></el-table-column>
+        <el-table-column prop="type" label='Status' width="100"><template #default="{row}"><el-tag :type="row.type==='text'?'':'warning'' size="small">{{ row.type==='text'?'':'? }}</el-tag></template></el-table-column>
+        <el-table-column label='Status' width="120"><template #default="{row}"><el-progress :percentage="row.speed" :stroke-width="6" :color="speedColor(row.speed)" /></template></el-table-column>
+        <el-table-column label='Status' width="140"><template #default="{row}"><span class="cost"> {{ row.inputPrice }} /  {{ row.outputPrice }}</span></template></el-table-column>
         <el-table-column prop="calls" :label="\('model.title')" width="100" sortable />
-        <el-table-column prop="avgLatency" label='' width="100" />
+        <el-table-column prop="avgLatency" label='Status' width="100" />
         <el-table-column label="? width="100">
           <template #default="{row}">
             <el-switch v-model="row.enabled" @change="toggleModel(row)" size="small" />
             -
           </template>
         </el-table-column>
-        <el-table-column label='' width="200" fixed="right">
+        <el-table-column label='Status' width="200" fixed="right">
           <template #default="{row}">
             <el-button link type="primary" size="small" @click="testSpeed(row)">?/el-button>
             <el-button link type="primary" size="small" @click="setActive(row)" v-if="row.id!==activeModelId">OK</el-button>
@@ -72,7 +72,7 @@
         <el-table-column prop="calls" :label="\('model.title')" width="100" sortable />
         <el-table-column prop="tokens" label="Token? width="120" sortable />
         <el-table-column prop="cost" label="()" width="100" sortable />
-        <el-table-column prop="avgTime" label='' width="100" />
+        <el-table-column prop="avgTime" label='Status' width="100" />
       </el-table>
     </el-card>
 
@@ -80,7 +80,7 @@
     <el-dialog v-model="showAdd" :title="editingModel?'':''' width="520px">
       <el-form :model="modelForm" label-width="90px">
         <el-form-item :label="\('model.title')"><el-input v-model="modelForm.name" placeholder="?DeepSeek V4" /></el-form-item>
-        <el-form-item label="?><el-select v-model="modelForm.provider" style="width:100%"><el-option v-for="p in providers" :key="p" :label="p" :value="p" /></el-select></el-form-item>
+        <el-form-item label=""><el-select v-model="modelForm.provider" style="width:100%"><el-option v-for="p in providers" :key="p" :label="p" :value="p" /></el-select></el-form-item>
         <el-form-item label="API"><el-input v-model="modelForm.apiUrl" placeholder="https://api.example.com/v1" /></el-form-item>
         <el-form-item label="API"><el-input v-model="modelForm.apiKey" type="password" show-password placeholder="sk-..." /></el-form-item>
         <el-form-item label=''><el-radio-group v-model="modelForm.type"><el-radio value="text">?/el-radio><el-radio value="multimodal">?/el-radio></el-radio-group></el-form-item>
@@ -96,8 +96,8 @@
         <el-descriptions-item :label="\('model.title')">{{ speedResult.model }}</el-descriptions-item>
         <el-descriptions-item label=''>{{ speedResult.latency }}ms</el-descriptions-item>
         <el-descriptions-item label="oken">{{ speedResult.firstToken }}ms</el-descriptions-item>
-        <el-descriptions-item label="Token/?>{{ speedResult.tokensPerSec }}</el-descriptions-item>
-        <el-descriptions-item label="?>{{ speedResult.ok ? '?' : '?' }}</el-descriptions-item>
+        <el-descriptions-item label="Token/">{{ speedResult.tokensPerSec }}</el-descriptions-item>
+        <el-descriptions-item label="">{{ speedResult.ok ? '?' : '?' }}</el-descriptions-item>
       </el-descriptions>
       <template #footer><el-button @click="showSpeedResult=false">OK</el-button></template>
     </el-dialog>

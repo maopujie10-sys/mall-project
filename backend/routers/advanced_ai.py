@@ -1,4 +1,4 @@
-''"__AI__ -- ______ / _____ / ____ / _____ / ____ / ____ / ______ / ____''"
+"""__AI__ -- ______ / _____ / ____ / _____ / ____ / ____ / ______ / ____"""
 import json, os, re, io, base64, asyncio, tempfile, subprocess
 from pathlib import Path
 from datetime import datetime

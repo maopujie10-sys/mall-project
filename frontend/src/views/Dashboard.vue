@@ -1,8 +1,8 @@
 <template>
   <div class="dashboard">
     <div class="page-header">
-      <h2> ?/h2>
-      <p>    ?/p>
+      <h2>Control Panel</h2>
+      <p>   </p>
     </div>
 
     <!-- ?-->

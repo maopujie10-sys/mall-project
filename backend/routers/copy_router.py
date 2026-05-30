@@ -1,4 +1,4 @@
-''"AI -- //SEO/v2 ''"
+"""AI -- //SEO/v2 """
 from fastapi import APIRouter, Depends, Query
 from auth import verify_token
 from risk import handle_risk

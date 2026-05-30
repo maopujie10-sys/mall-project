@@ -16,7 +16,7 @@
         <el-card shadow="never" style="margin-bottom:16px">
           <template #header><span> DNS </span></template>
           <div style="display:flex;gap:8px">
-            <el-input v-model="dnsDomain" placeholder='' size="small" @keyup.enter="runDns" />
+            <el-input v-model="dnsDomain" placeholder='Enter...' size="small" @keyup.enter="runDns" />
             <el-button @click="runDns" size="small" type="primary" :loading="dnsLoading"></el-button>
           </div>
           <div v-if="dnsResult" class="result-box">
@@ -52,7 +52,7 @@
             <div v-for="r in scanResult.results" :key="r.port" style="display:flex;align-items:center;gap:8px;padding:2px 0">
               <span :style="{color:r.open?'#52c41a':'#999'}">{{ r.open ? '' : '? }}</span>
               <span style="font-family:monospace"> {{ r.port }}</span>
-              <el-tag v-if="r.open" size="small" type="success">?/el-tag>
+              <el-tag v-if="r.open" size="small" type="success"></el-tag>
               -
             </div>
           </div>

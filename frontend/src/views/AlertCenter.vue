@@ -19,12 +19,12 @@
         <el-button size="small" @click="fetchAlerts" style="margin-left:8px">OK</el-button>
       </template>
       <el-table :data="alerts" stripe size="small" empty-text="">
-        <el-table-column label='' width="80">
+        <el-table-column label='Status' width="80">
           <template #default="{row}">
             <el-tag :type="tagType(row.level)" size="small">{{ row.level }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="time" label='' width="80" />
+        <el-table-column prop="time" label='Status' width="80" />
         <el-table-column prop="title" :label="\('alert.title')" min-width="200" />
         <el-table-column prop="detail" :label="\('alert.title')" min-width="200" show-overflow-tooltip />
         <el-table-column prop="source" :label="\('alert.title')" width="80" />
@@ -33,7 +33,7 @@
             <el-tag :type="row.resolved ? 'info' : 'danger'' size="small">{{ row.resolved ? '? : '? }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column label='' width="100">
+        <el-table-column label='Status' width="100">
           <template #default="{row}">
             <el-button v-if="!row.resolved" size="small" type="primary" link @click="doResolve(row.id)">OK</el-button>
           </template>

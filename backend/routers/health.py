@@ -1,4 +1,4 @@
-''" -- MySQL/Redis/Docker/Nginx/Tomcat//''"
+""" -- MySQL/Redis/Docker/Nginx/Tomcat//"""
 import socket, os, subprocess, asyncio
 from datetime import datetime
 from fastapi import APIRouter

@@ -74,11 +74,11 @@
       <el-table :data="topMem" stripe size="small" max-height="300">
         <el-table-column prop="name" label="? min-width="160"/>
         <el-table-column prop="pid" label="PID" width="80"/>
-        <el-table-column prop="memory_mb" label='' width="100" sortable><template #default="{row}">{{ row.memory_mb }}MB</template></el-table-column>
-        <el-table-column prop="memory_percent" label='' width="80"><template #default="{row}">{{ row.memory_percent?.toFixed(1) }}%</template></el-table-column>
+        <el-table-column prop="memory_mb" label='Status' width="100" sortable><template #default="{row}">{{ row.memory_mb }}MB</template></el-table-column>
+        <el-table-column prop="memory_percent" label='Status' width="80"><template #default="{row}">{{ row.memory_percent?.toFixed(1) }}%</template></el-table-column>
         <el-table-column prop="cpu_percent" label="CPU" width="60"><template #default="{row}">{{ row.cpu_percent }}%</template></el-table-column>
         <el-table-column prop="uptime_hours" label="(h)" width="80"/>
-        <el-table-column label='' width="80"><template #default="{row}"><el-button text size="small" type="danger" @click="killPid(row.pid)"></el-button></template></el-table-column>
+        <el-table-column label='Status' width="80"><template #default="{row}"><el-button text size="small" type="danger" @click="killPid(row.pid)"></el-button></template></el-table-column>
       </el-table>
     </el-card>
   </div>

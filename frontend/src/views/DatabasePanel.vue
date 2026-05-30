@@ -1,6 +1,6 @@
 <template>
   <div class="page-container db-panel">
-    <div class="page-header"><h2>?/h2><p>MySQL  PostgreSQL  Redis  MongoDB </p></div>
+    <div class="page-header"><h2></h2><p>MySQL  PostgreSQL  Redis  MongoDB </p></div>
 
     <el-row :gutter="16" style="margin-bottom:20px">
       <el-col :span="6" v-for="db in databases" :key="db.id">

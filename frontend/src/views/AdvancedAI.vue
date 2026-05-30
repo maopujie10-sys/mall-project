@@ -15,7 +15,7 @@
 
 <el-tab-pane label=" " name="data">
 <el-input v-model="csvData" type="textarea" :rows="4" placeholder="CSV..."/>
-<el-input v-model="dataQuestion" placeholder=''/>
+<el-input v-model="dataQuestion" placeholder='Search...'/>
 
 <div v-if="dataInsight" class="result-box">-</div></el-tab-pane>
 
@@ -26,7 +26,7 @@
 
 <el-tab-pane label=" " name="export">
 <el-input v-model="exportContent" type="textarea" :rows="6" placeholder="..."/>
-<el-select v-model="exportFormat"><el-option label="Markdown" value="md"/><el-option label="HTML" value="html"/><el-option label='' value="txt"/></el-select>
+<el-select v-model="exportFormat"><el-option label="Markdown" value="md"/><el-option label="HTML" value="html"/><el-option label='Status' value="txt"/></el-select>
 <el-button type="primary" @click="runExport" :loading="loading" style="margin-left:8px">OK</el-button>
 <div v-if="exportUrl" class="result-box"> -</div></el-tab-pane>
 
@@ -48,8 +48,8 @@
 <div v-if="browserScreenshot" style="margin-top:12px">-</el-tab-pane>
 
 <el-tab-pane label=" Agent" name="human">
-<el-input v-model="humanCmd" placeholder='' type="textarea" :rows="3"/>
-<el-select v-model="humanTarget" style="margin-top:8px"><el-option label=" " value="server"/><el-option v-for="c in remoteClients" :key="c" :label='' '+c" :value="c"/></el-select>
+<el-input v-model="humanCmd" placeholder='Enter...' type="textarea" :rows="3"/>
+<el-select v-model="humanTarget" style="margin-top:8px"><el-option label=" " value="server"/><el-option v-for="c in remoteClients" :key="c" :label='Status' '+c" :value="c"/></el-select>
 
 <div v-if="humanLog.length" class="human-log"><div v-for="l in humanLog" :key="l.cycle" class="hl-item">
 <div class="hl-cycle"> {{l.cycle}}</div>
@@ -64,7 +64,7 @@
 <div style="display:flex;gap:8px;margin-bottom:12px"><el-tag v-for="c in remoteClients" :key="c" type="success"> {{c}} </el-tag>-</div>
 <el-button @click="loadRemoteClients" size="small">OK</el-button>
 <el-select v-model="remoteClient" placeholder=''><el-option v-for="c in remoteClients" :key="c" :label="c" :value="c"/></el-select>
-<el-select v-model="remoteAction" placeholder='' style="margin-left:8px"><el-option label=" " value="screenshot"/><el-option label=" " value="open_url"/><el-option label=" " value="click"/><el-option label=" " value="type_text"/><el-option label=" " value="press_key"/><el-option label=" " value="run_command"/><el-option label=" " value="get_info"/><el-option label=" " value="open_app"/></el-select>
+<el-select v-model="remoteAction" placeholder='Enter...' style="margin-left:8px"><el-option label=" " value="screenshot"/><el-option label=" " value="open_url"/><el-option label=" " value="click"/><el-option label=" " value="type_text"/><el-option label=" " value="press_key"/><el-option label=" " value="run_command"/><el-option label=" " value="get_info"/><el-option label=" " value="open_app"/></el-select>
 <el-input v-model="remoteParams" placeholder="(JSON)" style="margin-top:8px"/>
 <el-button type="primary" @click="runRemote" :loading="loading" style="margin-top:8px">OK</el-button>
 <div v-if="remoteScreenshot" class="result-box">-

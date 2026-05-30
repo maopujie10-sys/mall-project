@@ -1,5 +1,4 @@
-''" --  mall-app  Controller
-//////KYC///////////////////////////''"
+"""Mall Tools API - mall-app Controller"""
 import httpx
 from fastapi import APIRouter, Depends
 from config import MALL_BASE_URL

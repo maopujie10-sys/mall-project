@@ -8,11 +8,11 @@
           <el-tab-pane label=" " name="history">
             
             <el-table :data="alerts" stripe size="small">
-              <el-table-column prop="checked_at" label='' width="150" />
-              <el-table-column label='' width="60"><template #default="{row}"><el-tag size="small" :type="row.level==='P0'?'danger':row.level==='P1'?'warning':'info''>{{ row.level }}</el-tag></template></el-table-column>
-              <el-table-column prop="title" label='' width="120" />
-              <el-table-column prop="detail" label='' min-width="250" show-overflow-tooltip />
-              <el-table-column label='' width="80"><template #default="{row}"><el-tag size="small" :type="row.level==='P0'?'danger':'warning''>{{ row.level==='P0'?'':'' }}</el-tag></template></el-table-column>
+              <el-table-column prop="checked_at" label='Status' width="150" />
+              <el-table-column label='Status' width="60"><template #default="{row}"><el-tag size="small" :type="row.level==='P0'?'danger':row.level==='P1'?'warning':'info''>{{ row.level }}</el-tag></template></el-table-column>
+              <el-table-column prop="title" label='Status' width="120" />
+              <el-table-column prop="detail" label='Status' min-width="250" show-overflow-tooltip />
+              <el-table-column label='Status' width="80"><template #default="{row}"><el-tag size="small" :type="row.level==='P0'?'danger':'warning''>{{ row.level==='P0'?'':'' }}</el-tag></template></el-table-column>
             </el-table>
           </el-tab-pane>
         </el-tabs>

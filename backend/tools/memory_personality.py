@@ -1,5 +1,4 @@
-''"Memory Personality Engine -- AI
- +  +  + ''"
+"""Memory Personality Engine - AI Personality System"""
 import os
 import json
 import sqlite3

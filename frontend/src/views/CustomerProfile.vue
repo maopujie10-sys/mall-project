@@ -4,7 +4,7 @@
     <el-row :gutter="16">
       <el-col :span="12">
         <el-card><template #header> </template>
-          <el-input v-model="analyzeText" placeholder='' type="textarea" :rows="3"/>
+          <el-input v-model="analyzeText" placeholder='Enter...' type="textarea" :rows="3"/>
           <el-button type="primary" style="margin-top:8px" @click="analyze">OK</el-button>
           <div v-if="sentiment" class="sent-result">
             <div class="sent-score" :class="sentiment.sentiment">

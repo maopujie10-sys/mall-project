@@ -21,7 +21,7 @@
 <div v-if="usage.models?.length" style="margin-top:12px"><div v-for="m in usage.models" :key="m.model" class="stat-row"><span>{{m.model}}:</span><span>{{(m.tokens_in+m.tokens_out).toLocaleString()}} tokens / ${{m.cost.toFixed(4)}} ({{m.calls}})</span></div></div></div></el-tab-pane>
 
 <el-tab-pane label=" " name="eval">
-<el-input v-model="evalQ" placeholder=''/><el-input v-model="evalA" placeholder="AI" type="textarea" :rows="3" style="margin-top:8px"/><el-input v-model="evalE" placeholder="()" style="margin-top:8px"/>
+<el-input v-model="evalQ" placeholder='Search...'/><el-input v-model="evalA" placeholder="AI" type="textarea" :rows="3" style="margin-top:8px"/><el-input v-model="evalE" placeholder="()" style="margin-top:8px"/>
 <el-button type="primary" @click="runEval" :loading="loading" style="margin-top:8px">OK</el-button>
 <div v-if="evalResult" class="result-box"><div class="eval-score">: {{evalResult.score}}/10</div><div>{{evalResult.feedback}}</div></div></el-tab-pane>
 

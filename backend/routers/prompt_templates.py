@@ -1,4 +1,4 @@
-''"Prompt API''"
+"""Prompt API"""
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from typing import List, Optional

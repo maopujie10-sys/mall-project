@@ -11,15 +11,15 @@
       </div>
     </div>
     <el-tabs v-model="tab">
-      <el-tab-pane label='' name="logs">
+      <el-tab-pane label='Status' name="logs">
         
         <el-table :data="logs" stripe size="small">
-          <el-table-column prop="time" label='' width="160" />
+          <el-table-column prop="time" label='Status' width="160" />
           <el-table-column prop="caller" :label="\('phone.title')" width="140" />
-          <el-table-column prop="intent" label='' width="120" />
+          <el-table-column prop="intent" label='Status' width="120" />
           <el-table-column prop="duration_sec" label="(?" width="90" />
-          <el-table-column label="?><template #default="{row}"><el-tag :type="row.resolved?'success':'warning''>{{ row.resolved?'?:'? }}</el-tag></template></el-table-column>
-          <el-table-column prop="note" label='' min-width="150" />
+          <el-table-column label=""><template #default="{row}"><el-tag :type="row.resolved?'success':'warning''>{{ row.resolved?'?:'? }}</el-tag></template></el-table-column>
+          <el-table-column prop="note" label='Status' min-width="150" />
         </el-table>
       </el-tab-pane>
       <el-tab-pane label=" IVR" name="ivr">
@@ -27,12 +27,12 @@
       </el-tab-pane>
       <el-tab-pane label=" " name="stats">
         <el-descriptions :column="2" border>
-          <el-descriptions-item label="?>{{ stats.total_calls }}</el-descriptions-item>
+          <el-descriptions-item label="">{{ stats.total_calls }}</el-descriptions-item>
           <el-descriptions-item :label="\('phone.title')">{{ stats.today_calls }}</el-descriptions-item>
-          <el-descriptions-item label="?>{{ stats.resolution_rate }}</el-descriptions-item>
+          <el-descriptions-item label="">{{ stats.resolution_rate }}</el-descriptions-item>
           <el-descriptions-item :label="\('phone.title')">{{ stats.auto_resolved }}</el-descriptions-item>
           <el-descriptions-item label=''>{{ stats.avg_duration }}</el-descriptions-item>
-          <el-descriptions-item label="?>{{ stats.transferred }}</el-descriptions-item>
+          <el-descriptions-item label="">{{ stats.transferred }}</el-descriptions-item>
         </el-descriptions>
       </el-tab-pane>
     </el-tabs>

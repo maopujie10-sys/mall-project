@@ -1,5 +1,4 @@
-''" -- AI
-v3: 65''"
+"""Tool Registry - AI Tool Registry v3"""
 from dataclasses import dataclass, field
 from typing import Callable, Optional
 import asyncio

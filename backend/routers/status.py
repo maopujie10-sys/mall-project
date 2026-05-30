@@ -1,4 +1,4 @@
-''" --  mall-app ''"
+""" --  mall-app """
 from fastapi import APIRouter, Depends
 from auth import verify_token
 from config import MALL_BASE_URL

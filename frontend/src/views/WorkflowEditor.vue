@@ -3,7 +3,7 @@
     <div class="wf-header">
       <h2>{{ \('workflow.title') }}</h2>
       <div class="wf-actions">
-        <input v-model="workflowName" placeholder='' class="wf-name-input" />
+        <input v-model="workflowName" placeholder='Enter...' class="wf-name-input" />
         <button @click="saveWorkflow" class="btn btn-primary"></button>
         <button @click="executeWorkflow" class="btn btn-success"></button>
         <button @click="loadWorkflows" class="btn btn-outline"></button>

@@ -1,5 +1,4 @@
-''" -- 
-SQLite + JSON ,''"
+"""Memory Store - SQLite + JSON Storage"""
 import sqlite3
 import json
 import os

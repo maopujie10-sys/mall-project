@@ -2,7 +2,7 @@
   <div class="task-center-panel">
     <div class="page-header">
       -
-      <p>9? //?  ?/p>
+      <p>9? //? </p>
     </div>
 
     <el-row :gutter="16" style="margin-bottom:20px">
@@ -39,7 +39,7 @@
       <el-table :data="tasks" size="small" v-loading="loading">
         <el-table-column prop="id" label="ID" width="120"/>
         <el-table-column prop="name" :label="\('tasks.title')" width="140"/>
-        <el-table-column prop="desc" label='' min-width="200"/>
+        <el-table-column prop="desc" label='Status' min-width="200"/>
         <el-table-column prop="trigger" :label="\('tasks.title')" width="130"/>
         <el-table-column prop="next_run" :label="\('tasks.title')" width="170">
           <template #default="{row}">{{ formatTime(row.next_run) }}</template>
@@ -51,7 +51,7 @@
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label='' width="180">
+        <el-table-column label='Status' width="180">
           <template #default="{row}">
             <el-button size="small" type="primary" link @click="doTrigger(row.id)">?</el-button>
             <el-button v-if="row.status==='running'' size="small" type="warning" link @click="doPause(row.id)">?</el-button>

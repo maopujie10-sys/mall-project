@@ -19,7 +19,7 @@
       <el-col :span="12">
         <el-card shadow="never">
           <template #header>DNS </template>
-          <el-input v-model="dnsDomain" placeholder='' clearable />
+          <el-input v-model="dnsDomain" placeholder='Enter...' clearable />
           <el-button type="primary" @click="doDns" :loading="dnsLoading" style="margin-top:8px">OK</el-button>
           <pre v-if="dnsResult" class="result-box">{{ dnsResult.records }}</pre>
         </el-card>
@@ -27,7 +27,7 @@
     </el-row>
     <el-card shadow="never" style="margin-top:16px">
       <template #header>SSL </template>
-      <el-input v-model="sslDomain" placeholder='' clearable style="max-width:400px" />
+      <el-input v-model="sslDomain" placeholder='Enter...' clearable style="max-width:400px" />
       <el-button type="primary" @click="doSsl" :loading="sslLoading" style="margin-left:8px">OK</el-button>
       <el-descriptions v-if="sslResult && sslResult.cert_info" :column="1" border style="margin-top:12px">
         <el-descriptions-item v-for="(v, k) in sslResult.cert_info" :key="k" :label="k">{{ v }}</el-descriptions-item>

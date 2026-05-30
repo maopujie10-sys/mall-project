@@ -14,9 +14,9 @@
             URL<el-input v-model="imageUrl" placeholder="https://..." clearable style="margin-top:8px" />
           </div>
           <el-select v-model="lang" style="width:100%;margin-top:12px" placeholder=''>
-            <el-option label='' value="chi_sim" /><el-option label='' value="chi_tra" />
-            <el-option label='' value="eng" /><el-option label='' value="jpn" />
-            <el-option label='' value="kor" /><el-option label='' value="auto" />
+            <el-option label='Status' value="chi_sim" /><el-option label='Status' value="chi_tra" />
+            <el-option label='Status' value="eng" /><el-option label='Status' value="jpn" />
+            <el-option label='Status' value="kor" /><el-option label='Status' value="auto" />
           </el-select>
           <el-button type="primary" @click="runOcr" :loading="running" style="width:100%;margin-top:12px">OK</el-button>
         </el-card>
@@ -50,11 +50,11 @@
         <el-card shadow="never" style="margin-top:16px">
           <template #header><span>{{ \('ocr.title') }}</span></template>
           <el-table :data="ocrHistory" stripe size="small" max-height="300">
-            <el-table-column prop="name" label='' min-width="140" show-overflow-tooltip />
-            <el-table-column prop="text" label='' min-width="160" show-overflow-tooltip />
-            <el-table-column prop="lang" label='' width="80" />
-            <el-table-column prop="date" label='' width="100" />
-            <el-table-column label='' width="80"><template #default="{row}"><el-button link type="primary" size="small" @click="ocrText=row.text;confidence=row.confidence">OK</el-button></template></el-table-column>
+            <el-table-column prop="name" label='Status' min-width="140" show-overflow-tooltip />
+            <el-table-column prop="text" label='Status' min-width="160" show-overflow-tooltip />
+            <el-table-column prop="lang" label='Status' width="80" />
+            <el-table-column prop="date" label='Status' width="100" />
+            <el-table-column label='Status' width="80"><template #default="{row}"><el-button link type="primary" size="small" @click="ocrText=row.text;confidence=row.confidence">OK</el-button></template></el-table-column>
           </el-table>
           <el-empty v-if="!ocrHistory.length" description='' />
         </el-card>

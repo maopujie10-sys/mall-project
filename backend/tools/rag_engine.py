@@ -1,4 +1,4 @@
-''"RAG  ChromaDB + AI''"
+"""RAG Engine - ChromaDB + AI Vector Search"""
 import os, re, json, time, hashlib
 from typing import Dict, List, Optional
 from tools.logger import get_logger

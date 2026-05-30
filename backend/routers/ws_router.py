@@ -1,4 +1,4 @@
-''"Dashboard WebSocket -- +++''"
+"""Dashboard WebSocket -- +++"""
 import asyncio, json
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from websocket_manager import ws_manager

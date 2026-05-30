@@ -1,4 +1,4 @@
-''"A/B -- ++AI''"
+"""A/B -- ++AI"""
 import time, random, hashlib
 from collections import defaultdict
 from typing import Dict, List

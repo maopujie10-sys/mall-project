@@ -58,15 +58,15 @@
       <el-empty v-if="backups.length === 0 && !loading" description='' :image-size="80" style="padding:40px 0;" />
       <el-table v-else :data="backups" style="width: 100%;" size="small" stripe>
         <el-table-column prop="id" label=" ID" width="180" />
-        <el-table-column prop="type" label='' width="100">
+        <el-table-column prop="type" label='Status' width="100">
           <template #default="{ row }">
-            <el-tag :type="row.type === '' ? 'primary' : 'info'' size="small" effect="light">
+            <el-tag :type="row.type === '' ? 'primary' : 'info' size="small" effect="light">
               {{ row.type }}
             </el-tag>
           </template>
         </el-table-column>
         <el-table-column prop="target" :label="\('rollback.title')" min-width="140" />
-        <el-table-column prop="time" label='' width="150" />
+        <el-table-column prop="time" label='Status' width="150" />
         <el-table-column prop="size" :label="\('rollback.title')" width="100" />
         <el-table-column prop="status" label="? width="90">
           <template #default="{ row }">
@@ -75,7 +75,7 @@
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label='' width="160">
+        <el-table-column label='Status' width="160">
           <template #default="{ row }">
             <el-button
               v-if="row.status === ''"

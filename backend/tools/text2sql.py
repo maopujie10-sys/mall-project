@@ -1,4 +1,4 @@
-''"Text-to-SQL -- ''"
+"""Text-to-SQL -- """
 import re, json
 from typing import Dict
 from tools.logger import get_logger

@@ -17,7 +17,7 @@
       <template #header>  ({{ tracks.length }})</template>
       <el-table :data="tracks" size="small">
         <el-table-column prop="product" label="? min-width="150"/>
-        <el-table-column prop="platform" label='' width="100"/>
+        <el-table-column prop="platform" label='Status' width="100"/>
         <el-table-column label="? width="120">
           <template #default="{row}">
             <span v-if="row.price_history && row.price_history.length">
@@ -27,14 +27,14 @@
           </template>
         </el-table-column>
         <el-table-column label="? width="100"><template #default="{row}">{{ row.target_price || '-' }}</template></el-table-column>
-        <el-table-column label='' width="80">
+        <el-table-column label='Status' width="80">
           <template #default="{row}">
             <el-tag v-if="row.lastChange" :type="row.lastChange>0?'danger':'success'' size="small">{{ row.lastChange }}%</el-tag>
           </template>
         </el-table-column>
         <el-table-column :label="\('trends.title')" width="80"><template #default="{row}">{{ (row.alerts||[]).length }}</template></el-table-column>
-        <el-table-column label='' width="80"><template #default="{row}">{{ (row.promotions||[]).length }}</template></el-table-column>
-        <el-table-column label='' width="200">
+        <el-table-column label='Status' width="80"><template #default="{row}">{{ (row.promotions||[]).length }}</template></el-table-column>
+        <el-table-column label='Status' width="200">
           <template #default="{row}">
             <el-button size="small" link @click="showPriceDialog(row)">OK</el-button>
             <el-button size="small" link @click="showPromoDialog(row)">OK</el-button>
@@ -48,16 +48,16 @@
     <el-card shadow="never" style="margin-bottom:20px" v-if="trends.length">
       <template #header> </template>
       <el-table :data="trends" size="small">
-        <el-table-column prop="product" label=''/>
-        <el-table-column prop="platform" label='' width="100"/>
+        <el-table-column prop="product" label='OK'/>
+        <el-table-column prop="platform" label='Status' width="100"/>
         <el-table-column prop="first_price" label="? width="100"/>
         <el-table-column prop="last_price" :label="\('trends.title')" width="100"/>
-        <el-table-column label='' width="100">
+        <el-table-column label='Status' width="100">
           <template #default="{row}">
             <el-tag :type="row.trend==='up'?'danger':row.trend==='down'?'success':''" size="small">{{ row.change_pct }}%</el-tag>
           </template>
         </el-table-column>
-        <el-table-column label='' width="80">
+        <el-table-column label='Status' width="80">
           <template #default="{row}">{{ row.trend==='up'?'':row.trend==='down'?'':'' }}</template>
         </el-table-column>
       </el-table>
@@ -96,7 +96,7 @@
         <el-form-item label=''><el-select v-model="addForm.platform" style="width:100%">
           <el-option label="eBay" value="ebay"/><el-option label="Amazon" value="amazon"/>
           <el-option label="AliExpress" value="aliexpress"/><el-option label="Shopee" value="shopee"/>
-          <el-option label='' value="taobao"/><el-option label="1688" value="alibaba1688"/>
+          <el-option label='Status' value="taobao"/><el-option label="1688" value="alibaba1688"/>
         </el-select></el-form-item>
         <el-form-item label=''><el-input v-model="addForm.url"/></el-form-item>
         <el-form-item :label="\('trends.title')"><el-input-number v-model="addForm.target_price" :min="0"/></el-form-item>

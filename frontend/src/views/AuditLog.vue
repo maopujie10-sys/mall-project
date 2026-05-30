@@ -4,14 +4,14 @@
       -
       -
       <div class="header-stats">
-        <el-tag> {{ stats.total || 0 }} ?/el-tag>
-        <el-tag type="success"> {{ stats.today || 0 }} ?/el-tag>
+        <el-tag> {{ stats.total || 0 }} </el-tag>
+        <el-tag type="success"> {{ stats.today || 0 }} </el-tag>
       </div>
     </div>
 
     <div class="filters">
       <el-input v-model="filters.action" placeholder="..." clearable size="small" style="width:200px" />
-      <el-select v-model="filters.risk" placeholder='' clearable size="small" style="width:120px">
+      <el-select v-model="filters.risk" placeholder='Enter...' clearable size="small" style="width:120px">
         <el-option label="L1 ? value="L1" />
         <el-option label="L2 ? value="L2" />
         <el-option label="L3 ? value="L3" />
@@ -22,10 +22,10 @@
     </div>
 
     <el-table :data="logs" stripe size="small" v-loading="loading" max-height="600">
-      <el-table-column label='' width="170">
+      <el-table-column label='Status' width="170">
         <template #default="{row}">{{ formatTime(row.time) }}</template>
       </el-table-column>
-      <el-table-column label='' width="160">
+      <el-table-column label='Status' width="160">
         <template #default="{row}"><el-tag size="small">{{ row.action }}</el-tag></template>
       </el-table-column>
       <el-table-column :label="\('audit.title')" width="200" show-overflow-tooltip>
@@ -34,7 +34,7 @@
       <el-table-column :label="\('audit.title')" min-width="250" show-overflow-tooltip>
         <template #default="{row}">{{ row.detail }}</template>
       </el-table-column>
-      <el-table-column label='' width="80">
+      <el-table-column label='Status' width="80">
         <template #default="{row}">
           <el-tag :type="riskType(row.risk)" size="small">{{ row.risk }}</el-tag>
         </template>

@@ -45,7 +45,7 @@
           <el-table :data="topGoods" stripe size="small" height="380">
             <el-table-column type="index" label="#" width="50" align="center" />
             <el-table-column prop="name" :label="\('mall.title')" min-width="200" />
-            <el-table-column label='' width="120" align="center">
+            <el-table-column label='Status' width="120" align="center">
               <template #default="{row}">{{ fmt(row.prizes||row.price) }}</template>
             </el-table-column>
             <el-table-column label="? width="100" align="center">
@@ -68,9 +68,9 @@
           <el-table-column prop="phone" label="? width="130" />
           <el-table-column prop="balance" :label="\('mall.title')" width="110" />
           <el-table-column prop="status" label="? width="90">
-            <template #default="{row}"><el-tag :type="row.status===1?'success':'danger'' size="small">{{ row.status===1?'':'' }}</el-tag></template>
+            <template #default="{row}"><el-tag :type="row.status===1?'success':'danger' size="small">{{ row.status===1?'':'' }}</el-tag></template>
           </el-table-column>
-          <el-table-column label='' width="200">
+          <el-table-column label='Status' width="200">
             <template #default="{row}">
               <el-button size="small" @click="toggleUser(row)">{{ row.status===1?'':'' }}</el-button>
               <el-button size="small" type="warning" @click="showBalDlg(row)">?/el-button>
@@ -93,9 +93,9 @@
           <el-table-column prop="name" :label="\('mall.title')" min-width="150" />
           <el-table-column prop="phone" label="? width="130" />
           <el-table-column prop="status" label="? width="90">
-            <template #default="{row}"><el-tag :type="row.status===1?'success':'danger'' size="small">{{ row.status===1?'':'' }}</el-tag></template>
+            <template #default="{row}"><el-tag :type="row.status===1?'success':'danger' size="small">{{ row.status===1?'':'' }}</el-tag></template>
           </el-table-column>
-          <el-table-column label='' width="120">
+          <el-table-column label='Status' width="120">
             <template #default="{row}">
               <el-button size="small" @click="toggleMer(row)">{{ row.status===1?'':'' }}</el-button>
             </template>
@@ -108,17 +108,17 @@
       <el-tab-pane name="products">
         <template #label><el-icon><Goods /></el-icon> </template>
         <div class="tb-bar">
-          <el-input v-model="prodKw" placeholder='' style="width:220px" clearable @clear="fetchProducts" @keyup.enter="fetchProducts" />
+          <el-input v-model="prodKw" placeholder='Enter...' style="width:220px" clearable @clear="fetchProducts" @keyup.enter="fetchProducts" />
           <el-button type="primary" @click="fetchProducts">OK</el-button>
         </div>
         <el-table :data="products" stripe size="small" height="520">
           <el-table-column prop="id" label="ID" width="70" />
           <el-table-column prop="name" :label="\('mall.title')" min-width="180" />
-          <el-table-column prop="price" label='' width="100" />
+          <el-table-column prop="price" label='Status' width="100" />
           <el-table-column prop="status" label="? width="90">
-            <template #default="{row}"><el-tag :type="row.status===1?'success':row.status===0?'warning':'info'' size="small">{{ statTxt(row.status) }}</el-tag></template>
+            <template #default="{row}"><el-tag :type="row.status===1?'success':row.status===0?'warning':'info' size="small">{{ statTxt(row.status) }}</el-tag></template>
           </el-table-column>
-          <el-table-column label='' width="160">
+          <el-table-column label='Status' width="160">
             <template #default="{row}">
               <el-button v-if="row.status===0" size="small" type="success" @click="auditProd(row,1)">OK</el-button>
               <el-button v-if="row.status===1" size="small" type="danger" @click="auditProd(row,0)">OK</el-button>
@@ -142,8 +142,8 @@
           <el-table-column prop="status" label="? width="90">
             <template #default="{row}"><el-tag size="small">{{ row.status }}</el-tag></template>
           </el-table-column>
-          <el-table-column prop="createTime" label='' width="160" />
-          <el-table-column label='' width="100">
+          <el-table-column prop="createTime" label='Status' width="160" />
+          <el-table-column label='Status' width="100">
             <template #default="{row}">
               <el-button size="small" type="danger" @click="doRefund(row)">?/el-button>
             </template>
@@ -160,8 +160,8 @@
           <el-table-column prop="orderNo" label="? width="180" />
           <el-table-column prop="amount" :label="\('mall.title')" width="100" />
           <el-table-column prop="userId" label="ID" width="80" />
-          <el-table-column prop="createTime" label='' width="160" />
-          <el-table-column label='' width="160">
+          <el-table-column prop="createTime" label='Status' width="160" />
+          <el-table-column label='Status' width="160">
             <template #default="{row}">
               <el-button size="small" type="success" @click="auditRec(row,true)">OK</el-button>
               <el-button size="small" type="danger" @click="auditRec(row,false)">OK</el-button>
@@ -178,8 +178,8 @@
           <el-table-column prop="orderNo" label="? width="180" />
           <el-table-column prop="amount" :label="\('mall.title')" width="100" />
           <el-table-column prop="userId" label="ID" width="80" />
-          <el-table-column prop="createTime" label='' width="160" />
-          <el-table-column label='' width="220">
+          <el-table-column prop="createTime" label='Status' width="160" />
+          <el-table-column label='Status' width="220">
             <template #default="{row}">
               <el-button size="small" type="success" @click="auditWit(row,true)">OK</el-button>
               <el-button size="small" type="danger" @click="auditWit(row,false)">OK</el-button>
@@ -192,8 +192,8 @@
       <el-tab-pane name="banners">
         <template #label><el-icon><Picture /></el-icon> </template>
         <div class="tb-bar">
-          <el-select v-model="bannerType" placeholder='' style="width:120px" clearable @change="fetchBanners">
-            <el-option :label="\('mall.title')" value="home" /><el-option label='' value="activity" />
+          <el-select v-model="bannerType" placeholder='Enter...' style="width:120px" clearable @change="fetchBanners">
+            <el-option :label="\('mall.title')" value="home" /><el-option label='Status' value="activity" />
           </el-select>
           <el-button type="primary" @click="fetchBanners">OK</el-button>
           <el-button type="success" @click="showBannerDlg()"></el-button>
@@ -201,10 +201,10 @@
         <el-table :data="banners" stripe size="small" height="480">
           <el-table-column prop="uuid" label="UUID" width="120" />
           <el-table-column prop="title" :label="\('mall.title')" min-width="150" />
-          <el-table-column prop="type" label='' width="100" />
-          <el-table-column prop="sort" label='' width="70" />
+          <el-table-column prop="type" label='Status' width="100" />
+          <el-table-column prop="sort" label='Status' width="70" />
           <el-table-column prop="imgUrl" label="URL" min-width="200" />
-          <el-table-column label='' width="160">
+          <el-table-column label='Status' width="160">
             <template #default="{row}">
               <el-button size="small" @click="showBannerDlg(row)">OK</el-button>
               <el-button size="small" type="danger" @click="delBanner(row)">OK</el-button>
@@ -218,8 +218,8 @@
       <el-tab-pane name="categories">
         <template #label><el-icon><Grid /></el-icon> </template>
         <div class="tb-bar">
-          <el-select v-model="catLevel" placeholder='' style="width:100px" clearable @change="fetchCategories">
-            <el-option label="? :value="1" /><el-option label='' :value="2" />
+          <el-select v-model="catLevel" placeholder='Enter...' style="width:100px" clearable @change="fetchCategories">
+            <el-option label="? :value="1" /><el-option label='Status' :value="2" />
           </el-select>
           <el-button type="primary" @click="fetchCategories">OK</el-button>
           <el-button type="success" @click="showCatDlg()"></el-button>
@@ -227,12 +227,12 @@
         <el-table :data="categories" stripe size="small" height="480">
           <el-table-column prop="uuid" label="UUID" width="120" />
           <el-table-column prop="name" :label="\('mall.title')" min-width="150" />
-          <el-table-column prop="sort" label='' width="70" />
-          <el-table-column prop="level" label='' width="70" />
+          <el-table-column prop="sort" label='Status' width="70" />
+          <el-table-column prop="level" label='Status' width="70" />
           <el-table-column prop="status" label="? width="80">
-            <template #default="{row}"><el-tag :type="row.status===1?'success':'danger'' size="small">{{ row.status===1?'':'' }}</el-tag></template>
+            <template #default="{row}"><el-tag :type="row.status===1?'success':'danger' size="small">{{ row.status===1?'':'' }}</el-tag></template>
           </el-table-column>
-          <el-table-column label='' width="220">
+          <el-table-column label='Status' width="220">
             <template #default="{row}">
               <el-button size="small" @click="showCatDlg(row)">OK</el-button>
               <el-button size="small" :type="row.status===1?'warning':'success'' @click="toggleCatStatus(row)">{{ row.status===1?'':'' }}</el-button>
@@ -247,9 +247,9 @@
       <el-tab-pane name="evaluations">
         <template #label><el-icon><Star /></el-icon> </template>
         <div class="tb-bar">
-          <el-input v-model="evalKw" placeholder='' style="width:220px" clearable @clear="fetchEvaluations" @keyup.enter="fetchEvaluations" />
+          <el-input v-model="evalKw" placeholder='Enter...' style="width:220px" clearable @clear="fetchEvaluations" @keyup.enter="fetchEvaluations" />
           <el-select v-model="evalStatus" placeholder="? style="width:100px" clearable @change="fetchEvaluations">
-            <el-option :label="\('mall.title')" :value="1" /><el-option label='' :value="0" />
+            <el-option :label="\('mall.title')" :value="1" /><el-option label='Status' :value="0" />
           </el-select>
           <el-button type="primary" @click="fetchEvaluations">OK</el-button>
         </div>
@@ -257,14 +257,14 @@
           <el-table-column prop="uuid" label="UUID" width="100" />
           <el-table-column prop="userName" :label="\('mall.title')" width="100" />
           <el-table-column prop="content" :label="\('mall.title')" min-width="200" show-overflow-tooltip />
-          <el-table-column prop="rating" label='' width="70">
+          <el-table-column prop="rating" label='Status' width="70">
             <template #default="{row}">{{ '?.repeat(row.rating||0) }}</template>
           </el-table-column>
           <el-table-column prop="status" label="? width="80">
-            <template #default="{row}"><el-tag :type="row.status===1?'success':'info'' size="small">{{ row.status===1?'':'' }}</el-tag></template>
+            <template #default="{row}"><el-tag :type="row.status===1?'success':'info' size="small">{{ row.status===1?'':'' }}</el-tag></template>
           </el-table-column>
-          <el-table-column prop="createTime" label='' width="160" />
-          <el-table-column label='' width="160">
+          <el-table-column prop="createTime" label='Status' width="160" />
+          <el-table-column label='Status' width="160">
             <template #default="{row}">
               <el-button size="small" :type="row.status===1?'warning':'success'' @click="toggleEval(row)">{{ row.status===1?'':'' }}</el-button>
               <el-button size="small" type="danger" @click="delEval(row)">OK</el-button>
@@ -278,15 +278,15 @@
       <el-tab-pane name="attrCats">
         <template #label><el-icon><Collection /></el-icon> ?/template>
         <div class="tb-bar">
-          <el-input v-model="attrCatKw" placeholder='' style="width:220px" clearable @clear="fetchAttrCats" @keyup.enter="fetchAttrCats" />
+          <el-input v-model="attrCatKw" placeholder='Enter...' style="width:220px" clearable @clear="fetchAttrCats" @keyup.enter="fetchAttrCats" />
           <el-button type="primary" @click="fetchAttrCats">OK</el-button>
           <el-button type="success" @click="showAttrCatDlg()"></el-button>
         </div>
         <el-table :data="attrCats" stripe size="small" height="480">
           <el-table-column prop="id" label="ID" width="200" />
           <el-table-column prop="name" :label="\('mall.title')" min-width="150" />
-          <el-table-column prop="sort" label='' width="80" />
-          <el-table-column label='' width="160">
+          <el-table-column prop="sort" label='Status' width="80" />
+          <el-table-column label='Status' width="160">
             <template #default="{row}">
               <el-button size="small" @click="showAttrCatDlg(row)">OK</el-button>
               <el-button size="small" type="danger" @click="delAttrCat(row)">OK</el-button>
@@ -307,8 +307,8 @@
         <el-table :data="attrs" stripe size="small" height="480">
           <el-table-column prop="id" label="ID" width="200" />
           <el-table-column prop="categoryId" label="ID" width="200" />
-          <el-table-column prop="sort" label='' width="80" />
-          <el-table-column label='' width="160">
+          <el-table-column prop="sort" label='Status' width="80" />
+          <el-table-column label='Status' width="160">
             <template #default="{row}">
               <el-button size="small" @click="showAttrDlg(row)">OK</el-button>
               <el-button size="small" type="danger" @click="delAttr(row)">OK</el-button>
@@ -335,7 +335,7 @@
         <el-table-column prop="id" label="ID" width="60" />
         <el-table-column prop="name" label="? width="120" />
         <el-table-column prop="phone" label="? width="130" />
-        <el-table-column label='' width="140">
+        <el-table-column label='Status' width="140">
           <template #default="{row}">
             <el-button size="small" type="success" @click="auditApply(row,true)">OK</el-button>
             <el-button size="small" type="danger" @click="auditApply(row,false)">OK</el-button>
@@ -348,7 +348,7 @@
     <el-dialog v-model="bannerDlg.show" :title="bannerDlg.uuid?'':''' width="500px">
       <el-form label-width="80px">
         <el-form-item :label="\('mall.title')"><el-input v-model="bannerDlg.title" /></el-form-item>
-        <el-form-item label=''><el-select v-model="bannerDlg.type" style="width:100%"><el-option :label="\('mall.title')" value="home" /><el-option label='' value="activity" /></el-select></el-form-item>
+        <el-form-item label=''><el-select v-model="bannerDlg.type" style="width:100%"><el-option :label="\('mall.title')" value="home" /><el-option label='Status' value="activity" /></el-select></el-form-item>
         <el-form-item label="URL"><el-input v-model="bannerDlg.imgUrl" placeholder="https://..." /></el-form-item>
         <el-form-item label="URL"><el-input v-model="bannerDlg.linkUrl" /></el-form-item>
         <el-form-item label=''><el-input-number v-model="bannerDlg.sort" :min="0" /></el-form-item>
@@ -364,7 +364,7 @@
         <el-form-item label="ID"><el-input v-model="catDlg.parentId" placeholder="0" /></el-form-item>
         <el-form-item label=''><el-input-number v-model="catDlg.type" :min="1" /></el-form-item>
         <el-form-item label=''><el-input-number v-model="catDlg.sort" :min="0" /></el-form-item>
-        <el-form-item label="?><el-switch v-model="catDlg.status" :active-value="1" :inactive-value="0" /></el-form-item>
+        <el-form-item label=""><el-switch v-model="catDlg.status" :active-value="1" :inactive-value="0" /></el-form-item>
       </el-form>
       <template #footer><el-button @click="catDlg.show=false">OK</el-button><el-button type="primary" @click="saveCatDlg">OK</el-button></template>
     </el-dialog>

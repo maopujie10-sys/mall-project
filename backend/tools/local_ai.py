@@ -1,5 +1,4 @@
-''"AI -- API Key,++
-LLM,API KeyAI''"
+"""Local AI Engine - API Key based LLM Inference"""
 import re, random, time, os
 from tools.logger import get_logger
 

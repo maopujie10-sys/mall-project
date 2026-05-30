@@ -1,4 +1,4 @@
-''" API  WebSocket STTLLMTTS''"
+"""Voice API - WebSocket STT + LLM + TTS"""
 import json, base64, io, wave, asyncio
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Depends, UploadFile, File
 from pydantic import BaseModel

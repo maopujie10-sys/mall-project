@@ -1,4 +1,4 @@
-''"Google Authenticator TOTP -- Python(pyotp)''"
+"""Google Authenticator TOTP -- Python(pyotp)"""
 import hmac, hashlib, struct, base64, time, os, io
 from typing import Optional
 

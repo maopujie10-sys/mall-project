@@ -5,7 +5,7 @@
       <el-input v-model="requirement" placeholder="Excel" type="textarea" :rows="3"/>
       <el-button type="primary" style="margin-top:10px" @click="generate" :loading="loading">AI</el-button>
     </el-card>
-    <el-card v-if="code" style="margin-top:16px"><template #header><el-tag size="small" style="margin-left:8px" :type="validation.pass?'success':'danger''>{{validation.pass?'':''}}</el-tag></template>
+    <el-card v-if="code" style="margin-top:16px"><template #header><el-tag size="small" style="margin-left:8px" :type="validation.pass?'success':'danger'>{{validation.pass?'':''}}</el-tag></template>
       <pre class="code-preview">{{ code }}</pre>
       <div style="margin-top:12px;display:flex;gap:8px">
         <el-button type="success" @click="deploy" :loading="deploying" :disabled="!validation.pass">OK</el-button>

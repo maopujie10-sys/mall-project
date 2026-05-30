@@ -7,7 +7,7 @@
         <el-card :class="{ 'connected': p.connected, 'disconnected': !p.connected }">
           <template #header>
             <span class="platform-header">{{ p.icon }} {{ p.name }}</span>
-            <el-tag :type="p.connected ? 'success' : 'info'' size="small" style="float:right">{{ p.connected ? '' : '' }}</el-tag>
+            <el-tag :type="p.connected ? 'success' : 'info' size="small" style="float:right">{{ p.connected ? '' : '' }}</el-tag>
           </template>
           <div class="platform-status">{{ p.status }}</div>
           <div class="platform-memory" v-if="p.memoryCount !== null">
@@ -35,9 +35,9 @@
         <template #append><el-button @click="pushMemory" :loading="pushing">OK</el-button></template>
       </el-input>
       <el-table :data="memories" size="small" stripe max-height="300" v-if="memories.length">
-        <el-table-column prop="platform" label='' width="100" />
-        <el-table-column prop="content" label='' min-width="300" show-overflow-tooltip />
-        <el-table-column prop="time" label='' width="160" />
+        <el-table-column prop="platform" label='Status' width="100" />
+        <el-table-column prop="content" label='Status' min-width="300" show-overflow-tooltip />
+        <el-table-column prop="time" label='Status' width="160" />
       </el-table>
       <el-empty v-else description='' />
     </el-card>

@@ -10,16 +10,16 @@
       <el-tab-pane label=" " name="rules">
         <el-button @click="ruleDialog=true" size="small" type="primary" style="margin-bottom:8px">+ </el-button>
         <el-table :data="rules" stripe size="small">
-          <el-table-column prop="keyword" label='' width="130" />
-          <el-table-column prop="reply" label='' min-width="200" show-overflow-tooltip />
-          <el-table-column prop="category" label='' width="80" />
-          <el-table-column prop="priority" label='' width="70" />
-          <el-table-column label='' width="80"><template #default="{row}"><el-button text type="danger" size="small" @click="delRule(row.id)">OK</el-button></template></el-table-column>
+          <el-table-column prop="keyword" label='Status' width="130" />
+          <el-table-column prop="reply" label='Status' min-width="200" show-overflow-tooltip />
+          <el-table-column prop="category" label='Status' width="80" />
+          <el-table-column prop="priority" label='Status' width="70" />
+          <el-table-column label='Status' width="80"><template #default="{row}"><el-button text type="danger" size="small" @click="delRule(row.id)">OK</el-button></template></el-table-column>
         </el-table>
       </el-tab-pane>
     </el-tabs>
     <el-dialog v-model="ruleDialog" title='' width="450">
-      <el-form label-width="80"><el-form-item label=''><el-input v-model="newRule.keyword" placeholder='' /></el-form-item>
+      <el-form label-width="80"><el-form-item label=''><el-input v-model="newRule.keyword" placeholder='Enter...' /></el-form-item>
         <el-form-item label=''><el-input v-model="newRule.reply" type="textarea" :rows="3" placeholder="AI" /></el-form-item>
         <el-form-item label=''><el-input-number v-model="newRule.priority" :min="0" :max="100" /></el-form-item>
       </el-form>

@@ -1,5 +1,4 @@
-''" -- 
- ZIP ''"
+"""Skill Loader - ZIP Plugin Loader"""
 import os
 import json
 import zipfile
