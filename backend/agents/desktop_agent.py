@@ -1,4 +1,4 @@
-﻿"""Desktop Control Agent -- 服务器端桌面控制编排器
+"""Desktop Control Agent -- 服务器端桌面控制编排器
 管理所有连接的桌面Agent, 接收AI指令转发到目标电脑执行
 """
 import asyncio

@@ -1,4 +1,4 @@
-﻿"""工具注册中心 -- 所有AI可调用工具的统一注册与管理
+"""工具注册中心 -- 所有AI可调用工具的统一注册与管理
 v3: 全部65工具绑定真实执行函数"""
 from dataclasses import dataclass, field
 from typing import Callable, Optional
@@ -349,6 +349,47 @@ def register_builtin_tools():
         from routers.notify import send_notification
         return {"ok": True, "sent_to": kw.get("channel", "unknown"), "message": kw.get("message", "")[:50]}
 
+    # ---- Desktop控制工具 ----
+    async def _desktop_list_h(**kw):
+        from agents.desktop_agent import desktop_control
+        return await desktop_control.list_desktops()
+    async def _desktop_screenshot_h(**kw):
+        from agents.desktop_agent import desktop_control
+        return await desktop_control.screenshot(kw.get("agent_id"))
+    async def _desktop_click_h(**kw):
+        from agents.desktop_agent import desktop_control
+        return await desktop_control.click(kw.get("x",0),kw.get("y",0),kw.get("button","left"),kw.get("agent_id"))
+    async def _desktop_type_h(**kw):
+        from agents.desktop_agent import desktop_control
+        return await desktop_control.type_text(kw.get("text",""),kw.get("agent_id"))
+    async def _desktop_keys_h(**kw):
+        from agents.desktop_agent import desktop_control
+        return await desktop_control.press_keys(kw.get("keys",[]),kw.get("agent_id"))
+    async def _desktop_open_app_h(**kw):
+        from agents.desktop_agent import desktop_control
+        return await desktop_control.open_app(kw.get("app_path",""),kw.get("agent_id"))
+    async def _desktop_open_url_h(**kw):
+        from agents.desktop_agent import desktop_control
+        return await desktop_control.open_url(kw.get("url","https://google.com"),kw.get("agent_id"))
+    async def _desktop_windows_h(**kw):
+        from agents.desktop_agent import desktop_control
+        return await desktop_control.list_windows(kw.get("agent_id"))
+    async def _desktop_focus_h(**kw):
+        from agents.desktop_agent import desktop_control
+        return await desktop_control.focus_window(kw.get("title_part",""),kw.get("agent_id"))
+    async def _desktop_ocr_h(**kw):
+        from agents.desktop_agent import desktop_control
+        return await desktop_control.ocr_screen(kw.get("region"),kw.get("agent_id"))
+    async def _desktop_move_h(**kw):
+        from agents.desktop_agent import desktop_control
+        return await desktop_control.move_mouse(kw.get("x",0),kw.get("y",0),kw.get("duration",0.3),kw.get("agent_id"))
+    async def _desktop_scroll_h(**kw):
+        from agents.desktop_agent import desktop_control
+        return await desktop_control.scroll(kw.get("amount",3),kw.get("x"),kw.get("y"),kw.get("agent_id"))
+    async def _desktop_drag_h(**kw):
+        from agents.desktop_agent import desktop_control
+        return await desktop_control.drag(kw.get("x1",0),kw.get("y1",0),kw.get("x2",100),kw.get("y2",100),kw.get("agent_id"))
+
     tools = [
         ToolDef("server.status", "服务器状态", "查看CPU/内存/磁盘/负载", "L1", "server", handler=_srv_status_h),
         ToolDef("server.ports", "端口列表", "查看服务器监听端口", "L1", "server", handler=_srv_ports_h),
@@ -436,47 +477,6 @@ def register_builtin_tools():
         ToolDef("evolution.knowledge", "知识库", "查看AI已学到的知识", "L1", "evolution", handler=_evo_knowledge_h),
 
         ToolDef("notify.config", "通知配置", "查看通知渠道配置", "L1", "notify", handler=_notify_config_h),
-
-    # ---- Desktop控制工具 ----
-    async def _desktop_list_h(**kw):
-        from agents.desktop_agent import desktop_control
-        return await desktop_control.list_desktops()
-    async def _desktop_screenshot_h(**kw):
-        from agents.desktop_agent import desktop_control
-        return await desktop_control.screenshot(kw.get("agent_id"))
-    async def _desktop_click_h(**kw):
-        from agents.desktop_agent import desktop_control
-        return await desktop_control.click(kw.get("x",0),kw.get("y",0),kw.get("button","left"),kw.get("agent_id"))
-    async def _desktop_type_h(**kw):
-        from agents.desktop_agent import desktop_control
-        return await desktop_control.type_text(kw.get("text",""),kw.get("agent_id"))
-    async def _desktop_keys_h(**kw):
-        from agents.desktop_agent import desktop_control
-        return await desktop_control.press_keys(kw.get("keys",[]),kw.get("agent_id"))
-    async def _desktop_open_app_h(**kw):
-        from agents.desktop_agent import desktop_control
-        return await desktop_control.open_app(kw.get("app_path",""),kw.get("agent_id"))
-    async def _desktop_open_url_h(**kw):
-        from agents.desktop_agent import desktop_control
-        return await desktop_control.open_url(kw.get("url","https://google.com"),kw.get("agent_id"))
-    async def _desktop_windows_h(**kw):
-        from agents.desktop_agent import desktop_control
-        return await desktop_control.list_windows(kw.get("agent_id"))
-    async def _desktop_focus_h(**kw):
-        from agents.desktop_agent import desktop_control
-        return await desktop_control.focus_window(kw.get("title_part",""),kw.get("agent_id"))
-    async def _desktop_ocr_h(**kw):
-        from agents.desktop_agent import desktop_control
-        return await desktop_control.ocr_screen(kw.get("region"),kw.get("agent_id"))
-    async def _desktop_move_h(**kw):
-        from agents.desktop_agent import desktop_control
-        return await desktop_control.move_mouse(kw.get("x",0),kw.get("y",0),kw.get("duration",0.3),kw.get("agent_id"))
-    async def _desktop_scroll_h(**kw):
-        from agents.desktop_agent import desktop_control
-        return await desktop_control.scroll(kw.get("amount",3),kw.get("x"),kw.get("y"),kw.get("agent_id"))
-    async def _desktop_drag_h(**kw):
-        from agents.desktop_agent import desktop_control
-        return await desktop_control.drag(kw.get("x1",0),kw.get("y1",0),kw.get("x2",100),kw.get("y2",100),kw.get("agent_id"))
         ToolDef("notify.send", "发送通知", "通过指定渠道发送通知", "L2", "notify", params_schema={"channel":{"type":"string"},"message":{"type":"string"}}, handler=_notify_send_h),
 
         ToolDef("desktop.list","列出桌面","查看所有连接的电脑桌面Agent","L1","desktop",handler=_desktop_list_h),
