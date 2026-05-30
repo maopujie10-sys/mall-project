@@ -1,6 +1,6 @@
 # 🖥️ Friday AI OS — 服务器端 AI 记忆
 
-> 最后更新: 2026-05-30 09:40 | 运行环境: server
+> 最后更新: 2026-05-30 17:25 | 运行环境: server
 
 ## 🧬 当前人格
 - 类型: 均衡型 · 全面发展
@@ -15,6 +15,11 @@
 6. 客服自动回复 + 轮值域名监控
 
 ## 最近改动
+- 2026-05-30 17:25: [Dubbo恢复] ZK+Tomcat完整重启，Dubbo双端口20880/20881恢复，全量测试100%通过
+  - **根因：** Docker网桥IP变更导致ZK残留旧注册，data.war Dubbo provider无法绑定
+  - **修复序列：** 停Tomcat → killall java → 启ZK → 验证imok → 启Tomcat → 等180s
+  - **验证：** /tmp/mall_final_test.py 15/15 100%，65API全部200，注册+登录成功
+  - **端口：** 20880(data.war provider) ✅ / 20881(api.war provider) ✅
 - 2026-05-30 09:40: [编码修复-续] 修复 advanced_ai.py(6处) + agent_chat.py(3处) + memory_router.py(6处) 残留编码污染
   - **根本原因：** 电脑端 compact 格式转换在每次 push 前污染中文 UTF-8，`"` 被替换为 `?` (0x3F)，导致大量语法错误
   - advanced_ai.py: f-string `}` 单括号、缺失引号 `"__EUR",copy`、f-string `)` 导致解析异常、`}""` 多余引号 — 逐行修了6轮

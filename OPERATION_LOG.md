@@ -1,5 +1,26 @@
 # 操作日志
 
+## 2026-05-30 17:19 — Dubbo服务恢复 + 全量测试100%通过
+
+**问题：** 上次Docker重启后网桥IP变更(172.17→172.18→172.19)，ZooKeeper中残留旧IP注册，导致data.war Dubbo提供者(LogService/SysLogService)无法绑定端口20880。用户注册流程因缺少LogService而失败。
+
+**修复：**
+- 完整重启序列：停Tomcat → killall java → 启ZK(2181) → 等imok → 启Tomcat → 等180s部署
+- data.war Dubbo协议绑定20880 ✅，api.war绑定20881 ✅
+- ZK中Dubbo节点全部重建，consumer成功订阅provider
+
+**验证：**
+- `/tmp/mall_final_test.py` 全量跑通：15/15通过率100%
+- 65个API端点全部200 (100%)
+- 6个页面零资源/JS错误
+- 注册+登录完整流程成功 (code:0, 返回token)
+- 100并发: 60OK/40FAIL (冷启动第一轮，后续应改善)
+
+**关键文件：**
+- `/opt/tomcat8/webapps/api/WEB-INF/classes/applicationContext.xml` — maxActive 50→200 (之前改的，本次确认持久化)
+- `/opt/tomcat8/conf/server.xml` — maxThreads=300 + acceptCount=200
+- ZK `/dubbo` 节点自动重建，provider URL使用172.19.0.1 (当前docker0网桥)
+
 ## 2026-05-30 09:27 — 修复8个文件中文编码污染 + Docker重建
 
 **原因：** 电脑端compact格式转换导致UTF-8中文双重编码(mojibake)，4个Python文件语法错误阻塞Agent启动。
