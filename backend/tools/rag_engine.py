@@ -202,3 +202,6 @@ try:
     RAGEngine.load()
 except:
     pass
+
+# 单例实例 (供rag_router.py导入)
+rag = RAGEngine()

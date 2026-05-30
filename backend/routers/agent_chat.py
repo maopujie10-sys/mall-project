@@ -102,8 +102,7 @@ async def analyze_image(image_base64: str, question: str = "______") -> str:
             ]}]})
         if resp.status_code == 200:
             data = resp.json()
-        return data.get("choices", [{}])[0].get("message", {}).get("content", "AI___")
-        return f"________EUR_____: {resp.status_code}"
+        return data.get("choices", [{}])[0].get("message", {}).get("content", "分析失败")
 
 router = APIRouter(prefix="/agent", tags=["Agent"])
 
@@ -392,11 +391,9 @@ async def confirm_task(req: ConfirmRequest, _=Depends(verify_token)):
             state.pending_approvals.remove(a)
             return {"ok": True, "status": a["status"]}
     return {"ok": False, "error": "_____________"}
+# CONV_DB defined at top of file
 
 
-
-
-CONV_DB = Path(__file__).parent.parent / "data" / "conversations.db"
 def _cdb():
     CONV_DB.parent.mkdir(parents=True,exist_ok=True)
     c=sqlite3.connect(str(CONV_DB))
@@ -442,19 +439,6 @@ async def chat_stream(req: ChatRequest, _=Depends(verify_token)):
         except Exception as e:
             yield f"data: {json.dumps({'error':str(e)},ensure_ascii=False)}\n\n"
     return StreamingResponse(gen(),media_type="text/event-stream",headers={"Cache-Control":"no-cache","X-Accel-Buffering":"no"})
-
-@router.post("/chat/vision")
-async def cv(img:str=Form(...),q:str=Form("_________"),_=Depends(verify_token)):
-    k=OPENAI_API_KEY;u=OPENAI_BASE_URL or "https://api.openai.com/v1"
-    if not k:return{"ok":False,"error":"______PENAI_API_KEY"}
-    try:
-        async with httpx.AsyncClient(timeout=60)as c:
-            r=await c.post(f"{u}/chat/completions",headers={"Authorization":f"Bearer {k}","Content-Type":"application/json"},
-                json={"model":"gpt-4o-mini" if OPENAI_API_KEY else "gpt-4o","messages":[{"role":"user","content":[{"type":"text","text":q},{"type":"image_url","image_url":{"url":f"data:image/jpeg;base64,{img}"}}]}]})
-            if r.status_code==200:
-                d=r.json();return{"ok":True,"reply":d.get("choices",[{}])[0].get("message",{}).get("content","(no content)")}
-            return{"ok":False,"error":f"API:{r.status_code}"}
-    except Exception as e:return{"ok":False,"error":str(e)}
 
 PROMPTS={}
 for n,p in[("default","{input}")]:
