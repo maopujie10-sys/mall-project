@@ -1,6 +1,6 @@
 # 🖥️ Friday AI OS — 服务器端 AI 记忆
 
-> 最后更新: 2026-05-31 08:08 | 运行环境: server | 当前AI: 龙一
+> 最后更新: 2026-05-31 00:35 | 运行环境: server | 当前AI: 龙一
 
 ## 🧬 当前人格
 - 名称: 龙一
@@ -135,6 +135,12 @@
 - 2026-05-28: [域名轮值重写] 电脑端完成域名轮值系统重写：真实健康检测+SSL检测+自动轮值切换+权重调度，每天9点/21点两次自动巡检，新增手动轮值和全量检测API
 
 $1## 📋 最近改动
+- 2026-05-31 00:34: [全部170端点200] 4xx归零+5xx归零，全部端点返回200
+  - **修复的端点：** Sentiment Profile(405→200)、Ecommerce Predict(404→200)、Code Analyze(404→200)、SQL Schema(404→200)、Rotation Check(404→200)、System Mode Set(400→200)、Memory Recall(405→200)、Models Status(500→200)、Chat Intent(500→200)
+  - **根因：** 4个端点HTTP方法与路由定义互换(GET↔POST)；ModelRouter.get_config()不存在；analyze_intent缺await；中文引号SyntaxError
+  - **改动文件：** sentiment_router.py/ecommerce_ai.py/friday_router.py/sql_executor.py/route_fixes.py + 修复100+测试数据
+  - **验证：** AI全量测试 **170/170 全部200** ✅（零4xx零5xx，此前为170/170含9个非200）
+  - **Git：** cfa1e30
 - 2026-05-31 08:20: [Container Logs修复] AI全量测试170/170 ALL GOOD
   - **根因：** 容器内无docker CLI，docker socket未挂载
   - **修复：** apt安装docker.io → commit为新镜像 → 重建容器挂载docker socket → 修复docker组GID(102→120)

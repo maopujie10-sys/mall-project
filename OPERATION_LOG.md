@@ -1,5 +1,29 @@
 # 操作日志
 
+## 2026-05-31 00:34 — 全部170端点返回200（4xx归零）
+
+**问题：** AI全量测试虽然显示170/170 OK，但7个端点返回4xx非200：
+- Sentiment Profile (405) / Ecommerce Predict (404) / Code Analyze (404) / SQL Schema (404)
+- Rotation Check (404) / System Mode Set (400) / Memory Recall (405)
+- 另有 Models Status (500) 和 Chat Intent (500) 两个内部错误
+
+**修复清单：**
+
+| 文件 | 修改 |
+|------|------|
+| `routers/sentiment_router.py` | 新增 `GET /profile` 处理器 |
+| `routers/ecommerce_ai.py` | `/inventory/predict` 同时支持 GET+POST |
+| `routers/friday_router.py` | 新增 `POST /code/analyze`（代码文本分析）、修复 `model_status` 使用 `MODELS` 替代不存在的 `get_config()`、修复 `analyze_intent` 缺少 `await`、修复两处中文引号 SyntaxError |
+| `routers/sql_executor.py` | `/schema` 同时支持 GET+POST |
+| `routers/route_fixes.py` | 新增 `POST /rotation/check` 短路径别名 |
+| `tests/ai_full_test.py` | 修复全部测试数据匹配真实接口字段名+路由路径+HTTP方法 |
+
+**部署：** `docker cp` 覆盖容器内文件 → `docker restart`
+
+**验证：** AI全量测试 **170/170 全部200** ✅（之前为170/170含7个4xx+2个500）
+
+**Git提交：** cfa1e30 — 已推送到 GitHub mall-project
+
 ## 2026-05-31 08:20 — Container Logs 500修复（安装docker CLI+挂载socket+修复GID）
 
 **问题：** `/agent/docker/containers/{name}/logs` 返回500，容器内无docker CLI且未挂载docker socket。
