@@ -57,15 +57,15 @@ async def login(req: LoginRequest):
     if totp_secret:
         from tools.totp import verify_totp
         if not req.totp_token or not verify_totp(totp_secret, req.totp_token):
-            raise HTTPException(401, "闇€瑕丟oogle楠岃瘉鐮?)
-    # 鐢熸垚JWT
+            raise HTTPException(401, "需要Google验证码")
+    # 生成JWT
     access_token = create_jwt({"sub": user["id"], "username": user["username"], "role": user["role"]}, 24)
     return {"ok": True, "access_token": access_token, "user": {"id": user["id"], "username": user["username"],
             "role": user["role"]}, "expires_in_hours": 24}
 
 @router.get("/me")
 async def get_current_user(_=Depends(verify_token)):
-    """褰撳墠鐢ㄦ埛淇℃伅"""
+    """当前用户信息"""
     return {"ok": True, "user": {"username": "admin", "role": "admin", "note": "from JWT"}}
 
 @router.get("/users")
