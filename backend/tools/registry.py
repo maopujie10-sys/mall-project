@@ -435,6 +435,10 @@ def register_builtin_tools():
         ToolDef("evolution.knowledge", '', "AI", "L1", "evolution", handler=_evo_knowledge_h),
 
         ToolDef("notify.config", '', '', "L1", "notify", handler=_notify_config_h),
+    ]
+
+    for t in tools:
+        registry.register(t)
 
     # ---- Desktop ----
     async def _desktop_list_h(**kw):
@@ -476,8 +480,9 @@ def register_builtin_tools():
     async def _desktop_drag_h(**kw):
         from agents.desktop_agent import desktop_control
         return await desktop_control.drag(kw.get("x1",0),kw.get("y1",0),kw.get("x2",100),kw.get("y2",100),kw.get("agent_id"))
-        ToolDef("notify.send", '', '', "L2", "notify", params_schema={"channel":{"type":"string"},"message":{"type":"string"}}, handler=_notify_send_h),
 
+    _desktop_tools = [
+        ToolDef("notify.send", '', '', "L2", "notify", params_schema={"channel":{"type":"string"},"message":{"type":"string"}}, handler=_notify_send_h),
         ToolDef("desktop.list",'',"Agent","L1","desktop",handler=_desktop_list_h),
         ToolDef("desktop.screenshot",'','',"L1","desktop",params_schema={"agent_id":{"type":"string"}},handler=_desktop_screenshot_h),
         ToolDef("desktop.click",'','',"L2","desktop",need_confirm=True,params_schema={"x":{"type":"number"},"y":{"type":"number"}},handler=_desktop_click_h),
@@ -493,6 +498,6 @@ def register_builtin_tools():
         ToolDef("desktop.drag",'',"(x1,y1)(x2,y2)","L2","desktop",need_confirm=True,params_schema={"x1":{"type":"number"},"y1":{"type":"number"},"x2":{"type":"number"},"y2":{"type":"number"}},handler=_desktop_drag_h),
     ]
 
-    for t in tools:
+    for t in _desktop_tools:
         registry.register(t)
-    return len(tools)
+    return len(tools) + len(_desktop_tools)

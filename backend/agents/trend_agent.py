@@ -1,5 +1,4 @@
-''"Trend Agent --  /  / 
-:/B//X/YouTube/Google Trends''"
+"""Trend Agent -- Trend Analysis / Baidu/Weibo/X/YouTube/Google Trends"""
 import httpx
 import asyncio
 from datetime import datetime
@@ -26,7 +25,7 @@ class TrendItem:
                     headers={"User-Agent":"Mozilla/5.0"})
                 if r.status_code == 200:
                     import re
-                    titles = re.findall(r''title":{"runs":[{"text":"([^"]+)'', r.text)[:limit]
+                    titles = re.findall(r'title":{"runs":[{"text":"([^"]+)', r.text)[:limit]
                     return [{"title": t, "source": "youtube", "rank": i+1} for i, t in enumerate(titles)]
         except: pass
         return []
@@ -56,7 +55,7 @@ class TrendItem:
                     headers={"User-Agent":"Mozilla/5.0"})
                 if r.status_code == 200:
                     import re
-                    trends = re.findall(r'title="([^"]+)'', r.text)[:limit]
+                    trends = re.findall(r'title="([^"]+)"', r.text)[:limit]
                     return [{"title": t, "source": "x", "rank": i+1} for i, t in enumerate(trends)]
         except: pass
         return []

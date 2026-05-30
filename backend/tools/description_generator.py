@@ -46,7 +46,7 @@ class DescriptionGenerator:
         style_desc = DESC_TEMPLATES.get(style, DESC_TEMPLATES["standard"])
         lang_name = LANGUAGES.get(target_lang, target_lang)
 
-        prompt = f''"{lang_name}({style_desc}):
+        prompt = f"""{lang_name}({style_desc}):
 
 : {product_name}
 : {category}
@@ -57,7 +57,7 @@ SEO: {", ".join(keywords) if keywords else ''}
 : {max_length}, +++, 
 
 JSON:
-{{"title": "()", "subtitle": '', "bullets": ["1","2","3"], "description": '', "tags": ["1","2"], "seo_keywords": "SEO"}}''"
+{{"title": "()", "subtitle": "", "bullets": ["1","2","3"], "description": "", "tags": ["1","2"], "seo_keywords": "SEO"}}"""
 
         ai_result = await cls._call_ai(prompt)
         if ai_result:
@@ -112,11 +112,11 @@ JSON:
 
     @classmethod
     async def extract_features(cls, product_name: str, raw_description: str = '') -> dict:
-        ''"AI''"
-        prompt = f''''{product_name}",.
+        """AI feature extractor"""
+        prompt = f'''""{product_name}",.
 {": "+raw_description[:500] if raw_description else ''}
 
-JSON: {{"features":["1","2",...], "keywords":["1",...], "target_audience":'', "price_range":''}}''"
+JSON: {{"features":["1","2",...], "keywords":["1",...], "target_audience":'', "price_range":''}}'''
 
         result = await cls._call_ai(prompt)
         return result or cls._fallback_features(product_name)
@@ -124,23 +124,24 @@ JSON: {{"features":["1","2",...], "keywords":["1",...], "target_audience":'', "p
     @classmethod
     async def optimize_title(cls, title: str, keywords: list = None,
                                target_lang: str = "zh") -> str:
-        ''"AI(SEO)''"
+        """AI optimize title (SEO)"""
         kw = ", ".join(keywords or [])
-        prompt = f''"SEO(:{LANGUAGES.get(target_lang,target_lang)}):
-: {title}
-: {kw or ''}
-: 50, , ''''
+        prompt = f"""SEO ({LANGUAGES.get(target_lang,target_lang)}):
+Title: {title}
+Keywords: {kw or ''}
+Max: 50 chars, concise
 
-,.''"
+JSON:
+{{"optimized_title": "..."}}"""
 
         result = await cls._call_ai(prompt, max_tokens=80)
         if result and isinstance(result, str):
-            return result.strip().strip(''').strip(''")
+            return result.strip().strip('"').strip("'")
         return title
 
     @classmethod
     async def _call_ai(cls, prompt: str, max_tokens: int = 500) -> Optional[dict]:
-        ''"AI''"
+        """AI"""
         if not (DEEPSEEK_KEY or OPENAI_KEY):
             return None
         try:
@@ -173,7 +174,7 @@ JSON: {{"features":["1","2",...], "keywords":["1",...], "target_audience":'', "p
     @classmethod
     def _fallback_generate(cls, name: str, category: str, features: list,
                             lang: str, style: str) -> dict:
-        ''"AI''"
+        """AI"""
         feat_text = "".join(features) if features else ""
         return {
             "title": f"{name} {category}",

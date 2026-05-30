@@ -69,7 +69,7 @@ async def block_ip(req: BlockRequest, _=Depends(verify_token)):
     _get_blacklist().append({"ip": req.ip, "reason": req.reason, "blocked_at": datetime.now().isoformat(), "expires_at": expires})
     state._save()
     # iptables 
-    await execute(f"iptables -A INPUT -s {req.ip} -j DROP 2>/dev/null || echo 'iptables'')
+    await execute(f"iptables -A INPUT -s {req.ip} -j DROP 2>/dev/null || echo 'iptables done'")
     return {"ok": True, "ip": req.ip, "expires_at": expires}
 
 @router.post("/blacklist/unblock")
@@ -78,14 +78,14 @@ async def unblock_ip(req: BlockRequest, _=Depends(verify_token)):
     await handle_risk("L3", f"IP: {req.ip}", need_confirm=True)
     state._data["ip_blacklist"] = [e for e in _get_blacklist() if e["ip"] != req.ip]
     state._save()
-    await execute(f"iptables -D INPUT -s {req.ip} -j DROP 2>/dev/null || echo 'iptables'')
+    await execute(f"iptables -D INPUT -s {req.ip} -j DROP 2>/dev/null || echo 'iptables done'")
     return {"ok": True, "ip": req.ip}
 
 @router.get("/firewall")
 async def list_firewall(_=Depends(verify_token)):
     ''''''
     await handle_risk("L1", '')
-    result = await execute("iptables -L -n --line-numbers 2>/dev/null | head -50 || echo 'iptables'')
+    result = await execute("iptables -L -n --line-numbers 2>/dev/null | head -50 || echo 'iptables'")
     return {"rules": _get_firewall_rules(), "iptables_output": result["stdout"][:2000]}
 
 @router.post("/firewall/rule")
@@ -95,7 +95,7 @@ async def add_firewall_rule(rule: FirewallRule, _=Depends(verify_token)):
     action_flag = "-A" if rule.action == "allow" else "-A"
     target = "ACCEPT" if rule.action == "allow" else "DROP"
     cmd = f"iptables {action_flag} INPUT -p {rule.protocol} --dport {rule.port} -s {rule.source} -j {target}"
-    result = await execute(cmd + " 2>/dev/null || echo 'iptables'')
+    result = await execute(cmd + " 2>/dev/null || echo 'iptables'")
     rule_entry = rule.model_dump()
     rule_entry["created_at"] = datetime.now().isoformat()
     _get_firewall_rules().append(rule_entry)

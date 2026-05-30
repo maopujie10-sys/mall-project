@@ -15,9 +15,9 @@ class ContainerAction(BaseModel):
 
 @router.get("/ps")
 async def docker_ps(_=Depends(verify_token)):
-    ''" Docker ''"
+    """ Docker """
     await handle_risk("L1", "Docker")
-    result = await execute("docker ps -a --format '{{.ID}}|{{.Image}}|{{.Status}}|{{.Names}}|{{.Ports}}'')
+    result = await execute("docker ps -a --format '{{.ID}}|{{.Image}}|{{.Status}}|{{.Names}}|{{.Ports}}'")
     containers = []
     if result["success"]:
         for line in result["stdout"].strip().split("\n"):
@@ -36,7 +36,7 @@ async def docker_ps(_=Depends(verify_token)):
 async def docker_stats(_=Depends(verify_token)):
     ''''''
     await handle_risk("L1", "Docker")
-    result = await execute("docker stats --no-stream --format '{{.Name}}|{{.CPUPerc}}|{{.MemUsage}}|{{.MemPerc}}|{{.NetIO}}'')
+    result = await execute("docker stats --no-stream --format '{{.Name}}|{{.CPUPerc}}|{{.MemUsage}}|{{.MemPerc}}|{{.NetIO}}'")
     stats = []
     if result["success"]:
         for line in result["stdout"].strip().split("\n"):
@@ -74,7 +74,7 @@ async def docker_status(container: Optional[str] = Query(None), _=Depends(verify
     ''''''
     await handle_risk("L1", "Docker")
     if container:
-        result = await execute(f"docker inspect {container} --format '{{.State.Status}}|{{.State.Health.Status}}|{{.State.Running}}'')
+        result = await execute(f"docker inspect {container} --format '{{.State.Status}}|{{.State.Health.Status}}|{{.State.Running}}'")
         if result["success"]:
             parts = result["stdout"].strip().split("|")
             return {
@@ -93,7 +93,7 @@ async def docker_status(container: Optional[str] = Query(None), _=Depends(verify
 
 @router.post("/restart")
 async def docker_restart(req: ContainerAction, _=Depends(verify_token)):
-    ''"(,)''"
+    """(,)"""
     
     loop_key = f"restart:{req.container_id}"
     if not anti_loop.check(loop_key, max_count=1, window_min=10):
@@ -117,16 +117,16 @@ async def docker_restart(req: ContainerAction, _=Depends(verify_token)):
 
 @router.get("/compose")
 async def docker_compose_ps(_=Depends(verify_token)):
-    ''" docker compose ''"
+    """ docker compose """
     await handle_risk("L1", "Docker Compose")
-    result = await execute("docker compose ps --format 'table {{.Name}}\t{{.Status}}\t{{.Ports}}' 2>/dev/null || docker compose ls 2>/dev/null || echo 'compose not available'')
+    result = await execute("docker compose ps --format 'table {{.Name}}\t{{.Status}}\t{{.Ports}}' 2>/dev/null || docker compose ls 2>/dev/null || echo 'compose not available'")
     return {"output": result["stdout"][:1000]}
 
 @router.get("/images")
 async def docker_images(_=Depends(verify_token)):
-    ''" Docker ''"
+    """ Docker """
     await handle_risk("L1", "Docker")
-    result = await execute("docker images --format '{{.Repository}}|{{.Tag}}|{{.ID}}|{{.Size}}'')
+    result = await execute("docker images --format '{{.Repository}}|{{.Tag}}|{{.ID}}|{{.Size}}'")
     images = []
     if result["success"]:
         for line in result["stdout"].strip().split("\n"):
@@ -137,9 +137,9 @@ async def docker_images(_=Depends(verify_token)):
 
 @router.get("/network")
 async def docker_network(_=Depends(verify_token)):
-    ''" Docker ''"
+    """ Docker """
     await handle_risk("L1", "Docker")
-    result = await execute("docker network ls --format '{{.ID}}|{{.Name}}|{{.Driver}}|{{.Scope}}'')
+    result = await execute("docker network ls --format '{{.ID}}|{{.Name}}|{{.Driver}}|{{.Scope}}'")
     networks = []
     if result["success"]:
         for line in result["stdout"].strip().split("\n"):

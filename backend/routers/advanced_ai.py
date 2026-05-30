@@ -398,7 +398,7 @@ async def browser_agent(req: BrowserAgentRequest, _=Depends(verify_token)):
             else:
                 script_lines.append(f"outputs.append({{'step':{i},'action':'{action}','ok':False,'error':'______'}})")
         
-        script_lines.append("final_screenshot = '/tmp/agent_final.png'')
+        script_lines.append("final_screenshot = '/tmp/agent_final.png'")
         script_lines.append("try:\n    page.screenshot(path=final_screenshot, full_page=False)\nexcept:\n    final_screenshot = None")
         script_lines.append("print('RESULTS:', json.dumps(outputs, ensure_ascii=False))")
         script_lines.append("print('FINAL_SCREENSHOT:', final_screenshot or 'none')")
@@ -993,11 +993,11 @@ async def human_like_agent(req: dict, _=Depends(verify_token)):
     action_log = []
     
     # ===== ____ _________ =====
-    classify_prompt = f''"__________________________:
+    classify_prompt = f"""__________________________:
 - "code": ___/___/________/______ (_________)
 - "gui": _________/GUI/______EUR______
 ___: {command}
-___:''"
+___:"""
     
     task_type = (await _call_ai(
         [{"role":"user","content":classify_prompt}],
@@ -1006,11 +1006,11 @@ ___:''"
     
     if "code" in task_type:
         # ===== ___/________ ___________ =====
-        code_prompt = f''"___________I._________,___JSON:
+        code_prompt = f"""___________I._________,___JSON:
 {{"steps":[{{"action":"run_command|read_file|write_file|search|done","params":{{}},"reason":"____"}}],"summary":"___"}}
 ______: run_command(___shell), read_file(_____, write_file(_____, search(______), done(___)
 ___: {command}
-JSON:''"
+JSON:"""
         
         plan = await _call_ai(
             [{"role":"user","content":code_prompt}],
@@ -1069,9 +1069,9 @@ JSON:''"
         }
     
     # ===== GUI___: ______(_____ =====
-    system_prompt = ''"_________AI.___________SON: {"observation":"_______",thought":"__EUR",action":"____",target":"______(___:xxx/___:x,y)","params":{},"confidence":0.8}
+    system_prompt = """_________AI.___________SON: {"observation":"_______",thought":"__EUR",action":"____",target":"______(___:xxx/___:x,y)","params":{},"confidence":0.8}
 ___: click|double_click|type_text|press_key|scroll|move|wait|open_app|close_window|switch_window|select_all|copy|paste|undo|save|run_command|done|fail
-___: __arget______(_____:___"), ________ _______''"
+___: __arget______(_____:___"), ________ _______"""
     
     cycle = 0
     last_screenshot = None

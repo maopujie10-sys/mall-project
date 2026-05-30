@@ -64,8 +64,8 @@ async def db_status(_=Depends(verify_token)):
     ''''''
     await handle_risk("L1", '')
     _init()
-    info = _mysql_cmd("SHOW GLOBAL STATUS LIKE 'Uptime'')
-    vars = _mysql_cmd("SHOW VARIABLES LIKE 'max_connections'')
+    info = _mysql_cmd("SHOW GLOBAL STATUS LIKE 'Uptime'")
+    vars = _mysql_cmd("SHOW VARIABLES LIKE 'max_connections'")
     size = _mysql_cmd(
         "SELECT table_schema AS db, ROUND(SUM(data_length+index_length)/1024/1024,1) AS size_mb, ''COUNT(*) AS tables FROM information_schema.tables GROUP BY table_schema"
     )
@@ -96,7 +96,7 @@ async def db_tables(_=Depends(verify_token)):
     await handle_risk("L1", '')
     _init()
     result = _mysql_cmd(
-        "SELECT TABLE_NAME AS name, ENGINE AS engine, ''ROUND((DATA_LENGTH+INDEX_LENGTH)/1024/1024,2) AS size_mb, ''TABLE_ROWS AS rows, CREATE_TIME AS created ''FROM information_schema.tables WHERE table_schema='{db}''
+        "SELECT TABLE_NAME AS name, ENGINE AS engine, ROUND((DATA_LENGTH+INDEX_LENGTH)/1024/1024,2) AS size_mb, TABLE_ROWS AS rows, CREATE_TIME AS created FROM information_schema.tables WHERE table_schema='{db}' "
         "ORDER BY size_mb DESC".format(db=DB_CONFIG["database"])
     )
     return {"ok": result.get("ok", False), "tables": result.get("rows", []), "count": result.get("count", 0)}

@@ -1,10 +1,4 @@
 """AI Evolution Engine - Automated Evolution System"""
-    + ()
-   (??)
-   (,AI )
-   ()
-   (AI )
-''"
 import os
 import json
 import sqlite3
@@ -24,7 +18,7 @@ def _get_db():
     return conn
 
 def _init_tables(conn):
-    conn.executescript(''"
+    conn.executescript("""
         CREATE TABLE IF NOT EXISTS actions (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             action_type TEXT NOT NULL,
@@ -69,7 +63,7 @@ def _init_tables(conn):
             metrics TEXT,
             created_at TEXT DEFAULT (datetime('now','localtime'))
         );
-    ''")
+    """)
     conn.commit()
 
 
@@ -204,13 +198,13 @@ class EvolutionEngine:
         learned_corrections = db.execute("SELECT COUNT(*) FROM corrections WHERE learned=1").fetchone()[0]
 
         
-        cat_performance = db.execute(''"
-            SELECT json_extract(input_params, '$.platform') as platform, 
-                   COUNT(*) as total, 
+        cat_performance = db.execute("""
+            SELECT json_extract(input_params, '$.platform') as platform,
+                   COUNT(*) as total,
                    SUM(CASE WHEN result_status='success' THEN 1 ELSE 0 END) as ok
             FROM actions WHERE action_type='scraper'
             GROUP BY platform
-        ''").fetchall()
+        """).fetchall()
 
         db.close()
 

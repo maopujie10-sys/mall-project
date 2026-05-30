@@ -1,5 +1,23 @@
 # 操作日志
 
+## 2026-05-31 12:00 — 全息UI重构 + 后端语法修复
+
+**前端UI重构：**
+- Dashboard.vue: 完全重写 — 去掉Element Plus，全息玻璃态卡片、粒子背景、发光进度条、ECharts暗色主题
+- FloatingNav.vue: 增强3D全息风格 — 三层旋转环、粒子轨道、扫描线动画、发光渐变选单面板
+- FloatingAI.vue 和 MobileLayout.vue: 保持之前重写的3D全息智能体设计
+
+**后端修复（9个文件语法错误）：**
+- routers/security.py: 修复iptables字符串引号结尾`''`→`'"`
+- routers/advanced_ai.py: 修复3处`f''"`→`f"""`和三引号结尾`''"`→`"""`
+- routers/autopilot.py: 修复f-string内`''`→`""`引号冲突
+- routers/db_router.py: 修复SQL字符串中`''ROUND/TABLE_ROWS/FROM`前缀
+- routers/docker_panel.py: 修复5处三引号`''"`→`"""`和格式字符串引号结尾
+- agents/code_agent.py: 修复`''"`→`"""`和三引号不匹配`'''`→`"""`
+- agents/trend_agent.py: 修复正则r-string引号`[^"]+)''`→`[^"]+)"'`
+- tools/description_generator.py: 修复2处`''"AI''"`→`"""AI"""`和f-string结尾
+- tools/evolution.py: 修复`''"`→`"""`和执行脚本三引号
+
 ## 2026-05-31 00:34 — 全部170端点返回200（4xx归零）
 
 **问题：** AI全量测试虽然显示170/170 OK，但7个端点返回4xx非200：

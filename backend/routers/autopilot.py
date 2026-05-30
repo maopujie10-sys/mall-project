@@ -12,10 +12,10 @@ from state import state
 router = APIRouter(prefix="/autopilot", tags=["Autopilot"])
 
 PAGES = ["/", "/api/products", "/api/categories", "/api/banners"]
-SITEMAP_TEMPLATE = ''"<?xml version="1.0" encoding="UTF-8"?>
+SITEMAP_TEMPLATE = """<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 {urls}
-</urlset>''"
+</urlset>"""
 
 def _get_logs():
     return state._data.setdefault("autopilot_logs", [])
@@ -52,7 +52,7 @@ async def generate_sitemap(_=Depends(verify_token)):
             products = r.json().get("list", r.json().get("records", [])) if r.status_code == 200 else []
         except Exception:
             products = []
-    urls = "\n".join([f'  <url><loc>{MALL_BASE_URL}/product/{p.get("id", '')}</loc></url>' for p in products])
+    urls = "\n".join([f'  <url><loc>{MALL_BASE_URL}/product/{p.get("id", "")}</loc></url>' for p in products])
     sitemap = SITEMAP_TEMPLATE.format(urls=urls or f'  <url><loc>{MALL_BASE_URL}</loc></url>')
     return {"sitemap": sitemap, "product_count": len(products)}
 
