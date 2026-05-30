@@ -165,6 +165,8 @@ def _build_tools():
     } for t in tools_list]
 
 # ===== __EUR_EUR_____ =====
+@with_retry(max_retries=2, timeout=45)
+@circuit_breaker('ai_call', failure_threshold=10)
 async def call_ai_with_tools(messages, model=''):
     ''"_____I__EUR_EUR__EUR________unction Calling''"
     tools = _build_tools()

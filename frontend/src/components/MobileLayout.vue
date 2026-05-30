@@ -39,7 +39,7 @@
     <div v-if="showChat" class="chat-overlay">
       <div class="chat-header">
         <span>Friday AI Chat</span>
-        <button @click="showChat = false" class="chat-close">X</button>
+        <button @click="showChat = false; stopVoiceInput()" class="chat-close">X</button>
       </div>
       <div class="chat-body" ref="chatBody">
         <div v-for="(msg, i) in chatMessages" :key="i" :class="['chat-msg', msg.role]">{{ msg.text }}</div>
@@ -76,7 +76,72 @@ function toggleAgent() {
   if (showChat.value) {
     agentSpeaking.value = true
     setTimeout(() => agentSpeaking.value = false, 2000)
+    // Auto-start voice recognition on mobile
+    setTimeout(() => startVoiceInput(), 600)
+  } else {
+    stopVoiceInput()
   }
+}
+
+// ---- Voice Input (cross-browser) ----
+let mediaRecorder = null
+let voiceRecognition = null
+let isRecordingVoice = false
+
+async function startVoiceInput() {
+  // Try SpeechRecognition first (Chrome)
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition
+  if (SR) {
+    voiceRecognition = new SR()
+    voiceRecognition.lang = 'zh-CN'
+    voiceRecognition.continuous = false
+    voiceRecognition.interimResults = false
+    voiceRecognition.onresult = (e) => {
+      const text = Array.from(e.results).map(r => r[0].transcript).join('')
+      if (text) { chatInput.value = text; sendChat() }
+    }
+    voiceRecognition.onend = () => { isRecordingVoice = false }
+    voiceRecognition.onerror = () => { isRecordingVoice = false }
+    voiceRecognition.start()
+    isRecordingVoice = true
+    agentSpeaking.value = true
+    return
+  }
+  // Fallback: MediaRecorder for Safari/Firefox
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+    mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm;codecs=opus' })
+    const chunks = []
+    mediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) chunks.push(e.data) }
+    mediaRecorder.onstop = async () => {
+      stream.getTracks().forEach(t => t.stop())
+      if (chunks.length === 0) return
+      const blob = new Blob(chunks, { type: 'audio/webm' })
+      try {
+        const form = new FormData()
+        form.append('file', blob, 'recording.webm')
+        const r = await agentApi.post('/agent/voice/stt', form, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        })
+        const text = r?.data?.text
+        if (text) { chatInput.value = text; sendChat() }
+      } catch { agentSpeaking.value = false }
+    }
+    mediaRecorder.start()
+    isRecordingVoice = true
+    agentSpeaking.value = true
+    // Auto-stop after 5 seconds
+    setTimeout(() => { if (mediaRecorder?.state === 'recording') mediaRecorder.stop() }, 5000)
+  } catch {
+    // No mic access, fall through to text input
+    agentSpeaking.value = false
+  }
+}
+
+function stopVoiceInput() {
+  if (voiceRecognition) { try { voiceRecognition.stop() } catch {}; voiceRecognition = null }
+  if (mediaRecorder?.state === 'recording') { mediaRecorder.stop(); mediaRecorder = null }
+  isRecordingVoice = false
 }
 
 async function sendChat() {
