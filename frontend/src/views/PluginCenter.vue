@@ -102,7 +102,7 @@
       <!-- Tab 3: 宸插畨瑁?-->
       <el-tab-pane label="..." name="installed">
         <el-table :data="allInstalledSkills" stripe size="small">
-          <el-table-column label="鎶€鑳? min-width="200">
+          <el-table-column label="..." min-width="200">
             <template #default="{row}">
               <span style="font-size:18px;margin-right:6px">{{ row.icon || "馃摝" }}</span>
               <span style="font-weight:500">{{ row.name }}</span>

@@ -41,7 +41,7 @@
       <el-col :span="8">
         <el-card shadow="never"><template #header>馃寪 绔欑偣鍒楄〃</template>
           <el-table :data="sites" stripe size="small" max-height="300">
-            <el-table-column prop="name" label="绔欑偣鍚? min-width="140" />
+            <el-table-column prop="name" label="..." min-width="140" />
             <el-table-column prop="type" label="绫诲瀷" width="80"><template #default="{row}"><el-tag size="small">{{ row.type }}</el-tag></template></el-table-column>
             <el-table-column prop="date" label="淇敼鏃堕棿" width="100" />
           </el-table>

@@ -43,7 +43,7 @@
       <el-table :data="containers" stripe v-loading="loading" max-height="400">
         <el-table-column prop="name" label="鍚嶇О" min-width="160" />
         <el-table-column prop="image" label="闀滃儚" min-width="200" />
-        <el-table-column prop="status" label="鐘舵€? min-width="180">
+        <el-table-column prop="status" label="..." min-width="180">
           <template #default="{ row }">
             <el-tag :type="row.status?.includes('Up') ? 'success' : 'danger'" size="small">
               {{ row.status?.substring(0, 30) }}

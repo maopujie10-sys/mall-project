@@ -16,7 +16,7 @@
     <el-card shadow="never" style="margin-bottom:20px">
       <template #header>馃搵 鐩戞帶鍒楄〃 ({{ tracks.length }})</template>
       <el-table :data="tracks" size="small">
-        <el-table-column prop="product" label="鍟嗗搧鍚? min-width="150"/>
+        <el-table-column prop="product" label="..." min-width="150"/>
         <el-table-column prop="platform" label="骞冲彴" width="100"/>
         <el-table-column label="..." width="120">
           <template #default="{row}">

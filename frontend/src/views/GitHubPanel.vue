@@ -59,7 +59,7 @@
 
       <el-tab-pane name="workflows" label="Actions">
         <el-table :data="workflows" stripe size="small" height="500">
-          <el-table-column prop="name" label="宸ヤ綔娴佸悕绉? min-width="250" />
+          <el-table-column prop="name" label="..." min-width="250" />
           <el-table-column prop="state" label="..." width="100" />
           <el-table-column prop="path" label="璺緞" min-width="200" />
         </el-table>
@@ -67,7 +67,7 @@
 
       <el-tab-pane name="branches" label="鍒嗘敮">
         <el-table :data="branches" stripe size="small" height="500">
-          <el-table-column prop="name" label="鍒嗘敮鍚? min-width="200" />
+          <el-table-column prop="name" label="..." min-width="200" />
           <el-table-column prop="sha" label="..." width="100" />
         </el-table>
       </el-tab-pane>

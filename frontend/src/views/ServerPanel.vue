@@ -72,7 +72,7 @@
     <el-card shadow="never" style="margin-bottom:20px">
       <template #header>馃搳 鍐呭瓨TOP杩涚▼</template>
       <el-table :data="topMem" stripe size="small" max-height="300">
-        <el-table-column prop="name" label="杩涚▼鍚? min-width="160"/>
+        <el-table-column prop="name" label="..." min-width="160"/>
         <el-table-column prop="pid" label="PID" width="80"/>
         <el-table-column prop="memory_mb" label="鍐呭瓨" width="100" sortable><template #default="{row}">{{ row.memory_mb }}MB</template></el-table-column>
         <el-table-column prop="memory_percent" label="鍗犳瘮" width="80"><template #default="{row}">{{ row.memory_percent?.toFixed(1) }}%</template></el-table-column>
