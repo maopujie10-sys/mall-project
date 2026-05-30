@@ -4,7 +4,27 @@ LABEL maintainer="Friday AI OS"
 
 WORKDIR /app
 
-# Install system dependencies
+# 第1步：先COPY源码，在pip install之前就清理BOM
+COPY . .
+
+# 彻底清理所有Python文件的UTF-8 BOM（在pip安装前）
+RUN python3 -c "
+import os, glob
+count = 0
+for f in glob.glob('/app/**/*.py', recursive=True):
+    try:
+        with open(f, 'rb') as fh:
+            data = fh.read()
+        if data[:3] == b'\xef\xbb\xbf':
+            with open(f, 'wb') as fh:
+                fh.write(data[3:])
+            count += 1
+    except:
+        pass
+print(f'BOM cleaned: {count} files')
+"
+
+# 安装系统依赖
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
     nginx \
@@ -12,29 +32,22 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     openssl \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Python dependencies
-COPY requirements.txt .
+# 安装Python依赖
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Install Playwright + Chromium (browser automation)
+# 安装Playwright + Chromium（可选，失败不阻断）
 RUN pip install --no-cache-dir playwright && \
     python -m playwright install chromium 2>/dev/null || echo "playwright chromium install skipped"
 
-# Copy app code
-COPY . .
-
-# Create required directories
+# 创建必要目录
 RUN mkdir -p /app/data/screenshots /app/memory /app/state /app/backups /app/logs
 
-# Docker socket: mount via volumes: - /var/run/docker.sock:/var/run/docker.sock
+# Docker socket挂载
 EXPOSE 9000
 ENV TZ=Asia/Shanghai
 
-# Health check
+# 健康检查
 HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
-  CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:9000/agent/health')" || exit 1
-
-# Clean BOM from Python files
-RUN python -c "import os; [open(f,\"wb\").write(open(f,\"rb\").read().lstrip(b\"\\xef\\xbb\\xbf\")) for f in __import__(\"glob\").glob(\"/app/**/*.py\",recursive=True) if open(f,\"rb\").read(3)==b\"\\xef\\xbb\\xbf\"]"
+  CMD curl -f http://localhost:9000/agent/health/simple || exit 1
 
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "9000", "--workers", "2"]
